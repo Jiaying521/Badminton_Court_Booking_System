@@ -1,0 +1,92 @@
+h1 {
+    text-align: center;
+    margin-top: 50px;
+    font-size: 42px;
+    font-family: 'Poppins', sans-serif;
+    color: white;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.4);
+    letter-spacing: 2px;
+}
+
+body {
+    margin: 0; 
+    background-image: url("https://i.ibb.co/jvRK5xkn/weathering-with-you.jpg");
+}
+
+@media (max-width:1023px){
+    body{
+        background-size: cover;
+        background-repeat: no-repeat;
+    }
+}
+
+@media (min-width:1024px){
+    body{
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center 22%;
+    }
+}
+
+.login-box {
+    width: 320px;
+    margin: 50px auto;
+    border-radius: 20px;
+    background-color: rgba(255,255,255,0.15); 
+    backdrop-filter: blur(10px);              
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0,0,0,1.2);
+    padding-bottom: 20px;
+}
+
+.login-box h2 {
+    text-align : center;
+    padding-top: 40px;
+    border-radius : 10px 10px 0 0;
+    margin : 0;
+    font-size: 26px;
+    font-family: sans-serif;
+    font-weight: bold;
+    color: white;
+}
+
+.login-box p {
+    text-align : center;
+    color: white;
+    font-size: 14px;
+    
+}
+
+.login-box p a{
+    text-decoration: none;
+}
+
+.login-box p a:hover {
+    text-decoration: underline;
+}
+
+.login-box form {
+    margin: 20px auto; 
+    text-align : center;
+}
+
+.login-box #login-btn {
+    display : block;
+    margin : 0 auto;
+    padding : 8px;
+    border-radius: 10px;
+    background-color: #9BD8FC;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,.2);
+}
+
+
+.login-box form input[type="text"],
+.login-box form input[type="password"] {
+    display : inline-block;
+    margin : 5px 0; 
+    padding :15px 25px;
+    font-size : 16px;
+    border-radius : 20px;
+    border : none;
+}
