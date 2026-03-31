@@ -72,7 +72,7 @@ if ($result->num_rows === 0) {
                 <div style='max-width: 500px; margin: 0 auto; background-color: #ffffff; padding: 40px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid #ddd;'>
                     <h2 style='color: #2c3e50;'>Care Connect Clinic</h2>
                     <p style='color: #555; font-size: 16px; line-height: 1.5;'>
-                        You requested a password reset. This link is valid for 1 hour only.
+                        You requested a password reset. This link is valid for 10 minutes only.
                         Click the button below to set a new password:
                     </p>
                     <a href='$resetUrl' 
