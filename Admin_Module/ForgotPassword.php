@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forgot Password - Hina's Clinic</title>
+    <title>Forgot Password - Care Connect Clinic</title>
     <link rel="stylesheet" href="LoginPage.css">
     <link rel="stylesheet" href="ForgotPassword.css">
 </head>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hina's Clinic Login Page</title>
+    <title>Care Connect Clinic Login Page</title>
 
     <link rel="stylesheet" href="LoginPage.css">
 </head>

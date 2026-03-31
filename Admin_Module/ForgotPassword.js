@@ -17,7 +17,7 @@ window.onload = function() {
 };
 
 forgotForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // STOPS the page from refreshing or redirecting
     const email = document.getElementById('emailInput').value;
 
     submitBtn.disabled = true;
@@ -30,26 +30,24 @@ forgotForm.addEventListener('submit', async (e) => {
             body: JSON.stringify({ email })
         });
         
-        const text = await response.text(); 
-        console.log("Raw response:", text); 
-        try {
-            const result = JSON.parse(text);
-            alert(result.message);
-        } catch (e) {
-            console.error("JSON Parse Error:", e);
-            alert("PHP Error Found! Check Console (F12).");
-        } 
+        const result = await response.json(); // Parse the JSON from PHP
+        console.log("Response:", result); 
 
-        if (response.ok) {
+        if (response.ok && result.status === 'success') {
+            // ONLY start cooldown if the email was actually sent
+            alert(result.message);
             const cooldownTime = 60; 
             const endTime = Date.now() + (cooldownTime * 1000);
             localStorage.setItem('resetCooldownEnd', endTime);
             startCooldown(cooldownTime);
         } else {
+            // Email not found or error occurred - DO NOT start cooldown
+            alert(result.message || "Failed to process request.");
             submitBtn.disabled = false;
             submitBtn.value = "Send Reset Link";
         }
     } catch (error) {
+        console.error("Fetch Error:", error);
         alert("Server error. Please try again later.");
         submitBtn.disabled = false;
         submitBtn.value = "Send Reset Link";

@@ -1,4 +1,5 @@
 <?php
+session_start();
 header('Content-Type: application/json');
 
 $host = "localhost";
@@ -17,17 +18,27 @@ $input = json_decode(file_get_contents('php://input'), true);
 $user = $input['username'] ?? '';
 $pass = $input['password'] ?? '';
 
-$stmt = $conn->prepare("SELECT username FROM admins WHERE username = ? AND password = ?");
-$stmt->bind_param("ss", $user, $pass);
+// 1. Only query by username first to get the hashed password
+$stmt = $conn->prepare("SELECT username, password FROM admins WHERE username = ?");
+$stmt->bind_param("s", $user);
 $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows === 1) {
-    echo json_encode(['success' => true, 'username' => $user]);
+    $row = $result->fetch_assoc();
+    
+    // 2. Use password_verify to check the plain text password against the hash
+    if (password_verify($pass, $row['password'])) {
+        $_SESSION['username'] = $row['username'];
+        echo json_encode(['success' => true, 'username' => $row['username']]);
+    } else {
+        // Password does not match the hash
+        echo json_encode(['success' => false, 'message' => 'Invalid Username or Password']);
+    }
 } else {
+    // Username not found
     echo json_encode(['success' => false, 'message' => 'Invalid Username or Password']);
 }
 
 $stmt->close();
 $conn->close();
-?>
