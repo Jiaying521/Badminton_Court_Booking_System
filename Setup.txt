@@ -1,9 +1,4 @@
-Node Host Website:
-http://localhost:3000/LoginPage.html
-
-
 Email Account Password: 
 
 adminclinic2026@gmail.com
-
 2026@adminclinic
