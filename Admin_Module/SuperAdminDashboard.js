@@ -42,9 +42,6 @@ logoutBtn.addEventListener("click", function() {
         // Remove the user data from localStorage
         localStorage.removeItem("loggedInUser");
 
-        // Show a quick alert
-        alert("Logout Successful!");
-
         // Redirect the user back to the login page
         window.location.href = "LoginPage.php";
     }
