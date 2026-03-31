@@ -24,14 +24,21 @@ forgotForm.addEventListener('submit', async (e) => {
     submitBtn.value = "Sending...";
 
     try {
-        const response = await fetch('/forgot-password', {
+        const response = await fetch('Email_System/SendResetLogic.php', { 
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ email })
         });
         
-        const result = await response.json();
-        alert(result.message);
+        const text = await response.text(); 
+        console.log("Raw response:", text); 
+        try {
+            const result = JSON.parse(text);
+            alert(result.message);
+        } catch (e) {
+            console.error("JSON Parse Error:", e);
+            alert("PHP Error Found! Check Console (F12).");
+        } 
 
         if (response.ok) {
             const cooldownTime = 60; 
