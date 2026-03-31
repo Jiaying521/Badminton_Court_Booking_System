@@ -21,7 +21,7 @@
         </form>
 
         <p>
-            <a href="LoginPage.html">Back to Login</a>
+            <a href="LoginPage.php">Back to Login</a>
         </p>
     </div>
 

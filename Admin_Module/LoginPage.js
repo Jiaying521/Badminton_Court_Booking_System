@@ -7,7 +7,7 @@ document.querySelector("form").addEventListener("submit", function(e){
     if(username === "user" && password === "1234"){
         localStorage.setItem("loggedInUser", username); // Store logged in user in local storage
 
-        window.location.href = "SuperAdminDashboard.html"; // Jump to home page
+        window.location.href = "SuperAdminDashboard.php"; // Jump to home page
 
     }else{
             alert("Invalid username or password. Please try again.");  // Show error message

@@ -22,7 +22,7 @@
         </form>
 
         <p>
-            <a href="ForgotPassword.html">Forgot Password?</a>
+            <a href="ForgotPassword.php">Forgot Password?</a>
         </p>
 
     </div>

@@ -12,7 +12,7 @@ const user = localStorage.getItem('loggedInUser');
 // If no user is found, kick them out immediately
 if (!user) {
     alert("Access Denied! Please log in first.");
-    window.location.href = "LoginPage.html"; 
+    window.location.href = "LoginPage.php"; 
 } else {
     // If user exists, show the welcome message
     welcomeText.innerText = "Hello, " + user + "!";
@@ -46,7 +46,7 @@ logoutBtn.addEventListener("click", function() {
         alert("Logout Successful!");
 
         // Redirect the user back to the login page
-        window.location.href = "LoginPage.html";
+        window.location.href = "LoginPage.php";
     }
     // If "Cancel", nothing happens.
 });
