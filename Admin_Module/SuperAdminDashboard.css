@@ -1,220 +1,242 @@
 /* --- Global Styles --- */
-body {
-    margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f4f4f4;
-    /* Prevent horizontal scrolling to keep hidden sidebar invisible */
-    overflow-x: hidden; 
+:root {
+    --primary-blue: #1E90FF;
+    --hover-blue: #156ec7;
+    --bg-light: #f4f4f4;
+    --white: #ffffff;
+    --text-dark: #333333;
 }
 
-/* --- Navbar Container --- */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    overflow-x: hidden;
+}
+
+/* --- Navbar Part --- */
 .nav-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background-color: #87CEEB;
-    padding: 0 20px;
-    color: white;
-    height: 70px;
-    flex-wrap: nowrap; 
+    background-color: var(--white);
+    padding: 0 30px;
+    height: 80px; 
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
-.nav-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-shrink: 0;
-}
+.nav-left { display: flex; align-items: center; gap: 14px; }
+.logo { width: 52px; height: auto; }
+.brand-name { font-weight: bold; font-size: 24px; color: var(--text-dark); }
 
-.logo {
-    width: 60px;
-    height: auto;
-}
-
-.brand-name {
-    font-weight: bold;
-    font-size: 22px;
-    white-space: nowrap;
-}
-
-/* --- Desktop Menu Styles --- */
+/* --- Nav Links Part --- */
 .nav-links {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
     list-style: none;
-    margin: 0;
-    padding: 0;
+    margin: 0; padding: 0;
 }
 
 .nav-links a, .logout-btn {
     text-decoration: none;
     color: white;
     font-weight: bold;
-    background-color: #1E90FF;
-    padding: 8px 12px;
+    background-color: var(--primary-blue);
+    padding: 10px 20px;
     border-radius: 20px;
     border: none;
     cursor: pointer;
+    font-size: 14px;
+    transition: 0.3s;
     white-space: nowrap;
-    font-size: 13px;
-    transition: background 0.3s;
 }
 
-.nav-links a:hover, .logout-btn:hover {
-    background-color: #156ec7;
-}
+.nav-links a:hover, .logout-btn:hover { background-color: var(--hover-blue); }
+.logout-btn { background-color: #ff4d4d; }
 
-/* --- Dropdown Submenu (Desktop) --- */
-.dropdown {
-    position: relative;
-}
+/* --- Dropdown Part --- */
+.dropdown { position: relative; }
+.drop-btn { background-color: #f1f1f1 !important; color: #333 !important; }
 
 .submenu {
-    display: none; 
+    display: none;
     position: absolute;
-    top: 100%;
-    left: 0;
-    background-color: white;
+    top: 105%;
+    right: 0;
+    background-color: var(--white);
     list-style: none;
-    padding: 10px 0;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    min-width: 220px;
-    z-index: 100;
+    padding: 0;
+    border-radius: 12px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+    min-width: 210px;
+    z-index: 1100;
+    overflow: hidden;
 }
 
 .submenu li a {
-    color: #333;
-    background: none;
+    color: #333 !important;
+    background: none !important;
     display: block;
-    padding: 10px 20px;
+    padding: 14px 22px;
+    border-radius: 0;
+    width: 100%;
+    text-align: left;
 }
 
-.submenu li a:hover {
-    background-color: #f1f1f1;
-}
+.submenu li a:hover { background-color: #f8f9fa !important; color: var(--primary-blue) !important; }
+.dropdown:hover .submenu { display: block; }
 
-.dropdown:hover .submenu {
-    display: block;
-}
+/* --- Content Part --- */
+.content { padding: 40px; max-width: 1300px; margin: 0 auto; position: relative; z-index: 1; }
 
-.menu-toggle {
-    display: none; 
-}
-
-/* --- User Welcome Section --- */
-#welcome-text {
-    background-color: #FFB347;
-    padding: 8px 12px;
-    border-radius: 20px;
-    font-size: 13px;
-    color: white;
+/* --- Status Online Alignment Part --- */
+.status-online {
+    color: #28a745;
     font-weight: bold;
-    white-space: nowrap; 
-    flex-shrink: 0; 
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
 }
 
-/* --- Responsive Design (Mobile Sidebar) --- */
-@media (max-width: 1023px) {
-    /* Add spacing below the More Options dropdown block */
-    .dropdown {
-        margin-bottom: 30px; /* Adjust this value to increase space */
-    }
-    
-    /* Add spacing specifically below the last sub-menu item (Profile) */
-    .submenu li:last-child {
-        margin-bottom: 40px;
-    }
-    
-    .menu-toggle {
-        display: block;
-        font-size: 24px;
-        background: none;
-        border: none;
-        color: white;
-        cursor: pointer;
-    }
+.status-online i {
+    font-style: normal;
+    font-size: 12px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+}
 
-    /* Side Drawer Sidebar */
+/* --- Stats Grid Part --- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 22px;
+    margin: 30px 0;
+}
+
+.stat-box {
+    background: white; padding: 25px; border-radius: 15px;
+    display: flex; align-items: center; box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+
+.stat-icon { font-size: 32px; width: 62px; height: 62px; display: flex; align-items: center; justify-content: center; border-radius: 12px; margin-right: 18px; }
+.blue { background: #e7f1ff; color: #007bff; }
+.green { background: #e6fcf5; color: #099268; }
+.orange { background: #fff4e6; color: #fd7e14; }
+.red { background: #fff5f5; color: #fa5252; }
+.stat-info p { font-size: 28px; font-weight: bold; margin: 5px 0 0; }
+
+/* --- Dashboard Layout Part --- */
+.dashboard-layout {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr;
+    gap: 30px;
+    margin-top: 10px;
+}
+
+.data-section, .shortcuts-section {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.data-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+.data-table th, .data-table td { padding: 14px; border-bottom: 1px solid #eeeeee; text-align: left; }
+
+/* --- Badge Part (Fixed Centering) --- */
+.badge { 
+    padding: 6px 12px; 
+    border-radius: 6px; 
+    font-size: 12px; 
+    font-weight: bold; 
+    display: inline-flex; 
+    align-items: center; 
+    justify-content: center;
+    text-align: center;
+    min-width: 70px;
+}
+.badge.success { background-color: #e6fcf5; color: #099268; }
+.badge.pending { background-color: #fff4e6; color: #fd7e14; }
+.badge.done { background-color: #e7f1ff; color: #007bff; }
+
+/* --- Shortcut Part --- */
+.shortcut-list { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
+.shortcut-item {
+    text-decoration: none; color: #444; padding: 15px;
+    background: #f9f9f9; border-radius: 10px; display: flex; align-items: center; gap: 12px; font-weight: 600;
+}
+.shortcut-item i { color: var(--primary-blue); }
+
+/* --- Mobile Fixes Part (Sidebar Click & Scroll Fix) --- */
+.menu-toggle { display: none; font-size: 28px; background: none; border: none; color: #333; cursor: pointer; }
+
+@media (max-width: 1112px) {
+    .menu-toggle { display: block; }
+    
     .nav-links {
-        position: fixed;
-        /* Push further left and hide visibility to prevent peeking */
+        position: fixed; 
         left: -400px; 
-        visibility: hidden; 
-        
         top: 0;
-        width: 280px;
-        height: 100vh;
+        width: 300px; 
+        height: 100vh; 
         background-color: #87CEEB;
-        flex-direction: column; /* Items stack vertically */
-        align-items: flex-start;
-        padding: 80px 20px;
-        transition: all 0.3s ease-in-out;
-        z-index: 1001;
-
-        /* Enable vertical scroll for many items */
+        display: block; 
+        padding: 90px 25px 60px 25px; 
+        transition: 0.3s;
+        z-index: 1500; 
+        box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+        visibility: hidden;
         overflow-y: auto; 
-        /* Hide scrollbar line for IE, Edge and Firefox */
-        -ms-overflow-style: none;  
-        scrollbar-width: none;  
+        pointer-events: auto;
+        box-sizing: border-box;
     }
-
-    /* Hide scrollbar line for Chrome, Safari and Opera */
-    .nav-links::-webkit-scrollbar {
-        display: none;
+    
+    .nav-links.active { 
+        left: 0; 
+        visibility: visible; 
     }
-
-    /* Active state to slide in sidebar */
-    .nav-links.active {
-        left: 0;
-        visibility: visible;
-    }
-
-    .nav-links li {
-        width: 100%;
-        margin-bottom: 10px;
-    }
-
-    /* Small Screen Nav-bar Adjustments */
-    .nav-links a {
-        font-size: 14px; 
-        padding: 18px;
-    }
-
-    .nav-links a, .logout-btn {
+    
+    .nav-links li { 
+        width: 100%; 
+        margin-bottom: 12px; 
         display: block;
-        width: 100%;
-        text-align: left;
     }
-
-    /* Stacked Submenu for Mobile Drawer */
-    .submenu {
-        position: static;
-        display: block; /* Always visible inside the drawer */
-        box-shadow: none;
-        background: rgba(255, 255, 255, 0.1);
-        margin-top: 5px;
-        border-radius: 0;
-        min-width: 100%;
+    
+    .nav-links a { 
+        color: white; 
+        display: block; 
+        width: 100%; 
+        padding: 12px; 
+        font-size: 16px; 
+        box-sizing: border-box;
     }
-
-    .submenu li a {
-        color: white;
-        padding-left: 30px; /* Indent sub-items */
+    
+    .submenu { 
+        position: static; 
+        display: block; 
+        background: rgba(255, 255, 255, 0.15); 
+        box-shadow: none; 
+        padding: 5px 0; 
+        margin-top: 8px; 
     }
-
-    /* Sidebar Background Overlay */
-    .overlay {
-        display: none;
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: rgba(0,0,0,0.5);
-        z-index: 1000;
+    
+    .submenu li a { 
+        color: white !important; 
+        padding-left: 35px; 
     }
-
-    .overlay.active {
-        display: block;
+    
+    .dashboard-layout { 
+        grid-template-columns: 1fr; 
     }
 }
+
+/* --- Welcome & Action Button Part --- */
+#welcome-text { background-color: #FFB347; padding: 10px 16px; border-radius: 20px; color: white; font-weight: bold; font-size: 14px; }
+.action-btn { background: var(--primary-blue); color: white; padding: 12px 24px; border-radius: 20px; text-decoration: none; font-weight: bold; }

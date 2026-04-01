@@ -18,8 +18,8 @@ $input = json_decode(file_get_contents('php://input'), true);
 $user = $input['username'] ?? '';
 $pass = $input['password'] ?? '';
 
-// 1. Only query by username first to get the hashed password
-$stmt = $conn->prepare("SELECT username, password FROM admins WHERE username = ?");
+// Update: Select 'id' and 'role' along with username and password
+$stmt = $conn->prepare("SELECT id, username, password, role FROM admins WHERE username = ?");
 $stmt->bind_param("s", $user);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -27,18 +27,26 @@ $result = $stmt->get_result();
 if ($result->num_rows === 1) {
     $row = $result->fetch_assoc();
     
-    // 2. Use password_verify to check the plain text password against the hash
+    // Verify the password hash
     if (password_verify($pass, $row['password'])) {
+        // Store user information and role in the session for security
+        $_SESSION['admin_id'] = $row['id'];
         $_SESSION['username'] = $row['username'];
-        echo json_encode(['success' => true, 'username' => $row['username']]);
+        $_SESSION['role'] = $row['role'];
+
+        // Send back success and include the role for frontend navigation logic
+        echo json_encode([
+            'success' => true, 
+            'username' => $row['username'],
+            'role' => $row['role']
+        ]);
     } else {
-        // Password does not match the hash
         echo json_encode(['success' => false, 'message' => 'Invalid Username or Password']);
     }
 } else {
-    // Username not found
     echo json_encode(['success' => false, 'message' => 'Invalid Username or Password']);
 }
 
 $stmt->close();
 $conn->close();
+?>
