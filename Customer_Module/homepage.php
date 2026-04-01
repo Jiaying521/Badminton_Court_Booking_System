@@ -47,9 +47,16 @@
             color: #2c3e66;
             font-weight: 500;
             transition: 0.3s;
+            padding-bottom: 4px;
         }
         .nav-links a:hover {
             color: #0099ff;
+        }
+        /* 当前页面高亮样式 */
+        .nav-links a.active {
+            color: #0099ff;
+            font-weight: 600;
+            border-bottom: 2px solid #0099ff;
         }
         .btn-outline {
             background: transparent;
@@ -253,11 +260,56 @@
             margin-bottom: 0.5rem;
         }
 
-        footer {
+        /* 页脚样式 */
+        .main-footer {
+            background: #1e2a3e;
+            color: #cbd5e1;
+            padding: 3rem 5% 1.5rem;
+            margin-top: 2rem;
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        .footer-col h4 {
+            color: #0099ff;
+            margin-bottom: 1.2rem;
+            font-size: 1.2rem;
+        }
+        .footer-col p {
+            margin-bottom: 0.5rem;
+            line-height: 1.5;
+        }
+        .footer-col a {
+            color: #cbd5e1;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.6rem;
+            transition: 0.3s;
+        }
+        .footer-col a:hover {
+            color: #0099ff;
+            padding-left: 5px;
+        }
+        .social-icons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .social-icons a {
+            font-size: 1.5rem;
+            color: #cbd5e1;
+        }
+        .social-icons a:hover {
+            color: #0099ff;
+        }
+        .footer-bottom {
             text-align: center;
-            padding: 2rem;
-            background: #e6f4ff;
-            color: #4a627a;
+            padding-top: 1.5rem;
+            border-top: 1px solid #334155;
+            font-size: 0.85rem;
         }
         @media (max-width: 768px) {
             .hero {
@@ -270,6 +322,13 @@
             .btn-outline, .btn-solid {
                 padding: 0.3rem 0.8rem;
             }
+            .footer-grid {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            .social-icons {
+                justify-content: center;
+            }
         }
     </style>
 </head>
@@ -279,7 +338,8 @@
 <nav class="navbar">
     <div class="logo">Care<span>Connect</span></div>
     <div class="nav-links">
-        <a href="#">Home</a>
+        <!-- Home 链接添加 active 类，表示当前页面 -->
+        <a href="#" class="active">Home</a>
         <a href="#">About Us</a>
         <button class="btn-outline" id="loginBtn">Login</button>
         <button class="btn-solid" id="signupBtn">Sign Up</button>
@@ -294,13 +354,12 @@
         <button class="btn-solid" style="padding: 0.8rem 2rem; font-size: 1rem;" id="heroBookBtn">Book Appointment Now →</button>
     </div>
     <div class="hero-image">
-        <!-- 通用诊所主题图片：干净明亮，微笑医生与患者，适合医疗场景 -->
-        <img src="https://images.unsplash.com/photo-1666214280557-35e9a8a6a0e5?w=600&auto=format" alt="Clinic care">
-        <!-- 若图片加载失败，备用：https://images.unsplash.com/photo-1579684385127-1ef15d508a02?w=600 也是诊所主题 -->
+        <!-- 选用了现代诊所环境的图片，符合医疗主题 -->
+        <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=600&auto=format" alt="Modern clinic interior">
     </div>
 </section>
 
-<!-- 服务区域 - 通用诊所服务 -->
+<!-- 服务区域 -->
 <section class="services">
     <h2>Our Services</h2>
     <div class="service-cards">
@@ -327,11 +386,54 @@
     </div>
 </section>
 
-<footer>
-    <p>© 2025 CareConnect | Compassionate healthcare, always within reach</p>
+<!-- 页脚 -->
+<footer class="main-footer">
+    <div class="footer-grid">
+        <div class="footer-col">
+            <h4>Contact Us</h4>
+            <p>📞 General Line: +603-1234 5678</p>
+            <p>✉️ Email: support@careconnect.com</p>
+            <p>💬 WhatsApp: +60 12-345 6789</p>
+            <div class="social-icons">
+                <a href="#">📘</a>
+                <a href="#">📷</a>
+                <a href="#">🎵</a>
+                <a href="#">💼</a>
+                <a href="#">▶️</a>
+            </div>
+        </div>
+        <div class="footer-col">
+            <h4>Quick Links</h4>
+            <a href="#">Find a Doctor</a>
+            <a href="#">Book an Appointment</a>
+            <a href="#">Health Packages</a>
+            <a href="#">Campaigns & Promotions</a>
+            <a href="#">Latest Events</a>
+            <a href="#">Health Insights</a>
+        </div>
+        <div class="footer-col">
+            <h4>Corporate</h4>
+            <a href="#">Who We Are</a>
+            <a href="#">Board of Directors</a>
+            <a href="#">Annual Reports</a>
+            <a href="#">Careers</a>
+            <a href="#">Sustainability</a>
+        </div>
+        <div class="footer-col">
+            <h4>Our Services</h4>
+            <a href="#">Telemedicine</a>
+            <a href="#">Pharmacy Delivery</a>
+            <a href="#">Home Care</a>
+            <a href="#">Health Screening Centers</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>© 2025 CareConnect | A trusted partner in healthcare. All rights reserved.</p>
+        <p>PDPA Notice | Terms & Conditions</p>
+    </div>
 </footer>
 
-<!-- ================= 登录弹窗 ================= -->
+<!-- ================= 登录弹窗（OTP 邮箱）================= -->
 <div id="loginModal" class="modal">
     <div class="modal-content">
         <span class="close" id="closeLogin">&times;</span>
@@ -343,7 +445,7 @@
         </div>
         <div class="hr-text">———— OR ————</div>
         <div id="loginOtpMode">
-            <input type="tel" id="loginPhone" placeholder="Phone number (e.g., +60123456789)">
+            <input type="email" id="loginOtpEmail" placeholder="Email address">
             <button class="btn-secondary-modal" id="sendLoginOtpBtn">Send OTP Code</button>
             <input type="text" id="loginOtpCode" placeholder="Enter 6-digit OTP" style="display:none;">
             <button class="btn-primary-modal" id="verifyLoginOtpBtn" style="display:none;">Verify & Login</button>
@@ -355,7 +457,7 @@
     </div>
 </div>
 
-<!-- ================= 注册弹窗 (按照图片设计) ================= -->
+<!-- ================= 注册弹窗 (OTP 邮箱) ================= -->
 <div id="registerModal" class="modal">
     <div class="modal-content">
         <span class="close" id="closeRegister">&times;</span>
@@ -392,19 +494,7 @@
 </div>
 
 <script>
-    // ---------- 模拟数据存储 (localStorage) ----------
-    let users = JSON.parse(localStorage.getItem('clinic_users')) || [];
-    function saveUsers() { localStorage.setItem('clinic_users', JSON.stringify(users)); }
-
-    // 模拟发送验证码
-    function sendVerificationCode(contact, type) {
-        const code = Math.floor(100000 + Math.random() * 900000);
-        console.log(`[模拟${type}] 验证码: ${code}`);
-        alert(`[模拟] 您的验证码是: ${code} (请查看控制台或此弹窗)`);
-        return code;
-    }
-
-    // 弹窗控制
+    // ---------- 弹窗控制 ----------
     const loginModal = document.getElementById('loginModal');
     const registerModal = document.getElementById('registerModal');
     function openLogin() { loginModal.style.display = 'block'; }
@@ -426,9 +516,9 @@
 
     function isLoggedIn() { return !!localStorage.getItem('current_user_id'); }
 
-    // ========== 注册流程 ==========
-    let regStep = 'form';
-    let regStoredCode = null;
+    // ========== 注册流程 (OTP) ==========
+    let regStoredEmail = '';
+    let regIsVerified = false;
     const regEmail = document.getElementById('regEmail');
     const regPassword = document.getElementById('regPassword');
     const regNric = document.getElementById('regNric');
@@ -440,146 +530,189 @@
     const registerFinalBtn = document.getElementById('registerFinalBtn');
     const regErrorSpan = document.getElementById('regError');
 
-    sendRegCodeBtn.onclick = () => {
-        let email = regEmail.value.trim();
-        let phoneFull = regPhoneCode.value + regPhone.value.trim();
-        if(!email || !regPassword.value || !regNric.value || !regPhone.value.trim()) {
+    // 根据你的网站根目录修改 baseUrl，例如：http://localhost/CLINIC_BOOKING_SYSTEM/
+    const baseUrl = window.location.origin + '/CLINIC_BOOKING_SYSTEM/';
+
+    sendRegCodeBtn.onclick = async () => {
+        const email = regEmail.value.trim();
+        const password = regPassword.value;
+        const nric = regNric.value.trim();
+        const phoneFull = regPhoneCode.value + regPhone.value.trim();
+
+        if (!email || !password || !nric || !regPhone.value.trim()) {
             regErrorSpan.innerText = "Please fill all fields before sending code.";
             return;
         }
-        if(users.find(u => u.email === email)) {
-            regErrorSpan.innerText = "Email already registered.";
-            return;
+
+        const response = await fetch(baseUrl + 'send_otp.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, type: 'register' })
+        });
+        const data = await response.json();
+        if (data.success) {
+            regStoredEmail = email;
+            regIsVerified = false;
+            regErrorSpan.innerText = "Verification code sent to your email! Please enter it.";
+            regVerifyCodeInput.style.display = 'block';
+            verifyRegCodeBtn.style.display = 'block';
+        } else {
+            regErrorSpan.innerText = data.message;
         }
-        let code = sendVerificationCode(email, "REGISTRATION");
-        regStoredCode = code;
-        regStep = 'verify';
-        regErrorSpan.innerText = "Verification code sent! Please enter it.";
-        regVerifyCodeInput.style.display = 'block';
-        verifyRegCodeBtn.style.display = 'block';
     };
 
-    verifyRegCodeBtn.onclick = () => {
-        let entered = regVerifyCodeInput.value.trim();
-        if(entered == regStoredCode) {
-            regStep = 'ready';
+    verifyRegCodeBtn.onclick = async () => {
+        const code = regVerifyCodeInput.value.trim();
+        const email = regStoredEmail;
+        if (!email || !code) {
+            regErrorSpan.innerText = "Please enter the code.";
+            return;
+        }
+        const response = await fetch(baseUrl + 'verify_otp.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, code, type: 'register' })
+        });
+        const data = await response.json();
+        if (data.success) {
+            regIsVerified = true;
             registerFinalBtn.disabled = false;
             regErrorSpan.innerText = "Verified! You can now register.";
         } else {
-            regErrorSpan.innerText = "Invalid verification code.";
+            regErrorSpan.innerText = data.message;
         }
     };
 
-    registerFinalBtn.onclick = () => {
-        if(regStep !== 'ready') {
+    registerFinalBtn.onclick = async () => {
+        if (!regIsVerified) {
             regErrorSpan.innerText = "Please verify your code first.";
             return;
         }
-        let email = regEmail.value.trim();
-        let password = regPassword.value;
-        let nric = regNric.value.trim();
-        let phoneFull = regPhoneCode.value + regPhone.value.trim();
-        if(users.find(u => u.email === email)) {
-            regErrorSpan.innerText = "Email already exists!";
-            return;
+        const email = regEmail.value.trim();
+        const password = regPassword.value;
+        const nric = regNric.value.trim();
+        const phoneFull = regPhoneCode.value + regPhone.value.trim();
+        const otpCode = regVerifyCodeInput.value.trim();
+
+        const response = await fetch(baseUrl + 'register.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password, nric, phone: phoneFull, otpCode })
+        });
+        const data = await response.json();
+        if (data.success) {
+            alert("Registration successful! Please login.");
+            closeAllModals();
+            // 重置表单
+            regEmail.value = ''; regPassword.value = ''; regNric.value = ''; regPhone.value = '';
+            regVerifyCodeInput.value = ''; registerFinalBtn.disabled = true;
+            regIsVerified = false;
+            regErrorSpan.innerText = '';
+        } else {
+            regErrorSpan.innerText = data.message;
         }
-        const newUser = {
-            id: Date.now(),
-            email: email,
-            password: password,
-            nric: nric,
-            phone: phoneFull,
-            profile: {}
-        };
-        users.push(newUser);
-        saveUsers();
-        alert("Registration successful! Please login.");
-        closeAllModals();
-        regEmail.value = ''; regPassword.value = ''; regNric.value = ''; regPhone.value = '';
-        regVerifyCodeInput.value = ''; registerFinalBtn.disabled = true; regStep = 'form';
-        regStoredCode = null;
-        regErrorSpan.innerText = '';
     };
 
-    // ========== 登录: 密码 & OTP ==========
+    // ========== 登录 ==========
     const loginEmail = document.getElementById('loginEmail');
     const loginPassword = document.getElementById('loginPassword');
     const doPasswordLogin = document.getElementById('doPasswordLogin');
     const loginErrorSpan = document.getElementById('loginError');
-    const loginPhoneInput = document.getElementById('loginPhone');
+    const loginOtpEmailInput = document.getElementById('loginOtpEmail');
     const sendLoginOtpBtn = document.getElementById('sendLoginOtpBtn');
     const loginOtpCodeInput = document.getElementById('loginOtpCode');
     const verifyLoginOtpBtn = document.getElementById('verifyLoginOtpBtn');
-    let loginOtpSessionCode = null;
 
-    doPasswordLogin.onclick = () => {
-        let email = loginEmail.value.trim();
-        let pwd = loginPassword.value;
-        let user = users.find(u => u.email === email && u.password === pwd);
-        if(user) {
-            localStorage.setItem('current_user_id', user.id);
-            alert(`Welcome back, ${user.email}!`);
-            loginModal.style.display = 'none';
+    doPasswordLogin.onclick = async () => {
+        const email = loginEmail.value.trim();
+        const password = loginPassword.value;
+        const response = await fetch(baseUrl + 'login_password.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await response.json();
+        if (data.success) {
+            localStorage.setItem('current_user_id', 'session');
+            alert("Login successful!");
             location.reload();
         } else {
-            loginErrorSpan.innerText = "Invalid email or password.";
+            loginErrorSpan.innerText = data.message;
         }
     };
 
-    sendLoginOtpBtn.onclick = () => {
-        let phone = loginPhoneInput.value.trim();
-        if(!phone) { loginErrorSpan.innerText = "Enter phone number with country code."; return; }
-        let existingUser = users.find(u => u.phone === phone);
-        if(!existingUser) {
-            loginErrorSpan.innerText = "Phone number not registered. Please sign up.";
+    sendLoginOtpBtn.onclick = async () => {
+        const email = loginOtpEmailInput.value.trim();
+        if (!email) {
+            loginErrorSpan.innerText = "Enter your registered email address.";
             return;
         }
-        let code = sendVerificationCode(phone, "LOGIN OTP");
-        loginOtpSessionCode = code;
-        loginOtpCodeInput.style.display = 'block';
-        verifyLoginOtpBtn.style.display = 'block';
-        loginErrorSpan.innerText = "OTP sent!";
-    };
-
-    verifyLoginOtpBtn.onclick = () => {
-        let entered = loginOtpCodeInput.value.trim();
-        let phone = loginPhoneInput.value.trim();
-        if(entered == loginOtpSessionCode) {
-            let user = users.find(u => u.phone === phone);
-            if(user) {
-                localStorage.setItem('current_user_id', user.id);
-                alert("OTP login successful!");
-                loginModal.style.display = 'none';
-                location.reload();
-            } else {
-                loginErrorSpan.innerText = "User not found.";
-            }
+        const response = await fetch(baseUrl + 'send_otp.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, type: 'login' })
+        });
+        const data = await response.json();
+        if (data.success) {
+            loginOtpCodeInput.style.display = 'block';
+            verifyLoginOtpBtn.style.display = 'block';
+            loginErrorSpan.innerText = "OTP sent to your email!";
         } else {
-            loginErrorSpan.innerText = "Invalid OTP.";
+            loginErrorSpan.innerText = data.message;
         }
     };
 
-    // 登录后修改导航栏
-    if(isLoggedIn()) {
-        const userId = localStorage.getItem('current_user_id');
-        const user = users.find(u => u.id == userId);
-        if(user) {
-            const navLinksDiv = document.querySelector('.nav-links');
-            navLinksDiv.innerHTML = `
-                <a href="#">Home</a>
-                <a href="#">About Us</a>
-                <span style="color:#0099ff;">Hi, ${user.email.split('@')[0]}</span>
-                <button class="btn-outline" id="logoutBtn">Logout</button>
-                <button class="btn-solid" id="dashboardBtn">Dashboard</button>
-            `;
-            document.getElementById('logoutBtn')?.addEventListener('click', () => {
-                localStorage.removeItem('current_user_id');
-                location.reload();
-            });
-            document.getElementById('dashboardBtn')?.addEventListener('click', () => {
-                alert("Customer dashboard (appointments, doctors, payments) coming soon. You are logged in.");
-            });
+    verifyLoginOtpBtn.onclick = async () => {
+        const email = loginOtpEmailInput.value.trim();
+        const code = loginOtpCodeInput.value.trim();
+        if (!email || !code) {
+            loginErrorSpan.innerText = "Please enter the OTP code.";
+            return;
         }
+        // 验证 OTP
+        const verifyResp = await fetch(baseUrl + 'verify_otp.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, code, type: 'login' })
+        });
+        const verifyData = await verifyResp.json();
+        if (!verifyData.success) {
+            loginErrorSpan.innerText = verifyData.message;
+            return;
+        }
+        // 验证通过后执行登录
+        const loginResp = await fetch(baseUrl + 'login_otp.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const loginData = await loginResp.json();
+        if (loginData.success) {
+            localStorage.setItem('current_user_id', 'session');
+            alert("OTP login successful!");
+            location.reload();
+        } else {
+            loginErrorSpan.innerText = loginData.message;
+        }
+    };
+
+    // 登录后修改导航栏（简单示例）
+    if(isLoggedIn()) {
+        const navLinksDiv = document.querySelector('.nav-links');
+        navLinksDiv.innerHTML = `
+            <a href="#" class="active">Home</a>
+            <a href="#">About Us</a>
+            <span style="color:#0099ff;">Hi, User</span>
+            <button class="btn-outline" id="logoutBtn">Logout</button>
+            <button class="btn-solid" id="dashboardBtn">Dashboard</button>
+        `;
+        document.getElementById('logoutBtn')?.addEventListener('click', () => {
+            localStorage.removeItem('current_user_id');
+            location.reload();
+        });
+        document.getElementById('dashboardBtn')?.addEventListener('click', () => {
+            alert("Customer dashboard (appointments, doctors, payments) coming soon. You are logged in.");
+        });
     }
 </script>
 </body>
