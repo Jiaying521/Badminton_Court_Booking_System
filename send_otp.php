@@ -1,5 +1,5 @@
 <?php
-// send_otp.php
+date_default_timezone_set('Asia/Kuala_Lumpur');
 header('Content-Type: application/json');
 require_once 'config.php';
 
@@ -17,7 +17,6 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit;
 }
 
-// 注册时检查邮箱是否已存在
 if ($type === 'register') {
     $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
     $stmt->execute([$email]);
@@ -43,14 +42,14 @@ $stmt->execute([$email, $type]);
 $stmt = $pdo->prepare("INSERT INTO otp_codes (email, code, type, expires_at) VALUES (?, ?, ?, ?)");
 $stmt->execute([$email, $code, $type, $expires]);
 
-$mail = new PHPMailer(true);
+$mail = new \PHPMailer\PHPMailer\PHPMailer(true);
 try {
     $mail->isSMTP();
     $mail->Host       = SMTP_HOST;
     $mail->SMTPAuth   = true;
     $mail->Username   = SMTP_USER;
     $mail->Password   = SMTP_PASS;
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
     $mail->Port       = SMTP_PORT;
 
     $mail->setFrom(SMTP_FROM, SMTP_FROM_NAME);
