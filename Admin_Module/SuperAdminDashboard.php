@@ -33,8 +33,8 @@ $pending_requests = 3;
     <nav class="nav-bar">
         <div class="nav-left">
              <button id="menu-toggle" class="menu-toggle">☰</button>
-             <img src="https://i.ibb.co/5gWCTmy0/image.png" alt="logo" class="logo">
-             <span class="brand-name">CareConnect</span>    
+             <img src="Pictures/logo.png" alt="logo" class="logo">
+             <span class="brand-name"><span class="text-blue">Care</span><span class="text-dark">Connect</span></span> 
         </div>
 
         <ul id="nav-menu" class="nav-links">
@@ -51,19 +51,32 @@ $pending_requests = 3;
                 <a href="#" class="drop-btn">More Options ▼</a>
                 <ul class="submenu">
                     <?php if ($role === 'superadmin'): ?>
+                        <!-- Superadmin: Includes all Admin functions -->
                         <li><a href="DoctorManagement.php">Doctor Management</a></li>
-                        <li><a href="ScheduleManagement.php">Schedules</a></li>
-                        <li><a href="PatientList.php">Patients</a></li>
-                        <li><a href="Reports.php">Reports</a></li>
+                        <li><a href="ScheduleManagement.php">Schedule Management</a></li>
+                        <li><a href="PatientList.php">Patient List</a></li>
+                        <li><a href="AppointmentManagement.php">Appointment Management</a></li>
+                        <li><a href="Reports.php">Reports & Analytics</a></li>
+                        <li><a href="Notifications.php">Notifications</a></li>
+                        <li><a href="ConflictManagement.php">Conflict Management</a></li>
+                        <li><a href="AppointmentSettings.php">Appointment Settings</a></li>
                     <?php else: ?>
-                        <li><a href="ScheduleManagement.php">Schedules</a></li>
-                        <li><a href="PatientList.php">Patients</a></li>
-                        <li><a href="Notifications.php">Send Alerts</a></li>
+                        <!-- Admin: Remaining functions -->
+                        <li><a href="ScheduleManagement.php">Schedule Management</a></li>
+                        <li><a href="PatientList.php">Patient List</a></li>
+                        <li><a href="Reports.php">Reports & Analytics</a></li>
+                        <li><a href="Notifications.php">Notifications</a></li>
+                        <li><a href="ConflictManagement.php">Conflict Management</a></li>
+                        <li><a href="AppointmentSettings.php">Appointment Settings</a></li>
                     <?php endif; ?>
-                    <li><a href="Profile.php">My Profile</a></li>
+                    
+                    <!-- Common items for both roles -->
+                    <li><a href="Profile.php">Profile</a></li>
                 </ul>
             </li>
-            <li><button id="logout-btn" class="logout-btn">Logout</button></li>
+            <li>
+                <button id="logout-btn" class="logout-btn">Logout</button>
+            </li>
         </ul>
 
         <div class="user-info">

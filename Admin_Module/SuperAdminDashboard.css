@@ -29,9 +29,31 @@ body {
     z-index: 1000;
 }
 
-.nav-left { display: flex; align-items: center; gap: 14px; }
-.logo { width: 52px; height: auto; }
-.brand-name { font-weight: bold; font-size: 24px; color: var(--text-dark); }
+.nav-left { 
+    display: flex; 
+    align-items: center; 
+    gap: 14px; 
+}
+
+.logo { 
+    width: 52px; 
+    height: auto;
+ }
+
+
+.text-blue {
+    color: var(--primary-blue); /* This uses your #1E90FF blue */
+}
+
+.text-dark {
+    color: var(--text-dark); /* This uses your #333333 dark gray */
+}
+
+.brand-name {
+    font-weight: 800; 
+    letter-spacing: -0.5px; 
+    font-size : 22px;
+}
 
 /* --- Nav Links Part --- */
 .nav-links {
@@ -147,8 +169,18 @@ body {
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
 
-.data-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-.data-table th, .data-table td { padding: 14px; border-bottom: 1px solid #eeeeee; text-align: left; }
+.data-table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    margin-top: 15px; 
+    border: 1px solid #eeeeee; 
+}
+
+.data-table th, .data-table td {
+     padding: 14px; 
+     border: 1px solid #eeeeee; 
+     text-align: left; 
+}
 
 /* --- Badge Part (Fixed Centering) --- */
 .badge { 
