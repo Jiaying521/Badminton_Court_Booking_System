@@ -207,10 +207,20 @@ body {
 .shortcut-item i { color: var(--primary-blue); }
 
 /* --- Mobile Fixes Part (Sidebar Click & Scroll Fix) --- */
-.menu-toggle { display: none; font-size: 28px; background: none; border: none; color: #333; cursor: pointer; }
+.menu-toggle { 
+    display: none; 
+    font-size: 28px; 
+    background: none; 
+    border: none; 
+    color: #333; 
+    cursor: pointer; 
+}
 
 @media (max-width: 1112px) {
-    .menu-toggle { display: block; }
+  
+    .menu-toggle { 
+        display: block; 
+    }
     
     .nav-links {
         position: fixed; 
