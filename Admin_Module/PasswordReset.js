@@ -49,7 +49,7 @@ passwordForm.addEventListener('submit', async (e) => {
         });
 
         const text = await response.text();
-        console.log("Raw Server Response:", text);
+        console.log("Raw Server Response:", text); // Helpful for debugging
         
         let result;
         try {
@@ -63,7 +63,7 @@ passwordForm.addEventListener('submit', async (e) => {
             // Redirect user back to the login page on success
             window.location.href = 'LoginPage.php'; 
         } else {
-            // Display error message from PHP (e.g., token expired or invalid)
+            // Display error message from PHP (e.g., token expired, invalid, OR REUSED PASSWORD)
             alert(result.message || "Failed to reset password.");
             submitBtn.disabled = false;
             submitBtn.value = "Set New Password";
