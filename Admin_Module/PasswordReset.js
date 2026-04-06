@@ -23,10 +23,12 @@ passwordForm.addEventListener('submit', async (e) => {
         return;
     }
 
-    // 3. Client-side validation: Check password length
-    if (newPassword.length < 6) {
-        alert("Password must be at least 6 characters long.");
-        return;
+    // 3. Client-side validation: Check password length & password strength
+    const strongPasswordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+    if (!strongPasswordRegex.test(newPassword)) {
+        alert("Security requirement: At least 8 characters, including letters, numbers, and symbols (@$!%*?&).");
+        return; 
     }
 
     // 4. Update UI Feedback for the user
