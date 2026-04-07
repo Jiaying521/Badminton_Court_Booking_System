@@ -277,6 +277,7 @@ body {
     .dashboard-layout { 
         grid-template-columns: 1fr; 
     }
+
 }
 
 /* --- Welcome & Action Button Part --- */

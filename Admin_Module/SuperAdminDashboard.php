@@ -11,8 +11,23 @@ $username = $_SESSION['username'];
 $role = $_SESSION['role'];
 
 /* --- Dashboard Statistics --- */
-$total_admins = 5;
-$total_doctors = 24;
+
+/* Total admins */
+$db = mysqli_connect("localhost", "root", "", "care_connect");
+
+/* Calculate total superadmins */
+$query = mysqli_query($db, "SELECT COUNT(*) AS total_admins FROM admins WHERE role = 'superadmin'");
+$data = mysqli_fetch_assoc($query);
+
+/* Show real number of admins */
+$total_admins = $data['total_admins'];
+
+/* Doctors*/
+$querey = mysqli_query($db, "SELECT COUNT(*) AS total_doctors FROM admins WHERE role = 'admin'");
+$data = mysqli_fetch_assoc($querey);
+$total_doctors = $data['total_doctors'];
+
+
 $today_appointments = 15;
 $pending_requests = 3;
 ?>
@@ -122,7 +137,7 @@ $pending_requests = 3;
             <div class="stat-box">
                 <div class="stat-icon orange"><i class="fas fa-calendar-check"></i></div>
                 <div class="stat-info">
-                    <h3>Today's Appts</h3>
+                    <h3>Appointment</h3>
                     <p><?php echo $today_appointments; ?></p>
                 </div>
             </div>
