@@ -10,40 +10,68 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['role'])) {
 $username = $_SESSION['username'];
 $role = $_SESSION['role'];
 
-/* --- Dashboard Statistics --- */
-
-/* Total admins */
+/* --- Database Connection --- */
 $db = mysqli_connect("localhost", "root", "", "care_connect");
 
-/* Calculate total superadmins */
-$query = mysqli_query($db, "SELECT COUNT(*) AS total_admins FROM admins WHERE role = 'superadmin'");
-$data = mysqli_fetch_assoc($query);
+/* --- Dashboard Statistics --- */
 
-/* Show real number of admins */
-$total_admins = $data['total_admins'];
+/* Count total superadmins */
+$query_admins = mysqli_query($db, "SELECT COUNT(*) AS total_admins FROM admins WHERE role = 'superadmin'");
+$data_admins = mysqli_fetch_assoc($query_admins);
+$total_admins = $data_admins['total_admins'];
 
-/* Doctors*/
-$query = mysqli_query($db, "SELECT COUNT(*) AS total_doctors FROM admins WHERE role = 'admin'");
-$data = mysqli_fetch_assoc($query);
-$total_doctors = $data['total_doctors'];
+/* Count total doctors (admin role) */
+$query_doctors = mysqli_query($db, "SELECT COUNT(*) AS total_doctors FROM admins WHERE role = 'admin'");
+$data_doctors = mysqli_fetch_assoc($query_doctors);
+$total_doctors = $data_doctors['total_doctors'];
 
-/* Today appointments */
+/* Count today's appointments */
 $today = date("Y-m-d");
-$sql_app = "SELECT COUNT(*) AS today_appointments FROM appointments WHERE appointment_date = '$today'";
-$query_app = mysqli_query($db, $sql_app);
-$data_app = mysqli_fetch_assoc($query_app);
-$today_appointments = $data_app['today_appointments'];
+$query_today = mysqli_query($db, "SELECT COUNT(*) AS today_appointments FROM appointments WHERE appointment_date = '$today'");
+$data_today = mysqli_fetch_assoc($query_today);
+$today_appointments = $data_today['today_appointments'];
 
-/* Pending tasks */
-$res_pending = mysqli_query($db, "SELECT COUNT(*) AS pending_requests FROM tasks WHERE status = 'Pending'");
-
-if($res_pending){
-    $row_pending = mysqli_fetch_assoc($res_pending);
-    $pending_requests = $row_pending['pending_requests'];
-}else{
-    $pending_requests = 0; // Default to 0 if query fails
+/* Count pending tasks */
+$query_pending = mysqli_query($db, "SELECT COUNT(*) AS pending_requests FROM tasks WHERE status = 'Pending'");
+if($query_pending){
+    $data_pending = mysqli_fetch_assoc($query_pending);
+    $pending_requests = $data_pending['pending_requests'];
+} else {
+    $pending_requests = 0;
 }
 
+/* --- Appointment Chart Statistics --- */
+$current_year = date("Y");
+
+/* Initialize data arrays for 12 months */
+$completed_data = array_fill(0, 12, 0);
+$cancelled_data = array_fill(0, 12, 0);
+$rescheduled_data = array_fill(0, 12, 0);
+$ongoing_data = array_fill(0, 12, 0);
+
+/* SQL query for monthly status counts */
+$status_sql = "SELECT MONTH(appointment_date) AS month_num, status, COUNT(*) AS count
+               FROM appointments
+               WHERE YEAR(appointment_date) = '$current_year'
+               GROUP BY month_num, status";
+               
+$stats_result = mysqli_query($db, $status_sql);
+
+/* Process result set into arrays */
+if ($stats_result) {
+    while ($row = mysqli_fetch_assoc($stats_result)) {
+        if (!empty($row['month_num'])) {
+            $m_idx = (int)$row['month_num'] - 1; 
+            $status = $row['status'];
+            $count = (int)$row['count'];
+
+            if ($status == 'Completed') $completed_data[$m_idx] = $count;
+            elseif ($status == 'Cancelled') $cancelled_data[$m_idx] = $count;
+            elseif ($status == 'Rescheduled') $rescheduled_data[$m_idx] = $count;
+            elseif ($status == 'Ongoing') $ongoing_data[$m_idx] = $count;
+        }
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -52,13 +80,16 @@ if($res_pending){
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CareConnect - Dashboard</title>
-    <!-- Icons -->
+
+    <!-- External CSS & Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Main Style -->
     <link rel="stylesheet" href="SuperAdminDashboard.css">
+
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <!-- --- Top Navbar --- -->
+    <!-- Top Navigation Bar -->
     <nav class="nav-bar">
         <div class="nav-left">
              <button id="menu-toggle" class="menu-toggle">☰</button>
@@ -80,7 +111,6 @@ if($res_pending){
                 <a href="#" class="drop-btn">More Options ▼</a>
                 <ul class="submenu">
                     <?php if ($role === 'superadmin'): ?>
-                        <!-- Superadmin: Includes all Admin functions -->
                         <li><a href="DoctorManagement.php">Doctor Management</a></li>
                         <li><a href="ScheduleManagement.php">Schedule Management</a></li>
                         <li><a href="PatientList.php">Patient List</a></li>
@@ -90,7 +120,6 @@ if($res_pending){
                         <li><a href="ConflictManagement.php">Conflict Management</a></li>
                         <li><a href="AppointmentSettings.php">Appointment Settings</a></li>
                     <?php else: ?>
-                        <!-- Admin: Remaining functions -->
                         <li><a href="ScheduleManagement.php">Schedule Management</a></li>
                         <li><a href="PatientList.php">Patient List</a></li>
                         <li><a href="Reports.php">Reports & Analytics</a></li>
@@ -98,14 +127,10 @@ if($res_pending){
                         <li><a href="ConflictManagement.php">Conflict Management</a></li>
                         <li><a href="AppointmentSettings.php">Appointment Settings</a></li>
                     <?php endif; ?>
-                    
-                    <!-- Common items for both roles -->
                     <li><a href="Profile.php">Profile</a></li>
                 </ul>
             </li>
-            <li>
-                <button id="logout-btn" class="logout-btn">Logout</button>
-            </li>
+            <li><button id="logout-btn" class="logout-btn">Logout</button></li>
         </ul>
 
         <div class="user-info">
@@ -113,10 +138,10 @@ if($res_pending){
         </div>
     </nav>
 
-    <!-- --- Mobile Sidebar Overlay --- -->
+    <!-- Sidebar Overlay -->
     <div id="overlay" class="overlay"></div>
 
-    <!-- --- Main Content Area --- -->
+    <!-- Main Content Area -->
     <main class="content">
         <header class="dashboard-header">
             <div class="welcome-section">
@@ -125,14 +150,14 @@ if($res_pending){
             </div>
             
             <?php if ($role === 'superadmin'): ?>
-            <br> <!-- Manual line break kept as requested -->
             <div class="header-actions">
+                <br>
                 <a href="AdminManagement.php" class="action-btn"><i class="fas fa-user-plus"></i> Add Admin</a>
             </div>
             <?php endif; ?>
         </header>
 
-        <!-- --- Stats Cards Grid --- -->
+        <!-- Statistics Cards Grid -->
         <section class="stats-grid">
             <div class="stat-box">
                 <div class="stat-icon blue"><i class="fas fa-users-cog"></i></div>
@@ -151,7 +176,7 @@ if($res_pending){
             <div class="stat-box">
                 <div class="stat-icon orange"><i class="fas fa-calendar-check"></i></div>
                 <div class="stat-info">
-                    <h3>Appointment</h3>
+                    <h3>Today's Appt</h3>
                     <p><?php echo $today_appointments; ?></p>
                 </div>
             </div>
@@ -164,40 +189,48 @@ if($res_pending){
             </div>
         </section>
 
-        <!-- --- Logs and Shortcuts Layout --- -->
+        <!-- Data Visualization and Shortcuts Layout -->
         <div class="dashboard-layout">
+            <!-- Left: Appointment Statistics -->
             <div class="data-section">
-                <h2>Recent System Logs</h2>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th class="align-left">Action</th>
-                            <th class="align-right">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="align-left">Admin Added</td>
-                            <td class="align-right"><span class="badge success">Success</span></td>
-                        </tr>
-                        <tr>
-                            <td class="align-left">Backup Completed</td>
-                            <td class="align-right"><span class="badge success">Done</span></td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h2>Appointments Statistics</h2>
+                    <select id="statusFilter" onchange="filterStats()" style="padding: 5px; border-radius: 5px;">
+                        <option value="All">Show All</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Cancelled">Cancelled</option>
+                        <option value="Rescheduled">Rescheduled</option>
+                        <option value="Ongoing">Ongoing</option>
+                    </select>
+                </div>
+                <div style="height: 300px; width: 100%;">
+                    <canvas id="myChart"></canvas>
+                </div>
             </div>
-
+            
+            <!-- Right: Quick Shortcuts -->
             <div class="shortcuts-section">
                 <h2>Quick Shortcuts</h2>
                 <div class="shortcut-list">
-                    <a href="Reports.php" class="shortcut-item"><i class="fas fa-chart-line"></i> View Statistics</a>
+                    <a href="AddAppointment.php" class="shortcut-item"><i class="fas fa-calendar-plus"></i> New Appointment</a>
+                    <a href="ScheduleManagement.php" class="shortcut-item"><i class="fas fa-calendar-check"></i> Schedule Availability</a>
                     <a href="PatientList.php" class="shortcut-item"><i class="fas fa-user-injured"></i> Patient Records</a>
                 </div>
             </div>
         </div>
     </main>
 
+    <!-- Passing PHP arrays to JavaScript -->
+    <script>
+        const chartData = {
+            completed: <?php echo json_encode($completed_data); ?>,
+            cancelled: <?php echo json_encode($cancelled_data); ?>,
+            rescheduled: <?php echo json_encode($rescheduled_data); ?>,
+            ongoing: <?php echo json_encode($ongoing_data); ?>
+        };
+    </script>
+
+    <!-- Dashboard Scripts -->
     <script src="SuperAdminDashboard.js"></script>
 </body>
 </html>

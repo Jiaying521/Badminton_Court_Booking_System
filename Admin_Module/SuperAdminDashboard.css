@@ -281,5 +281,52 @@ body {
 }
 
 /* --- Welcome & Action Button Part --- */
-#welcome-text { background-color: #FFB347; padding: 10px 16px; border-radius: 20px; color: white; font-weight: bold; font-size: 14px; }
-.action-btn { background: var(--primary-blue); color: white; padding: 12px 24px; border-radius: 20px; text-decoration: none; font-weight: bold; }
+#welcome-text { 
+    background-color: #FFB347; 
+    padding: 10px 16px; 
+    border-radius: 20px; 
+    color: white; 
+    font-weight: bold; 
+    font-size: 14px; 
+}
+
+.action-btn { 
+    background: var(--primary-blue); 
+    color: white; 
+    padding: 12px 24px; 
+    border-radius: 20px; 
+    text-decoration: none; 
+    font-weight: bold; 
+}
+
+/* --- Filter Dropdown Styling --- */
+#statusFilter {
+    appearance: none;
+    background-color: var(--white);
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 10px 40px 10px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width : 130px;
+    
+    /* Custom SVG Arrow Icon */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    outline: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+#statusFilter:hover {
+    border-color: var(--primary-blue);
+    box-shadow: 0 4px 12px rgba(30, 144, 255, 0.15);
+}
+
+#statusFilter:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.1);
+}

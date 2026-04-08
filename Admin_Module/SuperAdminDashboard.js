@@ -1,45 +1,122 @@
-// 1. SELECT ELEMENTS
+// 1. SELECT DOM ELEMENTS
 const menuToggle = document.getElementById('menu-toggle');
 const navMenu = document.getElementById('nav-menu');
 const logoutBtn = document.getElementById("logout-btn");
 const welcomeText = document.getElementById('welcome-text');
 
 // 2. SECURITY CHECK (ROUTE GUARD)
+// Ensures only authenticated users can access the dashboard
 const user = localStorage.getItem('loggedInUser');
 
 if (!user) {
-    // Note: If you use PHP Sessions, this localStorage check might conflict.
-    // Ensure you set 'loggedInUser' in localStorage during login.
-    alert("Access Denied! Please log in first.");
+    alert("Authentication required! Please log in to access the system.");
     window.location.href = "LoginPage.php"; 
 } else {
     welcomeText.innerText = "Hello, " + user + "!";
 }
 
-// 3. MOBILE MENU LOGIC
-// Open/Toggle Menu
+// 3. MOBILE NAVIGATION LOGIC
+// Toggle sidebar menu for mobile view
 menuToggle.addEventListener('click', (e) => {
-    e.stopPropagation(); // Stop click from reaching the document
+    e.stopPropagation();
     navMenu.classList.toggle('active');
 });
 
-// CLOSE MENU BY CLICKING BLANK SPACE (Anywhere outside the menu)
+// Close menu when clicking outside the navigation area
 document.addEventListener('click', (event) => {
     const isClickInsideMenu = navMenu.contains(event.target);
     const isClickOnButton = menuToggle.contains(event.target);
 
-    // If menu is open and user clicks outside the menu and toggle button
     if (navMenu.classList.contains('active') && !isClickInsideMenu && !isClickOnButton) {
         navMenu.classList.remove('active');
     }
 });
 
-// 4. LOGOUT FUNCTION WITH CONFIRMATION
+// 4. USER LOGOUT SYSTEM
 logoutBtn.addEventListener("click", function() {
-    const isConfirmed = confirm("Are you sure you want to log out?");
+    const confirmLogout = confirm("Are you sure you want to log out of the system?");
 
-    if (isConfirmed) {
+    if (confirmLogout) {
         localStorage.removeItem("loggedInUser");
         window.location.href = "LoginPage.php";
     }
+});
+
+// 5. APPOINTMENT STATISTICS FILTER LOGIC
+/**
+ * Filters the chart data based on the selected status from the dropdown.
+ * Options: All, Completed, Cancelled, Rescheduled, Ongoing.
+ */
+function filterStats() {
+    const filterValue = document.getElementById("statusFilter").value;
+
+    if (!appointmentChart) return;
+
+    // Iterate through datasets to show/hide based on selection
+    appointmentChart.data.datasets.forEach((dataset) => {
+        if (filterValue === "All") {
+            dataset.hidden = false; // Show all data
+        } else {
+            // Hide datasets that do not match the selected label
+            dataset.hidden = (dataset.label !== filterValue);
+        }
+    });
+    
+    appointmentChart.update(); // Re-render the chart with filtered data
+}
+
+// 6. CHART.JS INITIALIZATION
+let appointmentChart;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('myChart').getContext('2d');
+    
+    // Safety check: ensure chartData is provided by PHP
+    const dataSet = typeof chartData !== 'undefined' ? chartData : { rescheduled: [], completed: [], cancelled: [], ongoing: [] };
+
+    appointmentChart = new Chart(ctx, {
+        type: 'bar', 
+        data: {
+            labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+            datasets: [
+                {
+                    label: 'Rescheduled',
+                    data: dataSet.rescheduled,
+                    backgroundColor: '#ffc107' // Amber
+                },
+                {
+                    label: 'Completed',
+                    data: dataSet.completed,
+                    backgroundColor: '#28a745' // Green
+                },
+                {
+                    label: 'Cancelled',
+                    data: dataSet.cancelled,
+                    backgroundColor: '#dc3545' // Red
+                },
+                {
+                    label: 'Ongoing',
+                    data: dataSet.ongoing,
+                    backgroundColor: '#007bff' // Blue
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { 
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1 // Ensures Y-axis uses whole numbers (people count)
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
 });
