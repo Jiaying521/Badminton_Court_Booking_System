@@ -23,13 +23,27 @@ $data = mysqli_fetch_assoc($query);
 $total_admins = $data['total_admins'];
 
 /* Doctors*/
-$querey = mysqli_query($db, "SELECT COUNT(*) AS total_doctors FROM admins WHERE role = 'admin'");
-$data = mysqli_fetch_assoc($querey);
+$query = mysqli_query($db, "SELECT COUNT(*) AS total_doctors FROM admins WHERE role = 'admin'");
+$data = mysqli_fetch_assoc($query);
 $total_doctors = $data['total_doctors'];
 
+/* Today appointments */
+$today = date("Y-m-d");
+$sql_app = "SELECT COUNT(*) AS today_appointments FROM appointments WHERE appointment_date = '$today'";
+$query_app = mysqli_query($db, $sql_app);
+$data_app = mysqli_fetch_assoc($query_app);
+$today_appointments = $data_app['today_appointments'];
 
-$today_appointments = 15;
-$pending_requests = 3;
+/* Pending tasks */
+$res_pending = mysqli_query($db, "SELECT COUNT(*) AS pending_requests FROM tasks WHERE status = 'Pending'");
+
+if($res_pending){
+    $row_pending = mysqli_fetch_assoc($res_pending);
+    $pending_requests = $row_pending['pending_requests'];
+}else{
+    $pending_requests = 0; // Default to 0 if query fails
+}
+
 ?>
 
 <!DOCTYPE html>
