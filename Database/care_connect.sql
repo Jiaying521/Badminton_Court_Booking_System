@@ -68,6 +68,7 @@ CREATE TABLE `otp_codes` (
 
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
   `nric` varchar(50) NOT NULL,
