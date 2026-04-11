@@ -87,7 +87,13 @@ if ($stats_result) {
 
     <!-- Chart.js Library -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Flatpickr Calendar -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    
 </head>
+
 <body>
     <!-- Top Navigation Bar -->
     <nav class="nav-bar">
@@ -191,6 +197,7 @@ if ($stats_result) {
 
         <!-- Data Visualization and Shortcuts Layout -->
         <div class="dashboard-layout">
+            
             <!-- Left: Appointment Statistics -->
             <div class="data-section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
@@ -207,8 +214,19 @@ if ($stats_result) {
                     <canvas id="myChart"></canvas>
                 </div>
             </div>
-            
-            <!-- Right: Quick Shortcuts -->
+
+            <!-- Flatpickr Calendar Section -->
+            <div class="calendar-section">
+                <div class="calendar-header">
+                    <h2>Appointment</h2>
+                </div>
+                
+                <!-- Show calendar-->
+                <div id="inline-calendar"></div>
+                
+            </div>
+
+            <!-- Quick Shortcuts -->
             <div class="shortcuts-section">
                 <h2>Quick Shortcuts</h2>
                 <div class="shortcut-list">

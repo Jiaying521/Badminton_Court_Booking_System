@@ -120,3 +120,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+//7. Flatpickr Calendar Initialization
+document.addEventListener('DOMContentLoaded', function() {
+    flatpickr("#inline-calendar",{
+        inline: true, //direct show content not pop up
+        dateFormat: "Y-m-d",
+        defaultDate: "today", //defualt date
+        
+        locale:{
+            firstDayOfWeek: 1  // Start week on Monday
+        },
+
+        onChange: function(selectedDates, dateStr){
+            // Section for future transition animations and data loading logic.
+
+            console.log("Selected date: " + dateStr); //testing date selection
+        }
+
+    });
+});
