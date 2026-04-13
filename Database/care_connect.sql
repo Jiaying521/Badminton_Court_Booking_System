@@ -50,15 +50,20 @@ CREATE TABLE `admins` (
 INSERT INTO `admins` (`id`, `username`, `email`, `password`, `role`, `reset_token`, `token_expiry`, `is_doctor`, `specialisation`, `gender`, `language`, `bio`, `profile_image`) VALUES
 (0, 'heybi', 'chinzx1814@gmail.com', '$2y$10$x5NsQGVwkkp5f4oivtMd..D9tsrJLMICxeSDnSe0peEwVN77QeFGu', 'Superadmin', '42692f8398994ed579c6f07ae531e8f954dc210f30d9cd99e037f8ab856ec721', '2026-04-07 15:41:20', 0, NULL, NULL, NULL, NULL, NULL),
 (1, 'admin', '-', '$2y$10$lKJR3lV5IxZSt0Wasb3dUuCFGooQPJd4EBDFSc0xb30V.N7quWA/e', 'Admin', NULL, NULL, 1, 'Dermatology', 'Female', 'English, Chinese', 'Skin specialist expert in acne and eczema treatment.', NULL),
-(2, 'Adam', 'adam@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Cardiology', 'Male', 'English, Malay', 'Experienced cardiologist dedicated to providing quality care.', NULL),
-(3, 'Sarah', 'sarah@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Dermatology', 'Female', 'English, Chinese', 'Experienced dermatologist dedicated to providing quality care.', NULL),
-(4, 'Wong', 'wong@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Orthopedics', 'Male', 'Chinese, English', 'Experienced orthopedic surgeon dedicated to providing quality care.', NULL),
-(5, 'Emily Tan', 'emilytan@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Pediatrics', 'Female', 'English, Malay, Chinese', 'Experienced pediatrician dedicated to providing quality care.', NULL),
-(6, 'Ravi Kumar', 'ravikumar@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Neurology', 'Male', 'English, Malay', 'Experienced neurologist dedicated to providing quality care.', NULL);
+(2, 'Adam', 'adam@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Cardiology', 'Male', 'English, Malay', 'Adult cardiologist specializing in heart disease, hypertension, and cholesterol management. For patients aged 18+.', NULL),
+(3,'Lisa', 'lisa@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Cardiology', 'Female', 'English, Chinese', 'Pediatric cardiologist for children and adolescents. Expert in congenital heart defects and pediatric heart health.', NULL),
+(4,'Mark', 'mark@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Dermatology', 'Male', 'English, Malay', 'Adult dermatology: acne, eczema, psoriasis, skin cancer screening. Specialized in adult skin conditions.', NULL),
+(5,'Sarah', 'sarah@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Dermatology', 'Female', 'English, Chinese', 'Pediatric dermatology: birthmarks, infant eczema, warts, and teenage acne. Gentle care for young skin.', NULL),
+(6,'Wong', 'wong@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Orthopedics', 'Male', 'English, Malay', 'Adult orthopedics: fractures, arthritis, joint replacement, sports injuries for adults.', NULL),
+(7,'Anna', 'anna@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Orthopedics', 'Female', 'English, Chinese', 'Pediatric orthopedics: growth plate fractures, scoliosis, clubfoot, and child sports injuries.', NULL),
+(8,'Paul', 'paul@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Neurology', 'Male', 'English, Malay', 'Adult neurologist: stroke, migraine, epilepsy, Parkinson\'s disease. For patients 16+.', NULL),
+(9,'Emma', 'emma@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Neurology', 'Female', 'English, Chinese', 'Pediatric neurologist: developmental delays, seizures, headaches, cerebral palsy in children.', NULL),
+(10,'SophiaTeen', 'sophia@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Pediatrics', 'Female', 'English, Malay, Chinese', 'Adolescent medicine specialist: ages 10-21, focusing on teen health, mental health, and preventive care.', NULL),
+(11, 'Emily Tan', 'emilytan@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Pediatrics', 'Female', 'English, Malay, Chinese', 'Experienced pediatrician dedicated to providing quality care.', NULL),
+(12,'Mike', 'mike@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'General Practice', 'Male', 'English, Malay', 'Family doctor for adults: general check-ups, acute illness, chronic disease management.', NULL),
+(13,'Jenny', 'jenny@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'General Practice', 'Female', 'English, Chinese', 'Family doctor for children: well-child visits, vaccinations, common childhood illnesses.', NULL);
 
 -- --------------------------------------------------------
-
---
 -- Table structure for table `appointments`
 --
 
