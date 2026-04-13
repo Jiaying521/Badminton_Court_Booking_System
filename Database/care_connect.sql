@@ -27,6 +27,7 @@ SET time_zone = "+00:00";
 -- Table structure for table `admins`
 --
 
+DROP TABLE IF EXISTS `admins`;
 CREATE TABLE `admins` (
   `id` int(255) NOT NULL,
   `username` varchar(255) NOT NULL,
@@ -34,20 +35,27 @@ CREATE TABLE `admins` (
   `password` varchar(255) NOT NULL,
   `role` varchar(50) NOT NULL DEFAULT 'Admin',
   `reset_token` varchar(255) DEFAULT NULL,
-  `token_expiry` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `admins`
---
-
-INSERT INTO `admins` (`id`, `username`, `email`, `password`, `role`, `reset_token`, `token_expiry`) VALUES
-(0, 'heybi', 'chinzx1814@gmail.com', '$2y$10$x5NsQGVwkkp5f4oivtMd..D9tsrJLMICxeSDnSe0peEwVN77QeFGu', 'Superadmin', '42692f8398994ed579c6f07ae531e8f954dc210f30d9cd99e037f8ab856ec721', '2026-04-07 15:41:20'),
-(1, 'admin', '-', '$2y$10$lKJR3lV5IxZSt0Wasb3dUuCFGooQPJd4EBDFSc0xb30V.N7quWA/e', 'Admin', NULL, NULL);
+  `token_expiry` datetime DEFAULT NULL,
+  `is_doctor` tinyint(1) NOT NULL DEFAULT 0,
+  `specialisation` varchar(100) DEFAULT NULL,
+  `gender` enum('Male','Female') DEFAULT NULL,
+  `language` varchar(100) DEFAULT NULL,
+  `bio` text DEFAULT NULL,
+  `profile_image` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
+-- 数据 `admins`（包含管理员和所有医生）
+-- --------------------------------------------------------
+INSERT INTO `admins` (`id`, `username`, `email`, `password`, `role`, `reset_token`, `token_expiry`, `is_doctor`, `specialisation`, `gender`, `language`, `bio`, `profile_image`) VALUES
+(0, 'heybi', 'chinzx1814@gmail.com', '$2y$10$x5NsQGVwkkp5f4oivtMd..D9tsrJLMICxeSDnSe0peEwVN77QeFGu', 'Superadmin', '42692f8398994ed579c6f07ae531e8f954dc210f30d9cd99e037f8ab856ec721', '2026-04-07 15:41:20', 0, NULL, NULL, NULL, NULL, NULL),
+(1, 'admin', '-', '$2y$10$lKJR3lV5IxZSt0Wasb3dUuCFGooQPJd4EBDFSc0xb30V.N7quWA/e', 'Admin', NULL, NULL, 1, 'Dermatology', 'Female', 'English, Chinese', 'Skin specialist expert in acne and eczema treatment.', NULL),
+(2, 'Adam', 'adam@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Cardiology', 'Male', 'English, Malay', 'Experienced cardiologist dedicated to providing quality care.', NULL),
+(3, 'Sarah', 'sarah@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Dermatology', 'Female', 'English, Chinese', 'Experienced dermatologist dedicated to providing quality care.', NULL),
+(4, 'Wong', 'wong@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Orthopedics', 'Male', 'Chinese, English', 'Experienced orthopedic surgeon dedicated to providing quality care.', NULL),
+(5, 'Emily Tan', 'emilytan@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Pediatrics', 'Female', 'English, Malay, Chinese', 'Experienced pediatrician dedicated to providing quality care.', NULL),
+(6, 'Ravi Kumar', 'ravikumar@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Neurology', 'Male', 'English, Malay', 'Experienced neurologist dedicated to providing quality care.', NULL);
 
---
 -- Table structure for table `appointments`
 --
 
