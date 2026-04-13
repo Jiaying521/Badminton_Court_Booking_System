@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 13, 2026 at 08:18 AM
+-- Generation Time: Apr 08, 2026 at 05:49 PM
 -- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+-- PHP Version: 8.0.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -27,6 +27,7 @@ SET time_zone = "+00:00";
 -- Table structure for table `admins`
 --
 
+DROP TABLE IF EXISTS `admins`;
 CREATE TABLE `admins` (
   `id` int(255) NOT NULL,
   `username` varchar(255) NOT NULL,
@@ -41,12 +42,11 @@ CREATE TABLE `admins` (
   `language` varchar(100) DEFAULT NULL,
   `bio` text DEFAULT NULL,
   `profile_image` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---
--- Dumping data for table `admins`
---
-
+-- --------------------------------------------------------
+-- 数据 `admins`（包含管理员和所有医生）
+-- --------------------------------------------------------
 INSERT INTO `admins` (`id`, `username`, `email`, `password`, `role`, `reset_token`, `token_expiry`, `is_doctor`, `specialisation`, `gender`, `language`, `bio`, `profile_image`) VALUES
 (0, 'heybi', 'chinzx1814@gmail.com', '$2y$10$x5NsQGVwkkp5f4oivtMd..D9tsrJLMICxeSDnSe0peEwVN77QeFGu', 'Superadmin', '42692f8398994ed579c6f07ae531e8f954dc210f30d9cd99e037f8ab856ec721', '2026-04-07 15:41:20', 0, NULL, NULL, NULL, NULL, NULL),
 (1, 'admin', '-', '$2y$10$lKJR3lV5IxZSt0Wasb3dUuCFGooQPJd4EBDFSc0xb30V.N7quWA/e', 'Admin', NULL, NULL, 1, 'Dermatology', 'Female', 'English, Chinese', 'Skin specialist expert in acne and eczema treatment.', NULL),
@@ -56,9 +56,6 @@ INSERT INTO `admins` (`id`, `username`, `email`, `password`, `role`, `reset_toke
 (5, 'Emily Tan', 'emilytan@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Pediatrics', 'Female', 'English, Malay, Chinese', 'Experienced pediatrician dedicated to providing quality care.', NULL),
 (6, 'Ravi Kumar', 'ravikumar@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Neurology', 'Male', 'English, Malay', 'Experienced neurologist dedicated to providing quality care.', NULL);
 
--- --------------------------------------------------------
-
---
 -- Table structure for table `appointments`
 --
 
@@ -166,26 +163,6 @@ INSERT INTO `appointments` (`id`, `user_id`, `doctor_name`, `appointment_date`, 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `billing_info`
---
-
-CREATE TABLE `billing_info` (
-  `patient_id` int(11) NOT NULL,
-  `full_name` varchar(100) NOT NULL,
-  `billing_address` text NOT NULL,
-  `default_payment_method` varchar(50) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `billing_info`
---
-
-INSERT INTO `billing_info` (`patient_id`, `full_name`, `billing_address`, `default_payment_method`) VALUES
-(1, 'Ali Bin Ahmad', 'No 12, Jalan Merdeka, Melaka', 'Credit Card');
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `otp_codes`
 --
 
@@ -204,46 +181,6 @@ CREATE TABLE `otp_codes` (
 
 INSERT INTO `otp_codes` (`id`, `email`, `code`, `type`, `expires_at`, `created_at`) VALUES
 (1, 'xyyjiaying@gmail.com', '123456', 'register', '2026-04-02 21:53:11', '2026-04-02 13:43:11');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `payments`
---
-
-CREATE TABLE `payments` (
-  `payment_id` int(11) NOT NULL,
-  `amount` decimal(10,2) NOT NULL,
-  `discount_applied` decimal(10,2) DEFAULT 0.00,
-  `final_amount` decimal(10,2) NOT NULL,
-  `payment_method` varchar(50) NOT NULL,
-  `payment_status` varchar(50) NOT NULL,
-  `payment_date` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `payments`
---
-
-INSERT INTO `payments` (`payment_id`, `amount`, `discount_applied`, `final_amount`, `payment_method`, `payment_status`, `payment_date`) VALUES
-(12, 50.00, 20.00, 30.00, 'Credit Card', 'Refunded', '2026-04-01 13:07:42'),
-(13, 50.00, 20.00, 30.00, 'Credit Card', 'Refunded', '2026-04-01 13:32:02'),
-(14, 0.00, 0.00, 0.00, '', 'Success', '2026-04-01 13:36:17'),
-(15, 0.00, 0.00, 0.00, '', 'Success', '2026-04-03 01:54:05'),
-(16, 0.00, 0.00, 0.00, '', 'Failed', '2026-04-03 01:56:39'),
-(17, 0.00, 0.00, 0.00, '', 'Success', '2026-04-03 01:59:27'),
-(18, 0.00, 0.00, 0.00, '', 'Success', '2026-04-03 02:02:45'),
-(19, 0.00, 0.00, 0.00, '', 'Success', '2026-04-08 02:28:48'),
-(20, 0.00, 0.00, 0.00, '', 'Failed', '2026-04-08 02:59:46'),
-(21, 50.00, 0.00, 50.00, 'Credit Card', 'Success', '2026-04-08 03:00:19'),
-(22, 50.00, 0.00, 50.00, 'Credit Card', 'Success', '2026-04-08 03:11:27'),
-(23, 50.00, 0.00, 50.00, 'Bank Transfer', 'Success', '2026-04-08 03:11:43'),
-(24, 50.00, 20.00, 30.00, 'Credit Card', 'Failed', '2026-04-09 13:33:42'),
-(25, 50.00, 0.00, 50.00, 'Credit Card', 'Success', '2026-04-09 13:33:47'),
-(26, 0.00, 0.00, 0.00, '', 'Success', '2026-04-12 12:05:17'),
-(27, 50.00, 20.00, 30.00, 'Credit Card', 'Success', '2026-04-13 05:39:55'),
-(28, 50.00, 20.00, 30.00, 'E-Wallet', 'Success', '2026-04-13 05:40:02'),
-(29, 0.00, 0.00, 0.00, '', 'Failed', '2026-04-13 05:53:14');
 
 -- --------------------------------------------------------
 
@@ -278,23 +215,11 @@ ALTER TABLE `appointments`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `billing_info`
---
-ALTER TABLE `billing_info`
-  ADD PRIMARY KEY (`patient_id`);
-
---
 -- Indexes for table `otp_codes`
 --
 ALTER TABLE `otp_codes`
   ADD PRIMARY KEY (`id`),
   ADD KEY `email` (`email`,`type`);
-
---
--- Indexes for table `payments`
---
-ALTER TABLE `payments`
-  ADD PRIMARY KEY (`payment_id`);
 
 --
 -- Indexes for table `users`
@@ -318,12 +243,6 @@ ALTER TABLE `appointments`
 --
 ALTER TABLE `otp_codes`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT for table `payments`
---
-ALTER TABLE `payments`
-  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT for table `users`

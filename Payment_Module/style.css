@@ -1,0 +1,98 @@
+/* style.css - Master Design File */
+
+/* 1. The Background & Font */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Soft medical background image with a slight dark overlay to make the white box pop */
+    background-image: linear-gradient(rgba(0, 50, 100, 0.6), rgba(0, 50, 100, 0.6)), url('https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=2000&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    margin: 0;
+    padding: 40px;
+    color: #333;
+}
+
+/* 2. The Main White Box (The App Container) */
+.container {
+    background-color: #ffffff;
+    max-width: 600px;
+    margin: 0 auto; /* Centers the box perfectly */
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0px 10px 20px rgba(0,0,0,0.2);
+}
+
+/* 3. Headings */
+h2 {
+    color: #005580; /* Medical Blue */
+    text-align: center;
+    border-bottom: 2px solid #e6f2ff;
+    padding-bottom: 10px;
+    margin-top: 0;
+}
+
+/* 4. Form Inputs & Dropdowns */
+input[type=text], select, textarea {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0 20px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box; /* Makes sure padding doesn't mess up the width */
+    font-size: 16px;
+}
+
+/* 5. The Main Buttons */
+button {
+    background-color: #0073e6;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.3s; /* Smooth hover effect */
+}
+
+button:hover {
+    background-color: #005bb5; /* Darker blue when mouse is over it */
+}
+
+/* 6. Links */
+a {
+    color: #0073e6;
+    text-decoration: none;
+    font-weight: bold;
+    display: block;
+    text-align: center;
+    margin-top: 15px;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* 7. Tables (For History and Admin Pages) */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+th {
+    background-color: #005580;
+    color: white;
+    padding: 12px;
+    text-align: left;
+}
+td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+}
+tr:hover {
+    background-color: #f5f5f5; /* Highlights the row you are hovering over */
+}
