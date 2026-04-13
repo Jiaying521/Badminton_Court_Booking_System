@@ -1,6 +1,14 @@
 <?php
 session_start();
 
+/* --- Integrated Logout Logic --- */
+if (isset($_GET['action']) && $_GET['action'] === 'logout') {
+    session_unset();
+    session_destroy();
+    header("Location: LoginPage.php");
+    exit();
+}
+
 /* --- Security Check --- */
 if (!isset($_SESSION['username']) || !isset($_SESSION['role'])) {
     header("Location: LoginPage.php");
@@ -10,26 +18,44 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['role'])) {
 $username = $_SESSION['username'];
 $role = $_SESSION['role'];
 
+/* --- Display Name Logic --- */
+// If the user is a Doctor, add "Dr."
+$display_name = ($role === 'Doctor') ? "Dr. " . $username : $username;
+
 /* --- Database Connection --- */
 $db = mysqli_connect("localhost", "root", "", "care_connect");
 
 /* --- Dashboard Statistics --- */
 
 /* Count total superadmins */
-$query_admins = mysqli_query($db, "SELECT COUNT(*) AS total_admins FROM admins WHERE role = 'superadmin'");
-$data_admins = mysqli_fetch_assoc($query_admins);
-$total_admins = $data_admins['total_admins'];
+$query_super = mysqli_query($db, "SELECT COUNT(*) AS total FROM admins WHERE role = 'Superadmin'");
+$total_superadmins = mysqli_fetch_assoc($query_super)['total'];
 
-/* Count total doctors (admin role) */
-$query_doctors = mysqli_query($db, "SELECT COUNT(*) AS total_doctors FROM admins WHERE role = 'admin'");
-$data_doctors = mysqli_fetch_assoc($query_doctors);
-$total_doctors = $data_doctors['total_doctors'];
+/* Count Total Admins (The clinic managers) */
+$query_admin = mysqli_query($db, "SELECT COUNT(*) AS total FROM admins WHERE role = 'Admin'");
+$total_admins = mysqli_fetch_assoc($query_admin)['total'];
 
-/* Count today's appointments */
+/* Count Total Doctors */
+$query_doctors = mysqli_query($db, "SELECT COUNT(*) AS total FROM admins WHERE role = 'Doctor'");
+$total_doctors = mysqli_fetch_assoc($query_doctors)['total'];
+
+/* Count today's appointments (Filtered by role) */
 $today = date("Y-m-d");
-$query_today = mysqli_query($db, "SELECT COUNT(*) AS today_appointments FROM appointments WHERE appointment_date = '$today'");
-$data_today = mysqli_fetch_assoc($query_today);
-$today_appointments = $data_today['today_appointments'];
+$appt_filter = "";
+
+/* If the user is a Doctor, only count their appointments */
+if ($role === 'Doctor') {
+    $appt_filter = " AND doctor_name = '$username'";
+}
+
+$query_today = mysqli_query($db, "SELECT COUNT(*) AS today_appointments FROM appointments WHERE appointment_date = '$today' $appt_filter");
+
+if ($query_today) {
+    $data_today = mysqli_fetch_assoc($query_today);
+    $today_appointments = $data_today['today_appointments'];
+} else {
+    $today_appointments = 0;
+}
 
 /* Count pending tasks */
 $query_pending = mysqli_query($db, "SELECT COUNT(*) AS pending_requests FROM tasks WHERE status = 'Pending'");
@@ -49,10 +75,16 @@ $cancelled_data = array_fill(0, 12, 0);
 $rescheduled_data = array_fill(0, 12, 0);
 $ongoing_data = array_fill(0, 12, 0);
 
-/* SQL query for monthly status counts */
+/* Filter data if the user is a Doctor */
+$doctor_filter = "";
+if ($role === 'Doctor') {
+    // No more "Dr. " prefix needed
+    $doctor_filter = " AND doctor_name = '$username'"; 
+}
+
 $status_sql = "SELECT MONTH(appointment_date) AS month_num, status, COUNT(*) AS count
                FROM appointments
-               WHERE YEAR(appointment_date) = '$current_year'
+               WHERE YEAR(appointment_date) = '$current_year' $doctor_filter
                GROUP BY month_num, status";
                
 $stats_result = mysqli_query($db, $status_sql);
@@ -105,42 +137,43 @@ if ($stats_result) {
 
         <ul id="nav-menu" class="nav-links">
             <li><a href="SuperAdminDashboard.php">Dashboard</a></li>
-            <?php if ($role === 'superadmin'): ?>
+
+            <?php if ($role === 'Superadmin'): ?>
+                <!-- Superadmin Menu -->
                 <li><a href="AdminManagement.php">Admin Management</a></li>
                 <li><a href="SystemSettings.php">System Settings</a></li>
-            <?php else: ?>
+                <li><a href="AdminPanel.php">Admin Panel</a></li>
+
+            <?php elseif ($role === 'Admin'): ?>
+                <!-- Admin Menu -->
                 <li><a href="DoctorManagement.php">Doctor Management</a></li>
                 <li><a href="AppointmentManagement.php">Appointments</a></li>
+                <li><a href="ScheduleManagement.php">Schedule Management</a></li>
+                <li class="dropdown">
+                    <a href="#" class="drop-btn">More Options ▼</a>
+                    <ul class="submenu">
+                        <li><a href="PatientList.php">Patient List</a></li>
+                        <li><a href="Reports.php">Reports & Analytics</a></li>
+                        <li><a href="Notifications.php">Notifications</a></li>
+                        <li><a href="ConflictManagement.php">Conflict Management</a></li>
+                        <li><a href="Settings.php">Appointment Settings</a></li>
+                    </ul>
+                </li>
+
+            <?php elseif ($role === 'Doctor'): ?>
+                <!-- Doctor Menu -->
+                <li><a href="MyAppointments.php">My Appointments</a></li>
+                <li><a href="MySchedule.php">My Schedule</a></li>
+                <li><a href="MyPatients.php">My Patients</a></li>
+                <li><a href="Profile.php">Profile</a></li>
             <?php endif; ?>
             
-            <li class="dropdown">
-                <a href="#" class="drop-btn">More Options ▼</a>
-                <ul class="submenu">
-                    <?php if ($role === 'superadmin'): ?>
-                        <li><a href="DoctorManagement.php">Doctor Management</a></li>
-                        <li><a href="ScheduleManagement.php">Schedule Management</a></li>
-                        <li><a href="PatientList.php">Patient List</a></li>
-                        <li><a href="AppointmentManagement.php">Appointment Management</a></li>
-                        <li><a href="Reports.php">Reports & Analytics</a></li>
-                        <li><a href="Notifications.php">Notifications</a></li>
-                        <li><a href="ConflictManagement.php">Conflict Management</a></li>
-                        <li><a href="AppointmentSettings.php">Appointment Settings</a></li>
-                    <?php else: ?>
-                        <li><a href="ScheduleManagement.php">Schedule Management</a></li>
-                        <li><a href="PatientList.php">Patient List</a></li>
-                        <li><a href="Reports.php">Reports & Analytics</a></li>
-                        <li><a href="Notifications.php">Notifications</a></li>
-                        <li><a href="ConflictManagement.php">Conflict Management</a></li>
-                        <li><a href="AppointmentSettings.php">Appointment Settings</a></li>
-                    <?php endif; ?>
-                    <li><a href="Profile.php">Profile</a></li>
-                </ul>
-            </li>
             <li><button id="logout-btn" class="logout-btn">Logout</button></li>
+
         </ul>
 
         <div class="user-info">
-             <span id="welcome-text">Hello, <?php echo htmlspecialchars($username); ?>!</span>
+             <span id="welcome-text">Hello, <?php echo htmlspecialchars($display_name); ?>!</span>
         </div>
     </nav>
 
@@ -151,11 +184,11 @@ if ($stats_result) {
     <main class="content">
         <header class="dashboard-header">
             <div class="welcome-section">
-                <h1>Welcome, <?php echo htmlspecialchars($username); ?>!</h1>
+                <h1>Welcome, <?php echo htmlspecialchars($display_name); ?>!</h1>
                 <p>Status: <span class="status-online">● Online</span> | Role: <?php echo strtoupper($role); ?></p>
             </div>
             
-            <?php if ($role === 'superadmin'): ?>
+            <?php if ($role === 'Superadmin'): ?>
             <div class="header-actions">
                 <br>
                 <a href="AdminManagement.php" class="action-btn"><i class="fas fa-user-plus"></i> Add Admin</a>
@@ -165,32 +198,25 @@ if ($stats_result) {
 
         <!-- Statistics Cards Grid -->
         <section class="stats-grid">
-            <div class="stat-box">
-                <div class="stat-icon blue"><i class="fas fa-users-cog"></i></div>
-                <div class="stat-info">
-                    <h3>Total Admins</h3>
-                    <p><?php echo $total_admins; ?></p>
+            <?php if ($role === 'Superadmin'): ?>
+                <div class="stat-box">
+                    <div class="stat-icon blue"><i class="fas fa-user-shield"></i></div>
+                    <div class="stat-info"><h3>Total Admins</h3><p><?php echo $total_admins; ?></p></div>
                 </div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-icon green"><i class="fas fa-user-md"></i></div>
-                <div class="stat-info">
-                    <h3>Doctors</h3>
-                    <p><?php echo $total_doctors; ?></p>
+            <?php endif; ?>
+
+            <?php if ($role === 'Superadmin' || $role === 'Admin'): ?>
+                <div class="stat-box">
+                    <div class="stat-icon green"><i class="fas fa-user-md"></i></div>
+                    <div class="stat-info"><h3>Total Doctors</h3><p><?php echo $total_doctors; ?></p></div>
                 </div>
-            </div>
+            <?php endif; ?>
+
             <div class="stat-box">
                 <div class="stat-icon orange"><i class="fas fa-calendar-check"></i></div>
                 <div class="stat-info">
                     <h3>Today's Appt</h3>
                     <p><?php echo $today_appointments; ?></p>
-                </div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-icon red"><i class="fas fa-exclamation-circle"></i></div>
-                <div class="stat-info">
-                    <h3>Pending Tasks</h3>
-                    <p><?php echo $pending_requests; ?></p>
                 </div>
             </div>
         </section>

@@ -4,18 +4,7 @@ const navMenu = document.getElementById('nav-menu');
 const logoutBtn = document.getElementById("logout-btn");
 const welcomeText = document.getElementById('welcome-text');
 
-// 2. SECURITY CHECK (ROUTE GUARD)
-// Ensures only authenticated users can access the dashboard
-const user = localStorage.getItem('loggedInUser');
-
-if (!user) {
-    alert("Authentication required! Please log in to access the system.");
-    window.location.href = "LoginPage.php"; 
-} else {
-    welcomeText.innerText = "Hello, " + user + "!";
-}
-
-// 3. MOBILE NAVIGATION LOGIC
+// 2. MOBILE NAVIGATION LOGIC
 // Toggle sidebar menu for mobile view
 menuToggle.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -32,17 +21,20 @@ document.addEventListener('click', (event) => {
     }
 });
 
-// 4. USER LOGOUT SYSTEM
+// 3. USER LOGOUT SYSTEM
 logoutBtn.addEventListener("click", function() {
     const confirmLogout = confirm("Are you sure you want to log out of the system?");
 
     if (confirmLogout) {
+        // Clear local browser data
         localStorage.removeItem("loggedInUser");
-        window.location.href = "LoginPage.php";
+        
+        // Redirect to the current page with a logout action parameter
+        window.location.href = "SuperAdminDashboard.php?action=logout"; 
     }
 });
 
-// 5. APPOINTMENT STATISTICS FILTER LOGIC
+// 4. APPOINTMENT STATISTICS FILTER LOGIC
 /**
  * Filters the chart data based on the selected status from the dropdown.
  * Options: All, Completed, Cancelled, Rescheduled, Ongoing.
@@ -65,7 +57,7 @@ function filterStats() {
     appointmentChart.update(); // Re-render the chart with filtered data
 }
 
-// 6. CHART.JS INITIALIZATION
+// 5. CHART.JS INITIALIZATION
 let appointmentChart;
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -121,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-//7. Flatpickr Calendar Initialization
+//6. Flatpickr Calendar Initialization
 document.addEventListener('DOMContentLoaded', function() {
     flatpickr("#inline-calendar",{
         inline: true, //direct show content not pop up

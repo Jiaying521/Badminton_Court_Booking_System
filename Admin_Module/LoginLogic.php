@@ -30,7 +30,7 @@ if ($result->num_rows === 1) {
     // Verify the password hash
     if (password_verify($pass, $row['password'])) {
         // Store user information and role in the session for security
-        $_SESSION['admin_id'] = $row['id'];
+        $_SESSION['id'] = $row['id'];
         $_SESSION['username'] = $row['username'];
         $_SESSION['role'] = $row['role'];
 
