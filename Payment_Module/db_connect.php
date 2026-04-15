@@ -3,7 +3,7 @@
 $servername = "localhost";
 $username = "root"; // Default XAMPP username
 $password = "";     // Default XAMPP password is blank
-$dbname = "clinic_db";
+$dbname = "care_connect";
 
 // Create the connection
 $conn = new mysqli($servername, $username, $password, $dbname);
