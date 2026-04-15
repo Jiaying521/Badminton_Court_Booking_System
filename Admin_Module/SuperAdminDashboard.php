@@ -1,12 +1,64 @@
 <?php
 session_start();
 
-/* --- Integrated Logout Logic --- */
+/* --- Logout Logic --- */
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
     session_unset();
     session_destroy();
     header("Location: LoginPage.php");
     exit();
+}
+
+/* --- AJAX Fetch Handling --- */
+if (isset($_GET['ajax_fetch'])) {
+
+    $raw_date = $_GET['ajax_fetch'];
+    $target_date = date("Y-m-d", strtotime($raw_date));
+    
+    $u_name = isset($_SESSION['username']) ? $_SESSION['username'] : '';
+    $u_role = isset($_SESSION['role']) ? $_SESSION['role'] : '';
+
+    $conn = mysqli_connect("localhost", "root", "", "care_connect");
+    
+    if (!$conn) {
+        header('Content-Type: application/json');
+        echo json_encode(["error" => "Database connection failed"]);
+        exit();
+    }
+
+    $sql = "SELECT COALESCE(u.name, CONCAT('User ID: ', a.user_id)) AS patient_name,
+                   a.appointment_time, 
+                   a.status, 
+                   a.doctor_name 
+            FROM appointments a 
+            LEFT JOIN users u ON a.user_id = u.id 
+            WHERE DATE(a.appointment_date) = '$target_date'";
+    
+    if (strtolower($u_role) === 'doctor') {
+        $sql .= " AND TRIM(LOWER(a.doctor_name)) = TRIM(LOWER('$u_name'))";
+    }
+    
+    $sql .= " ORDER BY a.appointment_time ASC LIMIT 10"; 
+    $res = mysqli_query($conn, $sql);
+    
+    if (!$res) {
+        header('Content-Type: application/json');
+        echo json_encode(["error" => mysqli_error($conn), "sql" => $sql]); 
+        exit();
+    }
+
+    $appointments = [];
+    while ($row = mysqli_fetch_assoc($res)) {
+        $row['appointment_time'] = date("h:i A", strtotime($row['appointment_time']));
+        if (strtolower($u_role) !== 'doctor') {
+            $row['patient_name'] .= " (Dr. " . $row['doctor_name'] . ")";
+        }
+        $appointments[] = $row;
+    }
+
+    header('Content-Type: application/json');
+    echo json_encode($appointments);
+    exit(); 
 }
 
 /* --- Security Check --- */
@@ -43,8 +95,7 @@ $total_doctors = mysqli_fetch_assoc($query_doctors)['total'];
 $today = date("Y-m-d");
 $appt_filter = "";
 
-/* If the user is a Doctor, only count their appointments */
-if ($role === 'Doctor') {
+if (strtolower($role) === 'doctor') {
     $appt_filter = " AND doctor_name = '$username'";
 }
 
@@ -77,8 +128,7 @@ $ongoing_data = array_fill(0, 12, 0);
 
 /* Filter data if the user is a Doctor */
 $doctor_filter = "";
-if ($role === 'Doctor') {
-    // No more "Dr. " prefix needed
+if (strtolower($role) === 'doctor') { 
     $doctor_filter = " AND doctor_name = '$username'"; 
 }
 
@@ -249,6 +299,14 @@ if ($stats_result) {
                 
                 <!-- Show calendar-->
                 <div id="inline-calendar"></div>
+
+                <div id="appointment-list" style="padding : 15px;">
+                    <div id="mini-appt-list">
+                        <p style="text-align:center; color:#999; font-size:13px;">Select a date to view appointments</p>
+                    </div>
+
+                    <a href="#" id="view-all-btn" class="view-all-btn" style="display:none;">View All Appointments</a> 
+                </div>
                 
             </div>
 

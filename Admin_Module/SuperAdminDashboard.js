@@ -35,10 +35,6 @@ logoutBtn.addEventListener("click", function() {
 });
 
 // 4. APPOINTMENT STATISTICS FILTER LOGIC
-/**
- * Filters the chart data based on the selected status from the dropdown.
- * Options: All, Completed, Cancelled, Rescheduled, Ongoing.
- */
 function filterStats() {
     const filterValue = document.getElementById("statusFilter").value;
 
@@ -115,20 +111,86 @@ document.addEventListener('DOMContentLoaded', function() {
 
 //6. Flatpickr Calendar Initialization
 document.addEventListener('DOMContentLoaded', function() {
-    flatpickr("#inline-calendar",{
-        inline: true, //direct show content not pop up
-        dateFormat: "Y-m-d",
-        defaultDate: "today", //defualt date
-        
-        locale:{
-            firstDayOfWeek: 1  // Start week on Monday
-        },
+    
+    function fetchAppointments(dateStr) {
+        const listDiv = document.getElementById('mini-appt-list');
+        const viewAllBtn = document.getElementById('view-all-btn');
 
-        onChange: function(selectedDates, dateStr){
-            // Section for future transition animations and data loading logic.
-
-            console.log("Selected date: " + dateStr); //testing date selection
+        // If dateStr is empty (sometimes happens on initial load), use default
+        if (!dateStr) {
+            dateStr = new Date().toISOString().split('T')[0];
         }
 
-    });
+        listDiv.innerHTML = '<p style="text-align:center; font-size:13px; color:#666; padding:10px;">Searching...</p>';
+
+        fetch(`SuperAdminDashboard.php?ajax_fetch=${dateStr}`)
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                // DEBUG: Press F12 in browser to see this output
+                console.log("Fetching for date:", dateStr, "Data:", data);
+
+                listDiv.innerHTML = '';
+
+                // Handle server-side SQL errors
+                if (data.error) {
+                    listDiv.innerHTML = `<p style="text-align:center; color:red; padding:10px;">SQL Error: ${data.error}</p>`;
+                    return;
+                }
+
+                if (Array.isArray(data) && data.length > 0) {
+                    data.forEach((app, index) => {
+                        const cardClass = (index % 2 === 0) ? 'appt-card' : 'appt-card alt';
+
+                        listDiv.innerHTML += `
+                            <div class="${cardClass}">
+                                <div class="appt-content">
+                                    <h4>General Visit - ${app.patient_name}</h4>
+                                    <div class="appt-details">
+                                        <i class="far fa-calendar-check"></i> 
+                                        ${dateStr}, ${app.appointment_time}
+                                    </div>
+                                </div>
+                                <div class="appt-arrow">
+                                    <i class="fas fa-chevron-right" style="color: #ccc;"></i>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    viewAllBtn.style.display = 'block';
+                } else {
+                    listDiv.innerHTML = '<p style="text-align:center; color:#999; padding:20px; font-size:13px;">No records found for this date.</p>';
+                    viewAllBtn.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Fetch Error:', error);
+                listDiv.innerHTML = '<p style="text-align:center; color:red; padding:10px;">Failed to load data. Check Console (F12).</p>';
+            });
+    }
+
+    // Initialize Flatpickr
+    flatpickr("#inline-calendar", {
+        inline: true, 
+        dateFormat: "Y-m-d",
+        defaultDate: "today", 
+        
+        locale: {
+            firstDayOfWeek: 1  
+        },
+
+        // Trigger fetch when the calendar is ready
+        onReady: function(selectedDates, dateStr, instance) {
+            // Use instance.currentYear/currentMonth to ensure correct date on load
+            const initialDate = instance.formatDate(instance.now, "Y-m-d");
+            fetchAppointments(dateStr || initialDate);
+        },
+
+        // Trigger fetch when a new date is selected
+        onChange: function(selectedDates, dateStr) {
+            fetchAppointments(dateStr);
+        }
+    }); 
 });

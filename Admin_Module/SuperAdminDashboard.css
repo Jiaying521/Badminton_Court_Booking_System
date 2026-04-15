@@ -287,9 +287,11 @@ body {
     gap: 12px; 
     font-weight: 600;
 }
-.shortcut-item i { color: var(--primary-blue); }
 
-/* --- Mobile Fixes Part (Sidebar Click & Scroll Fix) --- */
+.shortcut-item i { 
+    color: var(--primary-blue); 
+}
+
 .menu-toggle { 
     display: none; 
     font-size: 28px; 
@@ -390,6 +392,72 @@ body {
 
 .flatpickr-day:hover{
     background: #e7f1ff !important;
+}
+
+/* Styling for the dynamic appointment list */
+#mini-appt-list {
+    margin-top: 10px;
+}
+
+.appt-card {
+    background: #f8faff; 
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 6px solid #3f51b5; /* Blue left border */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    transition: transform 0.2s;
+}
+
+.appt-card.alt {
+    background: #fff5f5; /* Light pink background */
+    border-left-color: #ff5252; /* Red left border */
+}
+
+.appt-card h4 {
+    margin: 0 0 8px 0;
+    font-size: 15px;
+    color: #1a237e;
+    font-weight: 700;
+}
+
+.appt-details {
+    font-size: 13px;
+    color: #78909c;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.view-all-btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background: #f1f3f7;
+    color: #333 !important;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+/* Avatars Placeholder (Optional: if you want the faces on the right) */
+.appt-avatars {
+    display: flex;
+    gap: -10px;
+}
+
+.appt-avatars img {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: 2px solid white;
+    background: #ddd;
 }
 
 /* --- User Role Tags Styling --- */
