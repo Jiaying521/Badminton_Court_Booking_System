@@ -11,7 +11,6 @@ SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
 
-
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
@@ -281,50 +280,31 @@ CREATE TABLE `users` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
 --
 -- Indexes for dumped tables
 --
 
---
--- Indexes for table `admins`
---
 ALTER TABLE `admins`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `appointments`
---
 ALTER TABLE `appointments`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `billing_info`
---
 ALTER TABLE `billing_info`
   ADD PRIMARY KEY (`patient_id`);
 
---
--- Indexes for table `otp_codes`
---
 ALTER TABLE `otp_codes`
   ADD PRIMARY KEY (`id`),
   ADD KEY `email` (`email`,`type`);
 
---
--- Indexes for table `payments`
---
 ALTER TABLE `payments`
   ADD PRIMARY KEY (`payment_id`);
 
---
--- Indexes for table `tasks`
---
 ALTER TABLE `tasks`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `users`
---
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email` (`email`);
@@ -333,35 +313,95 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for dumped tables
 --
 
---
--- AUTO_INCREMENT for table `appointments`
---
 ALTER TABLE `appointments`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=86;
 
---
--- AUTO_INCREMENT for table `otp_codes`
---
 ALTER TABLE `otp_codes`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
---
--- AUTO_INCREMENT for table `payments`
---
 ALTER TABLE `payments`
   MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
---
--- AUTO_INCREMENT for table `tasks`
---
 ALTER TABLE `tasks`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
---
--- AUTO_INCREMENT for table `users`
---
 ALTER TABLE `users`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+-- ========== 新增数据库更新（患者端预约功能所需） ==========
+-- 为 appointments 表增加 doctor_id, appointment_type, notes 字段
+ALTER TABLE appointments 
+ADD COLUMN IF NOT EXISTS doctor_id INT AFTER user_id,
+ADD COLUMN IF NOT EXISTS appointment_type VARCHAR(50) DEFAULT 'Consultation',
+ADD COLUMN IF NOT EXISTS notes TEXT;
+
+-- 更新现有预约，将 doctor_name 映射到 admins.id（基于用户名匹配）
+UPDATE appointments a
+JOIN admins ad ON ad.username = a.doctor_name
+SET a.doctor_id = ad.id
+WHERE a.doctor_id IS NULL AND a.doctor_name IS NOT NULL;
+
+-- 设置 doctor_id 为 NOT NULL 并添加外键
+ALTER TABLE appointments MODIFY doctor_id INT NOT NULL;
+ALTER TABLE appointments ADD CONSTRAINT fk_appointments_doctor FOREIGN KEY (doctor_id) REFERENCES admins(id) ON DELETE CASCADE;
+
+-- 为 payments 表增加 appointment_id 字段
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS appointment_id INT NULL AFTER payment_id;
+
+-- 创建 health_packages 表
+CREATE TABLE IF NOT EXISTS health_packages (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  description TEXT,
+  price DECIMAL(10,2),
+  features TEXT,
+  is_active TINYINT(1) DEFAULT 1
+);
+
+-- 插入默认套餐
+INSERT INTO health_packages (name, description, price, features) VALUES
+('Basic Wellness', 'Essential health check-up', 99.00, 'Blood pressure, BMI, basic blood test'),
+('Executive Screening', 'Comprehensive health assessment', 299.00, 'Full blood panel, ECG, stress test, doctor consultation'),
+('Family Plan', 'For up to 4 family members', 499.00, 'Includes all Basic Wellness features for each member')
+ON DUPLICATE KEY UPDATE name = VALUES(name);
+
+CREATE TABLE IF NOT EXISTS `services` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `category` varchar(100) DEFAULT NULL,
+  `description` text,
+  `icon` varchar(50) DEFAULT NULL,
+  `display_order` int(11) DEFAULT 0,
+  `is_active` tinyint(1) DEFAULT 1,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 插入默认服务
+INSERT INTO `services` (`name`, `category`, `display_order`, `is_active`) VALUES
+('General Consultation', 'Consultation', 1, 1),
+('Health Screening', 'Screening', 2, 1),
+('Vaccination', 'Prevention', 3, 1),
+('Dental Care', 'Dental', 4, 1),
+('Telemedicine', 'Virtual', 5, 1);
+
+CREATE TABLE IF NOT EXISTS `doctor_availability` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `doctor_id` INT NOT NULL,
+  `day_of_week` TINYINT NOT NULL COMMENT '1=Mon, 2=Tue, ..., 7=Sun',
+  `start_time` TIME NOT NULL,
+  `end_time` TIME NOT NULL,
+  `slot_duration` INT DEFAULT 30 COMMENT 'minutes',
+  FOREIGN KEY (`doctor_id`) REFERENCES `admins`(`id`) ON DELETE CASCADE
+);
+
+-- 为每个医生插入默认工作时间（周一至周五 09:00-17:00）
+INSERT INTO `doctor_availability` (`doctor_id`, `day_of_week`, `start_time`, `end_time`)
+SELECT id, 1, '09:00:00', '17:00:00' FROM admins WHERE is_doctor=1 UNION
+SELECT id, 2, '09:00:00', '17:00:00' FROM admins WHERE is_doctor=1 UNION
+SELECT id, 3, '09:00:00', '17:00:00' FROM admins WHERE is_doctor=1 UNION
+SELECT id, 4, '09:00:00', '17:00:00' FROM admins WHERE is_doctor=1 UNION
+SELECT id, 5, '09:00:00', '17:00:00' FROM admins WHERE is_doctor=1;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

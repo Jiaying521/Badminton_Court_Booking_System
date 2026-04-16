@@ -71,300 +71,58 @@ sort($all_languages);
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(145deg, #f6fafd 0%, #eef2f8 100%);
-            color: #1a2c3e;
-            scroll-behavior: smooth;
-        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(145deg, #f6fafd 0%, #eef2f8 100%); color: #1a2c3e; scroll-behavior: smooth; }
         /* 导航栏玻璃效果 */
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 5%;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            border-bottom: 1px solid rgba(0, 153, 255, 0.1);
-            flex-wrap: wrap;
-        }
-        .logo {
-            font-size: 1.9rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #0099ff, #2c6e9e);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        .logo span {
-            background: none;
-            color: #2c3e66;
-        }
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .nav-links a {
-            text-decoration: none;
-            color: #2c3e66;
-            font-weight: 500;
-            transition: 0.2s;
-        }
-        .nav-links a:hover, .nav-links a.active {
-            color: #0099ff;
-        }
-        .btn-outline {
-            background: transparent;
-            border: 1.5px solid #0099ff;
-            padding: 0.4rem 1.2rem;
-            border-radius: 40px;
-            color: #0099ff;
-            cursor: pointer;
-            font-weight: 600;
-            transition: 0.2s;
-        }
-        .btn-outline:hover {
-            background: #0099ff;
-            color: white;
-            transform: translateY(-2px);
-        }
-        .dashboard-container {
-            max-width: 1400px;
-            margin: 2rem auto;
-            padding: 0 5%;
-        }
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 1rem 5%; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(0, 153, 255, 0.1); flex-wrap: wrap; }
+        .logo { font-size: 1.9rem; font-weight: 800; background: linear-gradient(135deg, #0099ff, #2c6e9e); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .logo span { background: none; color: #2c3e66; }
+        .nav-links { display: flex; gap: 2rem; align-items: center; flex-wrap: wrap; }
+        .nav-links a { text-decoration: none; color: #2c3e66; font-weight: 500; transition: 0.2s; }
+        .nav-links a:hover, .nav-links a.active { color: #0099ff; }
+        .btn-outline { background: transparent; border: 1.5px solid #0099ff; padding: 0.4rem 1.2rem; border-radius: 40px; color: #0099ff; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .btn-outline:hover { background: #0099ff; color: white; transform: translateY(-2px); }
+        .dashboard-container { max-width: 1400px; margin: 2rem auto; padding: 0 5%; }
         /* 欢迎横幅 */
-        .welcome-banner {
-            background: linear-gradient(135deg, #0099ff, #2c3e66);
-            color: white;
-            padding: 2rem;
-            border-radius: 32px;
-            margin-bottom: 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .welcome-banner h1 {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-        .action-buttons {
-            display: flex;
-            gap: 1rem;
-        }
-        .action-btn {
-            background: white;
-            color: #0099ff;
-            border: none;
-            padding: 0.8rem 1.8rem;
-            border-radius: 40px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
+        .welcome-banner { background: linear-gradient(135deg, #0099ff, #2c3e66); color: white; padding: 2rem; border-radius: 32px; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .welcome-banner h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .action-buttons { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .action-btn { background: white; color: #0099ff; border: none; padding: 0.8rem 1.8rem; border-radius: 40px; font-weight: bold; cursor: pointer; transition: 0.2s; text-decoration: none; display: inline-block; font-size: 0.9rem; }
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
         /* 筛选表单 */
-        .filter-section {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 28px;
-            margin-bottom: 2rem;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.05);
-        }
-        .filter-form {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
-            gap: 1rem;
-            align-items: end;
-        }
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.3rem;
-        }
-        .filter-group label {
-            font-weight: 600;
-            color: #2c3e66;
-        }
-        .filter-group select, .filter-group input {
-            padding: 0.6rem;
-            border: 1px solid #ccc;
-            border-radius: 40px;
-            font-size: 0.9rem;
-            outline: none;
-        }
-        .filter-group select:focus, .filter-group input:focus {
-            border-color: #0099ff;
-        }
-        .search-btn, .reset-btn {
-            background: #0099ff;
-            color: white;
-            border: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: 40px;
-            cursor: pointer;
-            font-weight: 600;
-            height: 42px;
-        }
-        .reset-btn {
-            background: #e2e8f0;
-            color: #2c3e66;
-        }
+        .filter-section { background: white; padding: 1.5rem; border-radius: 28px; margin-bottom: 2rem; box-shadow: 0 8px 24px rgba(0,0,0,0.05); }
+        .filter-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 1rem; align-items: end; }
+        .filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
+        .filter-group label { font-weight: 600; color: #2c3e66; }
+        .filter-group select, .filter-group input { padding: 0.6rem; border: 1px solid #ccc; border-radius: 40px; font-size: 0.9rem; outline: none; }
+        .filter-group select:focus, .filter-group input:focus { border-color: #0099ff; }
+        .search-btn, .reset-btn { background: #0099ff; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 40px; cursor: pointer; font-weight: 600; height: 42px; }
+        .reset-btn { background: #e2e8f0; color: #2c3e66; }
         /* 医生卡片网格 */
-        .doctors-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px,1fr));
-            gap: 1.5rem;
-            margin-top: 1rem;
-        }
-        .doctor-card {
-            background: white;
-            border-radius: 24px;
-            padding: 1.5rem;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-            transition: 0.3s;
-            border-bottom: 3px solid #0099ff;
-        }
-        .doctor-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 16px 32px rgba(0,153,255,0.1);
-        }
-        .doctor-name {
-            font-size: 1.4rem;
-            font-weight: bold;
-            color: #0099ff;
-            margin-bottom: 0.5rem;
-        }
-        .doctor-spec {
-            color: #2c3e66;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-        .doctor-details {
-            color: #5b6e8c;
-            font-size: 0.9rem;
-            margin-bottom: 0.3rem;
-        }
-        .book-btn {
-            background: #0099ff;
-            color: white;
-            border: none;
-            padding: 0.6rem 1rem;
-            border-radius: 40px;
-            cursor: pointer;
-            font-weight: 600;
-            margin-top: 1rem;
-            width: 100%;
-            transition: 0.2s;
-        }
-        .book-btn:hover {
-            background: #0077cc;
-        }
-        .no-results {
-            text-align: center;
-            padding: 3rem;
-            background: white;
-            border-radius: 28px;
-            color: #5b6e8c;
-        }
-        /* 服务分类区域 (与 homepage 同步) */
-        .services-section {
-            margin-top: 3rem;
-            padding: 2rem 0;
-        }
-        .services-section h2 {
-            font-size: 2.4rem;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 0.5rem;
-            color: #1e2a3e;
-        }
-        .services-sub {
-            text-align: center;
-            color: #5b6e8c;
-            margin-bottom: 2rem;
-            font-size: 1rem;
-        }
-        .service-category {
-            margin-bottom: 2.5rem;
-        }
-        .service-category h3 {
-            font-size: 1.6rem;
-            font-weight: 600;
-            margin-bottom: 1.2rem;
-            border-left: 6px solid #0099ff;
-            padding-left: 1rem;
-            color: #1e2a3e;
-        }
-        .service-cards {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1.5rem;
-            justify-content: center;
-        }
-        .card {
-            background: white;
-            border-radius: 24px;
-            padding: 1.5rem;
-            width: 240px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-            transition: 0.3s;
-            text-align: center;
-            border: 1px solid rgba(0, 153, 255, 0.1);
-        }
-        .card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 16px 32px rgba(0,153,255,0.12);
-            border-color: rgba(0,153,255,0.3);
-        }
-        .card-icon {
-            font-size: 2.8rem;
-            margin-bottom: 0.8rem;
-            background: #eef7ff;
-            width: 70px;
-            height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 60px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .card h4 {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: #0099ff;
-            margin-bottom: 0.5rem;
-        }
-        .card p {
-            font-size: 0.85rem;
-            color: #5b6e8c;
-            line-height: 1.4;
-        }
+        .doctors-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px,1fr)); gap: 1.5rem; margin-top: 1rem; }
+        .doctor-card { background: white; border-radius: 24px; padding: 1.5rem; box-shadow: 0 8px 20px rgba(0,0,0,0.05); transition: 0.3s; border-bottom: 3px solid #0099ff; text-align: center; }
+        .doctor-card:hover { transform: translateY(-5px); box-shadow: 0 16px 32px rgba(0,153,255,0.1); }
+        .doctor-avatar { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin: 0 auto 1rem auto; display: block; border: 3px solid #0099ff; background: #eef2ff; }
+        .doctor-name { font-size: 1.4rem; font-weight: bold; color: #0099ff; margin-bottom: 0.5rem; }
+        .doctor-spec { color: #2c3e66; margin-bottom: 0.5rem; font-weight: 500; }
+        .doctor-details { color: #5b6e8c; font-size: 0.9rem; margin-bottom: 0.3rem; }
+        .book-btn { background: #0099ff; color: white; border: none; padding: 0.6rem 1rem; border-radius: 40px; cursor: pointer; font-weight: 600; margin-top: 1rem; width: 100%; transition: 0.2s; }
+        .book-btn:hover { background: #0077cc; }
+        .no-results { text-align: center; padding: 3rem; background: white; border-radius: 28px; color: #5b6e8c; }
+        /* 服务分类区域 */
+        .services-section { margin-top: 3rem; padding: 2rem 0; }
+        .services-section h2 { font-size: 2.4rem; font-weight: 700; text-align: center; margin-bottom: 0.5rem; color: #1e2a3e; }
+        .services-sub { text-align: center; color: #5b6e8c; margin-bottom: 2rem; font-size: 1rem; }
+        .service-category { margin-bottom: 2.5rem; }
+        .service-category h3 { font-size: 1.6rem; font-weight: 600; margin-bottom: 1.2rem; border-left: 6px solid #0099ff; padding-left: 1rem; color: #1e2a3e; }
+        .service-cards { display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: center; }
+        .card { background: white; border-radius: 24px; padding: 1.5rem; width: 240px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); transition: 0.3s; text-align: center; border: 1px solid rgba(0, 153, 255, 0.1); }
+        .card:hover { transform: translateY(-6px); box-shadow: 0 16px 32px rgba(0,153,255,0.12); border-color: rgba(0,153,255,0.3); }
+        .card-icon { font-size: 2.8rem; margin-bottom: 0.8rem; background: #eef7ff; width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 60px; margin-left: auto; margin-right: auto; }
+        .card h4 { font-size: 1.2rem; font-weight: 600; color: #0099ff; margin-bottom: 0.5rem; }
+        .card p { font-size: 0.85rem; color: #5b6e8c; line-height: 1.4; }
         /* 页脚 */
-        .main-footer {
-            background: #0f212e;
-            color: #cbd5e1;
-            padding: 2rem 5%;
-            margin-top: 3rem;
-            text-align: center;
-            border-radius: 24px 24px 0 0;
-        }
+        .main-footer { background: #0f212e; color: #cbd5e1; padding: 2rem 5%; margin-top: 3rem; text-align: center; border-radius: 24px 24px 0 0; }
         @media (max-width: 768px) {
             .navbar { flex-direction: column; gap: 1rem; }
             .welcome-banner { flex-direction: column; text-align: center; gap: 1rem; }
@@ -380,6 +138,7 @@ sort($all_languages);
     <div class="logo">Care<span>Connect</span></div>
     <div class="nav-links">
         <a href="dashboard.php" class="active">Home</a>
+        <a href="my_appointments.php">My Appointments</a>
         <a href="#">About Us</a>
         <span style="color:#0099ff;">Hi, <?php echo htmlspecialchars($user['name'] ?? explode('@', $user['email'])[0]); ?></span>
         <button class="btn-outline" id="logoutNavBtn">Logout</button>
@@ -394,8 +153,9 @@ sort($all_languages);
             <p>Manage your health appointments and explore our services.</p>
         </div>
         <div class="action-buttons">
-            <button class="action-btn" id="makeAppointmentBtn">📅 Make Appointment</button>
-            <button class="action-btn" id="healthPackagesBtn">📦 Health Packages</button>
+            <a href="book_appointment.php" class="action-btn">📅 Make Appointment</a>
+            <a href="my_appointments.php" class="action-btn">📋 My Appointments</a>
+            <a href="health_packages.php" class="action-btn">📦 Health Packages</a>
         </div>
     </div>
 
@@ -449,6 +209,13 @@ sort($all_languages);
         <div class="doctors-grid">
             <?php foreach ($doctors as $doctor): ?>
                 <div class="doctor-card">
+                    <?php
+                    // 根据性别和 ID 生成固定的真人头像 URL
+                    $genderFolder = ($doctor['gender'] == 'Male') ? 'men' : 'women';
+                    $avatarId = ($doctor['id'] % 99) + 1; // 1-99 之间
+                    $avatarUrl = "https://randomuser.me/api/portraits/{$genderFolder}/{$avatarId}.jpg";
+                    ?>
+                    <img class="doctor-avatar" src="<?= $avatarUrl ?>" alt="<?= htmlspecialchars($doctor['username']) ?>" onerror="this.src='https://ui-avatars.com/api/?name=<?= urlencode($doctor['username']) ?>&background=0099ff&color=fff&rounded=true&size=100&bold=true'">
                     <div class="doctor-name"><?php echo htmlspecialchars($doctor['username']); ?></div>
                     <div class="doctor-spec"><?php echo htmlspecialchars($doctor['specialisation']); ?></div>
                     <div class="doctor-details">⚤ <?php echo $doctor['gender']; ?> | 🗣️ <?php echo htmlspecialchars($doctor['language']); ?></div>
@@ -466,7 +233,6 @@ sort($all_languages);
         <h2>Beyond Boundaries</h2>
         <div class="services-sub">Comprehensive medical services tailored to your needs</div>
 
-        <!-- 初级保健 -->
         <div class="service-category">
             <h3>🏥 Primary & Preventive Care</h3>
             <div class="service-cards">
@@ -477,7 +243,6 @@ sort($all_languages);
             </div>
         </div>
 
-        <!-- 专科与数字健康 -->
         <div class="service-category">
             <h3>🩻 Specialist & Digital Care</h3>
             <div class="service-cards">
@@ -488,7 +253,6 @@ sort($all_languages);
             </div>
         </div>
 
-        <!-- 居家及便利服务 -->
         <div class="service-category">
             <h3>🏠 Home & Convenience</h3>
             <div class="service-cards">
@@ -515,16 +279,6 @@ sort($all_languages);
             window.location.href = baseUrl + 'Customer_Module/homepage.php';
         };
     }
-
-    // 预约按钮（顶部）
-    const makeApptBtn = document.getElementById('makeAppointmentBtn');
-    const healthPackagesBtn = document.getElementById('healthPackagesBtn');
-    if(makeApptBtn) {
-        makeApptBtn.onclick = () => {
-            window.location.href = 'book_appointment.php';
-        };
-    }
-    if(healthPackagesBtn) healthPackagesBtn.onclick = () => window.location.href = 'health_packages.php';
 
     // 医生卡片上的预约按钮
     const bookBtns = document.querySelectorAll('.book-btn');
