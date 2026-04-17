@@ -2,7 +2,7 @@
 session_start();
 
 // --- Prevent browser caching (Solve the logout back-button issue) ---
-header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
+header("Cache-Control: no-cache, no-store, must-revalidate"); 
 header("Pragma: no-cache"); // HTTP 1.0.
 header("Expires: 0"); // Proxies.
 
