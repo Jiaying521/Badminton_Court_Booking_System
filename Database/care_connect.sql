@@ -3,13 +3,14 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 13, 2026 at 05:02 PM
+-- Generation Time: Apr 17, 2026 at 05:50 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
+
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -32,6 +33,8 @@ CREATE TABLE `admins` (
   `email` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
   `role` varchar(50) NOT NULL DEFAULT 'Admin',
+  `status` varchar(20) DEFAULT 'Inactive',
+  `first_login` tinyint(1) DEFAULT 1,
   `reset_token` varchar(255) DEFAULT NULL,
   `token_expiry` datetime DEFAULT NULL,
   `is_doctor` tinyint(1) NOT NULL DEFAULT 0,
@@ -46,21 +49,21 @@ CREATE TABLE `admins` (
 -- Dumping data for table `admins`
 --
 
-INSERT INTO `admins` (`id`, `username`, `email`, `password`, `role`, `reset_token`, `token_expiry`, `is_doctor`, `specialisation`, `gender`, `language`, `bio`, `profile_image`) VALUES
-(0, 'heybi', 'chinzx1814@gmail.com', '$2y$10$x5NsQGVwkkp5f4oivtMd..D9tsrJLMICxeSDnSe0peEwVN77QeFGu', 'Superadmin', '42692f8398994ed579c6f07ae531e8f954dc210f30d9cd99e037f8ab856ec721', '2026-04-07 15:41:20', 0, NULL, NULL, NULL, NULL, NULL),
-(1, 'admin', '-', '$2y$10$lKJR3lV5IxZSt0Wasb3dUuCFGooQPJd4EBDFSc0xb30V.N7quWA/e', 'Admin', NULL, NULL, 1, 'Dermatology', 'Female', 'English, Chinese', 'Skin specialist expert in acne and eczema treatment.', NULL),
-(2, 'Adam', 'adam@careconnect.com', '$2y$10$lKJR3lV5IxZSt0Wasb3dUuCFGooQPJd4EBDFSc0xb30V.N7quWA/e', 'Doctor', NULL, NULL, 1, 'Cardiology', 'Male', 'English, Malay', 'Adult cardiologist specializing in heart disease, hypertension, and cholesterol management. For patients aged 18+.', NULL),
-(3, 'Lisa', 'lisa@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Cardiology', 'Female', 'English, Chinese', 'Pediatric cardiologist for children and adolescents. Expert in congenital heart defects and pediatric heart health.', NULL),
-(4, 'Mark', 'mark@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Dermatology', 'Male', 'English, Malay', 'Adult dermatology: acne, eczema, psoriasis, skin cancer screening. Specialized in adult skin conditions.', NULL),
-(5, 'Sarah', 'sarah@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Dermatology', 'Female', 'English, Chinese', 'Pediatric dermatology: birthmarks, infant eczema, warts, and teenage acne. Gentle care for young skin.', NULL),
-(6, 'Wong', 'wong@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Orthopedics', 'Male', 'English, Malay', 'Adult orthopedics: fractures, arthritis, joint replacement, sports injuries for adults.', NULL),
-(7, 'Anna', 'anna@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Orthopedics', 'Female', 'English, Chinese', 'Pediatric orthopedics: growth plate fractures, scoliosis, clubfoot, and child sports injuries.', NULL),
-(8, 'Paul', 'paul@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Neurology', 'Male', 'English, Malay', 'Adult neurologist: stroke, migraine, epilepsy, Parkinson\'s disease. For patients 16+.', NULL),
-(9, 'Emma', 'emma@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Neurology', 'Female', 'English, Chinese', 'Pediatric neurologist: developmental delays, seizures, headaches, cerebral palsy in children.', NULL),
-(10, 'SophiaTeen', 'sophia@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Pediatrics', 'Female', 'English, Malay, Chinese', 'Adolescent medicine specialist: ages 10-21, focusing on teen health, mental health, and preventive care.', NULL),
-(11, 'Emily Tan', 'emilytan@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'Pediatrics', 'Female', 'English, Malay, Chinese', 'Experienced pediatrician dedicated to providing quality care.', NULL),
-(12, 'Mike', 'mike@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'General Practice', 'Male', 'English, Malay', 'Family doctor for adults: general check-ups, acute illness, chronic disease management.', NULL),
-(13, 'Jenny', 'jenny@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', NULL, NULL, 1, 'General Practice', 'Female', 'English, Chinese', 'Family doctor for children: well-child visits, vaccinations, common childhood illnesses.', NULL);
+INSERT INTO `admins` (`id`, `username`, `email`, `password`, `role`, `status`, `first_login`, `reset_token`, `token_expiry`, `is_doctor`, `specialisation`, `gender`, `language`, `bio`, `profile_image`) VALUES
+(0, 'heybi', 'chinzx1814@gmail.com', '$2y$10$x5NsQGVwkkp5f4oivtMd..D9tsrJLMICxeSDnSe0peEwVN77QeFGu', 'Superadmin', 'Active', 1, '06b80dc2a1165a4cb544c86a4e9fe8f87a5f8eaad14af47c3a86592eb37530bb', '2026-04-17 04:01:47', 0, NULL, NULL, NULL, NULL, NULL),
+(1, 'admin', '-', '$2y$10$lKJR3lV5IxZSt0Wasb3dUuCFGooQPJd4EBDFSc0xb30V.N7quWA/e', 'Admin', 'Active', 1, NULL, NULL, 1, 'Dermatology', 'Female', 'English, Chinese', 'Skin specialist expert in acne and eczema treatment.', NULL),
+(2, 'Adam', 'adam@careconnect.com', '$2y$10$lKJR3lV5IxZSt0Wasb3dUuCFGooQPJd4EBDFSc0xb30V.N7quWA/e', 'Doctor', 'Active', 1, NULL, NULL, 1, 'Cardiology', 'Male', 'English, Malay', 'Adult cardiologist specializing in heart disease, hypertension, and cholesterol management. For patients aged 18+.', NULL),
+(3, 'Lisa', 'lisa@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', 'Active', 1, NULL, NULL, 1, 'Cardiology', 'Female', 'English, Chinese', 'Pediatric cardiologist for children and adolescents. Expert in congenital heart defects and pediatric heart health.', NULL),
+(4, 'Mark', 'mark@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', 'Active', 1, NULL, NULL, 1, 'Dermatology', 'Male', 'English, Malay', 'Adult dermatology: acne, eczema, psoriasis, skin cancer screening. Specialized in adult skin conditions.', NULL),
+(5, 'Sarah', 'sarah@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', 'Active', 1, NULL, NULL, 1, 'Dermatology', 'Female', 'English, Chinese', 'Pediatric dermatology: birthmarks, infant eczema, warts, and teenage acne. Gentle care for young skin.', NULL),
+(6, 'Wong', 'wong@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', 'Active', 1, NULL, NULL, 1, 'Orthopedics', 'Male', 'English, Malay', 'Adult orthopedics: fractures, arthritis, joint replacement, sports injuries for adults.', NULL),
+(7, 'Anna', 'anna@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', 'Active', 1, NULL, NULL, 1, 'Orthopedics', 'Female', 'English, Chinese', 'Pediatric orthopedics: growth plate fractures, scoliosis, clubfoot, and child sports injuries.', NULL),
+(8, 'Paul', 'paul@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', 'Active', 1, NULL, NULL, 1, 'Neurology', 'Male', 'English, Malay', 'Adult neurologist: stroke, migraine, epilepsy, Parkinson\'s disease. For patients 16+.', NULL),
+(9, 'Emma', 'emma@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', 'Active', 1, NULL, NULL, 1, 'Neurology', 'Female', 'English, Chinese', 'Pediatric neurologist: developmental delays, seizures, headaches, cerebral palsy in children.', NULL),
+(10, 'SophiaTeen', 'sophia@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', 'Active', 1, NULL, NULL, 1, 'Pediatrics', 'Female', 'English, Malay, Chinese', 'Adolescent medicine specialist: ages 10-21, focusing on teen health, mental health, and preventive care.', NULL),
+(11, 'Emily Tan', 'emilytan@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', 'Active', 1, NULL, NULL, 1, 'Pediatrics', 'Female', 'English, Malay, Chinese', 'Experienced pediatrician dedicated to providing quality care.', NULL),
+(12, 'Mike', 'mike@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', 'Active', 1, NULL, NULL, 1, 'General Practice', 'Male', 'English, Malay', 'Family doctor for adults: general check-ups, acute illness, chronic disease management.', NULL),
+(13, 'Jenny', 'jenny@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', 'Active', 1, NULL, NULL, 1, 'General Practice', 'Female', 'English, Chinese', 'Family doctor for children: well-child visits, vaccinations, common childhood illnesses.', NULL);
 
 -- --------------------------------------------------------
 
@@ -71,103 +74,106 @@ INSERT INTO `admins` (`id`, `username`, `email`, `password`, `role`, `reset_toke
 CREATE TABLE `appointments` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
+  `doctor_id` int(11) NOT NULL,
   `doctor_name` varchar(100) NOT NULL,
   `appointment_date` date NOT NULL,
   `appointment_time` time NOT NULL,
   `status` varchar(20) DEFAULT 'Pending',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `appointment_type` varchar(50) DEFAULT 'Consultation',
+  `notes` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `appointments`
 --
 
-INSERT INTO `appointments` (`id`, `user_id`, `doctor_name`, `appointment_date`, `appointment_time`, `status`, `created_at`) VALUES
-(1, 1, 'Adam', '2026-01-05', '09:00:00', 'Completed', '2026-04-08 15:48:53'),
-(2, 2, 'Sarah', '2026-01-05', '10:00:00', 'Completed', '2026-04-08 15:48:53'),
-(3, 3, 'Adam', '2026-01-05', '11:00:00', 'Completed', '2026-04-08 15:48:53'),
-(4, 4, 'Wong', '2026-01-06', '09:00:00', 'Cancelled', '2026-04-08 15:48:53'),
-(5, 5, 'Adam', '2026-01-08', '10:00:00', 'Completed', '2026-04-08 15:48:53'),
-(6, 6, 'Sarah', '2026-01-08', '11:00:00', 'Rescheduled', '2026-04-08 15:48:53'),
-(7, 7, 'Wong', '2026-01-10', '14:00:00', 'Completed', '2026-04-08 15:48:53'),
-(8, 8, 'Adam', '2026-01-12', '09:00:00', 'Completed', '2026-04-08 15:48:53'),
-(9, 9, 'Sarah', '2026-01-12', '10:00:00', 'Completed', '2026-04-08 15:48:53'),
-(10, 10, 'Wong', '2026-01-15', '11:00:00', 'Completed', '2026-04-08 15:48:53'),
-(11, 11, 'Adam', '2026-01-15', '14:00:00', 'Cancelled', '2026-04-08 15:48:53'),
-(12, 12, 'Sarah', '2026-01-18', '09:00:00', 'Completed', '2026-04-08 15:48:53'),
-(13, 13, 'Wong', '2026-01-20', '10:00:00', 'Completed', '2026-04-08 15:48:53'),
-(14, 14, 'Adam', '2026-01-20', '11:00:00', 'Completed', '2026-04-08 15:48:53'),
-(15, 15, 'Sarah', '2026-01-22', '09:00:00', 'Rescheduled', '2026-04-08 15:48:53'),
-(16, 16, 'Wong', '2026-01-25', '14:00:00', 'Completed', '2026-04-08 15:48:53'),
-(17, 17, 'Adam', '2026-01-25', '15:00:00', 'Completed', '2026-04-08 15:48:53'),
-(18, 18, 'Sarah', '2026-01-28', '09:00:00', 'Completed', '2026-04-08 15:48:53'),
-(19, 19, 'Wong', '2026-01-30', '10:00:00', 'Completed', '2026-04-08 15:48:53'),
-(20, 20, 'Adam', '2026-01-30', '11:00:00', 'Completed', '2026-04-08 15:48:53'),
-(21, 1, 'Sarah', '2026-02-02', '09:00:00', 'Completed', '2026-04-08 15:48:53'),
-(22, 2, 'Adam', '2026-02-02', '10:00:00', 'Completed', '2026-04-08 15:48:53'),
-(23, 3, 'Sarah', '2026-02-05', '11:00:00', 'Cancelled', '2026-04-08 15:48:53'),
-(24, 4, 'Wong', '2026-02-05', '14:00:00', 'Completed', '2026-04-08 15:48:53'),
-(25, 5, 'Adam', '2026-02-10', '09:00:00', 'Completed', '2026-04-08 15:48:53'),
-(26, 6, 'Sarah', '2026-02-10', '10:00:00', 'Completed', '2026-04-08 15:48:53'),
-(27, 7, 'Wong', '2026-02-12', '11:00:00', 'Rescheduled', '2026-04-08 15:48:53'),
-(28, 8, 'Adam', '2026-02-15', '09:00:00', 'Completed', '2026-04-08 15:48:53'),
-(29, 9, 'Sarah', '2026-02-15', '10:00:00', 'Completed', '2026-04-08 15:48:53'),
-(30, 10, 'Wong', '2026-02-18', '11:00:00', 'Completed', '2026-04-08 15:48:53'),
-(31, 11, 'Adam', '2026-02-20', '14:00:00', 'Completed', '2026-04-08 15:48:53'),
-(32, 12, 'Sarah', '2026-02-20', '15:00:00', 'Ongoing', '2026-04-08 15:48:53'),
-(33, 13, 'Wong', '2026-02-25', '09:00:00', 'Completed', '2026-04-08 15:48:53'),
-(34, 14, 'Adam', '2026-02-25', '10:00:00', 'Completed', '2026-04-08 15:48:53'),
-(35, 15, 'Sarah', '2026-02-28', '11:00:00', 'Completed', '2026-04-08 15:48:53'),
-(36, 1, 'Wong', '2026-03-01', '09:00:00', 'Completed', '2026-04-08 15:48:53'),
-(37, 2, 'Sarah', '2026-03-01', '10:00:00', 'Completed', '2026-04-08 15:48:53'),
-(38, 3, 'Adam', '2026-03-05', '11:00:00', 'Cancelled', '2026-04-08 15:48:53'),
-(39, 4, 'Sarah', '2026-03-05', '14:00:00', 'Completed', '2026-04-08 15:48:53'),
-(40, 5, 'Wong', '2026-03-08', '09:00:00', 'Completed', '2026-04-08 15:48:53'),
-(41, 6, 'Adam', '2026-03-10', '10:00:00', 'Rescheduled', '2026-04-08 15:48:53'),
-(42, 7, 'Sarah', '2026-03-10', '11:00:00', 'Completed', '2026-04-08 15:48:53'),
-(43, 8, 'Wong', '2026-03-15', '14:00:00', 'Completed', '2026-04-08 15:48:53'),
-(44, 9, 'Adam', '2026-03-15', '15:00:00', 'Completed', '2026-04-08 15:48:53'),
-(45, 10, 'Sarah', '2026-03-20', '09:00:00', 'Ongoing', '2026-04-08 15:48:53'),
-(46, 11, 'Wong', '2026-03-20', '10:00:00', 'Ongoing', '2026-04-08 15:48:53'),
-(47, 12, 'Adam', '2026-03-25', '11:00:00', 'Completed', '2026-04-08 15:48:53'),
-(48, 13, 'Sarah', '2026-03-28', '14:00:00', 'Completed', '2026-04-08 15:48:53'),
-(49, 14, 'Wong', '2026-03-30', '15:00:00', 'Completed', '2026-04-08 15:48:53'),
-(50, 1, 'Adam', '2026-04-01', '09:00:00', 'Completed', '2026-04-08 15:48:53'),
-(51, 2, 'Sarah', '2026-04-02', '10:00:00', 'Completed', '2026-04-08 15:48:53'),
-(52, 3, 'Wong', '2026-04-03', '11:00:00', 'Cancelled', '2026-04-08 15:48:53'),
-(53, 4, 'Adam', '2026-04-05', '14:00:00', 'Completed', '2026-04-08 15:48:53'),
-(54, 5, 'Sarah', '2026-04-07', '09:00:00', 'Ongoing', '2026-04-08 15:48:53'),
-(55, 6, 'Wong', '2026-04-08', '10:00:00', 'Ongoing', '2026-04-08 15:48:53'),
-(56, 7, 'Adam', '2026-04-08', '11:00:00', 'Ongoing', '2026-04-08 15:48:53'),
-(57, 8, 'Sarah', '2026-04-09', '14:00:00', 'Ongoing', '2026-04-08 15:48:53'),
-(58, 9, 'Wong', '2026-04-10', '15:00:00', 'Ongoing', '2026-04-08 15:48:53'),
-(59, 10, 'Adam', '2026-04-12', '09:00:00', 'Ongoing', '2026-04-08 15:48:53'),
-(60, 11, 'Sarah', '2026-04-15', '10:00:00', 'Ongoing', '2026-04-08 15:48:53'),
-(61, 12, 'Wong', '2026-04-20', '11:00:00', 'Ongoing', '2026-04-08 15:48:53'),
-(62, 1, 'Adam', '2026-05-10', '09:00:00', 'Ongoing', '2026-04-08 15:48:53'),
-(63, 2, 'Sarah', '2026-05-15', '10:00:00', 'Ongoing', '2026-04-08 15:48:53'),
-(64, 3, 'Wong', '2026-05-20', '11:00:00', 'Rescheduled', '2026-04-08 15:48:53'),
-(65, 1, 'Adam', '2026-06-10', '09:00:00', 'Ongoing', '2026-04-08 15:48:53'),
-(66, 2, 'Sarah', '2026-06-15', '10:00:00', 'Ongoing', '2026-04-08 15:48:53'),
-(67, 3, 'Wong', '2026-06-20', '11:00:00', 'Cancelled', '2026-04-08 15:48:53'),
-(68, 1, 'Adam', '2026-07-10', '09:00:00', 'Ongoing', '2026-04-08 15:48:53'),
-(69, 2, 'Sarah', '2026-07-15', '10:00:00', 'Ongoing', '2026-04-08 15:48:53'),
-(70, 3, 'Wong', '2026-07-20', '11:00:00', 'Rescheduled', '2026-04-08 15:48:53'),
-(71, 1, 'Adam', '2026-08-10', '09:00:00', 'Ongoing', '2026-04-08 15:48:53'),
-(72, 2, 'Sarah', '2026-08-15', '10:00:00', 'Ongoing', '2026-04-08 15:48:53'),
-(73, 3, 'Wong', '2026-08-20', '11:00:00', 'Completed', '2026-04-08 15:48:53'),
-(74, 1, 'Adam', '2026-09-10', '09:00:00', 'Ongoing', '2026-04-08 15:48:53'),
-(75, 2, 'Sarah', '2026-09-15', '10:00:00', 'Ongoing', '2026-04-08 15:48:53'),
-(76, 3, 'Wong', '2026-09-20', '11:00:00', 'Completed', '2026-04-08 15:48:53'),
-(77, 1, 'Adam', '2026-10-10', '09:00:00', 'Ongoing', '2026-04-08 15:48:53'),
-(78, 2, 'Sarah', '2026-10-15', '10:00:00', 'Ongoing', '2026-04-08 15:48:53'),
-(79, 3, 'Wong', '2026-10-20', '11:00:00', 'Cancelled', '2026-04-08 15:48:53'),
-(80, 1, 'Adam', '2026-11-10', '09:00:00', 'Ongoing', '2026-04-08 15:48:53'),
-(81, 2, 'Sarah', '2026-11-15', '10:00:00', 'Ongoing', '2026-04-08 15:48:53'),
-(82, 3, 'Wong', '2026-11-20', '11:00:00', 'Rescheduled', '2026-04-08 15:48:53'),
-(83, 1, 'Adam', '2026-12-10', '09:00:00', 'Ongoing', '2026-04-08 15:48:53'),
-(84, 2, 'Sarah', '2026-12-15', '10:00:00', 'Ongoing', '2026-04-08 15:48:53'),
-(85, 3, 'Wong', '2026-12-20', '11:00:00', 'Completed', '2026-04-08 15:48:53');
+INSERT INTO `appointments` (`id`, `user_id`, `doctor_id`, `doctor_name`, `appointment_date`, `appointment_time`, `status`, `created_at`, `appointment_type`, `notes`) VALUES
+(1, 1, 2, 'Adam', '2026-01-05', '09:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(2, 2, 5, 'Sarah', '2026-01-05', '10:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(3, 3, 2, 'Adam', '2026-01-05', '11:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(4, 4, 6, 'Wong', '2026-01-06', '09:00:00', 'Cancelled', '2026-04-08 15:48:53', 'Consultation', NULL),
+(5, 5, 2, 'Adam', '2026-01-08', '10:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(6, 6, 5, 'Sarah', '2026-01-08', '11:00:00', 'Rescheduled', '2026-04-08 15:48:53', 'Consultation', NULL),
+(7, 7, 6, 'Wong', '2026-01-10', '14:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(8, 8, 2, 'Adam', '2026-01-12', '09:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(9, 9, 5, 'Sarah', '2026-01-12', '10:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(10, 10, 6, 'Wong', '2026-01-15', '11:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(11, 11, 2, 'Adam', '2026-01-15', '14:00:00', 'Cancelled', '2026-04-08 15:48:53', 'Consultation', NULL),
+(12, 12, 5, 'Sarah', '2026-01-18', '09:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(13, 13, 6, 'Wong', '2026-01-20', '10:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(14, 14, 2, 'Adam', '2026-01-20', '11:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(15, 15, 5, 'Sarah', '2026-01-22', '09:00:00', 'Rescheduled', '2026-04-08 15:48:53', 'Consultation', NULL),
+(16, 16, 6, 'Wong', '2026-01-25', '14:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(17, 17, 2, 'Adam', '2026-01-25', '15:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(18, 18, 5, 'Sarah', '2026-01-28', '09:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(19, 19, 6, 'Wong', '2026-01-30', '10:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(20, 20, 2, 'Adam', '2026-01-30', '11:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(21, 1, 5, 'Sarah', '2026-02-02', '09:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(22, 2, 2, 'Adam', '2026-02-02', '10:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(23, 3, 5, 'Sarah', '2026-02-05', '11:00:00', 'Cancelled', '2026-04-08 15:48:53', 'Consultation', NULL),
+(24, 4, 6, 'Wong', '2026-02-05', '14:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(25, 5, 2, 'Adam', '2026-02-10', '09:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(26, 6, 5, 'Sarah', '2026-02-10', '10:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(27, 7, 6, 'Wong', '2026-02-12', '11:00:00', 'Rescheduled', '2026-04-08 15:48:53', 'Consultation', NULL),
+(28, 8, 2, 'Adam', '2026-02-15', '09:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(29, 9, 5, 'Sarah', '2026-02-15', '10:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(30, 10, 6, 'Wong', '2026-02-18', '11:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(31, 11, 2, 'Adam', '2026-02-20', '14:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(32, 12, 5, 'Sarah', '2026-02-20', '15:00:00', 'Ongoing', '2026-04-08 15:48:53', 'Consultation', NULL),
+(33, 13, 6, 'Wong', '2026-02-25', '09:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(34, 14, 2, 'Adam', '2026-02-25', '10:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(35, 15, 5, 'Sarah', '2026-02-28', '11:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(36, 1, 6, 'Wong', '2026-03-01', '09:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(37, 2, 5, 'Sarah', '2026-03-01', '10:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(38, 3, 2, 'Adam', '2026-03-05', '11:00:00', 'Cancelled', '2026-04-08 15:48:53', 'Consultation', NULL),
+(39, 4, 5, 'Sarah', '2026-03-05', '14:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(40, 5, 6, 'Wong', '2026-03-08', '09:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(41, 6, 2, 'Adam', '2026-03-10', '10:00:00', 'Rescheduled', '2026-04-08 15:48:53', 'Consultation', NULL),
+(42, 7, 5, 'Sarah', '2026-03-10', '11:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(43, 8, 6, 'Wong', '2026-03-15', '14:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(44, 9, 2, 'Adam', '2026-03-15', '15:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(45, 10, 5, 'Sarah', '2026-03-20', '09:00:00', 'Ongoing', '2026-04-08 15:48:53', 'Consultation', NULL),
+(46, 11, 6, 'Wong', '2026-03-20', '10:00:00', 'Ongoing', '2026-04-08 15:48:53', 'Consultation', NULL),
+(47, 12, 2, 'Adam', '2026-03-25', '11:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(48, 13, 5, 'Sarah', '2026-03-28', '14:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(49, 14, 6, 'Wong', '2026-03-30', '15:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(50, 1, 2, 'Adam', '2026-04-01', '09:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(51, 2, 5, 'Sarah', '2026-04-02', '10:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(52, 3, 6, 'Wong', '2026-04-03', '11:00:00', 'Cancelled', '2026-04-08 15:48:53', 'Consultation', NULL),
+(53, 4, 2, 'Adam', '2026-04-05', '14:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(54, 5, 5, 'Sarah', '2026-04-07', '09:00:00', 'Ongoing', '2026-04-08 15:48:53', 'Consultation', NULL),
+(55, 6, 6, 'Wong', '2026-04-08', '10:00:00', 'Ongoing', '2026-04-08 15:48:53', 'Consultation', NULL),
+(56, 7, 2, 'Adam', '2026-04-08', '11:00:00', 'Ongoing', '2026-04-08 15:48:53', 'Consultation', NULL),
+(57, 8, 5, 'Sarah', '2026-04-09', '14:00:00', 'Ongoing', '2026-04-08 15:48:53', 'Consultation', NULL),
+(58, 9, 6, 'Wong', '2026-04-10', '15:00:00', 'Ongoing', '2026-04-08 15:48:53', 'Consultation', NULL),
+(59, 10, 2, 'Adam', '2026-04-12', '09:00:00', 'Ongoing', '2026-04-08 15:48:53', 'Consultation', NULL),
+(60, 11, 5, 'Sarah', '2026-04-15', '10:00:00', 'Ongoing', '2026-04-08 15:48:53', 'Consultation', NULL),
+(61, 12, 6, 'Wong', '2026-04-20', '11:00:00', 'Ongoing', '2026-04-08 15:48:53', 'Consultation', NULL),
+(62, 1, 2, 'Adam', '2026-05-10', '09:00:00', 'Ongoing', '2026-04-08 15:48:53', 'Consultation', NULL),
+(63, 2, 5, 'Sarah', '2026-05-15', '10:00:00', 'Ongoing', '2026-04-08 15:48:53', 'Consultation', NULL),
+(64, 3, 6, 'Wong', '2026-05-20', '11:00:00', 'Rescheduled', '2026-04-08 15:48:53', 'Consultation', NULL),
+(65, 1, 2, 'Adam', '2026-06-10', '09:00:00', 'Ongoing', '2026-04-08 15:48:53', 'Consultation', NULL),
+(66, 2, 5, 'Sarah', '2026-06-15', '10:00:00', 'Ongoing', '2026-04-08 15:48:53', 'Consultation', NULL),
+(67, 3, 6, 'Wong', '2026-06-20', '11:00:00', 'Cancelled', '2026-04-08 15:48:53', 'Consultation', NULL),
+(68, 1, 2, 'Adam', '2026-07-10', '09:00:00', 'Ongoing', '2026-04-08 15:48:53', 'Consultation', NULL),
+(69, 2, 5, 'Sarah', '2026-07-15', '10:00:00', 'Ongoing', '2026-04-08 15:48:53', 'Consultation', NULL),
+(70, 3, 6, 'Wong', '2026-07-20', '11:00:00', 'Rescheduled', '2026-04-08 15:48:53', 'Consultation', NULL),
+(71, 1, 2, 'Adam', '2026-08-10', '09:00:00', 'Ongoing', '2026-04-08 15:48:53', 'Consultation', NULL),
+(72, 2, 5, 'Sarah', '2026-08-15', '10:00:00', 'Ongoing', '2026-04-08 15:48:53', 'Consultation', NULL),
+(73, 3, 6, 'Wong', '2026-08-20', '11:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(74, 1, 2, 'Adam', '2026-09-10', '09:00:00', 'Ongoing', '2026-04-08 15:48:53', 'Consultation', NULL),
+(75, 2, 5, 'Sarah', '2026-09-15', '10:00:00', 'Ongoing', '2026-04-08 15:48:53', 'Consultation', NULL),
+(76, 3, 6, 'Wong', '2026-09-20', '11:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL),
+(77, 1, 2, 'Adam', '2026-10-10', '09:00:00', 'Ongoing', '2026-04-08 15:48:53', 'Consultation', NULL),
+(78, 2, 5, 'Sarah', '2026-10-15', '10:00:00', 'Ongoing', '2026-04-08 15:48:53', 'Consultation', NULL),
+(79, 3, 6, 'Wong', '2026-10-20', '11:00:00', 'Cancelled', '2026-04-08 15:48:53', 'Consultation', NULL),
+(80, 1, 2, 'Adam', '2026-11-10', '09:00:00', 'Ongoing', '2026-04-08 15:48:53', 'Consultation', NULL),
+(81, 2, 5, 'Sarah', '2026-11-15', '10:00:00', 'Ongoing', '2026-04-08 15:48:53', 'Consultation', NULL),
+(82, 3, 6, 'Wong', '2026-11-20', '11:00:00', 'Rescheduled', '2026-04-08 15:48:53', 'Consultation', NULL),
+(83, 1, 2, 'Adam', '2026-12-10', '09:00:00', 'Ongoing', '2026-04-08 15:48:53', 'Consultation', NULL),
+(84, 2, 5, 'Sarah', '2026-12-15', '10:00:00', 'Ongoing', '2026-04-08 15:48:53', 'Consultation', NULL),
+(85, 3, 6, 'Wong', '2026-12-20', '11:00:00', 'Completed', '2026-04-08 15:48:53', 'Consultation', NULL);
 
 -- --------------------------------------------------------
 
@@ -192,6 +198,116 @@ INSERT INTO `billing_info` (`patient_id`, `full_name`, `billing_address`, `defau
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `doctor_availability`
+--
+
+CREATE TABLE `doctor_availability` (
+  `id` int(11) NOT NULL,
+  `doctor_id` int(11) NOT NULL,
+  `day_of_week` tinyint(4) NOT NULL COMMENT '1=Mon, 2=Tue, ..., 7=Sun',
+  `start_time` time NOT NULL,
+  `end_time` time NOT NULL,
+  `slot_duration` int(11) DEFAULT 30 COMMENT 'minutes'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `doctor_availability`
+--
+
+INSERT INTO `doctor_availability` (`id`, `doctor_id`, `day_of_week`, `start_time`, `end_time`, `slot_duration`) VALUES
+(1, 1, 1, '09:00:00', '17:00:00', 30),
+(2, 2, 1, '09:00:00', '17:00:00', 30),
+(3, 3, 1, '09:00:00', '17:00:00', 30),
+(4, 4, 1, '09:00:00', '17:00:00', 30),
+(5, 5, 1, '09:00:00', '17:00:00', 30),
+(6, 6, 1, '09:00:00', '17:00:00', 30),
+(7, 7, 1, '09:00:00', '17:00:00', 30),
+(8, 8, 1, '09:00:00', '17:00:00', 30),
+(9, 9, 1, '09:00:00', '17:00:00', 30),
+(10, 10, 1, '09:00:00', '17:00:00', 30),
+(11, 11, 1, '09:00:00', '17:00:00', 30),
+(12, 12, 1, '09:00:00', '17:00:00', 30),
+(13, 13, 1, '09:00:00', '17:00:00', 30),
+(14, 1, 2, '09:00:00', '17:00:00', 30),
+(15, 2, 2, '09:00:00', '17:00:00', 30),
+(16, 3, 2, '09:00:00', '17:00:00', 30),
+(17, 4, 2, '09:00:00', '17:00:00', 30),
+(18, 5, 2, '09:00:00', '17:00:00', 30),
+(19, 6, 2, '09:00:00', '17:00:00', 30),
+(20, 7, 2, '09:00:00', '17:00:00', 30),
+(21, 8, 2, '09:00:00', '17:00:00', 30),
+(22, 9, 2, '09:00:00', '17:00:00', 30),
+(23, 10, 2, '09:00:00', '17:00:00', 30),
+(24, 11, 2, '09:00:00', '17:00:00', 30),
+(25, 12, 2, '09:00:00', '17:00:00', 30),
+(26, 13, 2, '09:00:00', '17:00:00', 30),
+(27, 1, 3, '09:00:00', '17:00:00', 30),
+(28, 2, 3, '09:00:00', '17:00:00', 30),
+(29, 3, 3, '09:00:00', '17:00:00', 30),
+(30, 4, 3, '09:00:00', '17:00:00', 30),
+(31, 5, 3, '09:00:00', '17:00:00', 30),
+(32, 6, 3, '09:00:00', '17:00:00', 30),
+(33, 7, 3, '09:00:00', '17:00:00', 30),
+(34, 8, 3, '09:00:00', '17:00:00', 30),
+(35, 9, 3, '09:00:00', '17:00:00', 30),
+(36, 10, 3, '09:00:00', '17:00:00', 30),
+(37, 11, 3, '09:00:00', '17:00:00', 30),
+(38, 12, 3, '09:00:00', '17:00:00', 30),
+(39, 13, 3, '09:00:00', '17:00:00', 30),
+(40, 1, 4, '09:00:00', '17:00:00', 30),
+(41, 2, 4, '09:00:00', '17:00:00', 30),
+(42, 3, 4, '09:00:00', '17:00:00', 30),
+(43, 4, 4, '09:00:00', '17:00:00', 30),
+(44, 5, 4, '09:00:00', '17:00:00', 30),
+(45, 6, 4, '09:00:00', '17:00:00', 30),
+(46, 7, 4, '09:00:00', '17:00:00', 30),
+(47, 8, 4, '09:00:00', '17:00:00', 30),
+(48, 9, 4, '09:00:00', '17:00:00', 30),
+(49, 10, 4, '09:00:00', '17:00:00', 30),
+(50, 11, 4, '09:00:00', '17:00:00', 30),
+(51, 12, 4, '09:00:00', '17:00:00', 30),
+(52, 13, 4, '09:00:00', '17:00:00', 30),
+(53, 1, 5, '09:00:00', '17:00:00', 30),
+(54, 2, 5, '09:00:00', '17:00:00', 30),
+(55, 3, 5, '09:00:00', '17:00:00', 30),
+(56, 4, 5, '09:00:00', '17:00:00', 30),
+(57, 5, 5, '09:00:00', '17:00:00', 30),
+(58, 6, 5, '09:00:00', '17:00:00', 30),
+(59, 7, 5, '09:00:00', '17:00:00', 30),
+(60, 8, 5, '09:00:00', '17:00:00', 30),
+(61, 9, 5, '09:00:00', '17:00:00', 30),
+(62, 10, 5, '09:00:00', '17:00:00', 30),
+(63, 11, 5, '09:00:00', '17:00:00', 30),
+(64, 12, 5, '09:00:00', '17:00:00', 30),
+(65, 13, 5, '09:00:00', '17:00:00', 30);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `health_packages`
+--
+
+CREATE TABLE `health_packages` (
+  `id` int(11) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `description` text DEFAULT NULL,
+  `price` decimal(10,2) DEFAULT NULL,
+  `features` text DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `health_packages`
+--
+
+INSERT INTO `health_packages` (`id`, `name`, `description`, `price`, `features`, `is_active`) VALUES
+(1, 'Basic Wellness', 'Essential health check-up', 99.00, 'Blood pressure, BMI, basic blood test', 1),
+(2, 'Executive Screening', 'Comprehensive health assessment', 299.00, 'Full blood panel, ECG, stress test, doctor consultation', 1),
+(3, 'Family Plan', 'For up to 4 family members', 499.00, 'Includes all Basic Wellness features for each member', 1);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `otp_codes`
 --
 
@@ -209,7 +325,8 @@ CREATE TABLE `otp_codes` (
 --
 
 INSERT INTO `otp_codes` (`id`, `email`, `code`, `type`, `expires_at`, `created_at`) VALUES
-(1, 'xyyjiaying@gmail.com', '123456', 'register', '2026-04-02 21:53:11', '2026-04-02 13:43:11');
+(1, 'xyyjiaying@gmail.com', '123456', 'register', '2026-04-02 21:53:11', '2026-04-02 13:43:11'),
+(2, 'chinzx1814@gmail.com', '160278', 'register', '2026-04-17 08:58:26', '2026-04-17 00:48:26');
 
 -- --------------------------------------------------------
 
@@ -219,6 +336,7 @@ INSERT INTO `otp_codes` (`id`, `email`, `code`, `type`, `expires_at`, `created_a
 
 CREATE TABLE `payments` (
   `payment_id` int(11) NOT NULL,
+  `appointment_id` int(11) DEFAULT NULL,
   `amount` decimal(10,2) NOT NULL,
   `discount_applied` decimal(10,2) DEFAULT 0.00,
   `final_amount` decimal(10,2) NOT NULL,
@@ -231,25 +349,52 @@ CREATE TABLE `payments` (
 -- Dumping data for table `payments`
 --
 
-INSERT INTO `payments` (`payment_id`, `amount`, `discount_applied`, `final_amount`, `payment_method`, `payment_status`, `payment_date`) VALUES
-(12, 50.00, 20.00, 30.00, 'Credit Card', 'Refunded', '2026-04-01 13:07:42'),
-(13, 50.00, 20.00, 30.00, 'Credit Card', 'Refunded', '2026-04-01 13:32:02'),
-(14, 0.00, 0.00, 0.00, '', 'Success', '2026-04-01 13:36:17'),
-(15, 0.00, 0.00, 0.00, '', 'Success', '2026-04-03 01:54:05'),
-(16, 0.00, 0.00, 0.00, '', 'Failed', '2026-04-03 01:56:39'),
-(17, 0.00, 0.00, 0.00, '', 'Success', '2026-04-03 01:59:27'),
-(18, 0.00, 0.00, 0.00, '', 'Success', '2026-04-03 02:02:45'),
-(19, 0.00, 0.00, 0.00, '', 'Success', '2026-04-08 02:28:48'),
-(20, 0.00, 0.00, 0.00, '', 'Failed', '2026-04-08 02:59:46'),
-(21, 50.00, 0.00, 50.00, 'Credit Card', 'Success', '2026-04-08 03:00:19'),
-(22, 50.00, 0.00, 50.00, 'Credit Card', 'Success', '2026-04-08 03:11:27'),
-(23, 50.00, 0.00, 50.00, 'Bank Transfer', 'Success', '2026-04-08 03:11:43'),
-(24, 50.00, 20.00, 30.00, 'Credit Card', 'Failed', '2026-04-09 13:33:42'),
-(25, 50.00, 0.00, 50.00, 'Credit Card', 'Success', '2026-04-09 13:33:47'),
-(26, 0.00, 0.00, 0.00, '', 'Success', '2026-04-12 12:05:17'),
-(27, 50.00, 20.00, 30.00, 'Credit Card', 'Success', '2026-04-13 05:39:55'),
-(28, 50.00, 20.00, 30.00, 'E-Wallet', 'Success', '2026-04-13 05:40:02'),
-(29, 0.00, 0.00, 0.00, '', 'Failed', '2026-04-13 05:53:14');
+INSERT INTO `payments` (`payment_id`, `appointment_id`, `amount`, `discount_applied`, `final_amount`, `payment_method`, `payment_status`, `payment_date`) VALUES
+(12, NULL, 50.00, 20.00, 30.00, 'Credit Card', 'Refunded', '2026-04-01 13:07:42'),
+(13, NULL, 50.00, 20.00, 30.00, 'Credit Card', 'Refunded', '2026-04-01 13:32:02'),
+(14, NULL, 0.00, 0.00, 0.00, '', 'Success', '2026-04-01 13:36:17'),
+(15, NULL, 0.00, 0.00, 0.00, '', 'Success', '2026-04-03 01:54:05'),
+(16, NULL, 0.00, 0.00, 0.00, '', 'Failed', '2026-04-03 01:56:39'),
+(17, NULL, 0.00, 0.00, 0.00, '', 'Success', '2026-04-03 01:59:27'),
+(18, NULL, 0.00, 0.00, 0.00, '', 'Success', '2026-04-03 02:02:45'),
+(19, NULL, 0.00, 0.00, 0.00, '', 'Success', '2026-04-08 02:28:48'),
+(20, NULL, 0.00, 0.00, 0.00, '', 'Failed', '2026-04-08 02:59:46'),
+(21, NULL, 50.00, 0.00, 50.00, 'Credit Card', 'Success', '2026-04-08 03:00:19'),
+(22, NULL, 50.00, 0.00, 50.00, 'Credit Card', 'Success', '2026-04-08 03:11:27'),
+(23, NULL, 50.00, 0.00, 50.00, 'Bank Transfer', 'Success', '2026-04-08 03:11:43'),
+(24, NULL, 50.00, 20.00, 30.00, 'Credit Card', 'Failed', '2026-04-09 13:33:42'),
+(25, NULL, 50.00, 0.00, 50.00, 'Credit Card', 'Success', '2026-04-09 13:33:47'),
+(26, NULL, 0.00, 0.00, 0.00, '', 'Success', '2026-04-12 12:05:17'),
+(27, NULL, 50.00, 20.00, 30.00, 'Credit Card', 'Success', '2026-04-13 05:39:55'),
+(28, NULL, 50.00, 20.00, 30.00, 'E-Wallet', 'Success', '2026-04-13 05:40:02'),
+(29, NULL, 0.00, 0.00, 0.00, '', 'Failed', '2026-04-13 05:53:14');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `services`
+--
+
+CREATE TABLE `services` (
+  `id` int(11) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `category` varchar(100) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `icon` varchar(50) DEFAULT NULL,
+  `display_order` int(11) DEFAULT 0,
+  `is_active` tinyint(1) DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `services`
+--
+
+INSERT INTO `services` (`id`, `name`, `category`, `description`, `icon`, `display_order`, `is_active`) VALUES
+(1, 'General Consultation', 'Consultation', NULL, NULL, 1, 1),
+(2, 'Health Screening', 'Screening', NULL, NULL, 2, 1),
+(3, 'Vaccination', 'Prevention', NULL, NULL, 3, 1),
+(4, 'Dental Care', 'Dental', NULL, NULL, 4, 1),
+(5, 'Telemedicine', 'Virtual', NULL, NULL, 5, 1);
 
 -- --------------------------------------------------------
 
@@ -280,31 +425,70 @@ CREATE TABLE `users` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
-
 --
 -- Indexes for dumped tables
 --
 
+--
+-- Indexes for table `admins`
+--
 ALTER TABLE `admins`
   ADD PRIMARY KEY (`id`);
 
+--
+-- Indexes for table `appointments`
+--
 ALTER TABLE `appointments`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_appointments_doctor` (`doctor_id`);
 
+--
+-- Indexes for table `billing_info`
+--
 ALTER TABLE `billing_info`
   ADD PRIMARY KEY (`patient_id`);
 
+--
+-- Indexes for table `doctor_availability`
+--
+ALTER TABLE `doctor_availability`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `doctor_id` (`doctor_id`);
+
+--
+-- Indexes for table `health_packages`
+--
+ALTER TABLE `health_packages`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `otp_codes`
+--
 ALTER TABLE `otp_codes`
   ADD PRIMARY KEY (`id`),
   ADD KEY `email` (`email`,`type`);
 
+--
+-- Indexes for table `payments`
+--
 ALTER TABLE `payments`
   ADD PRIMARY KEY (`payment_id`);
 
+--
+-- Indexes for table `services`
+--
+ALTER TABLE `services`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `tasks`
+--
 ALTER TABLE `tasks`
   ADD PRIMARY KEY (`id`);
 
+--
+-- Indexes for table `users`
+--
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email` (`email`);
@@ -313,95 +497,69 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for dumped tables
 --
 
+--
+-- AUTO_INCREMENT for table `appointments`
+--
 ALTER TABLE `appointments`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=86;
 
-ALTER TABLE `otp_codes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+--
+-- AUTO_INCREMENT for table `doctor_availability`
+--
+ALTER TABLE `doctor_availability`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
 
+--
+-- AUTO_INCREMENT for table `health_packages`
+--
+ALTER TABLE `health_packages`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `otp_codes`
+--
+ALTER TABLE `otp_codes`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `payments`
+--
 ALTER TABLE `payments`
   MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
+--
+-- AUTO_INCREMENT for table `services`
+--
+ALTER TABLE `services`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `tasks`
+--
 ALTER TABLE `tasks`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
+--
+-- AUTO_INCREMENT for table `users`
+--
 ALTER TABLE `users`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
--- ========== 新增数据库更新（患者端预约功能所需） ==========
--- 为 appointments 表增加 doctor_id, appointment_type, notes 字段
-ALTER TABLE appointments 
-ADD COLUMN IF NOT EXISTS doctor_id INT AFTER user_id,
-ADD COLUMN IF NOT EXISTS appointment_type VARCHAR(50) DEFAULT 'Consultation',
-ADD COLUMN IF NOT EXISTS notes TEXT;
+--
+-- Constraints for dumped tables
+--
 
--- 更新现有预约，将 doctor_name 映射到 admins.id（基于用户名匹配）
-UPDATE appointments a
-JOIN admins ad ON ad.username = a.doctor_name
-SET a.doctor_id = ad.id
-WHERE a.doctor_id IS NULL AND a.doctor_name IS NOT NULL;
+--
+-- Constraints for table `appointments`
+--
+ALTER TABLE `appointments`
+  ADD CONSTRAINT `fk_appointments_doctor` FOREIGN KEY (`doctor_id`) REFERENCES `admins` (`id`) ON DELETE CASCADE;
 
--- 设置 doctor_id 为 NOT NULL 并添加外键
-ALTER TABLE appointments MODIFY doctor_id INT NOT NULL;
-ALTER TABLE appointments ADD CONSTRAINT fk_appointments_doctor FOREIGN KEY (doctor_id) REFERENCES admins(id) ON DELETE CASCADE;
-
--- 为 payments 表增加 appointment_id 字段
-ALTER TABLE payments ADD COLUMN IF NOT EXISTS appointment_id INT NULL AFTER payment_id;
-
--- 创建 health_packages 表
-CREATE TABLE IF NOT EXISTS health_packages (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(100) NOT NULL,
-  description TEXT,
-  price DECIMAL(10,2),
-  features TEXT,
-  is_active TINYINT(1) DEFAULT 1
-);
-
--- 插入默认套餐
-INSERT INTO health_packages (name, description, price, features) VALUES
-('Basic Wellness', 'Essential health check-up', 99.00, 'Blood pressure, BMI, basic blood test'),
-('Executive Screening', 'Comprehensive health assessment', 299.00, 'Full blood panel, ECG, stress test, doctor consultation'),
-('Family Plan', 'For up to 4 family members', 499.00, 'Includes all Basic Wellness features for each member')
-ON DUPLICATE KEY UPDATE name = VALUES(name);
-
-CREATE TABLE IF NOT EXISTS `services` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) NOT NULL,
-  `category` varchar(100) DEFAULT NULL,
-  `description` text,
-  `icon` varchar(50) DEFAULT NULL,
-  `display_order` int(11) DEFAULT 0,
-  `is_active` tinyint(1) DEFAULT 1,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 插入默认服务
-INSERT INTO `services` (`name`, `category`, `display_order`, `is_active`) VALUES
-('General Consultation', 'Consultation', 1, 1),
-('Health Screening', 'Screening', 2, 1),
-('Vaccination', 'Prevention', 3, 1),
-('Dental Care', 'Dental', 4, 1),
-('Telemedicine', 'Virtual', 5, 1);
-
-CREATE TABLE IF NOT EXISTS `doctor_availability` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `doctor_id` INT NOT NULL,
-  `day_of_week` TINYINT NOT NULL COMMENT '1=Mon, 2=Tue, ..., 7=Sun',
-  `start_time` TIME NOT NULL,
-  `end_time` TIME NOT NULL,
-  `slot_duration` INT DEFAULT 30 COMMENT 'minutes',
-  FOREIGN KEY (`doctor_id`) REFERENCES `admins`(`id`) ON DELETE CASCADE
-);
-
--- 为每个医生插入默认工作时间（周一至周五 09:00-17:00）
-INSERT INTO `doctor_availability` (`doctor_id`, `day_of_week`, `start_time`, `end_time`)
-SELECT id, 1, '09:00:00', '17:00:00' FROM admins WHERE is_doctor=1 UNION
-SELECT id, 2, '09:00:00', '17:00:00' FROM admins WHERE is_doctor=1 UNION
-SELECT id, 3, '09:00:00', '17:00:00' FROM admins WHERE is_doctor=1 UNION
-SELECT id, 4, '09:00:00', '17:00:00' FROM admins WHERE is_doctor=1 UNION
-SELECT id, 5, '09:00:00', '17:00:00' FROM admins WHERE is_doctor=1;
-
+--
+-- Constraints for table `doctor_availability`
+--
+ALTER TABLE `doctor_availability`
+  ADD CONSTRAINT `doctor_availability_ibfk_1` FOREIGN KEY (`doctor_id`) REFERENCES `admins` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

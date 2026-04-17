@@ -1,0 +1,221 @@
+/* Container padding for the management section */
+.manage-container {
+    padding: 10px 0;
+}
+
+/* Header section layout using flexbox */
+.management-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+/* Typography for the main header title */
+.management-header h1 {
+    margin: 0;
+    font-size: 28px;
+    color: var(--text-dark);
+}
+
+/* Typography for the header subtitle */
+.management-header p {
+    margin: 5px 0 0;
+    color: #666;
+}
+
+/* Grouping for the Add Admin and Add Doctor buttons */
+.btn-add-group {
+    display: flex;
+    gap: 12px;
+}
+
+/* Main action button styling (matching dashboard action-btn) */
+.btn-add-account {
+    background-color: var(--primary-blue);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 20px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Hover effect for action buttons */
+.btn-add-account:hover {
+    background-color: var(--hover-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(30, 144, 255, 0.2);
+}
+
+/* Hidden form card container */
+.form-card {
+    display: none;
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
+}
+
+/* State to show the form card with animation */
+.form-card.active {
+    display: block;
+    animation: slideDown 0.4s ease-out;
+}
+
+/* Slide down animation keyframes */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Grid layout for form fields */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    align-items: center;
+}
+
+/* Styling for form inputs and select elements */
+.form-grid input, 
+.form-grid select {
+    padding: 12px 18px;
+    border: 2px solid #f0f0f0;
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+    transition: 0.3s;
+}
+
+/* Focus effect for form fields */
+.form-grid input:focus, 
+.form-grid select:focus {
+    border-color: var(--primary-blue);
+}
+
+/* Submit button within the form card */
+.btn-create {
+    background-color: var(--primary-blue);
+    color: white;
+    border: none;
+    padding: 13px;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+/* Hover effect for the create button */
+.btn-create:hover {
+    background-color: var(--hover-blue);
+}
+
+/* Layout for the role filter bar */
+.filter-bar {
+    background: #fff;
+    padding: 15px 25px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    font-weight: 600;
+}
+
+/* Standard table styling for the staff list */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+/* Table header cell styling */
+.data-table th {
+    background-color: #fafafa;
+    color: #888;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 1px;
+    padding: 18px 20px;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+/* Table body cell styling */
+.data-table td {
+    padding: 18px 20px;
+    border-bottom: 1px solid #f9f9f9;
+}
+
+/* Styling for the status selection dropdown */
+.status-select {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    text-align: center;
+    width: 120px;
+    appearance: none;
+}
+
+/* Color variant for Active status */
+.status-active {
+    background-color: #e6fcf5;
+    color: #099268;
+}
+
+/* Color variant for Inactive status */
+.status-inactive {
+    background-color: #fff4e6;
+    color: #fd7e14;
+}
+
+/* Color variant for Suspended status */
+.status-suspended {
+    background-color: #fff5f5;
+    color: #fa5252;
+}
+
+/* Small badge styling for user roles */
+.role-label {
+    background: #f1f3f5;
+    color: #495057;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Styling for the trash icon (Delete action) */
+.delete-icon {
+    color: #ff6b6b;
+    font-size: 18px;
+    transition: 0.2s;
+    cursor: pointer;
+}
+
+/* Hover effect for the delete icon */
+.delete-icon:hover {
+    color: #e60000;
+    transform: scale(1.1);
+}

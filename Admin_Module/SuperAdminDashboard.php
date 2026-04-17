@@ -191,8 +191,7 @@ if ($stats_result) {
             <?php if ($role === 'Superadmin'): ?>
                 <!-- Superadmin Menu -->
                 <li><a href="AdminManagement.php">Admin Management</a></li>
-                <li><a href="SystemSettings.php">System Settings</a></li>
-                <li><a href="AdminPanel.php">Admin Panel</a></li>
+                <li><a href="#">System Settings</a></li>
 
             <?php elseif ($role === 'Admin'): ?>
                 <!-- Admin Menu -->
@@ -310,16 +309,6 @@ if ($stats_result) {
                 
             </div>
 
-            <!-- Quick Shortcuts -->
-            <div class="shortcuts-section">
-                <h2>Quick Shortcuts</h2>
-                <div class="shortcut-list">
-                    <a href="AddAppointment.php" class="shortcut-item"><i class="fas fa-calendar-plus"></i> New Appointment</a>
-                    <a href="ScheduleManagement.php" class="shortcut-item"><i class="fas fa-calendar-check"></i> Schedule Availability</a>
-                    <a href="PatientList.php" class="shortcut-item"><i class="fas fa-user-injured"></i> Patient Records</a>
-                </div>
-            </div>
-        </div>
     </main>
 
     <!-- Passing PHP arrays to JavaScript -->

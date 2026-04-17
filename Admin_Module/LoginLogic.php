@@ -18,8 +18,8 @@ $input = json_decode(file_get_contents('php://input'), true);
 $user = $input['username'] ?? '';
 $pass = $input['password'] ?? '';
 
-// Update: Select 'id' and 'role' along with username and password
-$stmt = $conn->prepare("SELECT id, username, password, role FROM admins WHERE username = ?");
+// Selected 'status' only, 'first_login' is removed
+$stmt = $conn->prepare("SELECT id, username, password, role, status FROM admins WHERE username = ?");
 $stmt->bind_param("s", $user);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -27,6 +27,12 @@ $result = $stmt->get_result();
 if ($result->num_rows === 1) {
     $row = $result->fetch_assoc();
     
+    // Check if the account status is Suspended (Complete block)
+    if ($row['status'] === 'Suspended') {
+        echo json_encode(['success' => false, 'message' => 'This account has been suspended. Please contact Superadmin.']);
+        exit;
+    }
+
     // Verify the password hash
     if (password_verify($pass, $row['password'])) {
         // Store user information and role in the session for security
@@ -34,11 +40,15 @@ if ($result->num_rows === 1) {
         $_SESSION['username'] = $row['username'];
         $_SESSION['role'] = $row['role'];
 
-        // Send back success and include the role for frontend navigation logic
+        // Logic change: If status is Inactive, it means it is a new account
+        $is_new_account = ($row['status'] === 'Inactive');
+
+        // Send back success and use 'first_login' key for compatibility with your JS
         echo json_encode([
             'success' => true, 
             'username' => $row['username'],
-            'role' => $row['role']
+            'role' => $row['role'],
+            'first_login' => $is_new_account
         ]);
     } else {
         echo json_encode(['success' => false, 'message' => 'Invalid Username or Password']);
