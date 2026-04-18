@@ -10,7 +10,7 @@
     <div class="container">
         <h2>Complete Your Clinic Payment</h2>
         
-        <form action="process_payment.php" method="POST">
+        <form action="gateway.php" method="POST">
             
             <div style="background-color: #e6f7ff; padding: 15px; border-radius: 6px; margin-bottom: 20px; border-left: 5px solid #0073e6;">
                 <p style="margin: 0; font-size: 18px;"><strong>Consultation Fee:</strong> RM 50.00</p>
