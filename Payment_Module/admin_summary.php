@@ -50,7 +50,7 @@
         }
         
         print "</table>";
-        print "<a href='notifications.php'>Go to Notification Center</a>";
+        print "<a href='notification.php'>Go to Notification Center</a>";
         
         $conn->close();
         ?>
