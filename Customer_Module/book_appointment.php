@@ -1,18 +1,17 @@
 <?php
-// Customer_Module/book_appointment.php
 require_once __DIR__ . '/../config.php';
 if (!isset($_SESSION['user_id'])) {
     header('Location: homepage.php');
     exit;
 }
 
-// 获取用户信息（仅用于内部，不在页面显示）
+// get user info
 $user_id = $_SESSION['user_id'];
 $stmt = $pdo->prepare("SELECT name FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch();
 
-// 获取专科列表
+// get specialisations for dropdown
 $spec_stmt = $pdo->query("SELECT DISTINCT specialisation FROM admins WHERE is_doctor = 1 AND specialisation IS NOT NULL AND specialisation != '' ORDER BY specialisation");
 $specialisations = $spec_stmt->fetchAll(PDO::FETCH_COLUMN);
 ?>
@@ -23,7 +22,7 @@ $specialisations = $spec_stmt->fetchAll(PDO::FETCH_COLUMN);
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Book Appointment | CareConnect</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
-    <!-- Flatpickr 日期选择器 -->
+    <!-- Flatpickr -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <style>
@@ -42,7 +41,6 @@ $specialisations = $spec_stmt->fetchAll(PDO::FETCH_COLUMN);
             align-items: center;
             justify-content: center;
         }
-        /* 主容器卡片 */
         .container {
             max-width: 700px;
             width: 100%;
@@ -211,7 +209,6 @@ $specialisations = $spec_stmt->fetchAll(PDO::FETCH_COLUMN);
     <h1>📅 Book an Appointment</h1>
     <div class="subtitle">Fill in the details to schedule your visit</div>
 
-    <!-- 简易步骤指示器 -->
     <div class="step-indicator">
         <span id="step1" class="step-active">1. Specialisation</span>
         <span>→</span>
@@ -267,7 +264,7 @@ $specialisations = $spec_stmt->fetchAll(PDO::FETCH_COLUMN);
 </div>
 
 <script>
-    // DOM 元素
+    // DOM elements
     const specialisationSelect = document.getElementById('specialisation');
     const doctorSelect = document.getElementById('doctor_id');
     const dateInput = document.getElementById('appointment_date');
@@ -277,7 +274,7 @@ $specialisations = $spec_stmt->fetchAll(PDO::FETCH_COLUMN);
     const submitBtn = document.getElementById('submitBtn');
     const holidayWarning = document.getElementById('holidayWarning');
 
-    // 步骤指示器元素
+    // step indicators
     const step1 = document.getElementById('step1');
     const step2 = document.getElementById('step2');
     const step3 = document.getElementById('step3');
@@ -285,7 +282,7 @@ $specialisations = $spec_stmt->fetchAll(PDO::FETCH_COLUMN);
 
     let flatpickrInstance = null;
 
-    // 更新步骤高亮
+    // renew step highlight
     function updateStepHighlight() {
         const specVal = specialisationSelect.value;
         const docVal = doctorSelect.value;
@@ -297,7 +294,7 @@ $specialisations = $spec_stmt->fetchAll(PDO::FETCH_COLUMN);
         step4.classList.toggle('step-active', dateVal && timeVal);
     }
 
-    // 初始化日期选择器（假期列表传入）
+    // initialize flatpickr with disabled dates
     function initDatePicker(disabledDates) {
         flatpickrInstance = flatpickr(dateInput, {
             dateFormat: "Y-m-d",
@@ -313,7 +310,7 @@ $specialisations = $spec_stmt->fetchAll(PDO::FETCH_COLUMN);
         });
     }
 
-    // 获取假期列表
+    // fetch holidays and initialize date picker
     fetch('ajax_get_holidays.php')
         .then(response => response.json())
         .then(holidays => {
@@ -324,7 +321,7 @@ $specialisations = $spec_stmt->fetchAll(PDO::FETCH_COLUMN);
             initDatePicker([]);
         });
 
-    // 专科变化
+    // specialisation change
     specialisationSelect.addEventListener('change', function() {
         const specialisation = this.value;
         if (!specialisation) {
@@ -358,7 +355,7 @@ $specialisations = $spec_stmt->fetchAll(PDO::FETCH_COLUMN);
             });
     });
 
-    // 医生变化
+    // doctor change
     doctorSelect.addEventListener('change', function() {
         if (this.value) {
             if (flatpickrInstance) flatpickrInstance.clear();
@@ -461,7 +458,7 @@ $specialisations = $spec_stmt->fetchAll(PDO::FETCH_COLUMN);
         });
     }
 
-    // 初始更新步骤指示器
+    // initial step highlight
     updateStepHighlight();
 </script>
 </body>

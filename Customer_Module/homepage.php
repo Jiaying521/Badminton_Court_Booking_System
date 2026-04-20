@@ -1,8 +1,7 @@
 <?php
-// Customer_Module/homepage.php
 require_once __DIR__ . '/../config.php';
 
-// 如果已经登录，直接跳转到 dashboard
+// if user is already logged in, redirect to dashboard
 if (isset($_SESSION['user_id'])) {
     header('Location: dashboard.php');
     exit;
@@ -33,7 +32,6 @@ $user = null;
             scroll-behavior: smooth;
         }
 
-        /* 高级玻璃导航栏 */
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -119,7 +117,6 @@ $user = null;
             box-shadow: 0 8px 18px rgba(0, 153, 255, 0.3);
         }
 
-        /* 英雄区 */
         .hero {
             display: flex;
             align-items: center;
@@ -159,7 +156,6 @@ $user = null;
             transform: scale(1.02);
         }
 
-        /* 服务区域 */
         .services {
             padding: 5rem 5%;
             background: white;
@@ -246,7 +242,6 @@ $user = null;
             line-height: 1.4;
         }
 
-        /* ========= 全新弹窗样式 ========= */
         .modal {
             display: none;
             position: fixed;
@@ -433,7 +428,6 @@ $user = null;
             text-align: left;
         }
 
-        /* 页脚 */
         .main-footer {
             background: #0f212e;
             color: #cbd5e1;
@@ -517,7 +511,6 @@ $user = null;
     </div>
 </section>
 
-<!-- 扩展服务区域 -->
 <section class="services">
     <h2>Beyond Boundaries</h2>
     <div class="services-sub">Comprehensive medical services tailored to your needs</div>
@@ -563,7 +556,7 @@ $user = null;
     <div class="footer-bottom"><p>© 2025 CareConnect – Redefining Healthcare Experience</p></div>
 </footer>
 
-<!-- 登录弹窗 -->
+<!-- login modal -->
 <div id="loginModal" class="modal">
     <div class="modal-content">
         <span class="close" id="closeLogin">&times;</span>
@@ -585,7 +578,7 @@ $user = null;
     </div>
 </div>
 
-<!-- 注册弹窗 -->
+<!-- register modal -->
 <div id="registerModal" class="modal">
     <div class="modal-content">
         <span class="close" id="closeRegister">&times;</span>
@@ -613,7 +606,7 @@ $user = null;
 </div>
 
 <script>
-    // 此页面仅供未登录用户，因此直接设置 isLoggedIn = false
+    // this would normally come from the server-side session, but for demo purposes we set it to false
     const isLoggedIn = false;
     const baseUrl = (() => {
         let path = window.location.pathname;
@@ -624,7 +617,7 @@ $user = null;
     })();
     console.log('[DEBUG] Base URL:', baseUrl);
 
-    // 弹窗控制
+    // Modal handling
     const loginModal = document.getElementById('loginModal');
     const registerModal = document.getElementById('registerModal');
     function openLogin() { loginModal.style.display = 'block'; }
@@ -644,18 +637,18 @@ $user = null;
     document.getElementById('switchToRegisterFromLogin').onclick = (e) => { e.preventDefault(); closeAllModals(); openRegister(); };
     document.getElementById('switchToLoginFromRegister').onclick = (e) => { e.preventDefault(); closeAllModals(); openLogin(); };
 
-    // 辅助函数
+    // Utility functions
     function setButtonLoading(btn, isLoading) { if (!btn) return; if (isLoading) { if (!btn._originalText) btn._originalText = btn.innerText; const loadingText = btn.getAttribute('data-loading-text'); btn.innerText = loadingText || 'Processing...'; btn.disabled = true; } else { btn.innerText = btn._originalText || btn.innerText; btn.disabled = false; } }
     function showError(element, message) { if (!element) return; element.innerText = message; element.style.display = 'block'; setTimeout(() => { if (element) element.style.display = 'none'; }, 5000); }
 
-    // 注册逻辑
+    // register logic with OTP verification
     let regStoredEmail = '', regIsVerified = false;
     const regName = document.getElementById('regName'), regEmail = document.getElementById('regEmail'), regPassword = document.getElementById('regPassword'), regNric = document.getElementById('regNric'), regPhoneCode = document.getElementById('regPhoneCode'), regPhone = document.getElementById('regPhone'), sendRegCodeBtn = document.getElementById('sendRegCodeBtn'), regVerifyCodeInput = document.getElementById('regVerifyCode'), verifyRegCodeBtn = document.getElementById('verifyRegCodeBtn'), registerFinalBtn = document.getElementById('registerFinalBtn'), regErrorSpan = document.getElementById('regError');
     if (sendRegCodeBtn) sendRegCodeBtn.onclick = async () => { const name = regName?.value.trim() || '', email = regEmail?.value.trim() || '', password = regPassword?.value || '', nric = regNric?.value.trim() || '', phoneFull = (regPhoneCode?.value || '') + (regPhone?.value.trim() || ''); if (!name || !email || !password || !nric || !regPhone?.value.trim()) { showError(regErrorSpan, "Please fill all fields before sending code."); return; } setButtonLoading(sendRegCodeBtn, true); try { const response = await fetch(baseUrl + 'send_otp.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, type: 'register' }) }); if (!response.ok) throw new Error(`HTTP ${response.status}`); const data = await response.json(); if (data.success) { regStoredEmail = email; regIsVerified = false; showError(regErrorSpan, "Verification code sent to your email! Please enter it."); if (regVerifyCodeInput) regVerifyCodeInput.style.display = 'block'; if (verifyRegCodeBtn) verifyRegCodeBtn.style.display = 'block'; } else { showError(regErrorSpan, data.message); } } catch (err) { console.error(err); showError(regErrorSpan, "Network error: Could not send code."); } finally { setButtonLoading(sendRegCodeBtn, false); } };
     if (verifyRegCodeBtn) verifyRegCodeBtn.onclick = async () => { const code = regVerifyCodeInput?.value.trim() || '', email = regStoredEmail; if (!email || !code) { showError(regErrorSpan, "Please enter the code."); return; } setButtonLoading(verifyRegCodeBtn, true); try { const response = await fetch(baseUrl + 'verify_otp.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, code, type: 'register' }) }); const data = await response.json(); if (data.success) { regIsVerified = true; if (registerFinalBtn) registerFinalBtn.disabled = false; showError(regErrorSpan, "Verified! You can now register."); } else { showError(regErrorSpan, data.message); } } catch (err) { showError(regErrorSpan, "Verification failed. Please try again."); } finally { setButtonLoading(verifyRegCodeBtn, false); } };
     if (registerFinalBtn) registerFinalBtn.onclick = async () => { if (!regIsVerified) { showError(regErrorSpan, "Please verify your code first."); return; } const name = regName?.value.trim() || '', email = regEmail?.value.trim() || '', password = regPassword?.value || '', nric = regNric?.value.trim() || '', phoneFull = (regPhoneCode?.value || '') + (regPhone?.value.trim() || ''), otpCode = regVerifyCodeInput?.value.trim() || ''; registerFinalBtn.disabled = true; registerFinalBtn.innerText = "Registering..."; try { const response = await fetch(baseUrl + 'register.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, name, password, nric, phone: phoneFull, otpCode }) }); const data = await response.json(); if (data.success) { alert("Registration successful! Please login."); closeAllModals(); if (regName) regName.value = ''; if (regEmail) regEmail.value = ''; if (regPassword) regPassword.value = ''; if (regNric) regNric.value = ''; if (regPhone) regPhone.value = ''; if (regVerifyCodeInput) regVerifyCodeInput.value = ''; if (registerFinalBtn) registerFinalBtn.disabled = true; regIsVerified = false; if (regErrorSpan) regErrorSpan.style.display = 'none'; } else { showError(regErrorSpan, data.message); } } catch (err) { showError(regErrorSpan, "Registration failed. Check console."); } finally { registerFinalBtn.disabled = false; registerFinalBtn.innerText = "Register"; } };
 
-    // 登录逻辑
+    // login logic with password and OTP options
     const loginEmail = document.getElementById('loginEmail'), loginPassword = document.getElementById('loginPassword'), doPasswordLogin = document.getElementById('doPasswordLogin'), loginErrorSpan = document.getElementById('loginError'), loginOtpEmailInput = document.getElementById('loginOtpEmail'), sendLoginOtpBtn = document.getElementById('sendLoginOtpBtn'), loginOtpCodeInput = document.getElementById('loginOtpCode'), verifyLoginOtpBtn = document.getElementById('verifyLoginOtpBtn');
     if (doPasswordLogin) doPasswordLogin.onclick = async () => { const email = loginEmail?.value.trim() || '', password = loginPassword?.value || ''; if (!email || !password) { showError(loginErrorSpan, "Please enter email and password."); return; } doPasswordLogin.disabled = true; doPasswordLogin.innerText = "Logging in..."; try { const response = await fetch(baseUrl + 'login_password.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) }); const data = await response.json(); if (data.success) { localStorage.setItem('current_user_id', 'session'); alert("Login successful!"); window.location.href = baseUrl + 'Customer_Module/dashboard.php'; } else { showError(loginErrorSpan, data.message); } } catch (err) { showError(loginErrorSpan, "Login failed. Check network."); } finally { doPasswordLogin.disabled = false; doPasswordLogin.innerText = "Login with Password"; } };
     if (sendLoginOtpBtn) sendLoginOtpBtn.onclick = async () => { const email = loginOtpEmailInput?.value.trim() || ''; if (!email) { showError(loginErrorSpan, "Enter your registered email address."); return; } setButtonLoading(sendLoginOtpBtn, true); try { const response = await fetch(baseUrl + 'send_otp.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, type: 'login' }) }); const data = await response.json(); if (data.success) { if (loginOtpCodeInput) loginOtpCodeInput.style.display = 'block'; if (verifyLoginOtpBtn) verifyLoginOtpBtn.style.display = 'block'; showError(loginErrorSpan, "OTP sent to your email!"); } else { showError(loginErrorSpan, data.message); } } catch (err) { showError(loginErrorSpan, "Failed to send OTP."); } finally { setButtonLoading(sendLoginOtpBtn, false); } };

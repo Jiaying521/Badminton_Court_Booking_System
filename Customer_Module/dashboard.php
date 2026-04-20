@@ -1,8 +1,7 @@
 <?php
-// Customer_Module/dashboard.php
 require_once __DIR__ . '/../config.php';
 
-// 未登录用户跳转到首页
+// if user is not logged in, redirect to homepage
 if (!isset($_SESSION['user_id'])) {
     header('Location: homepage.php');
     exit;
@@ -13,13 +12,13 @@ $stmt = $pdo->prepare("SELECT id, email, name, nric, phone FROM users WHERE id =
 $stmt->execute([$user_id]);
 $user = $stmt->fetch();
 
-// 获取筛选参数
+// get filter values from URL
 $specialisation = $_GET['specialisation'] ?? '';
 $gender = $_GET['gender'] ?? '';
 $language = $_GET['language'] ?? '';
 $doctor_name = $_GET['doctor_name'] ?? '';
 
-// 查询医生（is_doctor = 1）
+// check doctor records (is_doctor = 1)
 $sql = "SELECT * FROM admins WHERE is_doctor = 1";
 $params = [];
 if (!empty($specialisation)) {
@@ -43,12 +42,12 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $doctors = $stmt->fetchAll();
 
-// 获取所有专科列表
+// get all specialisations for filter dropdown
 $spec_sql = "SELECT DISTINCT specialisation FROM admins WHERE is_doctor = 1 AND specialisation IS NOT NULL AND specialisation != ''";
 $spec_stmt = $pdo->query($spec_sql);
 $specialisations = $spec_stmt->fetchAll(PDO::FETCH_COLUMN);
 
-// 获取所有语言列表
+// get all language lists
 $lang_sql = "SELECT DISTINCT language FROM admins WHERE is_doctor = 1 AND language IS NOT NULL";
 $lang_stmt = $pdo->query($lang_sql);
 $lang_rows = $lang_stmt->fetchAll(PDO::FETCH_COLUMN);
@@ -73,7 +72,6 @@ sort($all_languages);
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family: 'Inter', sans-serif; background: linear-gradient(145deg, #f6fafd 0%, #eef2f8 100%); color: #1a2c3e; scroll-behavior: smooth; }
-        /* 导航栏玻璃效果 */
         .navbar { display: flex; justify-content: space-between; align-items: center; padding: 1rem 5%; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(0, 153, 255, 0.1); flex-wrap: wrap; }
         .logo { font-size: 1.9rem; font-weight: 800; background: linear-gradient(135deg, #0099ff, #2c6e9e); -webkit-background-clip: text; background-clip: text; color: transparent; }
         .logo span { background: none; color: #2c3e66; }
@@ -83,13 +81,11 @@ sort($all_languages);
         .btn-outline { background: transparent; border: 1.5px solid #0099ff; padding: 0.4rem 1.2rem; border-radius: 40px; color: #0099ff; cursor: pointer; font-weight: 600; transition: 0.2s; }
         .btn-outline:hover { background: #0099ff; color: white; transform: translateY(-2px); }
         .dashboard-container { max-width: 1400px; margin: 2rem auto; padding: 0 5%; }
-        /* 欢迎横幅 */
         .welcome-banner { background: linear-gradient(135deg, #0099ff, #2c3e66); color: white; padding: 2rem; border-radius: 32px; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
         .welcome-banner h1 { font-size: 2rem; margin-bottom: 0.5rem; }
         .action-buttons { display: flex; gap: 1rem; flex-wrap: wrap; }
         .action-btn { background: white; color: #0099ff; border: none; padding: 0.8rem 1.8rem; border-radius: 40px; font-weight: bold; cursor: pointer; transition: 0.2s; text-decoration: none; display: inline-block; font-size: 0.9rem; }
         .action-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        /* 筛选表单 */
         .filter-section { background: white; padding: 1.5rem; border-radius: 28px; margin-bottom: 2rem; box-shadow: 0 8px 24px rgba(0,0,0,0.05); }
         .filter-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 1rem; align-items: end; }
         .filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
@@ -98,7 +94,6 @@ sort($all_languages);
         .filter-group select:focus, .filter-group input:focus { border-color: #0099ff; }
         .search-btn, .reset-btn { background: #0099ff; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 40px; cursor: pointer; font-weight: 600; height: 42px; }
         .reset-btn { background: #e2e8f0; color: #2c3e66; }
-        /* 医生卡片网格 */
         .doctors-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px,1fr)); gap: 1.5rem; margin-top: 1rem; }
         .doctor-card { background: white; border-radius: 24px; padding: 1.5rem; box-shadow: 0 8px 20px rgba(0,0,0,0.05); transition: 0.3s; border-bottom: 3px solid #0099ff; text-align: center; }
         .doctor-card:hover { transform: translateY(-5px); box-shadow: 0 16px 32px rgba(0,153,255,0.1); }
@@ -109,7 +104,6 @@ sort($all_languages);
         .book-btn { background: #0099ff; color: white; border: none; padding: 0.6rem 1rem; border-radius: 40px; cursor: pointer; font-weight: 600; margin-top: 1rem; width: 100%; transition: 0.2s; }
         .book-btn:hover { background: #0077cc; }
         .no-results { text-align: center; padding: 3rem; background: white; border-radius: 28px; color: #5b6e8c; }
-        /* 服务分类区域 */
         .services-section { margin-top: 3rem; padding: 2rem 0; }
         .services-section h2 { font-size: 2.4rem; font-weight: 700; text-align: center; margin-bottom: 0.5rem; color: #1e2a3e; }
         .services-sub { text-align: center; color: #5b6e8c; margin-bottom: 2rem; font-size: 1rem; }
@@ -121,7 +115,6 @@ sort($all_languages);
         .card-icon { font-size: 2.8rem; margin-bottom: 0.8rem; background: #eef7ff; width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 60px; margin-left: auto; margin-right: auto; }
         .card h4 { font-size: 1.2rem; font-weight: 600; color: #0099ff; margin-bottom: 0.5rem; }
         .card p { font-size: 0.85rem; color: #5b6e8c; line-height: 1.4; }
-        /* 页脚 */
         .main-footer { background: #0f212e; color: #cbd5e1; padding: 2rem 5%; margin-top: 3rem; text-align: center; border-radius: 24px 24px 0 0; }
         @media (max-width: 768px) {
             .navbar { flex-direction: column; gap: 1rem; }
@@ -146,7 +139,6 @@ sort($all_languages);
 </nav>
 
 <div class="dashboard-container">
-    <!-- 欢迎横幅 -->
     <div class="welcome-banner">
         <div>
             <h1>Welcome back, <?php echo htmlspecialchars($user['name'] ?? 'Patient'); ?>!</h1>
@@ -159,7 +151,6 @@ sort($all_languages);
         </div>
     </div>
 
-    <!-- 筛选医生表单 -->
     <div class="filter-section">
         <form method="GET" action="" class="filter-form">
             <div class="filter-group">
@@ -203,14 +194,13 @@ sort($all_languages);
         </form>
     </div>
 
-    <!-- 医生列表 -->
     <h2 style="margin-bottom:1rem;">👨‍⚕️ Our Doctors</h2>
     <?php if (count($doctors) > 0): ?>
         <div class="doctors-grid">
             <?php foreach ($doctors as $doctor): ?>
                 <div class="doctor-card">
                     <?php
-                    // 根据性别和 ID 生成固定的真人头像 URL
+                    // follow the same avatar logic as in homepage.php to generate doctor avatars
                     $genderFolder = ($doctor['gender'] == 'Male') ? 'men' : 'women';
                     $avatarId = ($doctor['id'] % 99) + 1; // 1-99 之间
                     $avatarUrl = "https://randomuser.me/api/portraits/{$genderFolder}/{$avatarId}.jpg";
@@ -228,7 +218,6 @@ sort($all_languages);
         <div class="no-results">😞 No doctors found matching your criteria. Please try different filters.</div>
     <?php endif; ?>
 
-    <!-- 服务分类区域（与 homepage 同步） -->
     <div class="services-section">
         <h2>Beyond Boundaries</h2>
         <div class="services-sub">Comprehensive medical services tailored to your needs</div>
@@ -271,7 +260,7 @@ sort($all_languages);
 
 <script>
     const baseUrl = '/Clinic_Booking_System/';
-    // 退出登录
+    // logout button in navbar
     const logoutBtn = document.getElementById('logoutNavBtn');
     if(logoutBtn) {
         logoutBtn.onclick = async () => {
@@ -280,7 +269,7 @@ sort($all_languages);
         };
     }
 
-    // 医生卡片上的预约按钮
+    // book appointment button
     const bookBtns = document.querySelectorAll('.book-btn');
     bookBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -290,7 +279,7 @@ sort($all_languages);
         });
     });
 
-    // 重置筛选
+    // reset filter button
     const resetBtn = document.getElementById('resetFilter');
     if(resetBtn) resetBtn.onclick = () => { window.location.href = window.location.pathname; };
 </script>

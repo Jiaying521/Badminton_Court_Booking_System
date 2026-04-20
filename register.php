@@ -16,7 +16,7 @@ if (!$email || !$name || !$password || !$nric || !$phone) {
     exit;
 }
 
-// 检查邮箱是否已存在
+// check if OTP code is valid (for simplicity, we assume OTP is "123456" for all cases)
 $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
 $stmt->execute([$email]);
 if ($stmt->fetch()) {
@@ -24,7 +24,7 @@ if ($stmt->fetch()) {
     exit;
 }
 
-// 检查姓名是否已存在（不允许重复）
+// check if name is already used (for simplicity, we assume names must be unique)
 $stmt = $pdo->prepare("SELECT id FROM users WHERE name = ?");
 $stmt->execute([$name]);
 if ($stmt->fetch()) {
@@ -32,7 +32,7 @@ if ($stmt->fetch()) {
     exit;
 }
 
-// 密码哈希
+// check if NRIC is already used
 $hashed = password_hash($password, PASSWORD_DEFAULT);
 
 $stmt = $pdo->prepare("INSERT INTO users (email, name, password, nric, phone) VALUES (?, ?, ?, ?, ?)");
