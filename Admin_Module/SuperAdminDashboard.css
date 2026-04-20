@@ -214,7 +214,7 @@ body {
     grid-template-columns: 1fr 350px;
     gap: 20px;
     margin-top: 10px;
-    align-items: stretch;
+    align-items: start;
 }
 
 .data-section, .shortcuts-section {
@@ -358,7 +358,7 @@ body {
     border-radius: 15px;
     padding : 20px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    height: 100%;
+    height: auto;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -381,7 +381,6 @@ body {
     width: 100% !important;
     max-width: 100% !important;
 }
-
 
 /* Style for selected calendar day */
 .flatpickr-day.selected {
@@ -545,4 +544,83 @@ body {
         grid-template-columns: 1fr 350px; 
     }
 
+}
+
+
+/* First Login Modal Styles */
+.force-change-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000; /* Must be higher than nav bar */
+}
+
+.force-change-card {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 450px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    text-align: center;
+}
+
+.force-change-card h2 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.force-change-card p {
+    color: #666;
+    margin-bottom: 25px;
+    font-size: 14px;
+}
+
+.force-input-group {
+    margin-bottom: 20px;
+     text-align: left;
+}
+
+.force-input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+.force-input-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+.btn-update-pass {
+    width: 100%;
+    padding: 12px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-update-pass:hover {
+    background-color: #2980b9;
+}
+
+.error-msg {
+    color: #e74c3c;
+    margin-bottom: 15px;
+    font-size: 14px;
 }

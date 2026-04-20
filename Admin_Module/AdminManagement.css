@@ -196,6 +196,22 @@
     color: #fa5252;
 }
 
+/* Styling for the Superadmin Master label */
+.status-master {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+    width: 120px;
+    background-color: #f3f0ff; /* Light purple background */
+    color: #6f42c1;           /* Deep purple text */
+    box-sizing: border-box;
+}
+
 /* Small badge styling for user roles */
 .role-label {
     background: #f1f3f5;

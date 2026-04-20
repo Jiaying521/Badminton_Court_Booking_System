@@ -1,5 +1,16 @@
 <?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'Email_System/phpmailer/src/Exception.php';
+require 'Email_System/phpmailer/src/PHPMailer.php';
+require 'Email_System/phpmailer/src/SMTP.php';
+
 session_start();
+
+$username = $_SESSION['username'];
+$role = $_SESSION['role'];
+$display_name = ($role === 'Doctor') ? "Dr. " . $username : $username;
 
 // --- Prevent browser caching (Solve the logout back-button issue) ---
 header("Cache-Control: no-cache, no-store, must-revalidate"); 
@@ -15,12 +26,35 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'Superadmin') {
     exit();
 }
 
-// Function to send email logic
+// Updated Function using PHPMailer
 function sendTemporaryPassword($to_email, $username, $temp_pass) {
-    $subject = "CareConnect Credentials";
-    $message = "<html><body><h2>Welcome $username</h2><p>Temp Pass: $temp_pass</p></body></html>";
-    $headers = "MIME-Version: 1.0" . "\r\n" . "Content-type:text/html;charset=UTF-8" . "\r\n" . "From: <noreply@careconnect.com>";
-    return mail($to_email, $subject, $message, $headers);
+    $mail = new PHPMailer(true);
+    try {
+        // Server settings
+        $mail->isSMTP();
+        $mail->Host       = 'smtp.gmail.com'; 
+        $mail->SMTPAuth   = true;
+        // Use your working credentials from SendResetLogic
+        $mail->Username   = 'adminclinic2026@gmail.com'; 
+        $mail->Password   = 'wugc qoue fcta diqx';   
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = 587;
+
+        // Recipients
+        $mail->setFrom('adminclinic2026@gmail.com', 'Care Connect Clinic');
+        $mail->addAddress($to_email);
+
+        // Content
+        $mail->isHTML(true);
+        $mail->CharSet = 'UTF-8';
+        $mail->Subject = 'CareConnect Credentials';
+        $mail->Body    = "<html><body><h2>Welcome $username</h2><p>Your account has been created. Your temporary password is: <b>$temp_pass</b></p><p>Please change your password after logging in.</p></body></html>";
+
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        return false; 
+    }
 }
 
 $message = "";
@@ -29,22 +63,43 @@ $message = "";
 if (isset($_POST['add_account'])) {
     $user = mysqli_real_escape_string($conn, $_POST['username']);
     $email = mysqli_real_escape_string($conn, $_POST['email']);
-    $role = mysqli_real_escape_string($conn, $_POST['role']);
+    $role_to_add = mysqli_real_escape_string($conn, $_POST['role']);
     $spec = isset($_POST['spec']) ? mysqli_real_escape_string($conn, $_POST['spec']) : NULL;
+    
+    // Set is_doctor based on role for DB compatibility
+    $is_doc_val = ($role_to_add === 'Doctor') ? 1 : 0;
 
     $temp_pass = bin2hex(random_bytes(4));
     $hashed_pass = password_hash($temp_pass, PASSWORD_DEFAULT);
 
-    $check = mysqli_query($conn, "SELECT id FROM admins WHERE username = '$user'");
+    // Check for duplicate username OR email
+    $check = mysqli_query($conn, "SELECT username, email FROM admins WHERE username = '$user' OR email = '$email'");
     if (mysqli_num_rows($check) > 0) {
-        $message = "<div class='badge pending' style='width:100%; padding:15px; margin-bottom:20px;'>Error: Username already exists!</div>";
+        $found = mysqli_fetch_assoc($check);
+        if ($found['username'] === $user) {
+            $message = "<div class='badge pending' style='width:100%; padding:15px; margin-bottom:20px;'>Error: Username already exists!</div>";
+        } else {
+            $message = "<div class='badge pending' style='width:100%; padding:15px; margin-bottom:20px;'>Error: Email address already exists!</div>";
+        }
     } else {
-        // Status is set to 'Inactive' for new accounts
-        $sql = "INSERT INTO admins (username, email, password, role, status, specialisation) 
-                VALUES ('$user', '$email', '$hashed_pass', '$role', 'Inactive', '$spec')";
+        // Corrected INSERT: Omit 'id' for Auto_Increment and added required columns
+        // Added is_doctor and first_login to the SQL to match your database
+        $sql = "INSERT INTO admins (username, email, password, role, status, specialisation, is_doctor, first_login) 
+                VALUES ('$user', '$email', '$hashed_pass', '$role_to_add', 'Inactive', '$spec', '$is_doc_val', 0)";
+        
         if (mysqli_query($conn, $sql)) {
-            sendTemporaryPassword($email, $user, $temp_pass);
-            $message = "<div class='badge success' style='width:100%; padding:15px; margin-bottom:20px;'>Success: Account Created. Temporary Password: <b>$temp_pass</b></div>";
+            // Call PHPMailer function
+            $mail_sent = sendTemporaryPassword($email, $user, $temp_pass);
+            
+            if ($mail_sent) {
+                $message = "<div class='badge success' style='width:100%; padding:15px; margin-bottom:20px;'>Success: Account Created & Email Sent.</div>";
+            } else {
+                // If SMTP fails, it shows "Email skipped"
+                $message = "<div class='badge success' style='width:100%; padding:15px; margin-bottom:20px;'>Success: Account Created (Email skipped).</div>";
+            }
+        } else {
+            // Show error if DB structure still blocks insertion
+            $message = "<div class='badge pending' style='width:100%; padding:15px; margin-bottom:20px;'>Database Error: " . mysqli_error($conn) . "</div>";
         }
     }
 }
@@ -61,6 +116,7 @@ if (isset($_GET['update_id']) && isset($_GET['new_status'])) {
 // Handle delete
 if (isset($_GET['delete_id'])) {
     $did = intval($_GET['delete_id']);
+    // Prevent deleting superadmin for safety
     mysqli_query($conn, "DELETE FROM admins WHERE id = $did AND role != 'Superadmin'");
     header("Location: AdminManagement.php");
     exit();
@@ -68,7 +124,7 @@ if (isset($_GET['delete_id'])) {
 
 // Filter Logic
 $current_filter = isset($_GET['filter']) ? $_GET['filter'] : 'All';
-$query = "SELECT * FROM admins WHERE role != 'Superadmin'";
+$query = "SELECT * FROM admins WHERE 1=1"; 
 if ($current_filter !== 'All') {
     $query .= " AND role = '$current_filter'";
 }
@@ -88,17 +144,28 @@ $result = mysqli_query($conn, $query);
 
     <nav class="nav-bar">
         <div class="nav-left">
-             <button id="menu-toggle" class="menu-toggle">☰</button>
-             <img src="Pictures/logo.png" alt="logo" class="logo">
-             <span class="brand-name"><span class="text-blue">Care</span><span class="text-dark">Connect</span></span> 
+            <button id="menu-toggle" class="menu-toggle">☰</button>
+            <img src="Pictures/logo.png" alt="logo" class="logo">
+            <span class="brand-name"><span class="text-blue">Care</span><span class="text-dark">Connect</span></span> 
         </div>
+
         <ul id="nav-menu" class="nav-links">
             <li><a href="SuperAdminDashboard.php">Dashboard</a></li>
-            <li><a href="AdminManagement.php">Admin Management</a></li>
-            <li><a href="#">System Settings</a></li>
+            <?php if ($role === 'Superadmin'): ?>
+                <!-- Superadmin Menu -->
+                <li><a href="AdminManagement.php">Admin Management</a></li>
+                <li><a href="#">System Settings</a></li>
+            <?php endif; ?>
             <li><button id="logout-btn" class="logout-btn">Logout</button></li>
         </ul>
+
+        <div class="user-info">
+            <span id="welcome-text">Hello, <?php echo htmlspecialchars($display_name); ?>!</span>
+        </div>
     </nav>
+
+     
+    
 
     <main class="content">
         <div class="manage-container">
@@ -153,8 +220,9 @@ $result = mysqli_query($conn, $query);
             <div class="filter-bar">
                 <i class="fas fa-filter"></i>
                 <span>Filter By Role:</span>
-                <select id="statusFilter" style="width: 180px;" onchange="location.href='AdminManagement.php?filter=' + this.value">
+                <select id="statusFilter" style="width: 200px;" onchange="location.href='AdminManagement.php?filter=' + this.value">
                     <option value="All" <?php echo ($current_filter == 'All' ? 'selected' : ''); ?>>All Staff</option>
+                    <option value="Superadmin" <?php echo ($current_filter == 'Superadmin' ? 'selected' : ''); ?>>Superadmins Only</option>
                     <option value="Admin" <?php echo ($current_filter == 'Admin' ? 'selected' : ''); ?>>Admins Only</option>
                     <option value="Doctor" <?php echo ($current_filter == 'Doctor' ? 'selected' : ''); ?>>Doctors Only</option>
                 </select>
@@ -180,6 +248,7 @@ $result = mysqli_query($conn, $query);
                         </td>
                         <td><span class="role-label"><?php echo $row['role']; ?></span></td>
                         <td>
+                            <?php if ($row['role'] !== 'Superadmin'): ?>
                             <select class="status-select <?php 
                                 if($row['status'] == 'Active') echo 'status-active';
                                 elseif($row['status'] == 'Inactive') echo 'status-inactive';
@@ -189,11 +258,18 @@ $result = mysqli_query($conn, $query);
                                 <option value="Inactive" <?php echo ($row['status'] == 'Inactive' ? 'selected' : ''); ?>>Inactive</option>
                                 <option value="Suspended" <?php echo ($row['status'] == 'Suspended' ? 'selected' : ''); ?>>Suspended</option>
                             </select>
+                            <?php else: ?>
+                                <span class="status-master">MASTER</span>
+                            <?php endif; ?>
                         </td>
                         <td>
+                            <?php if ($row['role'] !== 'Superadmin'): ?>
                             <a href="?delete_id=<?php echo $row['id']; ?>" onclick="return confirm('Delete permanently?')">
                                 <i class="fas fa-trash-alt delete-icon"></i>
                             </a>
+                            <?php else: ?>
+                                <i class="fas fa-lock" style="color:#ccc;"></i>
+                            <?php endif; ?>
                         </td>
                     </tr>
                     <?php endwhile; ?>

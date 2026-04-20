@@ -77,6 +77,36 @@ $display_name = ($role === 'Doctor') ? "Dr. " . $username : $username;
 /* --- Database Connection --- */
 $db = mysqli_connect("localhost", "root", "", "care_connect");
 
+/* --- First Time Login Check & Password Update Logic --- */
+$status_query = mysqli_query($db, "SELECT status FROM admins WHERE username = '$username'");
+$user_data = mysqli_fetch_assoc($status_query);
+$current_status = $user_data['status'];
+
+$update_error = "";
+if (isset($_POST['update_initial_password'])) {
+    $new_pass = $_POST['new_password'];
+    $confirm_pass = $_POST['confirm_password'];
+
+    // Security requirement regex: At least 8 characters, letters, numbers, and symbols
+    $strongPasswordRegex = "/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/";
+
+    if ($new_pass !== $confirm_pass) {
+        $update_error = "Passwords do not match!";
+    } elseif (!preg_match($strongPasswordRegex, $new_pass)) {
+        $update_error = "Security requirement: At least 8 characters, including letters, numbers, and symbols (@$!%*?&).";
+    } else {
+        $hashed_password = password_hash($new_pass, PASSWORD_DEFAULT);
+        // Update password and change status to 'Active'
+        $update_sql = "UPDATE admins SET password = '$hashed_password', status = 'Active' WHERE username = '$username'";
+        if (mysqli_query($db, $update_sql)) {
+            header("Location: SuperAdminDashboard.php"); 
+            exit();
+        } else {
+            $update_error = "Database error. Please try again.";
+        }
+    }
+}
+
 /* --- Dashboard Statistics --- */
 
 /* Count total superadmins */
@@ -217,7 +247,7 @@ if ($stats_result) {
                 <li><a href="Profile.php">Profile</a></li>
             <?php endif; ?>
             
-            <li><button id="logout-btn" class="logout-btn">Logout</button></li>
+            <li><button id="logout-btn" class="logout-btn" onclick="location.href='SuperAdminDashboard.php?action=logout'">Logout</button></li>
 
         </ul>
 
@@ -310,6 +340,35 @@ if ($stats_result) {
             </div>
 
     </main>
+
+    <!-- Force Password Change Modal (Visible only if status is Inactive) -->
+    <?php if ($current_status === 'Inactive'): ?>
+    <div class="force-change-overlay">
+        <div class="force-change-card">
+            <i class="fas fa-lock" style="font-size: 40px; color: #1E90FF; margin-bottom: 20px;"></i>
+            <h2>Security Update</h2>
+            <p>Welcome to CareConnect! Since this is your first login, please update your temporary password to activate your account.</p>
+            
+            <?php if ($update_error !== ""): ?>
+                <div class="error-msg"><?php echo $update_error; ?></div>
+            <?php endif; ?>
+
+            <form method="POST" action="">
+                <div class="force-input-group">
+                    <label>New Password</label>
+                    <input type="password" name="new_password" placeholder="Enter new password" required minlength="8">
+                </div>
+                <div class="force-input-group">
+                    <label>Confirm New Password</label>
+                    <input type="password" name="confirm_password" placeholder="Confirm new password" required minlength="8">
+                </div>
+                <button type="submit" name="update_initial_password" class="btn-update-pass">
+                    Update Password & Activate
+                </button>
+            </form>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <!-- Passing PHP arrays to JavaScript -->
     <script>

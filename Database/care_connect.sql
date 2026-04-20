@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 17, 2026 at 05:50 AM
+-- Generation Time: Apr 20, 2026 at 06:23 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -50,8 +50,7 @@ CREATE TABLE `admins` (
 --
 
 INSERT INTO `admins` (`id`, `username`, `email`, `password`, `role`, `status`, `first_login`, `reset_token`, `token_expiry`, `is_doctor`, `specialisation`, `gender`, `language`, `bio`, `profile_image`) VALUES
-(0, 'heybi', 'chinzx1814@gmail.com', '$2y$10$x5NsQGVwkkp5f4oivtMd..D9tsrJLMICxeSDnSe0peEwVN77QeFGu', 'Superadmin', 'Active', 1, '06b80dc2a1165a4cb544c86a4e9fe8f87a5f8eaad14af47c3a86592eb37530bb', '2026-04-17 04:01:47', 0, NULL, NULL, NULL, NULL, NULL),
-(1, 'admin', '-', '$2y$10$lKJR3lV5IxZSt0Wasb3dUuCFGooQPJd4EBDFSc0xb30V.N7quWA/e', 'Admin', 'Active', 1, NULL, NULL, 1, 'Dermatology', 'Female', 'English, Chinese', 'Skin specialist expert in acne and eczema treatment.', NULL),
+(1, 'Admin', '-', '$2y$10$lKJR3lV5IxZSt0Wasb3dUuCFGooQPJd4EBDFSc0xb30V.N7quWA/e', 'Admin', 'Active', 1, NULL, NULL, 1, 'Dermatology', 'Female', 'English, Chinese', 'Skin specialist expert in acne and eczema treatment.', NULL),
 (2, 'Adam', 'adam@careconnect.com', '$2y$10$lKJR3lV5IxZSt0Wasb3dUuCFGooQPJd4EBDFSc0xb30V.N7quWA/e', 'Doctor', 'Active', 1, NULL, NULL, 1, 'Cardiology', 'Male', 'English, Malay', 'Adult cardiologist specializing in heart disease, hypertension, and cholesterol management. For patients aged 18+.', NULL),
 (3, 'Lisa', 'lisa@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', 'Active', 1, NULL, NULL, 1, 'Cardiology', 'Female', 'English, Chinese', 'Pediatric cardiologist for children and adolescents. Expert in congenital heart defects and pediatric heart health.', NULL),
 (4, 'Mark', 'mark@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', 'Active', 1, NULL, NULL, 1, 'Dermatology', 'Male', 'English, Malay', 'Adult dermatology: acne, eczema, psoriasis, skin cancer screening. Specialized in adult skin conditions.', NULL),
@@ -63,7 +62,8 @@ INSERT INTO `admins` (`id`, `username`, `email`, `password`, `role`, `status`, `
 (10, 'SophiaTeen', 'sophia@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', 'Active', 1, NULL, NULL, 1, 'Pediatrics', 'Female', 'English, Malay, Chinese', 'Adolescent medicine specialist: ages 10-21, focusing on teen health, mental health, and preventive care.', NULL),
 (11, 'Emily Tan', 'emilytan@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', 'Active', 1, NULL, NULL, 1, 'Pediatrics', 'Female', 'English, Malay, Chinese', 'Experienced pediatrician dedicated to providing quality care.', NULL),
 (12, 'Mike', 'mike@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', 'Active', 1, NULL, NULL, 1, 'General Practice', 'Male', 'English, Malay', 'Family doctor for adults: general check-ups, acute illness, chronic disease management.', NULL),
-(13, 'Jenny', 'jenny@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', 'Active', 1, NULL, NULL, 1, 'General Practice', 'Female', 'English, Chinese', 'Family doctor for children: well-child visits, vaccinations, common childhood illnesses.', NULL);
+(13, 'Jenny', 'jenny@careconnect.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Doctor', 'Active', 1, NULL, NULL, 1, 'General Practice', 'Female', 'English, Chinese', 'Family doctor for children: well-child visits, vaccinations, common childhood illnesses.', NULL),
+(100, 'Superadmin', 'chinzx1814@gmail.com', '$2y$10$x5NsQGVwkkp5f4oivtMd..D9tsrJLMICxeSDnSe0peEwVN77QeFGu', 'Superadmin', 'Active', 1, '06b80dc2a1165a4cb544c86a4e9fe8f87a5f8eaad14af47c3a86592eb37530bb', '2026-04-17 04:01:47', 0, NULL, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -496,6 +496,12 @@ ALTER TABLE `users`
 --
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `admins`
+--
+ALTER TABLE `admins`
+  MODIFY `id` int(255) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=109;
 
 --
 -- AUTO_INCREMENT for table `appointments`
