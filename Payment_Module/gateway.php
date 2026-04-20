@@ -19,7 +19,7 @@ $promo  = $_POST['promo_code'] ?? '';
 <div class="container">
     
     <?php if ($method === 'Credit Card'): ?>
-        <h2 style="color: #333;">💳 Enter Card Details</h2>
+        <h2 style="color: #333;">Enter Card Details</h2>
         <p style="text-align: center; color: #666;">Total to pay: RM <?php print $amount; ?></p>
         
         <form action="process_payment.php" method="POST">
@@ -45,7 +45,7 @@ $promo  = $_POST['promo_code'] ?? '';
         </form>
 
     <?php elseif ($method === 'Bank Transfer'): ?>
-        <h2 style="color: #e60000;">🏦 FakeBank2U Login</h2>
+        <h2 style="color: #e60000;">Bank2U Login</h2>
         <p style="text-align: center; font-size: 14px;">Merchant: Clinic Appointment System<br>Amount: RM <?php print $amount; ?></p>
         
         <form action="process_payment.php" method="POST">
@@ -63,7 +63,7 @@ $promo  = $_POST['promo_code'] ?? '';
         </form>
 
     <?php elseif ($method === 'E-Wallet'): ?>
-        <h2 style="color: #0080ff;">📱 E-Wallet Scan</h2>
+        <h2 style="color: #0080ff;">E-Wallet </h2>
         <div style="text-align: center; margin: 20px 0;">
             <div style="width: 150px; height: 150px; background-color: #eee; border: 2px dashed #0080ff; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
                 <span style="color: #0080ff; font-weight: bold;">[FAKE QR CODE]</span>

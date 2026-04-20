@@ -8,20 +8,25 @@
 </head>
 <body>
 
-    <div class="container" style="max-width: 800px;">
-        <h2>My Payment History</h2>
+    <div class="container" style="max-width: 850px;"> <h2>My Payment History</h2>
         
         <?php
         $sql = "SELECT * FROM payments ORDER BY payment_date DESC";
         $result = $conn->query($sql);
 
         print "<table>";
-        print "<tr><th>Receipt ID</th><th>Amount Paid</th><th>Method</th><th>Status</th><th>Action</th></tr>";
+        // 1. ADDED 'Date & Time' to the table headers
+        print "<tr><th>Receipt ID</th><th>Date & Time</th><th>Amount Paid</th><th>Method</th><th>Status</th><th>Action</th></tr>";
 
         if ($result->num_rows > 0) {
             while($row = $result->fetch_assoc()) {
                 print "<tr>";
                 print "<td>REC-00" . $row['payment_id'] . "</td>";
+                
+                // 2. ADDED the formatted date column
+                $formatted_date = date("d M Y, h:i A", strtotime($row['payment_date']));
+                print "<td>" . $formatted_date . "</td>";
+                
                 print "<td>RM " . $row['final_amount'] . "</td>";
                 print "<td>" . $row['payment_method'] . "</td>";
                 
@@ -46,7 +51,8 @@
                 print "</tr>";
             }
         } else {
-            print "<tr><td colspan='5' style='text-align:center;'>No payments found.</td></tr>";
+            // 3. Changed colspan to 6 because our table is wider now
+            print "<tr><td colspan='6' style='text-align:center;'>No payments found.</td></tr>";
         }
 
         print "</table>";
