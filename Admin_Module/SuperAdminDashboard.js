@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         listDiv.innerHTML += `
                             <div class="${cardClass}">
                                 <div class="appt-content">
-                                    <h4>General Visit - ${app.patient_name}</h4>
+                                    <h4>Court Booking - ${app.player_name}</h4>
                                     <div class="appt-details">
                                         <i class="far fa-calendar-check"></i> 
                                         ${dateStr}, ${app.appointment_time}

@@ -10,7 +10,7 @@ session_start();
 
 $username = $_SESSION['username'];
 $role = $_SESSION['role'];
-$display_name = ($role === 'Doctor') ? "Dr. " . $username : $username;
+$display_name = $username;
 
 // --- Prevent browser caching (Solve the logout back-button issue) ---
 header("Cache-Control: no-cache, no-store, must-revalidate"); 
@@ -18,7 +18,7 @@ header("Pragma: no-cache"); // HTTP 1.0.
 header("Expires: 0"); // Proxies.
 
 // Database connection
-$conn = mysqli_connect("localhost", "root", "", "care_connect");
+$conn = mysqli_connect("localhost", "root", "", "badminton_hub");
 
 // Security check - If no session, redirect immediately
 if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'Superadmin') {
@@ -35,20 +35,44 @@ function sendTemporaryPassword($to_email, $username, $temp_pass) {
         $mail->Host       = 'smtp.gmail.com'; 
         $mail->SMTPAuth   = true;
         // Use your working credentials from SendResetLogic
-        $mail->Username   = 'adminclinic2026@gmail.com'; 
-        $mail->Password   = 'wugc qoue fcta diqx';   
+        $mail->Username   = 'smasharenabadminton@gmail.com'; 
+        $mail->Password   = 'hgrk ocze fowx rbrd';   
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 
         // Recipients
-        $mail->setFrom('adminclinic2026@gmail.com', 'Care Connect Clinic');
+        $mail->setFrom('smasharenabadminton@gmail.com', 'Badminton Hub');
         $mail->addAddress($to_email);
 
         // Content
         $mail->isHTML(true);
         $mail->CharSet = 'UTF-8';
-        $mail->Subject = 'CareConnect Credentials';
-        $mail->Body    = "<html><body><h2>Welcome $username</h2><p>Your account has been created. Your temporary password is: <b>$temp_pass</b></p><p>Please change your password after logging in.</p></body></html>";
+        $mail->Subject = 'Badminton Hub Credentials';
+        $mail->Body    = "
+        <div style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px;'>
+            <div style='max-width: 520px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);'>
+                <div style='background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 32px; text-align: center;'>
+                    <p style='margin:0; font-size:32px;'>&#127992;</p>
+                    <h1 style='margin: 10px 0 4px; color: #f59e0b; font-size: 22px;'>Badminton Hub</h1>
+                    <p style='margin:0; color: rgba(255,255,255,0.6); font-size: 13px;'>Admin Portal</p>
+                </div>
+                <div style='padding: 36px 32px;'>
+                    <h2 style='margin: 0 0 8px; color: #0f172a; font-size: 20px;'>Welcome, $username!</h2>
+                    <p style='color: #64748b; font-size: 15px; line-height: 1.6; margin: 0 0 24px;'>Your admin account has been created on Badminton Hub. Use the temporary credentials below to log in for the first time.</p>
+                    <div style='background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 12px; padding: 20px 24px; margin-bottom: 24px;'>
+                        <p style='margin: 0 0 8px; font-size: 12px; font-weight: 700; color: #92400e; text-transform: uppercase; letter-spacing: 0.5px;'>Your Temporary Password</p>
+                        <p style='margin: 0; font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: 3px; font-family: monospace;'>$temp_pass</p>
+                    </div>
+                    <div style='background: #fef2f2; border-left: 4px solid #ef4444; border-radius: 8px; padding: 14px 18px; margin-bottom: 28px;'>
+                        <p style='margin: 0; font-size: 13px; color: #991b1b;'>&#9888;&#65039; You will be required to change this password on your first login. Please keep these credentials private.</p>
+                    </div>
+                    <a href='http://localhost/fyp/Admin_Module/LoginPage.php' style='display: block; text-align: center; padding: 14px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #0f172a; text-decoration: none; border-radius: 50px; font-weight: 800; font-size: 15px;'>Login to Admin Portal</a>
+                </div>
+                <div style='background: #f8fafc; padding: 20px 32px; text-align: center; border-top: 1px solid #e2e8f0;'>
+                    <p style='margin: 0; font-size: 12px; color: #94a3b8;'>This email was sent by Badminton Hub Admin System. If you did not expect this, please contact your system administrator.</p>
+                </div>
+            </div>
+        </div>";
 
         $mail->send();
         return true;
@@ -66,8 +90,8 @@ if (isset($_POST['add_account'])) {
     $role_to_add = mysqli_real_escape_string($conn, $_POST['role']);
     $spec = isset($_POST['spec']) ? mysqli_real_escape_string($conn, $_POST['spec']) : NULL;
     
-    // Set is_doctor based on role for DB compatibility
-    $is_doc_val = ($role_to_add === 'Doctor') ? 1 : 0;
+    // Set is_coach based on role for DB compatibility
+    $is_doc_val = ($role_to_add === 'Coach') ? 1 : 0;
 
     $temp_pass = bin2hex(random_bytes(4));
     $hashed_pass = password_hash($temp_pass, PASSWORD_DEFAULT);
@@ -83,8 +107,8 @@ if (isset($_POST['add_account'])) {
         }
     } else {
         // Corrected INSERT: Omit 'id' for Auto_Increment and added required columns
-        // Added is_doctor and first_login to the SQL to match your database
-        $sql = "INSERT INTO admins (username, email, password, role, status, specialisation, is_doctor, first_login) 
+        // Added is_coach and first_login to the SQL to match your database
+        $sql = "INSERT INTO admins (username, email, password, role, status, specialisation, is_coach, first_login) 
                 VALUES ('$user', '$email', '$hashed_pass', '$role_to_add', 'Inactive', '$spec', '$is_doc_val', 0)";
         
         if (mysqli_query($conn, $sql)) {
@@ -135,9 +159,12 @@ $result = mysqli_query($conn, $query);
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>CareConnect - Admin Management</title>
+    <title>Badminton Hub - Admin Management</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap">
     <link rel="stylesheet" href="SuperAdminDashboard.css">
+    <link rel="stylesheet" href="AdminManagement.css">
     <link rel="stylesheet" href="AdminManagement.css">
 </head>
 <body>
@@ -146,7 +173,7 @@ $result = mysqli_query($conn, $query);
         <div class="nav-left">
             <button id="menu-toggle" class="menu-toggle">☰</button>
             <img src="Pictures/logo.png" alt="logo" class="logo">
-            <span class="brand-name"><span class="text-blue">Care</span><span class="text-dark">Connect</span></span> 
+            <span class="brand-name"><span class="text-primary">Badminton</span><span class="text-dark">Hub</span></span> 
         </div>
 
         <ul id="nav-menu" class="nav-links">
@@ -173,14 +200,14 @@ $result = mysqli_query($conn, $query);
             <header class="management-header">
                 <div>
                     <h1>Staff Management</h1>
-                    <p>Manage clinic staff accounts and permissions.</p>
+                    <p>Manage badminton hub staff accounts and permissions.</p>
                 </div>
                 <div class="btn-add-group">
                     <button class="btn-add-account" onclick="toggleForm('adminForm')">
                         <i class="fas fa-plus"></i> Admin
                     </button>
-                    <button class="btn-add-account" style="background-color: #17a2b8;" onclick="toggleForm('doctorForm')">
-                        <i class="fas fa-user-md"></i> Doctor
+                    <button class="btn-add-account" style="background-color: #17a2b8;" onclick="toggleForm('coachForm')">
+                        <i class="fas fa-user-shield"></i> Coach
                     </button>
                 </div>
             </header>
@@ -198,20 +225,20 @@ $result = mysqli_query($conn, $query);
                 </form>
             </div>
 
-            <!-- Add Doctor Form -->
-            <div id="doctorForm" class="form-card">
-                <h3>Create New Doctor</h3>
+            <!-- Coach Management Form -->
+            <div id="coachForm" class="form-card">
+                <h3>Coach Management</h3>
                 <form method="POST" class="form-grid">
-                    <input type="hidden" name="role" value="Doctor">
-                    <input type="text" name="username" placeholder="Doctor Name" required>
+                    <input type="hidden" name="role" value="Coach">
+                    <input type="text" name="username" placeholder="Coach Management" required>
                     <input type="email" name="email" placeholder="Email" required>
                     <select name="spec" required>
-                        <option value="" disabled selected>Select Specialisation</option>
-                        <option value="General Practice">General Practice</option>
-                        <option value="Cardiology">Cardiology</option>
-                        <option value="Dermatology">Dermatology</option>
-                        <option value="Pediatrics">Pediatrics</option>
-                        <option value="Neurology">Neurology</option>
+                        <option value="" disabled selected>Select Coaching Specialty</option>
+                        <option value="Singles Coaching">Singles Coaching</option>
+                        <option value="Doubles Coaching">Doubles Coaching</option>
+                        <option value="Fitness & Conditioning">Fitness &amp; Conditioning</option>
+                        <option value="Junior Development">Junior Development</option>
+                        <option value="Tournament Preparation">Tournament Preparation</option>
                     </select>
                     <button type="submit" name="add_account" class="btn-create">Create Account</button>
                 </form>
@@ -224,7 +251,7 @@ $result = mysqli_query($conn, $query);
                     <option value="All" <?php echo ($current_filter == 'All' ? 'selected' : ''); ?>>All Staff</option>
                     <option value="Superadmin" <?php echo ($current_filter == 'Superadmin' ? 'selected' : ''); ?>>Superadmins Only</option>
                     <option value="Admin" <?php echo ($current_filter == 'Admin' ? 'selected' : ''); ?>>Admins Only</option>
-                    <option value="Doctor" <?php echo ($current_filter == 'Doctor' ? 'selected' : ''); ?>>Doctors Only</option>
+                    <option value="Coach" <?php echo ($current_filter == 'Coach' ? 'selected' : ''); ?>>Coach Management</option>
                 </select>
             </div>
 
@@ -282,7 +309,7 @@ $result = mysqli_query($conn, $query);
     <script>
         function toggleForm(id) {
             document.getElementById('adminForm').classList.remove('active');
-            document.getElementById('doctorForm').classList.remove('active');
+            document.getElementById('coachForm').classList.remove('active');
             document.getElementById(id).classList.add('active');
         }
     </script>

@@ -18,7 +18,7 @@ if (empty($token) || empty($password)) {
 $host = "localhost";
 $db_user = "root";
 $db_pass = "";
-$db_name = "care_connect";
+$db_name = "badminton_hub";
 
 $conn = new mysqli($host, $db_user, $db_pass, $db_name);
 

@@ -18,7 +18,7 @@ if (isset($_GET['ajax_fetch'])) {
     $u_name = isset($_SESSION['username']) ? $_SESSION['username'] : '';
     $u_role = isset($_SESSION['role']) ? $_SESSION['role'] : '';
 
-    $conn = mysqli_connect("localhost", "root", "", "care_connect");
+    $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
     
     if (!$conn) {
         header('Content-Type: application/json');
@@ -26,16 +26,16 @@ if (isset($_GET['ajax_fetch'])) {
         exit();
     }
 
-    $sql = "SELECT COALESCE(u.name, CONCAT('User ID: ', a.user_id)) AS patient_name,
+    $sql = "SELECT COALESCE(u.name, CONCAT('User ID: ', a.user_id)) AS player_name,
                    a.appointment_time, 
                    a.status, 
-                   a.doctor_name 
+                   a.coach_name 
             FROM appointments a 
             LEFT JOIN users u ON a.user_id = u.id 
             WHERE DATE(a.appointment_date) = '$target_date'";
     
-    if (strtolower($u_role) === 'doctor') {
-        $sql .= " AND TRIM(LOWER(a.doctor_name)) = TRIM(LOWER('$u_name'))";
+    if (strtolower($u_role) === 'coach') {
+        $sql .= " AND TRIM(LOWER(a.coach_name)) = TRIM(LOWER('$u_name'))";
     }
     
     $sql .= " ORDER BY a.appointment_time ASC LIMIT 10"; 
@@ -50,8 +50,8 @@ if (isset($_GET['ajax_fetch'])) {
     $appointments = [];
     while ($row = mysqli_fetch_assoc($res)) {
         $row['appointment_time'] = date("h:i A", strtotime($row['appointment_time']));
-        if (strtolower($u_role) !== 'doctor') {
-            $row['patient_name'] .= " (Dr. " . $row['doctor_name'] . ")";
+        if (strtolower($u_role) !== 'coach') {
+            $row['player_name'] .= " (Coach: " . $row['coach_name'] . ")";
         }
         $appointments[] = $row;
     }
@@ -71,11 +71,11 @@ $username = $_SESSION['username'];
 $role = $_SESSION['role'];
 
 /* --- Display Name Logic --- */
-// If the user is a Doctor, add "Dr."
-$display_name = ($role === 'Doctor') ? "Dr. " . $username : $username;
+// Display name for coach
+$display_name = $username;
 
 /* --- Database Connection --- */
-$db = mysqli_connect("localhost", "root", "", "care_connect");
+$db = mysqli_connect("localhost", "root", "", "badminton_hub");
 
 /* --- First Time Login Check & Password Update Logic --- */
 $status_query = mysqli_query($db, "SELECT status FROM admins WHERE username = '$username'");
@@ -113,20 +113,20 @@ if (isset($_POST['update_initial_password'])) {
 $query_super = mysqli_query($db, "SELECT COUNT(*) AS total FROM admins WHERE role = 'Superadmin'");
 $total_superadmins = mysqli_fetch_assoc($query_super)['total'];
 
-/* Count Total Admins (The clinic managers) */
+/* Count Total Admins */
 $query_admin = mysqli_query($db, "SELECT COUNT(*) AS total FROM admins WHERE role = 'Admin'");
 $total_admins = mysqli_fetch_assoc($query_admin)['total'];
 
-/* Count Total Doctors */
-$query_doctors = mysqli_query($db, "SELECT COUNT(*) AS total FROM admins WHERE role = 'Doctor'");
-$total_doctors = mysqli_fetch_assoc($query_doctors)['total'];
+/* Count Total Coaches */
+$query_coaches = mysqli_query($db, "SELECT COUNT(*) AS total FROM admins WHERE role = 'Coach'");
+$total_coaches = mysqli_fetch_assoc($query_coaches)['total'];
 
 /* Count today's appointments (Filtered by role) */
 $today = date("Y-m-d");
 $appt_filter = "";
 
-if (strtolower($role) === 'doctor') {
-    $appt_filter = " AND doctor_name = '$username'";
+if (strtolower($role) === 'coach') {
+    $appt_filter = " AND coach_name = '$username'";
 }
 
 $query_today = mysqli_query($db, "SELECT COUNT(*) AS today_appointments FROM appointments WHERE appointment_date = '$today' $appt_filter");
@@ -156,15 +156,15 @@ $cancelled_data = array_fill(0, 12, 0);
 $rescheduled_data = array_fill(0, 12, 0);
 $ongoing_data = array_fill(0, 12, 0);
 
-/* Filter data if the user is a Doctor */
-$doctor_filter = "";
-if (strtolower($role) === 'doctor') { 
-    $doctor_filter = " AND doctor_name = '$username'"; 
+/* Filter data if the user is a Coach */
+$coach_filter = "";
+if (strtolower($role) === 'coach') { 
+    $coach_filter = " AND coach_name = '$username'"; 
 }
 
 $status_sql = "SELECT MONTH(appointment_date) AS month_num, status, COUNT(*) AS count
                FROM appointments
-               WHERE YEAR(appointment_date) = '$current_year' $doctor_filter
+               WHERE YEAR(appointment_date) = '$current_year' $coach_filter
                GROUP BY month_num, status";
                
 $stats_result = mysqli_query($db, $status_sql);
@@ -191,10 +191,12 @@ if ($stats_result) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareConnect - Dashboard</title>
+    <title>Badminton Hub - Dashboard</title>
 
     <!-- External CSS & Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap">
     <link rel="stylesheet" href="SuperAdminDashboard.css">
 
     <!-- Chart.js Library -->
@@ -212,7 +214,7 @@ if ($stats_result) {
         <div class="nav-left">
              <button id="menu-toggle" class="menu-toggle">☰</button>
              <img src="Pictures/logo.png" alt="logo" class="logo">
-             <span class="brand-name"><span class="text-blue">Care</span><span class="text-dark">Connect</span></span> 
+             <span class="brand-name"><span class="text-primary">Badminton</span><span class="text-dark">Hub</span></span> 
         </div>
 
         <ul id="nav-menu" class="nav-links">
@@ -225,13 +227,13 @@ if ($stats_result) {
 
             <?php elseif ($role === 'Admin'): ?>
                 <!-- Admin Menu -->
-                <li><a href="DoctorManagement.php">Doctor Management</a></li>
-                <li><a href="AppointmentManagement.php">Appointments</a></li>
-                <li><a href="ScheduleManagement.php">Schedule Management</a></li>
+                <li><a href="CoachManagement.php">Coach Management</a></li>
+                <li><a href="BookingManagement.php">Bookings</a></li>
+                <li><a href="ScheduleManagement.php">Court Schedule</a></li>
                 <li class="dropdown">
                     <a href="#" class="drop-btn">More Options ▼</a>
                     <ul class="submenu">
-                        <li><a href="PatientList.php">Patient List</a></li>
+                        <li><a href="PlayerList.php">Player List</a></li>
                         <li><a href="Reports.php">Reports & Analytics</a></li>
                         <li><a href="Notifications.php">Notifications</a></li>
                         <li><a href="ConflictManagement.php">Conflict Management</a></li>
@@ -239,11 +241,11 @@ if ($stats_result) {
                     </ul>
                 </li>
 
-            <?php elseif ($role === 'Doctor'): ?>
-                <!-- Doctor Menu -->
-                <li><a href="MyAppointments.php">My Appointments</a></li>
+            <?php elseif ($role === 'Coach'): ?>
+                <!-- Coach Menu -->
+                <li><a href="MyBookings.php">My Bookings</a></li>
                 <li><a href="MySchedule.php">My Schedule</a></li>
-                <li><a href="MyPatients.php">My Patients</a></li>
+                <li><a href="MyPlayers.php">My Players</a></li>
                 <li><a href="Profile.php">Profile</a></li>
             <?php endif; ?>
             
@@ -287,14 +289,14 @@ if ($stats_result) {
             <?php if ($role === 'Superadmin' || $role === 'Admin'): ?>
                 <div class="stat-box">
                     <div class="stat-icon green"><i class="fas fa-user-md"></i></div>
-                    <div class="stat-info"><h3>Total Doctors</h3><p><?php echo $total_doctors; ?></p></div>
+                    <div class="stat-info"><h3>Total Coaches</h3><p><?php echo $total_coaches; ?></p></div>
                 </div>
             <?php endif; ?>
 
             <div class="stat-box">
                 <div class="stat-icon orange"><i class="fas fa-calendar-check"></i></div>
                 <div class="stat-info">
-                    <h3>Today's Appt</h3>
+                    <h3>Today's Bookings</h3>
                     <p><?php echo $today_appointments; ?></p>
                 </div>
             </div>
@@ -306,7 +308,7 @@ if ($stats_result) {
             <!-- Left: Appointment Statistics -->
             <div class="data-section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h2>Appointments Statistics</h2>
+                    <h2>Booking Statistics</h2>
                     <select id="statusFilter" onchange="filterStats()" style="padding: 5px; border-radius: 5px;">
                         <option value="All">Show All</option>
                         <option value="Completed">Completed</option>
@@ -323,7 +325,7 @@ if ($stats_result) {
             <!-- Flatpickr Calendar Section -->
             <div class="calendar-section">
                 <div class="calendar-header">
-                    <h2>Appointment</h2>
+                    <h2>Bookings Calendar</h2>
                 </div>
                 
                 <!-- Show calendar-->
@@ -345,9 +347,9 @@ if ($stats_result) {
     <?php if ($current_status === 'Inactive'): ?>
     <div class="force-change-overlay">
         <div class="force-change-card">
-            <i class="fas fa-lock" style="font-size: 40px; color: #1E90FF; margin-bottom: 20px;"></i>
+            <i class="fas fa-lock" style="font-size: 40px; color: #f59e0b; margin-bottom: 20px;"></i>
             <h2>Security Update</h2>
-            <p>Welcome to CareConnect! Since this is your first login, please update your temporary password to activate your account.</p>
+            <p>Welcome to Badminton Hub! Since this is your first login, please update your temporary password to activate your account.</p>
             
             <?php if ($update_error !== ""): ?>
                 <div class="error-msg"><?php echo $update_error; ?></div>
