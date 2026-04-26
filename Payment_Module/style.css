@@ -1,0 +1,111 @@
+/* style.css - Master Sports Design File */
+
+/* 1. The Background & Font */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Dark, energetic overlay with a fresh Badminton Unsplash background */
+    background-image: linear-gradient(rgba(15, 32, 39, 0.8), rgba(32, 58, 67, 0.8)), url('https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?q=80&w=2000&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    margin: 0;
+    padding: 40px;
+    color: #333;
+}
+
+/* 2. The Main White Box (The App Container) */
+.container {
+    background-color: #ffffff;
+    max-width: 600px;
+    margin: 0 auto; /* Centers the box perfectly */
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0px 15px 25px rgba(0,0,0,0.4);
+}
+
+/* 3. Headings */
+h2 {
+    color: #1a2930; /* Dark Slate */
+    text-align: center;
+    border-bottom: 3px solid #00b33c; /* Court Green accent */
+    padding-bottom: 15px;
+    margin-top: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* 4. Form Inputs & Dropdowns */
+input[type=text], select, textarea {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0 20px 0;
+    display: inline-block;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    box-sizing: border-box; 
+    font-size: 16px;
+    background-color: #f9f9f9;
+    transition: border-color 0.3s;
+}
+
+input[type=text]:focus, select:focus {
+    border-color: #00b33c; /* Highlights green when clicked */
+    outline: none;
+}
+
+/* 5. The Main Buttons */
+button {
+    background-color: #00b33c; /* Action Green */
+    color: white;
+    padding: 16px 20px;
+    margin: 15px 0 8px 0;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: background-color 0.3s, transform 0.1s; 
+}
+
+button:hover {
+    background-color: #009933; /* Darker green on hover */
+    transform: translateY(-2px); /* Tiny lift effect */
+}
+
+/* 6. Links */
+a {
+    color: #00b33c;
+    text-decoration: none;
+    font-weight: bold;
+    display: block;
+    text-align: center;
+    margin-top: 15px;
+}
+
+a:hover {
+    text-decoration: underline;
+    color: #00802b;
+}
+
+/* 7. Tables (For History and Admin Pages later) */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+th {
+    background-color: #1a2930;
+    color: white;
+    padding: 12px;
+    text-align: left;
+}
+td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+}
+tr:hover {
+    background-color: #f5f5f5;
+}
