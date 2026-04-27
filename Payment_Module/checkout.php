@@ -13,16 +13,24 @@
         <form action="gateway.php" method="POST">
             
             <label for="time_slot"><strong>Select Time Slot:</strong></label>
+            <label for="time_slot"><strong>Select Time Slot:</strong></label>
             <select name="time_slot" id="time_slot" onchange="updatePrice()">
-                <optgroup label="Off-Peak (RM 40.00)">
-                    <option value="10:00 AM - 12:00 PM" data-price="40.00">10:00 AM - 12:00 PM</option>
-                    <option value="12:00 PM - 02:00 PM" data-price="40.00">12:00 PM - 02:00 PM</option>
+                
+                <optgroup label="Off-Peak: RM 10/hour (8:00 AM - 2:00 PM)">
+                    <option value="08:00 AM - 10:00 AM" data-price="20.00">08:00 AM - 10:00 AM (2 Hours)</option>
+                    <option value="10:00 AM - 12:00 PM" data-price="20.00">10:00 AM - 12:00 PM (2 Hours)</option>
+                    <option value="12:00 PM - 02:00 PM" data-price="20.00">12:00 PM - 02:00 PM (2 Hours)</option>
                 </optgroup>
-                <optgroup label="Peak Hours (RM 60.00)">
-                    <option value="02:00 PM - 04:00 PM" data-price="60.00">02:00 PM - 04:00 PM</option>
-                    <option value="06:00 PM - 08:00 PM" data-price="60.00">06:00 PM - 08:00 PM</option>
-                    <option value="08:00 PM - 10:00 PM" data-price="60.00">08:00 PM - 10:00 PM</option>
+                
+                <optgroup label="Peak Hours: RM 15/hour (2:00 PM - 1:00 AM)">
+                    <option value="02:00 PM - 04:00 PM" data-price="30.00">02:00 PM - 04:00 PM (2 Hours)</option>
+                    <option value="04:00 PM - 06:00 PM" data-price="30.00">04:00 PM - 06:00 PM (2 Hours)</option>
+                    <option value="06:00 PM - 08:00 PM" data-price="30.00">06:00 PM - 08:00 PM (2 Hours)</option>
+                    <option value="08:00 PM - 10:00 PM" data-price="30.00">08:00 PM - 10:00 PM (2 Hours)</option>
+                    <option value="10:00 PM - 12:00 AM" data-price="30.00">10:00 PM - 12:00 AM (2 Hours)</option>
+                    <option value="12:00 AM - 01:00 AM" data-price="15.00">12:00 AM - 01:00 AM (1 Hour)</option>
                 </optgroup>
+
             </select>
 
             <div style="background-color: #e6f7ff; padding: 15px; border-radius: 6px; margin-bottom: 20px; border-left: 5px solid #0073e6;">
