@@ -169,31 +169,9 @@ $result = mysqli_query($conn, $query);
 </head>
 <body>
 
-    <nav class="nav-bar">
-        <div class="nav-left">
-            <button id="menu-toggle" class="menu-toggle">☰</button>
-            <img src="Pictures/logo.png" alt="logo" class="logo">
-            <span class="brand-name"><span class="text-primary">Badminton</span><span class="text-dark">Hub</span></span> 
-        </div>
-
-        <ul id="nav-menu" class="nav-links">
-            <li><a href="SuperAdminDashboard.php">Dashboard</a></li>
-            <?php if ($role === 'Superadmin'): ?>
-                <!-- Superadmin Menu -->
-                <li><a href="AdminManagement.php">Admin Management</a></li>
-                <li><a href="#">System Settings</a></li>
-            <?php endif; ?>
-            <li><button id="logout-btn" class="logout-btn">Logout</button></li>
-        </ul>
-
-        <div class="user-info">
-            <span id="welcome-text">Hello, <?php echo htmlspecialchars($display_name); ?>!</span>
-        </div>
-    </nav>
-
-     
+    <!-- Nav Bar -->
+    <?php include 'navbar.php'; ?>
     
-
     <main class="content">
         <div class="manage-container">
             
