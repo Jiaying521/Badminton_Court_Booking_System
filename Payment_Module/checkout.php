@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Court Booking Checkout</title>
-    <link rel="stylesheet" href="style.css"> 
+    <link rel="stylesheet" href="style.css?v=2"> 
 </head>
 <body>
 
@@ -12,7 +12,6 @@
         
         <form action="gateway.php" method="POST">
             
-            <label for="time_slot"><strong>Select Time Slot:</strong></label>
             <label for="time_slot"><strong>Select Time Slot:</strong></label>
             <select name="time_slot" id="time_slot" onchange="updatePrice()">
                 
@@ -36,22 +35,41 @@
             <div style="background-color: #e6f7ff; padding: 15px; border-radius: 6px; margin-bottom: 20px; border-left: 5px solid #0073e6;">
                 <p style="margin: 0 0 5px 0; font-size: 16px;"><strong>Court:</strong> Court 2 (Rubber Mat)</p>
                 <hr style="border: 0; border-top: 1px solid #b3e0ff; margin: 10px 0;">
-                <p style="margin: 0; font-size: 18px;"><strong>Total Court Fee:</strong> RM <span id="display_price">40.00</span></p>
+                <p style="margin: 0; font-size: 18px;"><strong>Total Court Fee:</strong> RM <span id="display_price">20.00</span></p>
             </div>
             
-            <input type="hidden" name="amount" id="hidden_amount" value="40.00">
+            <input type="hidden" name="amount" id="hidden_amount" value="20.00">
             
             <label for="promo"><strong>Promo Code (Optional):</strong></label>
             <input type="text" name="promo_code" id="promo" placeholder="e.g. SMASH20">
             
-            <label for="method"><strong>Choose Payment Method:</strong></label>
-            <select name="payment_method" id="method">
-                <option value="Credit Card">Credit Card</option>
-                <option value="E-Wallet">Touch 'n Go eWallet</option>
-                <option value="Bank Transfer">FPX Online Banking</option>
-                <option value="Center App Wallet">Official Center App Wallet</option>
-            </select>
+            <h3 style="text-align: left; margin-bottom: 15px; margin-top: 30px;">Payment Methods</h3>
             
+            <label class="payment-card">
+                <input type="radio" name="payment_method" value="Center App Wallet" checked style="width: auto; margin: 0;">
+                <div class="payment-info">
+                    <p class="payment-title">
+                        Badminton Hub App Wallet <span class="badge-orange">Zero Platform Fee</span>
+                    </p>
+                    <p class="payment-subtitle">My Balance • RM 15.00</p>
+                </div>
+            </label>
+
+            <label class="payment-card">
+                <input type="radio" name="payment_method" value="Bank Transfer" style="width: auto; margin: 0;">
+                <div class="payment-info">
+                    <p class="payment-title">Online Payment</p>
+                    <p class="payment-subtitle">FPX, Touch 'n Go, GrabPay</p>
+                </div>
+            </label>
+
+            <label class="payment-card">
+                <input type="radio" name="payment_method" value="Credit Card" style="width: auto; margin: 0;">
+                <div class="payment-info">
+                    <p class="payment-title">Credit / Debit Card</p>
+                    <p class="payment-subtitle">Visa, Mastercard</p>
+                </div>
+            </label>
             <button type="submit">Proceed to Payment</button>
 
         </form>

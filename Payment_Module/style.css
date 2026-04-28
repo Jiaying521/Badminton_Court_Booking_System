@@ -109,3 +109,50 @@ td {
 tr:hover {
     background-color: #f5f5f5;
 }
+
+.payment-card {
+    display: flex;
+    align-items: center;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 12px;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    transition: border-color 0.3s, background-color 0.3s;
+}
+
+.payment-card:has(input[type="radio"]:checked) {
+    border-color: #00b33c;
+    background-color: #e6ffed;
+}
+
+.payment-info {
+    flex-grow: 1;
+    margin-left: 15px;
+    text-align: left;
+}
+
+.payment-title {
+    font-weight: bold;
+    font-size: 16px;
+    color: #333;
+    margin: 0 0 4px 0;
+}
+
+.payment-subtitle {
+    font-size: 13px;
+    color: #777;
+    margin: 0;
+}
+
+.badge-orange {
+    background-color: #ffe6cc;
+    color: #ff6600;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-weight: bold;
+    margin-left: 8px;
+    vertical-align: middle;
+}
