@@ -8,11 +8,10 @@ require_once __DIR__ . '/../config.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BadmintonHub | Book Courts Online</title>
+    <title>Smash Arena | Book Badminton Courts Online</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* 样式部分与之前相同，省略重复代码，保持原有风格 */
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:'Inter',sans-serif; background:linear-gradient(145deg,#f5f9f0 0%,#e8efe2 100%); color:#1e2a2e; line-height:1.5; }
         .navbar { display:flex; justify-content:space-between; align-items:center; padding:1rem 5%; background:rgba(255,255,255,0.95); backdrop-filter:blur(12px); position:sticky; top:0; z-index:100; border-bottom:1px solid rgba(43,126,58,0.2); }
@@ -35,10 +34,38 @@ require_once __DIR__ . '/../config.php';
         .feature-icon { font-size:3rem; background:#eaf5e6; width:80px; height:80px; display:flex; align-items:center; justify-content:center; border-radius:60px; margin:0 auto 1.2rem; }
         .feature-card h3 { font-size:1.4rem; font-weight:700; color:#2b7e3a; margin-bottom:0.8rem; }
         .feature-card p { color:#5a6e5c; font-size:0.95rem; }
+        
+        /* 模态框样式 - 支持滚动 */
         .modal { display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); backdrop-filter:blur(8px); }
-        .modal-content { background:#fff; margin:5% auto; padding:2rem; width:90%; max-width:480px; border-radius:32px; position:relative; animation:fadeInUp 0.4s; border:1px solid rgba(43,126,58,0.1); }
+        .modal-content {
+            background: #fff;
+            margin: 3% auto;
+            padding: 2rem;
+            width: 90%;
+            max-width: 480px;
+            max-height: 85vh;
+            overflow-y: auto;
+            border-radius: 32px;
+            position: relative;
+            animation: fadeInUp 0.4s;
+            border: 1px solid rgba(43, 126, 58, 0.1);
+        }
+        
+        /* 自定义滚动条样式 */
+        .modal-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .modal-content::-webkit-scrollbar-track {
+            background: #e0e0e0;
+            border-radius: 3px;
+        }
+        .modal-content::-webkit-scrollbar-thumb {
+            background: #2b7e3a;
+            border-radius: 3px;
+        }
+        
         @keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-        .close { position:absolute; right:1.5rem; top:1.2rem; font-size:1.8rem; cursor:pointer; color:#94a3b8; }
+        .close { position:absolute; right:1.5rem; top:1.2rem; font-size:1.8rem; cursor:pointer; color:#94a3b8; transition:0.2s; }
         .close:hover { color:#2b7e3a; }
         .modal-content h2 { font-size:1.8rem; font-weight:700; text-align:center; margin-bottom:1.8rem; background:linear-gradient(135deg,#2b7e3a,#1b5e2a); -webkit-background-clip:text; background-clip:text; color:transparent; }
         .modal-content input, .modal-content select { width:100%; padding:0.9rem 1rem; margin:0.4rem 0 1rem; border:1.5px solid #dde4dc; border-radius:60px; background:#fefdf8; font-family:'Inter',sans-serif; }
@@ -54,14 +81,18 @@ require_once __DIR__ . '/../config.php';
         .toggle-link { text-align:center; margin-top:1.5rem; }
         .toggle-link a { color:#2b7e3a; text-decoration:none; font-weight:600; cursor:pointer; }
         .error-msg { background:#fee2dd; border-left:5px solid #e67e22; color:#b45f1b; padding:0.7rem; margin-top:1rem; border-radius:16px; font-size:0.85rem; display:none; }
+        
         /* 密码强度条样式 */
         .strength-meter { margin-top: -0.8rem; margin-bottom: 1rem; height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden; }
         .strength-meter-fill { height: 100%; width: 0%; transition: width 0.2s, background 0.2s; border-radius: 3px; }
         .strength-text { font-size: 0.75rem; margin-top: 0.2rem; text-align: right; color: #5a6e5c; }
+        
         /* 用户名实时验证状态 */
         .username-status { font-size: 0.75rem; margin-top: -0.8rem; margin-bottom: 0.5rem; }
         .username-valid { color: #2b7e3a; }
         .username-invalid { color: #e67e22; }
+        
+        /* Footer 样式 */
         .footer { background:#0f1f12; color:#cbd5c0; padding:3rem 5% 1.5rem; margin-top:4rem; }
         .footer-container { max-width:1400px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:2rem; margin-bottom:2rem; }
         .footer-col h3, .footer-col h4 { color:#2b7e3a; margin-bottom:1rem; }
@@ -69,15 +100,28 @@ require_once __DIR__ . '/../config.php';
         .footer-col a { color:#cbd5c0; text-decoration:none; display:block; margin-bottom:0.6rem; transition:0.2s; font-size:0.9rem; }
         .footer-col a:hover { color:#2b7e3a; padding-left:5px; }
         .social-icons { display:flex; gap:1rem; margin-top:1rem; }
-        .social-icons a { background:#2c4a2e; width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:0.2s; }
+        .social-icons a { background:#2c4a2e; width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:0.2s; color:#cbd5c0; text-decoration:none; }
         .social-icons a:hover { background:#2b7e3a; transform:translateY(-3px); }
         .footer-bottom { text-align:center; border-top:1px solid #2c4a2e; padding-top:1.5rem; font-size:0.85rem; }
-        @media (max-width:768px) { .hero-text h1 { font-size:2.5rem; } .navbar { flex-direction:column; gap:1rem; } .features h2 { font-size:2rem; } .footer-container { grid-template-columns:1fr; text-align:center; } .footer-col p { justify-content:center; } .social-icons { justify-content:center; } }
+        
+        @media (max-width:768px) {
+            .hero-text h1 { font-size:2.5rem; }
+            .navbar { flex-direction:column; gap:1rem; }
+            .features h2 { font-size:2rem; }
+            .footer-container { grid-template-columns:1fr; text-align:center; }
+            .footer-col p { justify-content:center; }
+            .social-icons { justify-content:center; }
+            .modal-content {
+                margin: 5% auto;
+                max-height: 80vh;
+                padding: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body>
 <nav class="navbar">
-    <div class="logo">BadmintonHub</div>
+    <div class="logo">Smash Arena</div>
     <div class="nav-links">
         <button class="btn-outline" id="loginBtn">Login</button>
         <button class="btn-solid" id="signupBtn">Sign Up</button>
@@ -92,7 +136,7 @@ require_once __DIR__ . '/../config.php';
     <div class="hero-image"><img src="https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=600" alt="Badminton court"></div>
 </section>
 <section class="features">
-    <h2>Why Choose BadmintonHub?</h2>
+    <h2>Why Choose Smash Arena?</h2>
     <div class="features-grid">
         <div class="feature-card"><div class="feature-icon"><i class="fas fa-calendar-check"></i></div><h3>Easy Booking</h3><p>Select court, pick time, pay online – done in under a minute.</p></div>
         <div class="feature-card"><div class="feature-icon"><i class="fas fa-shuttlecock"></i></div><h3>Premium Courts</h3><p>Professional wooden floors, LED lighting, and top-notch facilities.</p></div>
@@ -102,15 +146,15 @@ require_once __DIR__ . '/../config.php';
 </section>
 <footer class="footer">
     <div class="footer-container">
-        <div class="footer-col"><h3>BadmintonHub</h3><p><i class="fas fa-map-marker-alt"></i> 123 Jalan Badminton, Kuala Lumpur</p><p><i class="fas fa-phone-alt"></i> +603-1234 5678</p><p><i class="fas fa-envelope"></i> support@badmintonhub.com</p><div class="social-icons"><a href="#"><i class="fab fa-facebook-f"></i></a><a href="#"><i class="fab fa-instagram"></i></a><a href="#"><i class="fab fa-twitter"></i></a><a href="#"><i class="fab fa-whatsapp"></i></a></div></div>
+        <div class="footer-col"><h3>Smash Arena</h3><p><i class="fas fa-map-marker-alt"></i> 123 Jalan Badminton, Kuala Lumpur</p><p><i class="fas fa-phone-alt"></i> +603-1234 5678</p><p><i class="fas fa-envelope"></i> smasharenabadminton@gmail.com</p><div class="social-icons"><a href="#"><i class="fab fa-facebook-f"></i></a><a href="#"><i class="fab fa-instagram"></i></a><a href="#"><i class="fab fa-twitter"></i></a><a href="#"><i class="fab fa-whatsapp"></i></a></div></div>
         <div class="footer-col"><h4>Quick Links</h4><a href="#">Find a Court</a><a href="#">Book Session</a><a href="#">Membership</a><a href="#">Coaching</a><a href="#">Tournaments</a></div>
         <div class="footer-col"><h4>Support</h4><a href="#">FAQs</a><a href="#">Cancellation Policy</a><a href="#">Privacy Policy</a><a href="#">Terms of Use</a><a href="#">Contact Us</a></div>
         <div class="footer-col"><h4>Operating Hours</h4><p>Monday - Friday: 8:00 AM - 10:00 PM</p><p>Saturday - Sunday: 9:00 AM - 9:00 PM</p><p>Public Holidays: 10:00 AM - 6:00 PM</p></div>
     </div>
-    <div class="footer-bottom"><p>&copy; 2025 BadmintonHub – Your Game, Our Court. All rights reserved.</p></div>
+    <div class="footer-bottom"><p>&copy; 2025 Smash Arena – Your Game, Our Court. All rights reserved.</p></div>
 </footer>
 
-<!-- Login Modal (unchanged) -->
+<!-- Login Modal -->
 <div id="loginModal" class="modal">
     <div class="modal-content"><span class="close" id="closeLogin">&times;</span><h2>Welcome Back</h2>
         <div id="loginPasswordMode">
@@ -130,7 +174,7 @@ require_once __DIR__ . '/../config.php';
     </div>
 </div>
 
-<!-- Register Modal (modified) -->
+<!-- Register Modal -->
 <div id="registerModal" class="modal">
     <div class="modal-content"><span class="close" id="closeRegister">&times;</span><h2>Create Account</h2>
         <label>Name <span style="color:#e67e22;">*</span></label>
@@ -209,6 +253,7 @@ require_once __DIR__ . '/../config.php';
             nameStatusDiv.innerHTML = '<span class="username-invalid">Error checking name</span>';
             nameValid = false;
         }
+        validateRegisterButton();
     });
 
     // ---------- 密码强度检测 ----------
@@ -224,14 +269,12 @@ require_once __DIR__ . '/../config.php';
         if(/[!@#$%^&*(),.?":{}|<>]/.test(pwd)) score++;
         if(/[A-Z]/.test(pwd) && /[a-z]/.test(pwd)) score++;
         if(/\d/.test(pwd)) score++;
-        // 强度等级
         if(pwd.length === 0) return { percent: 0, text: '', valid: false };
         let percent = 0, text = '', valid = false;
         if(score <= 2) { percent = 25; text = 'Weak'; valid = false; }
         else if(score === 3) { percent = 50; text = 'Fair'; valid = false; }
         else if(score === 4) { percent = 75; text = 'Good'; valid = true; }
         else { percent = 100; text = 'Strong'; valid = true; }
-        // 额外要求：至少6位且至少一个符号
         const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(pwd);
         if(pwd.length >= 6 && hasSymbol && score >= 3) valid = true;
         else valid = false;
@@ -253,12 +296,11 @@ require_once __DIR__ . '/../config.php';
         validateRegisterButton();
     });
 
-    // 全局验证注册按钮启用状态
     function validateRegisterButton() {
         const nameOk = nameValid;
         const emailOk = regEmail.value.trim().includes('@');
         const phoneOk = regPhone.value.trim().length > 5;
-        const otpVerified = regVerified; // 全局变量
+        const otpVerified = regVerified;
         const registerBtn = document.getElementById('registerFinalBtn');
         if(nameOk && emailOk && phoneOk && passwordValid && otpVerified) {
             registerBtn.disabled = false;
@@ -267,7 +309,6 @@ require_once __DIR__ . '/../config.php';
         }
     }
 
-    // 监听邮箱和手机变化
     const regEmail = document.getElementById('regEmail');
     const regPhone = document.getElementById('regPhone');
     regEmail.addEventListener('input', validateRegisterButton);
@@ -275,90 +316,224 @@ require_once __DIR__ . '/../config.php';
 
     // ---------- OTP 注册流程 ----------
     let regEmailStored = '', regVerified = false;
-    const regName = regNameInput, regPassword = regPasswordInput, regPhoneCode = document.getElementById('regPhoneCode'), sendRegCodeBtn = document.getElementById('sendRegCodeBtn'), regVerifyCode = document.getElementById('regVerifyCode'), verifyRegCodeBtn = document.getElementById('verifyRegCodeBtn'), registerFinalBtn = document.getElementById('registerFinalBtn'), regError = document.getElementById('regError');
+    const regName = regNameInput;
+    const regPassword = regPasswordInput;
+    const regPhoneCode = document.getElementById('regPhoneCode');
+    const regPhoneInput = regPhone;
+    const sendRegCodeBtn = document.getElementById('sendRegCodeBtn');
+    const regVerifyCode = document.getElementById('regVerifyCode');
+    const verifyRegCodeBtn = document.getElementById('verifyRegCodeBtn');
+    const registerFinalBtn = document.getElementById('registerFinalBtn');
+    const regError = document.getElementById('regError');
 
     sendRegCodeBtn.onclick = async () => {
-        const name = regName.value.trim(), email = regEmail.value.trim(), password = regPassword.value, phoneFull = regPhoneCode.value + regPhone.value.trim();
+        const name = regName.value.trim();
+        const email = regEmail.value.trim();
+        const password = regPassword.value;
+        const phoneFull = regPhoneCode.value + regPhoneInput.value.trim();
+        
+        console.log("Sending OTP to email:", email);
+        
         if(!nameValid) { showError(regError, "Please choose a valid unique name."); return; }
         if(!passwordValid) { showError(regError, "Password must be at least 6 characters and contain at least one symbol (!@#$...)."); return; }
-        if(!name || !email || !password || !regPhone.value.trim()) { showError(regError, "Please fill all fields."); return; }
+        if(!name || !email || !password || !regPhoneInput.value.trim()) { 
+            showError(regError, "Please fill all fields."); 
+            return; 
+        }
         setButtonLoading(sendRegCodeBtn, true);
         try {
-            const res = await fetch(baseUrl+'send_otp.php', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email, type:'register' }) });
+            const res = await fetch(baseUrl+'send_otp.php', { 
+                method:'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body:JSON.stringify({ email: email, type:'register' })
+            });
             const data = await res.json();
-            if(data.success) { regEmailStored = email; regVerified = false; showError(regError, "OTP sent to your email."); regVerifyCode.style.display = 'block'; verifyRegCodeBtn.style.display = 'block'; }
-            else showError(regError, data.message);
-        } catch(err) { showError(regError, "Network error."); }
+            console.log("Response:", data);
+            if(data.success) { 
+                regEmailStored = email; 
+                regVerified = false; 
+                showError(regError, "✓ OTP sent to your email. Check your inbox!"); 
+                regVerifyCode.style.display = 'block'; 
+                verifyRegCodeBtn.style.display = 'block'; 
+            } else {
+                showError(regError, data.message);
+            }
+        } catch(err) { 
+            showError(regError, "Network error: " + err.message); 
+            console.error(err);
+        }
         finally { setButtonLoading(sendRegCodeBtn, false); }
     };
+    
     verifyRegCodeBtn.onclick = async () => {
-        const code = regVerifyCode.value.trim(), email = regEmailStored;
-        if(!email || !code) { showError(regError, "Enter the code."); return; }
+        const code = regVerifyCode.value.trim();
+        const email = regEmailStored;
+        if(!email || !code) { 
+            showError(regError, "Enter the code."); 
+            return; 
+        }
         setButtonLoading(verifyRegCodeBtn, true);
         try {
-            const res = await fetch(baseUrl+'verify_otp.php', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email, code, type:'register' }) });
+            const res = await fetch(baseUrl+'verify_otp.php', { 
+                method:'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body:JSON.stringify({ email, code, type:'register' }) 
+            });
             const data = await res.json();
-            if(data.success) { regVerified = true; showError(regError, "Verified! You can now register."); validateRegisterButton(); }
-            else showError(regError, data.message);
-        } catch(err) { showError(regError, "Verification failed."); }
+            console.log("Verify Response:", data);
+            if(data.success) { 
+                regVerified = true; 
+                showError(regError, "✓ Verified! You can now register."); 
+                validateRegisterButton(); 
+            } else {
+                showError(regError, data.message);
+            }
+        } catch(err) { 
+            showError(regError, "Verification failed."); 
+            console.error(err);
+        }
         finally { setButtonLoading(verifyRegCodeBtn, false); }
     };
+    
     registerFinalBtn.onclick = async () => {
         if(!regVerified) { showError(regError, "Verify your email first."); return; }
         if(!nameValid) { showError(regError, "Name is invalid or already taken."); return; }
         if(!passwordValid) { showError(regError, "Password does not meet requirements."); return; }
-        const name = regName.value.trim(), email = regEmail.value.trim(), password = regPassword.value, phoneFull = regPhoneCode.value + regPhone.value.trim(), otpCode = regVerifyCode.value.trim();
-        registerFinalBtn.disabled = true; registerFinalBtn.innerText = "Registering...";
+        const name = regName.value.trim();
+        const email = regEmail.value.trim();
+        const password = regPassword.value;
+        const phoneFull = regPhoneCode.value + regPhoneInput.value.trim();
+        
+        // 不再传递 otpCode
+        
+        registerFinalBtn.disabled = true;
+        registerFinalBtn.innerText = "Registering...";
         try {
-            const res = await fetch(baseUrl+'register.php', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ name, email, password, phone:phoneFull, otpCode }) });
+            const res = await fetch(baseUrl+'register.php', { 
+                method:'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body:JSON.stringify({ name, email, password, phone:phoneFull })
+            });
             const data = await res.json();
-            if(data.success) { alert("Registration successful! Please login."); closeAll(); regName.value = regEmail.value = regPassword.value = regPhone.value = regVerifyCode.value = ''; registerFinalBtn.disabled = true; regVerified = false; nameValid = false; passwordValid = false; }
-            else showError(regError, data.message);
-        } catch(err) { showError(regError, "Registration failed."); }
-        finally { registerFinalBtn.disabled = false; registerFinalBtn.innerText = "Register"; }
+            console.log("Register Response:", data);
+            if(data.success) { 
+                alert("Registration successful! Please login."); 
+                closeAll(); 
+                regName.value = ''; 
+                regEmail.value = ''; 
+                regPassword.value = ''; 
+                regPhoneInput.value = ''; 
+                regVerifyCode.value = ''; 
+                registerFinalBtn.disabled = true; 
+                regVerified = false; 
+                nameValid = false; 
+                passwordValid = false; 
+            } else {
+                showError(regError, data.message);
+            }
+        } catch(err) { 
+            showError(regError, "Registration failed."); 
+            console.error(err);
+        }
+        finally { 
+            registerFinalBtn.disabled = false; 
+            registerFinalBtn.innerText = "Register"; 
+        }
     };
 
-    // Login with password (unchanged)
-    const loginEmail = document.getElementById('loginEmail'), loginPassword = document.getElementById('loginPassword'), doPasswordLogin = document.getElementById('doPasswordLogin'), loginError = document.getElementById('loginError');
+    // Login with password
+    const loginEmail = document.getElementById('loginEmail');
+    const loginPassword = document.getElementById('loginPassword');
+    const doPasswordLogin = document.getElementById('doPasswordLogin');
+    const loginError = document.getElementById('loginError');
+    
     doPasswordLogin.onclick = async () => {
-        const email = loginEmail.value.trim(), password = loginPassword.value;
+        const email = loginEmail.value.trim();
+        const password = loginPassword.value;
         if(!email || !password) { showError(loginError, "Enter email and password."); return; }
-        doPasswordLogin.disabled = true; doPasswordLogin.innerText = "Logging in...";
+        doPasswordLogin.disabled = true;
+        doPasswordLogin.innerText = "Logging in...";
         try {
-            const res = await fetch(baseUrl+'login_password.php', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email, password }) });
+            const res = await fetch(baseUrl+'login_password.php', { 
+                method:'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body:JSON.stringify({ email, password }) 
+            });
             const data = await res.json();
-            if(data.success) { window.location.href = baseUrl+'dashboard.php'; }
-            else showError(loginError, data.message);
-        } catch(err) { showError(loginError, "Login failed."); }
-        finally { doPasswordLogin.disabled = false; doPasswordLogin.innerText = "Login with Password"; }
+            if(data.success) { 
+                window.location.href = baseUrl+'dashboard.php'; 
+            } else {
+                showError(loginError, data.message);
+            }
+        } catch(err) { 
+            showError(loginError, "Login failed."); 
+        }
+        finally { 
+            doPasswordLogin.disabled = false; 
+            doPasswordLogin.innerText = "Login with Password"; 
+        }
     };
-    // Login OTP (unchanged)
-    const loginOtpEmail = document.getElementById('loginOtpEmail'), sendLoginOtpBtn = document.getElementById('sendLoginOtpBtn'), loginOtpCode = document.getElementById('loginOtpCode'), verifyLoginOtpBtn = document.getElementById('verifyLoginOtpBtn');
+    
+    // Login OTP
+    const loginOtpEmail = document.getElementById('loginOtpEmail');
+    const sendLoginOtpBtn = document.getElementById('sendLoginOtpBtn');
+    const loginOtpCode = document.getElementById('loginOtpCode');
+    const verifyLoginOtpBtn = document.getElementById('verifyLoginOtpBtn');
+    
     sendLoginOtpBtn.onclick = async () => {
         const email = loginOtpEmail.value.trim();
         if(!email) { showError(loginError, "Enter email."); return; }
         setButtonLoading(sendLoginOtpBtn, true);
         try {
-            const res = await fetch(baseUrl+'send_otp.php', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email, type:'login' }) });
+            const res = await fetch(baseUrl+'send_otp.php', { 
+                method:'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body:JSON.stringify({ email, type:'login' }) 
+            });
             const data = await res.json();
-            if(data.success) { loginOtpCode.style.display = 'block'; verifyLoginOtpBtn.style.display = 'block'; showError(loginError, "OTP sent."); }
-            else showError(loginError, data.message);
-        } catch(err) { showError(loginError, "Failed to send OTP."); }
+            if(data.success) { 
+                loginOtpCode.style.display = 'block'; 
+                verifyLoginOtpBtn.style.display = 'block'; 
+                showError(loginError, "✓ OTP sent to your email. Check your inbox!"); 
+            } else {
+                showError(loginError, data.message);
+            }
+        } catch(err) { 
+            showError(loginError, "Failed to send OTP."); 
+        }
         finally { setButtonLoading(sendLoginOtpBtn, false); }
     };
+    
     verifyLoginOtpBtn.onclick = async () => {
-        const email = loginOtpEmail.value.trim(), code = loginOtpCode.value.trim();
+        const email = loginOtpEmail.value.trim();
+        const code = loginOtpCode.value.trim();
         if(!email || !code) { showError(loginError, "Enter OTP."); return; }
         setButtonLoading(verifyLoginOtpBtn, true);
         try {
-            const verifyRes = await fetch(baseUrl+'verify_otp.php', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email, code, type:'login' }) });
+            const verifyRes = await fetch(baseUrl+'verify_otp.php', { 
+                method:'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body:JSON.stringify({ email, code, type:'login' }) 
+            });
             const verifyData = await verifyRes.json();
-            if(!verifyData.success) { showError(loginError, verifyData.message); return; }
-            const loginRes = await fetch(baseUrl+'login_otp.php', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email }) });
+            if(!verifyData.success) { 
+                showError(loginError, verifyData.message); 
+                return; 
+            }
+            const loginRes = await fetch(baseUrl+'login_otp.php', { 
+                method:'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body:JSON.stringify({ email }) 
+            });
             const loginData = await loginRes.json();
-            if(loginData.success) window.location.href = baseUrl+'dashboard.php';
-            else showError(loginError, loginData.message);
-        } catch(err) { showError(loginError, "OTP login failed."); }
+            if(loginData.success) {
+                window.location.href = baseUrl+'dashboard.php';
+            } else {
+                showError(loginError, loginData.message);
+            }
+        } catch(err) { 
+            showError(loginError, "OTP login failed."); 
+        }
         finally { setButtonLoading(verifyLoginOtpBtn, false); }
     };
 </script>
