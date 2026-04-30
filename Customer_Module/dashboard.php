@@ -9,12 +9,11 @@ $stmt = $pdo->prepare("SELECT name FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch();
 if (!$user) {
-    // 用户不存在，退出登录
     session_destroy();
     redirect('homepage.php');
 }
 
-// 获取所有场地类型
+// 获取所有场地类型 (Standard, Training)
 $types = [];
 $typeResult = $pdo->query("SELECT DISTINCT court_type FROM courts WHERE is_active = 1");
 if ($typeResult) {
@@ -24,7 +23,6 @@ if ($typeResult) {
 // 筛选条件
 $court_type = $_GET['court_type'] ?? '';
 $facility = $_GET['facility'] ?? '';
-$price_range = $_GET['price_range'] ?? '';
 $court_name = $_GET['court_name'] ?? '';
 
 $sql = "SELECT * FROM courts WHERE is_active = 1";
@@ -36,13 +34,6 @@ if ($court_type) {
 if ($facility) {
     $sql .= " AND facilities LIKE ?";
     $params[] = "%$facility%";
-}
-if ($price_range == 'low') {
-    $sql .= " AND price_per_hour < 30";
-} elseif ($price_range == 'mid') {
-    $sql .= " AND price_per_hour BETWEEN 30 AND 60";
-} elseif ($price_range == 'high') {
-    $sql .= " AND price_per_hour > 60";
 }
 if ($court_name) {
     $sql .= " AND court_name LIKE ?";
@@ -75,7 +66,7 @@ sort($facilities);
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dashboard | BadmintonHub</title>
+    <title>Smash Arena | Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -92,7 +83,11 @@ sort($facilities);
         .courts-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:1.5rem; margin-top:1rem; }
         .court-card { background:white; border-radius:24px; padding:1.5rem; box-shadow:0 8px 20px rgba(0,0,0,0.05); border-bottom:3px solid #2b7e3a; }
         .court-name { font-size:1.4rem; font-weight:bold; color:#2b7e3a; margin-bottom:0.5rem; }
-        .court-price { font-size:1.2rem; font-weight:700; color:#e67e22; margin:0.5rem 0; }
+        .court-type { display:inline-block; background:#eaf5e6; padding:0.2rem 0.8rem; border-radius:20px; font-size:0.8rem; color:#2b7e3a; margin-bottom:0.8rem; }
+        .court-price { background:#fff3e0; padding:0.5rem; border-radius:12px; margin:0.5rem 0; }
+        .price-row { display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:0.3rem; }
+        .price-offpeak { color:#2b7e3a; }
+        .price-peak { color:#e67e22; }
         .btn-book { background:#2b7e3a; color:white; border:none; padding:0.6rem 1rem; border-radius:40px; width:100%; cursor:pointer; font-weight:600; margin-top:1rem; display:inline-block; text-align:center; text-decoration:none; }
         .btn-book:hover { background:#1f5a2a; }
         .nav-links a { margin-right:1rem; color:#2c4a2e; text-decoration:none; }
@@ -103,7 +98,7 @@ sort($facilities);
 <body>
 <div class="container">
     <div class="navbar">
-        <div class="logo">BadmintonHub</div>
+        <div class="logo">Smash Arena</div>
         <div class="nav-links">
             <a href="dashboard.php">Home</a>
             <a href="my_bookings.php">My Bookings</a>
@@ -137,17 +132,8 @@ sort($facilities);
                 </select>
             </div>
             <div class="filter-group">
-                <label>Price Range</label>
-                <select name="price_range">
-                    <option value="">Any</option>
-                    <option value="low" <?php echo ($price_range == 'low') ? 'selected' : ''; ?>>&lt; $30/hr</option>
-                    <option value="mid" <?php echo ($price_range == 'mid') ? 'selected' : ''; ?>>$30–$60/hr</option>
-                    <option value="high" <?php echo ($price_range == 'high') ? 'selected' : ''; ?>>&gt; $60/hr</option>
-                </select>
-            </div>
-            <div class="filter-group">
                 <label>Court Name</label>
-                <input type="text" name="court_name" value="<?php echo htmlspecialchars($court_name); ?>">
+                <input type="text" name="court_name" value="<?php echo htmlspecialchars($court_name); ?>" placeholder="Search court...">
             </div>
             <div class="filter-group">
                 <button type="submit" class="search-btn">🔍 Search</button>
@@ -164,8 +150,17 @@ sort($facilities);
                     <div class="court-type"><?php echo htmlspecialchars($c['court_type']); ?></div>
                     <div class="court-details">📍 <?php echo htmlspecialchars($c['location'] ?? 'Main Hall'); ?></div>
                     <div class="court-details">🛠️ <?php echo htmlspecialchars($c['facilities'] ?? 'Standard'); ?></div>
-                    <div class="court-price">$<?php echo number_format($c['price_per_hour'], 2); ?> / hour</div>
-                    <a href="book_court.php?court_id=<?php echo $c['id']; ?>" class="btn-book">Book Now</a>
+                    <div class="court-price">
+                        <div class="price-row">
+                            <span class="price-offpeak">🕗 8am - 2pm</span>
+                            <span class="price-offpeak">RM <?php echo number_format($c['price_off_peak'], 2); ?> / hour</span>
+                        </div>
+                        <div class="price-row">
+                            <span class="price-peak">🕒 3pm - 1am</span>
+                            <span class="price-peak">RM <?php echo number_format($c['price_peak'], 2); ?> / hour</span>
+                        </div>
+                    </div>
+                    <a href="book_court.php?court_id=<?php echo $c['id']; ?>" class="btn-book">Book Now →</a>
                 </div>
             <?php endforeach; ?>
         <?php else: ?>
