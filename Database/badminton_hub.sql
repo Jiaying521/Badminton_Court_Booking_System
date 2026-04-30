@@ -85,8 +85,12 @@ CREATE TABLE `bookings` (
   `booking_date` date NOT NULL,
   `start_time` time NOT NULL,
   `end_time` time NOT NULL,
+  `total_hours` int(11) NOT NULL DEFAULT 1 COMMENT 'booking duration in hours',
+  `coach_id` int(11) DEFAULT NULL COMMENT 'coach ID (0 or NULL means no coach)',
+  `coach_hours` int(11) DEFAULT 0 COMMENT 'coach hours',
+  `coach_price_total` decimal(10,2) DEFAULT 0.00 COMMENT 'total coach fee',
   `session_type` enum('Casual Play','Training','Tournament','Friendly Game') DEFAULT 'Casual Play',
-  `total_price` decimal(10,2) NOT NULL,
+  `total_price` decimal(10,2) NOT NULL COMMENT 'total fee (court + coach)',
   `status` enum('Pending','Confirmed','Cancelled','Completed') DEFAULT 'Pending',
   `notes` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -95,7 +99,7 @@ CREATE TABLE `bookings` (
   KEY `fk_bookings_court` (`court_id`),
   CONSTRAINT `fk_bookings_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_bookings_court` FOREIGN KEY (`court_id`) REFERENCES `courts` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 -- 表: `payments` (支付记录)
@@ -113,7 +117,7 @@ CREATE TABLE `payments` (
   PRIMARY KEY (`payment_id`),
   KEY `fk_payments_booking` (`booking_id`),
   CONSTRAINT `fk_payments_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 -- 表: `tasks` (任务管理)

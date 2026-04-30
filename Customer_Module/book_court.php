@@ -28,7 +28,7 @@ if($court['court_type'] == 'Training') {
     <style>
         * { box-sizing: border-box; }
         body { font-family:'Inter',sans-serif; background:#f5f9f0; padding:2rem; margin:0; }
-        .container { max-width:800px; margin:0 auto; background:white; border-radius:32px; padding:2rem; box-shadow:0 12px 28px rgba(0,0,0,0.08); }
+        .container { max-width:850px; margin:0 auto; background:white; border-radius:32px; padding:2rem; box-shadow:0 12px 28px rgba(0,0,0,0.08); }
         h2 { color:#2b7e3a; margin-bottom:0.5rem; font-size:1.8rem; }
         .court-info { background:#eaf5e6; padding:1rem; border-radius:16px; margin-bottom:1.5rem; }
         .court-info div { margin-bottom:0.3rem; }
@@ -87,7 +87,9 @@ if($court['court_type'] == 'Training') {
         .coach-hour-btn { background:#fff0e0; border:1px solid #e67e22; padding:0.5rem 1rem; border-radius:40px; cursor:pointer; font-size:0.85rem; transition:0.2s; min-width:60px; text-align:center; }
         .coach-hour-btn:hover { background:#e67e22; color:white; }
         .coach-hour-btn.selected { background:#e67e22; color:white; border-color:#e67e22; }
-        .coach-section { background:#fff8f0; padding:1rem; border-radius:16px; margin-top:0.5rem; }
+        
+        .payment-summary { background:#2b7e3a; color:white; padding:1rem; border-radius:16px; margin-top:1rem; display:flex; justify-content:space-between; align-items:center; }
+        .payment-summary .amount { font-size:1.5rem; font-weight:700; }
     </style>
 </head>
 <body>
@@ -139,7 +141,6 @@ if($court['court_type'] == 'Training') {
             </div>
         </div>
 
-        <!-- 只有 Training Court 才显示教练选项 -->
         <?php if($court['court_type'] == 'Training' && !empty($coaches)): ?>
         <div id="coachSection" style="display:none;">
             <label>🎓 Select Coach (Optional)</label>
@@ -174,17 +175,21 @@ if($court['court_type'] == 'Training') {
                 <?php endforeach; ?>
             </div>
             
-            <!-- 教练小时数选择（只有当选择了教练才显示） -->
             <div id="coachHoursSection" style="display:none; margin-top:1rem;">
                 <label>⏱️ Coach Hours</label>
                 <div id="coachHoursList" class="coach-hours-selector"></div>
-                <div class="help-text">How many hours you want the coach (max same as court hours)</div>
+                <div class="help-text">How many hours you want the coach (max = court hours)</div>
             </div>
         </div>
         <?php endif; ?>
         
         <label>📝 Special Requests (optional)</label>
         <textarea name="notes" rows="2" placeholder="e.g., need racket rental..."></textarea>
+        
+        <div id="paymentSummary" class="payment-summary" style="display:none;">
+            <span>💰 Total Amount:</span>
+            <span class="amount" id="totalAmountDisplay">RM 0.00</span>
+        </div>
         
         <button type="submit" id="submitBtn" disabled>Proceed to Payment →</button>
     </form>
@@ -217,6 +222,8 @@ if($court['court_type'] == 'Training') {
     const coachSection = document.getElementById('coachSection');
     const coachHoursSection = document.getElementById('coachHoursSection');
     const coachHoursList = document.getElementById('coachHoursList');
+    const paymentSummary = document.getElementById('paymentSummary');
+    const totalAmountDisplay = document.getElementById('totalAmountDisplay');
 
     let availableSlots = [];
     let selectedStartTime = null;
@@ -228,12 +235,11 @@ if($court['court_type'] == 'Training') {
     let selectedCoachName = '';
     let selectedCoachHours = 0;
 
-    // 辅助函数：安全设置innerHTML
     function safeSetInnerHTML(element, html) {
         if (element) element.innerHTML = html;
     }
 
-    // 教练选择（仅 Training Court）
+    // 教练选择
     if(document.getElementById('coachContainer')) {
         document.querySelectorAll('.coach-option').forEach(opt => {
             opt.addEventListener('click', function() {
@@ -252,14 +258,11 @@ if($court['court_type'] == 'Training') {
                     selectedCoachHours = 0;
                     if(coachHoursInput) coachHoursInput.value = 0;
                     if(selectedCourtHours) calculatePrice();
-                } else {
-                    if(coachHoursSection) coachHoursSection.style.display = 'none';
                 }
                 
                 if(selectedCourtHours) calculatePrice();
             });
         });
-        // 默认选择 No coach
         const defaultCoach = document.querySelector('.coach-option[data-coach-id="0"]');
         if(defaultCoach) {
             defaultCoach.classList.add('selected');
@@ -269,7 +272,6 @@ if($court['court_type'] == 'Training') {
         }
     }
 
-    // 初始化日期选择器
     flatpickr(dateInput, {
         dateFormat: "Y-m-d",
         minDate: "today",
@@ -289,6 +291,7 @@ if($court['court_type'] == 'Training') {
         if(hoursContainer) hoursContainer.style.display = 'none';
         if(maxHoursInfo) maxHoursInfo.style.display = 'none';
         if(coachSection) coachSection.style.display = 'none';
+        if(paymentSummary) paymentSummary.style.display = 'none';
         resetSelection();
         
         try {
@@ -340,7 +343,7 @@ if($court['court_type'] == 'Training') {
             if (pastCount > 0 && slotList && slotList.parentNode) {
                 const pastInfo = document.createElement('div');
                 pastInfo.className = 'warning-text';
-                pastInfo.innerHTML = `⏰ ${pastCount} past time slot${pastCount > 1 ? 's have' : ' has'} been disabled (cannot book past time)`;
+                pastInfo.innerHTML = `⏰ ${pastCount} past time slot${pastCount > 1 ? 's have' : ' has'} been disabled`;
                 slotList.parentNode.appendChild(pastInfo);
                 setTimeout(() => pastInfo.remove(), 5000);
             }
@@ -363,12 +366,13 @@ if($court['court_type'] == 'Training') {
                     if(coachHoursInput) coachHoursInput.value = 0;
                     if(coachHoursSection) coachHoursSection.style.display = 'none';
                     if(priceBreakdown) priceBreakdown.style.display = 'none';
+                    if(paymentSummary) paymentSummary.style.display = 'none';
                     if(submitBtn) submitBtn.disabled = true;
                 });
             });
             
             if (document.querySelectorAll('.slot-btn:not(.disabled)').length === 0 && slotList) {
-                slotList.innerHTML = '<div class="error-msg">⏰ No available slots for the remaining time today. Please choose another date.</div>';
+                slotList.innerHTML = '<div class="error-msg">⏰ No available slots for today. Please choose another date.</div>';
             }
             
         } catch(e) {
@@ -382,7 +386,6 @@ if($court['court_type'] == 'Training') {
         let checkHour = startHour;
         
         while(true) {
-            let nextHour = checkHour + 1;
             let timeStr = (checkHour % 24).toString().padStart(2, '0') + ':00:00';
             let isAvailable = availableSlots.some(slot => slot.time === timeStr);
             
@@ -395,7 +398,7 @@ if($court['court_type'] == 'Training') {
         
         maxAvailableHours = maxHours;
         if(maxHoursInfo) {
-            maxHoursInfo.innerHTML = `📢 Maximum available: ${maxAvailableHours} hour${maxAvailableHours > 1 ? 's' : ''} from your selected start time`;
+            maxHoursInfo.innerHTML = `📢 Maximum available: ${maxAvailableHours} hour${maxAvailableHours > 1 ? 's' : ''}`;
             if (maxAvailableHours === 0) {
                 maxHoursInfo.style.background = '#fff0e0';
                 maxHoursInfo.style.color = '#e67e22';
@@ -518,6 +521,8 @@ if($court['court_type'] == 'Training') {
         safeSetInnerHTML(breakdownTotal, `<span>Total (Court: ${selectedCourtHours}h${selectedCoachHours > 0 ? ' + Coach: ' + selectedCoachHours + 'h' : ''})</span><span>RM ${totalPrice}</span>`);
         
         if(priceBreakdown) priceBreakdown.style.display = 'block';
+        if(paymentSummary) paymentSummary.style.display = 'flex';
+        if(totalAmountDisplay) totalAmountDisplay.innerHTML = `RM ${totalPrice}`;
         if(selectedPriceInput) selectedPriceInput.value = totalPrice;
         if(coachPriceTotalInput) coachPriceTotalInput.value = totalCoachPrice;
         if(submitBtn) submitBtn.disabled = false;
@@ -548,6 +553,7 @@ if($court['court_type'] == 'Training') {
         if(coachSection) coachSection.style.display = 'none';
         if(coachHoursSection) coachHoursSection.style.display = 'none';
         if(priceBreakdown) priceBreakdown.style.display = 'none';
+        if(paymentSummary) paymentSummary.style.display = 'none';
         if(submitBtn) submitBtn.disabled = true;
     }
 </script>
