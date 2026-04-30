@@ -17,6 +17,7 @@ if (isset($_GET['ajax_fetch'])) {
     
     $u_name = isset($_SESSION['username']) ? $_SESSION['username'] : '';
     $u_role = isset($_SESSION['role']) ? $_SESSION['role'] : '';
+    $u_id = isset($_SESSION['id']) ? (int)$_SESSION['id'] : 0;
 
     $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
     
@@ -26,19 +27,26 @@ if (isset($_GET['ajax_fetch'])) {
         exit();
     }
 
-    $sql = "SELECT COALESCE(u.name, CONCAT('User ID: ', a.user_id)) AS player_name,
-                   a.appointment_time, 
-                   a.status, 
-                   a.coach_name 
-            FROM appointments a 
-            LEFT JOIN users u ON a.user_id = u.id 
-            WHERE DATE(a.appointment_date) = '$target_date'";
+    $safe_date = mysqli_real_escape_string($conn, $target_date);
+    $safe_name = mysqli_real_escape_string($conn, $u_name);
+
+    $sql = "SELECT COALESCE(u.name, CONCAT('User ID: ', b.user_id)) AS player_name,
+                   b.start_time AS booking_time,
+                   b.end_time,
+                   b.status,
+                   c.court_name,
+                   COALESCE(co.name, 'No coach') AS coach_name
+            FROM bookings b
+            LEFT JOIN users u ON b.user_id = u.id
+            LEFT JOIN courts c ON b.court_id = c.id
+            LEFT JOIN coaches co ON b.coach_id = co.id
+            WHERE b.booking_date = '$safe_date'";
     
     if (strtolower($u_role) === 'coach') {
-        $sql .= " AND TRIM(LOWER(a.coach_name)) = TRIM(LOWER('$u_name'))";
+        $sql .= " AND (co.admin_id = $u_id OR TRIM(LOWER(co.name)) = TRIM(LOWER('$safe_name')))";
     }
     
-    $sql .= " ORDER BY a.appointment_time ASC LIMIT 10"; 
+    $sql .= " ORDER BY b.start_time ASC LIMIT 10"; 
     $res = mysqli_query($conn, $sql);
     
     if (!$res) {
@@ -47,17 +55,18 @@ if (isset($_GET['ajax_fetch'])) {
         exit();
     }
 
-    $appointments = [];
+    $bookings = [];
     while ($row = mysqli_fetch_assoc($res)) {
-        $row['appointment_time'] = date("h:i A", strtotime($row['appointment_time']));
-        if (strtolower($u_role) !== 'coach') {
+        $row['booking_time'] = date("h:i A", strtotime($row['booking_time']));
+        $row['end_time'] = date("h:i A", strtotime($row['end_time']));
+        if (strtolower($u_role) !== 'coach' && $row['coach_name'] !== 'No coach') {
             $row['player_name'] .= " (Coach: " . $row['coach_name'] . ")";
         }
-        $appointments[] = $row;
+        $bookings[] = $row;
     }
 
     header('Content-Type: application/json');
-    echo json_encode($appointments);
+    echo json_encode($bookings);
     exit(); 
 }
 
@@ -99,6 +108,8 @@ if (isset($_POST['update_initial_password'])) {
         // Update password and change status to 'Active'
         $update_sql = "UPDATE admins SET password = '$hashed_password', status = 'Active' WHERE username = '$username'";
         if (mysqli_query($db, $update_sql)) {
+            $admin_id = isset($_SESSION['id']) ? (int)$_SESSION['id'] : 0;
+            mysqli_query($db, "UPDATE coaches SET is_active = 1 WHERE admin_id = $admin_id");
             header("Location: SuperAdminDashboard.php"); 
             exit();
         } else {
@@ -121,19 +132,23 @@ $total_admins = mysqli_fetch_assoc($query_admin)['total'];
 $query_coaches = mysqli_query($db, "SELECT COUNT(*) AS total FROM admins WHERE role = 'Coach'");
 $total_coaches = mysqli_fetch_assoc($query_coaches)['total'];
 
-/* Count today's appointments (Filtered by role) */
+/* Count today's bookings (Filtered by role) */
 $today = date("Y-m-d");
-$appt_filter = "";
+$booking_join = "";
+$booking_filter = "";
 
 if (strtolower($role) === 'coach') {
-    $appt_filter = " AND coach_name = '$username'";
+    $admin_id = isset($_SESSION['id']) ? (int)$_SESSION['id'] : 0;
+    $safe_username = mysqli_real_escape_string($db, $username);
+    $booking_join = " LEFT JOIN coaches co ON b.coach_id = co.id";
+    $booking_filter = " AND (co.admin_id = $admin_id OR TRIM(LOWER(co.name)) = TRIM(LOWER('$safe_username')))";
 }
 
-$query_today = mysqli_query($db, "SELECT COUNT(*) AS today_appointments FROM appointments WHERE appointment_date = '$today' $appt_filter");
+$query_today = mysqli_query($db, "SELECT COUNT(*) AS today_bookings FROM bookings b $booking_join WHERE b.booking_date = '$today' $booking_filter");
 
 if ($query_today) {
     $data_today = mysqli_fetch_assoc($query_today);
-    $today_appointments = $data_today['today_appointments'];
+    $today_appointments = $data_today['today_bookings'];
 } else {
     $today_appointments = 0;
 }
@@ -147,24 +162,29 @@ if($query_pending){
     $pending_requests = 0;
 }
 
-/* --- Appointment Chart Statistics --- */
+/* --- Booking Chart Statistics --- */
 $current_year = date("Y");
 
 /* Initialize data arrays for 12 months */
+$pending_data = array_fill(0, 12, 0);
+$confirmed_data = array_fill(0, 12, 0);
 $completed_data = array_fill(0, 12, 0);
 $cancelled_data = array_fill(0, 12, 0);
-$rescheduled_data = array_fill(0, 12, 0);
-$ongoing_data = array_fill(0, 12, 0);
 
 /* Filter data if the user is a Coach */
 $coach_filter = "";
+$coach_join = "";
 if (strtolower($role) === 'coach') { 
-    $coach_filter = " AND coach_name = '$username'"; 
+    $admin_id = isset($_SESSION['id']) ? (int)$_SESSION['id'] : 0;
+    $safe_username = mysqli_real_escape_string($db, $username);
+    $coach_join = " LEFT JOIN coaches co ON b.coach_id = co.id";
+    $coach_filter = " AND (co.admin_id = $admin_id OR TRIM(LOWER(co.name)) = TRIM(LOWER('$safe_username')))"; 
 }
 
-$status_sql = "SELECT MONTH(appointment_date) AS month_num, status, COUNT(*) AS count
-               FROM appointments
-               WHERE YEAR(appointment_date) = '$current_year' $coach_filter
+$status_sql = "SELECT MONTH(b.booking_date) AS month_num, b.status, COUNT(*) AS count
+               FROM bookings b
+               $coach_join
+               WHERE YEAR(b.booking_date) = '$current_year' $coach_filter
                GROUP BY month_num, status";
                
 $stats_result = mysqli_query($db, $status_sql);
@@ -177,10 +197,10 @@ if ($stats_result) {
             $status = $row['status'];
             $count = (int)$row['count'];
 
-            if ($status == 'Completed') $completed_data[$m_idx] = $count;
+            if ($status == 'Pending') $pending_data[$m_idx] = $count;
+            elseif ($status == 'Confirmed') $confirmed_data[$m_idx] = $count;
+            elseif ($status == 'Completed') $completed_data[$m_idx] = $count;
             elseif ($status == 'Cancelled') $cancelled_data[$m_idx] = $count;
-            elseif ($status == 'Rescheduled') $rescheduled_data[$m_idx] = $count;
-            elseif ($status == 'Ongoing') $ongoing_data[$m_idx] = $count;
         }
     }
 }
@@ -259,16 +279,16 @@ if ($stats_result) {
         <!-- Data Visualization and Shortcuts Layout -->
         <div class="dashboard-layout">
             
-            <!-- Left: Appointment Statistics -->
+            <!-- Left: Booking Statistics -->
             <div class="data-section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h2>Booking Statistics</h2>
                     <select id="statusFilter" onchange="filterStats()" style="padding: 5px; border-radius: 5px;">
                         <option value="All">Show All</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Confirmed">Confirmed</option>
                         <option value="Completed">Completed</option>
                         <option value="Cancelled">Cancelled</option>
-                        <option value="Rescheduled">Rescheduled</option>
-                        <option value="Ongoing">Ongoing</option>
                     </select>
                 </div>
                 <div style="height: 300px; width: 100%;">
@@ -287,10 +307,10 @@ if ($stats_result) {
 
                 <div id="appointment-list" style="padding : 15px;">
                     <div id="mini-appt-list">
-                        <p style="text-align:center; color:#999; font-size:13px;">Select a date to view appointments</p>
+                        <p style="text-align:center; color:#999; font-size:13px;">Select a date to view bookings</p>
                     </div>
 
-                    <a href="#" id="view-all-btn" class="view-all-btn" style="display:none;">View All Appointments</a> 
+                    <a href="#" id="view-all-btn" class="view-all-btn" style="display:none;">View All Bookings</a> 
                 </div>
                 
             </div>
@@ -329,10 +349,10 @@ if ($stats_result) {
     <!-- Passing PHP arrays to JavaScript -->
     <script>
         const chartData = {
+            pending: <?php echo json_encode($pending_data); ?>,
+            confirmed: <?php echo json_encode($confirmed_data); ?>,
             completed: <?php echo json_encode($completed_data); ?>,
-            cancelled: <?php echo json_encode($cancelled_data); ?>,
-            rescheduled: <?php echo json_encode($rescheduled_data); ?>,
-            ongoing: <?php echo json_encode($ongoing_data); ?>
+            cancelled: <?php echo json_encode($cancelled_data); ?>
         };
     </script>
 

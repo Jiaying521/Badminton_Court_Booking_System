@@ -35,7 +35,8 @@
         $court_type = mysqli_real_escape_string($conn, $_POST['court_type']);
         $location   = mysqli_real_escape_string($conn, $_POST['location']);
         $facilities = mysqli_real_escape_string($conn, $_POST['facilities']);
-        $price      = mysqli_real_escape_string($conn, $_POST['price_per_hour']);
+        $price_off_peak = mysqli_real_escape_string($conn, $_POST['price_off_peak']);
+        $price_peak = mysqli_real_escape_string($conn, $_POST['price_peak']);
         $is_active  = isset($_POST['is_active']) ? 1 : 0;
 
         // Check if court name already exists
@@ -44,10 +45,14 @@
             $error = "Court name already exists!";
         } else {
             // Insert into database
-            $sql = "INSERT INTO courts (court_name, court_type, location, facilities, price_per_hour, is_active)
-                    VALUES ('$court_name', '$court_type', '$location', '$facilities', '$price', '$is_active')";
+            $sql = "INSERT INTO courts (court_name, court_type, location, facilities, price_off_peak, price_peak, is_active)
+                    VALUES ('$court_name', '$court_type', '$location', '$facilities', '$price_off_peak', '$price_peak', '$is_active')";
 
             if(mysqli_query($conn, $sql)){
+                $new_court_id = mysqli_insert_id($conn);
+                for ($day = 1; $day <= 7; $day++) {
+                    mysqli_query($conn, "INSERT INTO court_availability (court_id, day_of_week, start_time, end_time) VALUES ('$new_court_id', '$day', '08:00:00', '01:00:00')");
+                }
                 // Success - go back to ManageCourts with success message
                 header("Location: ManageCourts.php?success=1");
                 exit();
@@ -110,7 +115,7 @@
                         <select name="court_type" required>
                             <option value="" disabled selected>Select Type</option>
                             <option value="Standard">Standard</option>
-                            <option value="Premium">Premium</option>
+                            <option value="Training">Training</option>
                         </select>
                     </div>
 
@@ -125,8 +130,13 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Price Per Hour (RM)</label>
-                        <input type="number" name="price_per_hour" placeholder="e.g. 25.00" step="0.01" min="0" required>
+                        <label>Off-Peak Price (RM)</label>
+                        <input type="number" name="price_off_peak" placeholder="e.g. 10.00" value="10.00" step="0.01" min="0" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Peak Price (RM)</label>
+                        <input type="number" name="price_peak" placeholder="e.g. 15.00" value="15.00" step="0.01" min="0" required>
                     </div>
 
                     <div class="form-group">

@@ -33,8 +33,11 @@ CREATE TABLE `admins` (
   `username` varchar(100) NOT NULL,
   `email` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
-  `role` enum('Superadmin','Admin','Staff') NOT NULL DEFAULT 'Admin',
+  `role` enum('Superadmin','Admin','Coach') NOT NULL DEFAULT 'Admin',
   `status` enum('Active','Inactive','Suspended') NOT NULL DEFAULT 'Inactive',
+  `specialisation` varchar(100) DEFAULT NULL,
+  `is_coach` tinyint(1) NOT NULL DEFAULT 0,
+  `coach_price_per_hour` decimal(10,2) NOT NULL DEFAULT 20.00,
   `first_login` tinyint(1) NOT NULL DEFAULT 0,
   `reset_token` varchar(255) DEFAULT NULL,
   `token_expiry` datetime DEFAULT NULL,
@@ -161,11 +164,14 @@ CREATE TABLE `otp_codes` (
 -- 教练表
 CREATE TABLE `coaches` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `admin_id` int(11) DEFAULT NULL,
   `name` varchar(100) NOT NULL,
   `specialty` varchar(100) DEFAULT NULL,
   `price_per_hour` decimal(10,2) NOT NULL DEFAULT 20.00,
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `admin_id` (`admin_id`),
+  CONSTRAINT `fk_coaches_admin` FOREIGN KEY (`admin_id`) REFERENCES `admins` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ======================================================
@@ -173,8 +179,11 @@ CREATE TABLE `coaches` (
 -- ======================================================
 
 -- 插入管理员
-INSERT INTO `admins` (`id`, `username`, `email`, `password`, `role`, `status`, `first_login`) VALUES
-(1, 'superadmin', 'admin@smasharena.com', '$2y$10$x5NsQGVwkkp5f4oivtMd..D9tsrJLMICxeSDnSe0peEwVN77QeFGu', 'Superadmin', 'Active', 1);
+INSERT INTO `admins` (`id`, `username`, `email`, `password`, `role`, `status`, `specialisation`, `is_coach`, `coach_price_per_hour`, `first_login`) VALUES
+(1, 'superadmin', 'admin@smasharena.com', '$2y$10$x5NsQGVwkkp5f4oivtMd..D9tsrJLMICxeSDnSe0peEwVN77QeFGu', 'Superadmin', 'Active', NULL, 0, 20.00, 1),
+(2, 'Coach Lim', 'coach.lim@smasharena.com', '$2y$10$x5NsQGVwkkp5f4oivtMd..D9tsrJLMICxeSDnSe0peEwVN77QeFGu', 'Coach', 'Active', 'Professional Training', 1, 25.00, 1),
+(3, 'Coach Wong', 'coach.wong@smasharena.com', '$2y$10$x5NsQGVwkkp5f4oivtMd..D9tsrJLMICxeSDnSe0peEwVN77QeFGu', 'Coach', 'Active', 'Technique & Footwork', 1, 20.00, 1),
+(4, 'Coach Tan', 'coach.tan@smasharena.com', '$2y$10$x5NsQGVwkkp5f4oivtMd..D9tsrJLMICxeSDnSe0peEwVN77QeFGu', 'Coach', 'Active', 'Strategy & Match Play', 1, 30.00, 1);
 
 -- 插入10个场地 (Standard 和 Training)
 INSERT INTO `courts` (`id`, `court_name`, `court_type`, `location`, `facilities`, `price_off_peak`, `price_peak`, `is_active`) VALUES
@@ -240,9 +249,9 @@ INSERT INTO `users` (`name`, `email`, `password`, `phone`) VALUES
 ('John Doe', 'john@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '+60123456789');
 
 -- 插入教练数据
-INSERT INTO `coaches` (`id`, `name`, `specialty`, `price_per_hour`, `is_active`) VALUES
-(1, 'Coach Lim', '🏸 Professional Training - Overall skill improvement, power hitting, consistency', 25.00, 1),
-(2, 'Coach Wong', '🎯 Technique & Footwork - Basic strokes, footwork, body positioning', 20.00, 1),
-(3, 'Coach Tan', '🏆 Strategy & Match Play - Game tactics, mental training, competition prep', 30.00, 1);
+INSERT INTO `coaches` (`id`, `admin_id`, `name`, `specialty`, `price_per_hour`, `is_active`) VALUES
+(1, 2, 'Coach Lim', '🏸 Professional Training - Overall skill improvement, power hitting, consistency', 25.00, 1),
+(2, 3, 'Coach Wong', '🎯 Technique & Footwork - Basic strokes, footwork, body positioning', 20.00, 1),
+(3, 4, 'Coach Tan', '🏆 Strategy & Match Play - Game tactics, mental training, competition prep', 30.00, 1);
 
 COMMIT;

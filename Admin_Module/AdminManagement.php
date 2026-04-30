@@ -8,6 +8,12 @@ require 'Email_System/phpmailer/src/SMTP.php';
 
 session_start();
 
+// Security check - If no session, redirect immediately
+if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'Superadmin') {
+    header("Location: LoginPage.php");
+    exit();
+}
+
 $username = $_SESSION['username'];
 $role = $_SESSION['role'];
 $display_name = $username;
@@ -19,12 +25,6 @@ header("Expires: 0"); // Proxies.
 
 // Database connection
 $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
-
-// Security check - If no session, redirect immediately
-if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'Superadmin') {
-    header("Location: LoginPage.php");
-    exit();
-}
 
 // Updated Function using PHPMailer
 function sendTemporaryPassword($to_email, $username, $temp_pass) {
@@ -89,9 +89,10 @@ if (isset($_POST['add_account'])) {
     $email = mysqli_real_escape_string($conn, $_POST['email']);
     $role_to_add = mysqli_real_escape_string($conn, $_POST['role']);
     $spec = isset($_POST['spec']) ? mysqli_real_escape_string($conn, $_POST['spec']) : NULL;
+    $coach_price = isset($_POST['coach_price_per_hour']) ? (float)$_POST['coach_price_per_hour'] : 20.00;
     
-    // Set is_coach based on role for DB compatibility
-    $is_doc_val = ($role_to_add === 'Coach') ? 1 : 0;
+    // Coach accounts log in through admins, while customer pages read public coach details from coaches.
+    $is_coach_val = ($role_to_add === 'Coach') ? 1 : 0;
 
     $temp_pass = bin2hex(random_bytes(4));
     $hashed_pass = password_hash($temp_pass, PASSWORD_DEFAULT);
@@ -106,12 +107,18 @@ if (isset($_POST['add_account'])) {
             $message = "<div class='badge pending' style='width:100%; padding:15px; margin-bottom:20px;'>Error: Email address already exists!</div>";
         }
     } else {
-        // Corrected INSERT: Omit 'id' for Auto_Increment and added required columns
-        // Added is_coach and first_login to the SQL to match your database
-        $sql = "INSERT INTO admins (username, email, password, role, status, specialisation, is_coach, first_login) 
-                VALUES ('$user', '$email', '$hashed_pass', '$role_to_add', 'Inactive', '$spec', '$is_doc_val', 0)";
+        $sql = "INSERT INTO admins (username, email, password, role, status, specialisation, is_coach, coach_price_per_hour, first_login) 
+                VALUES ('$user', '$email', '$hashed_pass', '$role_to_add', 'Inactive', '$spec', '$is_coach_val', '$coach_price', 0)";
         
         if (mysqli_query($conn, $sql)) {
+            $admin_id = mysqli_insert_id($conn);
+
+            if ($role_to_add === 'Coach') {
+                $coach_sql = "INSERT INTO coaches (admin_id, name, specialty, price_per_hour, is_active)
+                              VALUES ('$admin_id', '$user', '$spec', '$coach_price', 0)";
+                mysqli_query($conn, $coach_sql);
+            }
+
             // Call PHPMailer function
             $mail_sent = sendTemporaryPassword($email, $user, $temp_pass);
             
@@ -133,6 +140,8 @@ if (isset($_GET['update_id']) && isset($_GET['new_status'])) {
     $uid = intval($_GET['update_id']);
     $status = mysqli_real_escape_string($conn, $_GET['new_status']);
     mysqli_query($conn, "UPDATE admins SET status = '$status' WHERE id = $uid");
+    $coach_active = ($status === 'Active') ? 1 : 0;
+    mysqli_query($conn, "UPDATE coaches SET is_active = '$coach_active' WHERE admin_id = $uid");
     header("Location: AdminManagement.php");
     exit();
 }
@@ -141,6 +150,7 @@ if (isset($_GET['update_id']) && isset($_GET['new_status'])) {
 if (isset($_GET['delete_id'])) {
     $did = intval($_GET['delete_id']);
     // Prevent deleting superadmin for safety
+    mysqli_query($conn, "DELETE FROM coaches WHERE admin_id = $did");
     mysqli_query($conn, "DELETE FROM admins WHERE id = $did AND role != 'Superadmin'");
     header("Location: AdminManagement.php");
     exit();
@@ -218,6 +228,7 @@ $result = mysqli_query($conn, $query);
                         <option value="Junior Development">Junior Development</option>
                         <option value="Tournament Preparation">Tournament Preparation</option>
                     </select>
+                    <input type="number" name="coach_price_per_hour" placeholder="Coach Price Per Hour (RM)" value="20.00" step="0.01" min="0" required>
                     <button type="submit" name="add_account" class="btn-create">Create Account</button>
                 </form>
             </div>
@@ -229,7 +240,7 @@ $result = mysqli_query($conn, $query);
                     <option value="All" <?php echo ($current_filter == 'All' ? 'selected' : ''); ?>>All Staff</option>
                     <option value="Superadmin" <?php echo ($current_filter == 'Superadmin' ? 'selected' : ''); ?>>Superadmins Only</option>
                     <option value="Admin" <?php echo ($current_filter == 'Admin' ? 'selected' : ''); ?>>Admins Only</option>
-                    <option value="Coach" <?php echo ($current_filter == 'Coach' ? 'selected' : ''); ?>>Coach Management</option>
+                    <option value="Coach" <?php echo ($current_filter == 'Coach' ? 'selected' : ''); ?>>Coach Only</option>
                 </select>
             </div>
 
@@ -250,6 +261,9 @@ $result = mysqli_query($conn, $query);
                         <td>
                             <strong><?php echo htmlspecialchars($row['username']); ?></strong><br>
                             <small style="color:#999;"><?php echo htmlspecialchars($row['email']); ?></small>
+                            <?php if ($row['role'] === 'Coach' && !empty($row['specialisation'])): ?>
+                                <br><small style="color:#64748b;"><?php echo htmlspecialchars($row['specialisation']); ?> | RM <?php echo number_format((float)$row['coach_price_per_hour'], 2); ?>/hour</small>
+                            <?php endif; ?>
                         </td>
                         <td><span class="role-label"><?php echo $row['role']; ?></span></td>
                         <td>

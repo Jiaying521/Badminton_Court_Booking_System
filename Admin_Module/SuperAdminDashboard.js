@@ -6,13 +6,16 @@ const welcomeText = document.getElementById('welcome-text');
 
 // 2. MOBILE NAVIGATION LOGIC
 // Toggle sidebar menu for mobile view
-menuToggle.addEventListener('click', (e) => {
-    e.stopPropagation();
-    navMenu.classList.toggle('active');
-});
+if (menuToggle && navMenu) {
+    menuToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        navMenu.classList.toggle('active');
+    });
+}
 
 // Close menu when clicking outside the navigation area
 document.addEventListener('click', (event) => {
+    if (!navMenu || !menuToggle) return;
     const isClickInsideMenu = navMenu.contains(event.target);
     const isClickOnButton = menuToggle.contains(event.target);
 
@@ -22,19 +25,21 @@ document.addEventListener('click', (event) => {
 });
 
 // 3. USER LOGOUT SYSTEM
-logoutBtn.addEventListener("click", function() {
-    const confirmLogout = confirm("Are you sure you want to log out of the system?");
+if (logoutBtn) {
+    logoutBtn.addEventListener("click", function() {
+        const confirmLogout = confirm("Are you sure you want to log out of the system?");
 
-    if (confirmLogout) {
-        // Clear local browser data
-        localStorage.removeItem("loggedInUser");
-        
-        // Redirect to the current page with a logout action parameter
-        window.location.href = "SuperAdminDashboard.php?action=logout"; 
-    }
-});
+        if (confirmLogout) {
+            // Clear local browser data
+            localStorage.removeItem("loggedInUser");
+            
+            // Redirect to the current page with a logout action parameter
+            window.location.href = "SuperAdminDashboard.php?action=logout"; 
+        }
+    });
+}
 
-// 4. APPOINTMENT STATISTICS FILTER LOGIC
+// 4. BOOKING STATISTICS FILTER LOGIC
 function filterStats() {
     const filterValue = document.getElementById("statusFilter").value;
 
@@ -57,10 +62,13 @@ function filterStats() {
 let appointmentChart;
 
 document.addEventListener('DOMContentLoaded', function() {
-    const ctx = document.getElementById('myChart').getContext('2d');
+    const chartCanvas = document.getElementById('myChart');
+    if (!chartCanvas) return;
+
+    const ctx = chartCanvas.getContext('2d');
     
     // Safety check: ensure chartData is provided by PHP
-    const dataSet = typeof chartData !== 'undefined' ? chartData : { rescheduled: [], completed: [], cancelled: [], ongoing: [] };
+    const dataSet = typeof chartData !== 'undefined' ? chartData : { pending: [], confirmed: [], completed: [], cancelled: [] };
 
     appointmentChart = new Chart(ctx, {
         type: 'bar', 
@@ -68,9 +76,14 @@ document.addEventListener('DOMContentLoaded', function() {
             labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
             datasets: [
                 {
-                    label: 'Rescheduled',
-                    data: dataSet.rescheduled,
+                    label: 'Pending',
+                    data: dataSet.pending,
                     backgroundColor: '#ffc107' // Amber
+                },
+                {
+                    label: 'Confirmed',
+                    data: dataSet.confirmed,
+                    backgroundColor: '#007bff' // Blue
                 },
                 {
                     label: 'Completed',
@@ -81,11 +94,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     label: 'Cancelled',
                     data: dataSet.cancelled,
                     backgroundColor: '#dc3545' // Red
-                },
-                {
-                    label: 'Ongoing',
-                    data: dataSet.ongoing,
-                    backgroundColor: '#007bff' // Blue
                 }
             ]
         },
@@ -111,6 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 //6. Flatpickr Calendar Initialization
 document.addEventListener('DOMContentLoaded', function() {
+    if (!document.getElementById('inline-calendar')) return;
     
     function fetchAppointments(dateStr) {
         const listDiv = document.getElementById('mini-appt-list');
@@ -144,13 +153,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     data.forEach((app, index) => {
                         const cardClass = (index % 2 === 0) ? 'appt-card' : 'appt-card alt';
 
+                        const coachLine = app.coach_name && app.coach_name !== 'No coach' ? ` | Coach: ${app.coach_name}` : '';
                         listDiv.innerHTML += `
                             <div class="${cardClass}">
                                 <div class="appt-content">
-                                    <h4>Court Booking - ${app.player_name}</h4>
+                                    <h4>${app.court_name || 'Court'} - ${app.player_name}</h4>
                                     <div class="appt-details">
                                         <i class="far fa-calendar-check"></i> 
-                                        ${dateStr}, ${app.appointment_time}
+                                        ${dateStr}, ${app.booking_time} - ${app.end_time}${coachLine}
                                     </div>
                                 </div>
                                 <div class="appt-arrow">

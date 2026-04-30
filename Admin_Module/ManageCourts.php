@@ -36,7 +36,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Badminton Hub - Couort Management</title>
+    <title>Badminton Hub - Court Management</title>
 
     <!-- Font Awesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -92,7 +92,7 @@
                         <th>ID</th>
                         <th>Court Info</th>
                         <th>Type</th>
-                        <th>Price/Hour</th>
+                        <th>Pricing</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -119,7 +119,8 @@
                             <td><?php echo htmlspecialchars($row['court_type']); ?></td>
 
                             <td>
-                                RM <?php echo number_format($row['price_per_hour'], 2); ?>
+                                Off-Peak: RM <?php echo number_format($row['price_off_peak'], 2); ?><br>
+                                <small style="color:#999;">Peak: RM <?php echo number_format($row['price_peak'], 2); ?></small>
                             </td>
 
                             <td>

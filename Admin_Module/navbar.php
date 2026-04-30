@@ -22,33 +22,40 @@
             <li><a href="#">System Settings</a></li>
 
         <?php elseif ($role === 'Admin'): ?>
-            <li><a href="CoachManagement.php">Coach Management</a></li>
-            <li><a href="BookingManagement.php">Bookings</a></li>
-            <li><a href="ManageCourts.php">Court Management</a></li>
-            <li><a href="ScheduleManagement.php">Court Schedule</a></li>
+            <li><a href="ManageCourts.php">Coach Management</a></li>
+            <li><a href="#">Bookings</a></li>
+            <li><a href="#">Court Schedule</a></li>
+
             <li class="dropdown">
                 <a href="#" class="drop-btn">More Options ▼</a>
                 <ul class="submenu">
-                    <li><a href="PlayerList.php">Player List</a></li>
-                    <li><a href="Reports.php">Reports & Analytics</a></li>
-                    <li><a href="Notifications.php">Notifications</a></li>
-                    <li><a href="ConflictManagement.php">Conflict Management</a></li>
-                    <li><a href="Settings.php">Appointment Settings</a></li>
+                    <li><a href="#">Player List</a></li>
+                    <li><a href="#">Reports & Analytics</a></li>
+                    <li><a href="#">Notifications</a></li>
+                    <li><a href="#">Conflict Management</a></li>
+                    <li><a href="#">Appointment Settings</a></li>
                 </ul>
             </li>
 
         <?php elseif ($role === 'Coach'): ?>
-            <li><a href="MyBookings.php">My Bookings</a></li>
-            <li><a href="MySchedule.php">My Schedule</a></li>
-            <li><a href="MyPlayers.php">My Players</a></li>
-            <li><a href="Profile.php">Profile</a></li>
+            <li><a href="#">My Bookings</a></li>
+            <li><a href="#">My Schedule</a></li>
+            <li><a href="#">My Players</a></li>
+            <li><a href="#">Profile</a></li>
         <?php endif; ?>
 
-        <li><button id="logout-btn" class="logout-btn" onclick="location.href='SuperAdminDashboard.php?action=logout'">Logout</button></li>
+        <li>
+            <button id="logout-btn" class="logout-btn"
+                onclick="location.href='SuperAdminDashboard.php?action=logout'">
+                Logout
+            </button>
+        </li>
     </ul>
 
     <div class="user-info">
-        <span id="welcome-text">Hello, <?php echo htmlspecialchars($display_name); ?>!</span>
+        <span id="welcome-text">
+            Hello, <?php echo htmlspecialchars($display_name); ?>!
+        </span>
     </div>
 </nav>
 
