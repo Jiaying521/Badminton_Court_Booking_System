@@ -8,7 +8,7 @@
 <body>
 
     <div class="container">
-        <h2>🏸 Complete Your Court Booking</h2>
+        <h2>Payment details</h2>
         
         <form action="gateway.php" method="POST">
             
@@ -59,7 +59,7 @@
                 <input type="radio" name="payment_method" value="Bank Transfer" style="width: auto; margin: 0;">
                 <div class="payment-info">
                     <p class="payment-title">Online Payment</p>
-                    <p class="payment-subtitle">FPX, Touch 'n Go, GrabPay</p>
+                    <p class="payment-subtitle">FPX, Touch 'n Go</p>
                 </div>
             </label>
 
