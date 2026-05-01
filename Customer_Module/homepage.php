@@ -21,11 +21,16 @@ require_once __DIR__ . '/../config.php';
         .btn-outline:hover { background:#2b7e3a; color:white; transform:translateY(-2px); }
         .btn-solid { background:#2b7e3a; border:none; padding:0.5rem 1.4rem; border-radius:40px; color:white; cursor:pointer; font-weight:600; transition:all 0.2s; box-shadow:0 2px 6px rgba(43,126,58,0.2); }
         .btn-solid:hover { background:#1f5a2a; transform:translateY(-2px); }
-        .hero { display:flex; align-items:center; justify-content:space-between; padding:4rem 5%; gap:3rem; flex-wrap:wrap; max-width:1400px; margin:0 auto; }
-        .hero-text h1 { font-size:3.8rem; font-weight:800; background:linear-gradient(125deg,#2b7e3a,#1b5e2a); -webkit-background-clip:text; background-clip:text; color:transparent; margin-bottom:1.2rem; }
+        
+        /* Hero Section - 图片在右边 */
+        .hero { display:flex; align-items:center; justify-content:space-between; padding:4rem 5%; gap:4rem; flex-wrap:wrap; max-width:1400px; margin:0 auto; }
+        .hero-text { flex:1; min-width:280px; }
+        .hero-text h1 { font-size:3.8rem; font-weight:800; background:linear-gradient(125deg,#2b7e3a,#1b5e2a); -webkit-background-clip:text; background-clip:text; color:transparent; margin-bottom:1.2rem; line-height:1.2; }
         .hero-text p { font-size:1.2rem; color:#4a6e4a; margin-bottom:2rem; max-width:500px; }
+        .hero-image { flex:1; text-align:right; }
         .hero-image img { max-width:100%; border-radius:32px; box-shadow:0 25px 40px -15px rgba(43,126,58,0.3); transition:transform 0.3s; }
         .hero-image img:hover { transform:scale(1.02); }
+        
         .features { padding:4rem 5%; background:white; border-radius:48px 48px 0 0; margin-top:2rem; }
         .features h2 { text-align:center; font-size:2.5rem; font-weight:700; color:#1e3a2a; margin-bottom:3rem; }
         .features-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:2rem; max-width:1200px; margin:0 auto; }
@@ -52,17 +57,9 @@ require_once __DIR__ . '/../config.php';
         }
         
         /* 自定义滚动条样式 */
-        .modal-content::-webkit-scrollbar {
-            width: 6px;
-        }
-        .modal-content::-webkit-scrollbar-track {
-            background: #e0e0e0;
-            border-radius: 3px;
-        }
-        .modal-content::-webkit-scrollbar-thumb {
-            background: #2b7e3a;
-            border-radius: 3px;
-        }
+        .modal-content::-webkit-scrollbar { width: 6px; }
+        .modal-content::-webkit-scrollbar-track { background: #e0e0e0; border-radius: 3px; }
+        .modal-content::-webkit-scrollbar-thumb { background: #2b7e3a; border-radius: 3px; }
         
         @keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
         .close { position:absolute; right:1.5rem; top:1.2rem; font-size:1.8rem; cursor:pointer; color:#94a3b8; transition:0.2s; }
@@ -107,15 +104,14 @@ require_once __DIR__ . '/../config.php';
         @media (max-width:768px) {
             .hero-text h1 { font-size:2.5rem; }
             .navbar { flex-direction:column; gap:1rem; }
+            .hero { flex-direction:column; text-align:center; }
+            .hero-image { text-align:center; }
+            .hero-text p { margin-left:auto; margin-right:auto; }
             .features h2 { font-size:2rem; }
             .footer-container { grid-template-columns:1fr; text-align:center; }
             .footer-col p { justify-content:center; }
             .social-icons { justify-content:center; }
-            .modal-content {
-                margin: 5% auto;
-                max-height: 80vh;
-                padding: 1.5rem;
-            }
+            .modal-content { margin: 5% auto; max-height: 80vh; padding: 1.5rem; }
         }
     </style>
 </head>
@@ -127,31 +123,87 @@ require_once __DIR__ . '/../config.php';
         <button class="btn-solid" id="signupBtn">Sign Up</button>
     </div>
 </nav>
+
+<!-- Hero Section - 图片在右边 -->
 <section class="hero">
     <div class="hero-text">
         <h1>Smash & Play<br>Book Courts Instantly</h1>
-        <p>Premium badminton courts, flexible hours, and secure online booking. Play your best game today.</p>
+        <p>Professional badminton courts, flexible hours, and secure online booking. Play your best game today.</p>
         <button class="btn-solid" id="heroBookBtn" style="padding:0.8rem 2rem; font-size:1rem;">Book Now →</button>
     </div>
-    <div class="hero-image"><img src="https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=600" alt="Badminton court"></div>
+    <div class="hero-image">
+        <img src="https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=600" alt="Badminton court">
+    </div>
 </section>
+
+<!-- Features Section -->
 <section class="features">
     <h2>Why Choose Smash Arena?</h2>
     <div class="features-grid">
-        <div class="feature-card"><div class="feature-icon"><i class="fas fa-calendar-check"></i></div><h3>Easy Booking</h3><p>Select court, pick time, pay online – done in under a minute.</p></div>
-        <div class="feature-card"><div class="feature-icon"><i class="fas fa-shuttlecock"></i></div><h3>Premium Courts</h3><p>Professional wooden floors, LED lighting, and top-notch facilities.</p></div>
-        <div class="feature-card"><div class="feature-icon"><i class="fas fa-tachometer-alt"></i></div><h3>Real-time Availability</h3><p>Live slot updates – never double-book again.</p></div>
-        <div class="feature-card"><div class="feature-icon"><i class="fas fa-shield-alt"></i></div><h3>Secure Payments</h3><p>Multiple payment options with full encryption.</p></div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-calendar-check"></i></div>
+            <h3>Easy Booking</h3>
+            <p>Select court, pick time, pay online – done in under a minute.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-clock"></i></div>
+            <h3>Extended Hours</h3>
+            <p>Open daily 8am - 1am. Early bird and late night sessions available.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-chalkboard-user"></i></div>
+            <h3>Training Courts</h3>
+            <p>Training courts available with professional coaches.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+            <h3>Secure Payments</h3>
+            <p>Multiple payment options with full encryption.</p>
+        </div>
     </div>
 </section>
+
 <footer class="footer">
     <div class="footer-container">
-        <div class="footer-col"><h3>Smash Arena</h3><p><i class="fas fa-map-marker-alt"></i> 123 Jalan Badminton, Kuala Lumpur</p><p><i class="fas fa-phone-alt"></i> +603-1234 5678</p><p><i class="fas fa-envelope"></i> smasharenabadminton@gmail.com</p><div class="social-icons"><a href="#"><i class="fab fa-facebook-f"></i></a><a href="#"><i class="fab fa-instagram"></i></a><a href="#"><i class="fab fa-twitter"></i></a><a href="#"><i class="fab fa-whatsapp"></i></a></div></div>
-        <div class="footer-col"><h4>Quick Links</h4><a href="#">Find a Court</a><a href="#">Book Session</a><a href="#">Membership</a><a href="#">Coaching</a><a href="#">Tournaments</a></div>
-        <div class="footer-col"><h4>Support</h4><a href="#">FAQs</a><a href="#">Cancellation Policy</a><a href="#">Privacy Policy</a><a href="#">Terms of Use</a><a href="#">Contact Us</a></div>
-        <div class="footer-col"><h4>Operating Hours</h4><p>Monday - Friday: 8:00 AM - 10:00 PM</p><p>Saturday - Sunday: 9:00 AM - 9:00 PM</p><p>Public Holidays: 10:00 AM - 6:00 PM</p></div>
+        <div class="footer-col">
+            <h3>Smash Arena</h3>
+            <p><i class="fas fa-map-marker-alt"></i> 123 Jalan Badminton, Kuala Lumpur</p>
+            <p><i class="fas fa-phone-alt"></i> +603-1234 5678</p>
+            <p><i class="fas fa-envelope"></i> smasharenabadminton@gmail.com</p>
+            <div class="social-icons">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-whatsapp"></i></a>
+            </div>
+        </div>
+        <div class="footer-col">
+            <h4>Quick Links</h4>
+            <a href="#">Find a Court</a>
+            <a href="#">Book Session</a>
+            <a href="#">Membership</a>
+            <a href="#">Coaching</a>
+            <a href="#">Tournaments</a>
+        </div>
+        <div class="footer-col">
+            <h4>Support</h4>
+            <a href="#">FAQs</a>
+            <a href="#">Cancellation Policy</a>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Use</a>
+            <a href="#">Contact Us</a>
+        </div>
+        <div class="footer-col">
+            <h4>Operating Hours</h4>
+            <p><i class="fas fa-clock"></i> Monday - Sunday: 8:00 AM - 1:00 AM</p>
+            <p><i class="fas fa-tag"></i> 8am - 2pm: RM10/hour</p>
+            <p><i class="fas fa-tag"></i> 3pm - 1am: RM15/hour</p>
+            <p><i class="fas fa-calendar-alt"></i> Open daily including public holidays</p>
+        </div>
     </div>
-    <div class="footer-bottom"><p>&copy; 2025 Smash Arena – Your Game, Our Court. All rights reserved.</p></div>
+    <div class="footer-bottom">
+        <p>&copy; 2025 Smash Arena – Your Game, Our Court. All rights reserved.</p>
+    </div>
 </footer>
 
 <!-- Login Modal -->
@@ -403,8 +455,6 @@ require_once __DIR__ . '/../config.php';
         const email = regEmail.value.trim();
         const password = regPassword.value;
         const phoneFull = regPhoneCode.value + regPhoneInput.value.trim();
-        
-        // 不再传递 otpCode
         
         registerFinalBtn.disabled = true;
         registerFinalBtn.innerText = "Registering...";
