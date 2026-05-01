@@ -8,8 +8,8 @@
         <button id="menu-toggle" class="menu-toggle">☰</button>
         <img src="Pictures/logo.png" alt="logo" class="logo">
         <span class="brand-name">
-            <span class="text-primary">Badminton</span>
-            <span class="text-dark">Hub</span>
+            <span class="text-primary">Smash</span>
+            <span class="text-dark">Arena</span>
         </span>
     </div>
 
