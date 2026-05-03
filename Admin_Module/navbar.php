@@ -19,12 +19,12 @@
         <?php if ($role === 'Superadmin'): ?>
             <li><a href="AdminManagement.php">Admin Management</a></li>
             <li><a href="ManageCourts.php">Court Management</a></li>
-            <li><a href="#">System Settings</a></li>
+            <li><a href="ManageBookings.php">Manage Bookings</a></li>
 
         <?php elseif ($role === 'Admin'): ?>
             <li><a href="ManageCourts.php">Coach Management</a></li>
-            <li><a href="#">Bookings</a></li>
-            <li><a href="#">Court Schedule</a></li>
+            <li><a href="ManageBookings.php">Manage Bookings</a></li>
+            <li><a href="CourtSchedule.php">Court Schedule</a></li>
 
             <li class="dropdown">
                 <a href="#" class="drop-btn">More Options ▼</a>
