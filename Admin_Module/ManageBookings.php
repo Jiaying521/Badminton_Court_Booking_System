@@ -174,5 +174,7 @@
             </table>
         </div>
     </main>
+
+    <script src="SuperAdminDashboard.js"></script>
 </body>
 </html>
