@@ -1,0 +1,284 @@
+.filter-bar {
+    margin-bottom: 15px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 6px 14px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 13px;
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.filter-btn.active {
+    background: #6366f1;
+    color: white;
+}
+
+/* Expandable row styles */
+.data-table tbody tr.main-row {
+    cursor: pointer;
+}
+
+.data-table tbody tr.main-row:hover {
+    background: rgba(99, 102, 241, 0.06);
+}
+
+.details-row {
+    display: none;
+}
+
+.details-row.open {
+    display: table-row;
+}
+
+.details-row td {
+    padding: 0;
+    border-top: none;
+}
+
+/* Details inner */
+.details-inner {
+    padding: 16px 24px;
+    border-left: 4px solid #e5e7eb;
+    background: #f8f9ff;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.details-inner.status-Confirmed {
+    border-left-color: #16a34a;
+    background: #f0fdf4;
+}
+
+.details-inner.status-Pending {
+    border-left-color: #d97706;
+    background: #fffbeb;
+}
+
+.details-inner.status-Cancelled {
+    border-left-color: #dc2626;
+    background: #fef2f2;
+}
+
+.details-inner.status-Completed {
+    border-left-color: #6366f1;
+    background: #f5f3ff;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px 24px;
+    flex: 1;
+}
+
+.details-item label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 3px;
+}
+
+.details-item span {
+    font-size: 14px;
+    color: #1f2937;
+    font-weight: 500;
+}
+
+.details-item.notes-item {
+    grid-column: 1 / -1;
+}
+
+.expand-icon {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-left: 6px;
+    transition: transform 0.2s;
+    display: inline-block;
+}
+
+.main-row.open .expand-icon {
+    transform: rotate(180deg);
+}
+
+/* Edit button */
+.btn-edit-booking {
+    padding: 8px 18px;
+    border-radius: 6px;
+    border: none;
+    background: #6366f1;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background 0.2s;
+}
+
+.btn-edit-booking:hover {
+    background: #4f46e5;
+}
+
+/* Modal */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 28px;
+    width: 100%;
+    max-width: 520px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.modal-close {
+    background: #f1f5f9;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    transition: all 0.2s;
+}
+
+.modal-close:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.modal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.modal-field.full-width {
+    grid-column: 1 / -1;
+}
+
+.modal-field label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.modal-field input,
+.modal-field select,
+.modal-field textarea {
+    padding: 10px 12px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'Outfit', sans-serif;
+    outline: none;
+    background: #fafafa;
+    color: #1f2937;
+    transition: border-color 0.2s;
+}
+
+.modal-field input:focus,
+.modal-field select:focus,
+.modal-field textarea:focus {
+    border-color: #6366f1;
+    background: #fff;
+}
+
+.modal-field textarea {
+    resize: vertical;
+    min-height: 75px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.btn-modal-cancel {
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: 1.5px solid #e5e7eb;
+    background: #fff;
+    color: #64748b;
+    font-weight: 600;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.2s;
+}
+
+.btn-modal-cancel:hover {
+    background: #f1f5f9;
+}
+
+.btn-modal-save {
+    padding: 10px 22px;
+    border-radius: 6px;
+    border: none;
+    background: #6366f1;
+    color: white;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.2s;
+}
+
+.btn-modal-save:hover {
+    background: #4f46e5;
+}
