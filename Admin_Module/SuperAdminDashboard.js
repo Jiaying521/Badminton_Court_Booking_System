@@ -1,7 +1,6 @@
 // 1. SELECT DOM ELEMENTS
 const menuToggle = document.getElementById('menu-toggle');
 const navMenu = document.getElementById('nav-menu');
-const logoutBtn = document.getElementById("logout-btn");
 const welcomeText = document.getElementById('welcome-text');
 
 // 2. MOBILE NAVIGATION LOGIC
@@ -24,22 +23,7 @@ document.addEventListener('click', (event) => {
     }
 });
 
-// 3. USER LOGOUT SYSTEM
-if (logoutBtn) {
-    logoutBtn.addEventListener("click", function() {
-        const confirmLogout = confirm("Are you sure you want to log out of the system?");
-
-        if (confirmLogout) {
-            // Clear local browser data
-            localStorage.removeItem("loggedInUser");
-            
-            // Redirect to the current page with a logout action parameter
-            window.location.href = "SuperAdminDashboard.php?action=logout"; 
-        }
-    });
-}
-
-// 4. BOOKING STATISTICS FILTER LOGIC
+// 3. BOOKING STATISTICS FILTER LOGIC
 function filterStats() {
     const filterValue = document.getElementById("statusFilter").value;
 
@@ -58,7 +42,7 @@ function filterStats() {
     appointmentChart.update(); // Re-render the chart with filtered data
 }
 
-// 5. CHART.JS INITIALIZATION
+// 4. CHART.JS INITIALIZATION
 let appointmentChart;
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -117,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-//6. Flatpickr Calendar Initialization
+//5. Flatpickr Calendar Initialization
 document.addEventListener('DOMContentLoaded', function() {
     if (!document.getElementById('inline-calendar')) return;
     

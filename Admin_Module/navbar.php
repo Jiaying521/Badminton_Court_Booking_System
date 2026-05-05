@@ -45,11 +45,10 @@
         <?php endif; ?>
 
         <li>
-            <button id="logout-btn" class="logout-btn"
-                onclick="location.href='SuperAdminDashboard.php?action=logout'">
+            <button id="logout-btn" class="logout-btn">
                 Logout
             </button>
-        </li>
+        </li>   
     </ul>
 
     <div class="user-info">
@@ -60,3 +59,18 @@
 </nav>
 
 <div id="overlay" class="overlay"></div>
+
+<script>
+
+    {
+        const logoutBtn = document.getElementById("logout-btn");
+        if (logoutBtn) {
+            logoutBtn.addEventListener("click", function() {
+                if (confirm("Are you sure you want to logout?")) {
+                    window.location.href = "SuperAdminDashboard.php?action=logout";
+                }
+            });
+        }
+    }
+
+</script>
