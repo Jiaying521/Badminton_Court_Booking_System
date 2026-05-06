@@ -11,15 +11,14 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
     $total_hours = $_POST['total_hours'];
     $notes = $_POST['notes'] ?? '';
     
-    // 获取教练信息
     $coach_id = $_POST['coach_id'] ?? 0;
     $coach_hours = $_POST['coach_hours'] ?? 0;
     $coach_price_total = $_POST['coach_price_total'] ?? 0;
     
-    // 正确计算结束时间（开始时间 + 预订小时数）
+    // 计算结束时间
     $end_time = date('H:i:s', strtotime($start_time) + ($total_hours * 3600));
     
-    // 检查该时段是否已被预订（检查整个时间段内是否有重叠）
+    // 检查时段是否已被预订
     $check = $pdo->prepare("
         SELECT id FROM bookings 
         WHERE court_id = ? AND booking_date = ? AND status NOT IN ('Cancelled')
@@ -40,8 +39,8 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
         INSERT INTO bookings (
             user_id, court_id, booking_date, start_time, end_time, 
             total_hours, total_price, coach_id, coach_hours, coach_price_total,
-            session_type, status, notes
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Casual Play', 'Pending', ?)
+            status, notes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?)
     ");
     $stmt->execute([
         $user_id, $court_id, $booking_date, $start_time, $end_time,
@@ -51,7 +50,9 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     $booking_id = $pdo->lastInsertId();
     
-    header("Location: payment.php?booking_id=$booking_id");
+    // ========== 跳转到队友的支付页面 ==========
+    // 传递 booking_id 和金额到 checkout.php
+    header("Location: checkout.php?booking_id=$booking_id&amount=$total_price");
     exit;
 }
 ?>
