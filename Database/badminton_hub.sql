@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 30, 2026 at 06:54 PM
+-- Generation Time: May 06, 2026 at 06:39 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -36,7 +36,7 @@ CREATE TABLE `admins` (
   `status` enum('Active','Inactive','Suspended') NOT NULL DEFAULT 'Inactive',
   `specialisation` varchar(100) DEFAULT NULL,
   `is_coach` tinyint(1) NOT NULL DEFAULT 0,
-  `coach_price_per_hour` decimal(10,2) NOT NULL DEFAULT 20.00,
+  `coach_price_per_hour` decimal(10,2) DEFAULT NULL,
   `reset_token` varchar(255) DEFAULT NULL,
   `token_expiry` datetime DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
@@ -88,7 +88,7 @@ INSERT INTO `bookings` (`id`, `user_id`, `court_id`, `booking_date`, `start_time
 (9, 5, 3, '2026-05-04', '18:00:00', '20:00:00', 2, NULL, 0, 0.00, '', 50.00, 'Confirmed', 'Ahmad evening session', '2026-04-30 16:34:47'),
 (10, 6, 2, '2026-05-05', '10:00:00', '12:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Cancelled', 'Rachel cancelled booking', '2026-04-30 16:34:47'),
 (11, 7, 1, '2026-05-05', '13:00:00', '15:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 'Daniel weekday practice', '2026-04-30 16:34:47'),
-(12, 8, 3, '2026-05-06', '16:00:00', '18:00:00', 2, NULL, 0, 0.00, '', 50.00, 'Pending', 'Priya competitive game', '2026-04-30 16:34:47'),
+(12, 8, 3, '2026-05-06', '16:00:00', '18:00:00', 2, NULL, 0, 0.00, '', 50.00, 'Completed', 'Priya competitive game', '2026-04-30 16:34:47'),
 (13, 9, 2, '2026-05-06', '19:00:00', '21:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 'Jason night practice', '2026-04-30 16:34:47'),
 (14, 10, 1, '2026-05-07', '07:00:00', '09:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 'Nurul early session', '2026-04-30 16:34:47');
 
@@ -125,7 +125,7 @@ CREATE TABLE `coaches` (
   `admin_id` int(11) DEFAULT NULL,
   `name` varchar(100) NOT NULL,
   `specialty` varchar(100) DEFAULT NULL,
-  `price_per_hour` decimal(10,2) NOT NULL DEFAULT 20.00,
+  `price_per_hour` decimal(10,2) DEFAULT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -332,7 +332,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `created_at`) VALUES
-(1, 'John Doe', 'john@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '+60123456789', '2026-04-30 16:17:09'),
+(1, 'John Doe', 'john@example.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', '+60123456789', '2026-04-30 16:17:09'),
 (2, 'Alice Tan', 'alice@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60111222333', '2026-04-30 16:34:47'),
 (3, 'Michael Lee', 'michael@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60199888777', '2026-04-30 16:34:47'),
 (4, 'Siti Aminah', 'siti@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60122334455', '2026-04-30 16:34:47'),
@@ -468,7 +468,7 @@ ALTER TABLE `otp_codes`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `tasks`
