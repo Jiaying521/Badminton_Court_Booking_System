@@ -1,6 +1,6 @@
-/* AdminManagement.css - Badminton Hub Theme */
-
-.manage-container { padding: 10px 0; }
+.manage-container { 
+    padding: 10px 0; 
+}
 
 .management-header {
     display: flex;

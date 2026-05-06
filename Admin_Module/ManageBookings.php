@@ -5,70 +5,83 @@
         exit();
     }
 
-    //Check role only Superadmin and Admin can access
-    if(!in_array($_SESSION['role'],['Superadmin','Admin'])){
+    // Check role - only Superadmin and Admin can access
+    if(!in_array($_SESSION['role'], ['Superadmin', 'Admin'])){
         header("Location: LoginPage.php");
         exit();
     }
 
-    //Prevent Browser Caching
+    // Prevent Browser Caching
     header("Cache-Control: no-cache, no-store, must-revalidate"); 
     header("Pragma: no-cache");
     header("Expires: 0");
 
-    //Database Connection
+    // Database Connection
     $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
 
-    $username = $_SESSION['username'];
-    $role = $_SESSION['role'];
-    $display_name = $username; //Show "Hello, xxx" in the header
-
-    // Filter by status if selected
-    $filter = isset($_GET['status']) ? $_GET['status'] : 'All';
-
-    $where = "";
-    if($filter !== 'All'){
-        $safe_filter = mysqli_real_escape_string($conn, $filter);
-        $where = "WHERE bookings.status = '$safe_filter'";
-    }
+    $username     = $_SESSION['username'];
+    $role         = $_SESSION['role'];
+    $display_name = $username;
 
     // Fetch all courts for edit modal dropdown
     $courts_result = mysqli_query($conn, "SELECT id, court_name FROM courts WHERE is_active = 1 ORDER BY court_name ASC");
-    $courts_list = [];
+    $courts_list   = [];
     while($c = mysqli_fetch_assoc($courts_result)) $courts_list[] = $c;
 
     // Fetch all coaches for edit modal dropdown
     $coaches_result = mysqli_query($conn, "SELECT id, name FROM coaches WHERE is_active = 1 ORDER BY name ASC");
-    $coaches_list = [];
+    $coaches_list   = [];
     while($c = mysqli_fetch_assoc($coaches_result)) $coaches_list[] = $c;
+
+    // Filter values from GET
+    $filter_status  = isset($_GET['status'])   ? $_GET['status']   : '';
+    $filter_court   = isset($_GET['court'])    ? intval($_GET['court'])   : 0;
+    $filter_coach   = isset($_GET['coach'])    ? intval($_GET['coach'])   : 0;
+    $filter_date_from = isset($_GET['date_from']) ? mysqli_real_escape_string($conn, $_GET['date_from']) : '';
+    $filter_date_to   = isset($_GET['date_to'])   ? mysqli_real_escape_string($conn, $_GET['date_to'])   : '';
+    $filter_search    = isset($_GET['search'])    ? mysqli_real_escape_string($conn, $_GET['search'])    : '';
+
+    // Check if any filter is active
+    $has_filter = $filter_status || $filter_court || $filter_coach || $filter_date_from || $filter_date_to || $filter_search;
+
+    // Build WHERE clause
+    $where_parts = [];
+    if($filter_status !== '')   $where_parts[] = "bookings.status = '$filter_status'";
+    if($filter_court > 0)       $where_parts[] = "bookings.court_id = $filter_court";
+    if($filter_coach > 0)       $where_parts[] = "bookings.coach_id = $filter_coach";
+    if($filter_date_from !== '') $where_parts[] = "bookings.booking_date >= '$filter_date_from'";
+    if($filter_date_to !== '')   $where_parts[] = "bookings.booking_date <= '$filter_date_to'";
+    if($filter_search !== '')    $where_parts[] = "(users.name LIKE '%$filter_search%' OR courts.court_name LIKE '%$filter_search%')";
+
+    $where_sql = count($where_parts) > 0 ? "WHERE " . implode(" AND ", $where_parts) : "";
 
     // Fetch booking data with player name, court name, coach name, session type and notes
     $result = mysqli_query($conn, "
-    SELECT 
-        bookings.id,
-        bookings.court_id,
-        bookings.coach_id,
-        users.name,
-        courts.court_name,
-        bookings.booking_date,
-        bookings.start_time,
-        bookings.end_time,
-        bookings.status,
-        bookings.total_price,
-        bookings.session_type,
-        bookings.notes,
-        COALESCE(coaches.name, 'No Coach') AS coach_name
+        SELECT 
+            bookings.id,
+            bookings.court_id,
+            bookings.coach_id,
+            users.name,
+            courts.court_name,
+            bookings.booking_date,
+            bookings.start_time,
+            bookings.end_time,
+            bookings.status,
+            bookings.total_price,
+            bookings.session_type,
+            bookings.notes,
+            COALESCE(coaches.name, 'No Coach') AS coach_name
 
-    FROM bookings
+        FROM bookings
 
-    JOIN users ON bookings.user_id = users.id
-    JOIN courts ON bookings.court_id = courts.id
-    LEFT JOIN coaches ON bookings.coach_id = coaches.id
+        JOIN users   ON bookings.user_id  = users.id
+        JOIN courts  ON bookings.court_id = courts.id
+        LEFT JOIN coaches ON bookings.coach_id = coaches.id
 
-    $where
+        $where_sql
 
-    ORDER BY bookings.booking_date DESC
-");
+        ORDER BY bookings.booking_date DESC
+    ");
 
 ?>
 <!DOCTYPE html>
@@ -89,8 +102,6 @@
     <link rel="stylesheet" href="ManageBookings.css">
     <link rel="stylesheet" href="SuperAdminDashboard.css">
     <link rel="stylesheet" href="AdminManagement.css">
-
-    
 </head>
 
 <body>
@@ -104,17 +115,70 @@
             <header class="management-header">
                 <div>
                     <h1>Bookings Management</h1>
-                    <p> Manage all court bookings, view details, and update booking statuses.</p>
+                    <p>Manage all court bookings, view details, and update booking statuses.</p>
+                </div>
+                <div class="btn-add-group">
+                    <button class="btn-filter-toggle" onclick="toggleBookingFilter()">
+                        <i class="fas fa-filter"></i> Filter
+                        <?php if($has_filter): ?>
+                            <span class="filter-dot"></span>
+                        <?php endif; ?>
+                    </button>
                 </div>
             </header>
 
-            <!-- Filter Bar -->
-            <div class="filter-bar">
-                <a href="ManageBookings.php" class="filter-btn <?php echo $filter === 'All' ? 'active' : ''; ?>">All</a>
-                <a href="ManageBookings.php?status=Pending" class="filter-btn <?php echo $filter === 'Pending' ? 'active' : ''; ?>">Pending</a>
-                <a href="ManageBookings.php?status=Confirmed" class="filter-btn <?php echo $filter === 'Confirmed' ? 'active' : ''; ?>">Confirmed</a>
-                <a href="ManageBookings.php?status=Completed" class="filter-btn <?php echo $filter === 'Completed' ? 'active' : ''; ?>">Completed</a>
-                <a href="ManageBookings.php?status=Cancelled" class="filter-btn <?php echo $filter === 'Cancelled' ? 'active' : ''; ?>">Cancelled</a>
+            <!-- Collapsible Filter Panel -->
+            <div class="filter-panel <?php echo $has_filter ? 'open' : ''; ?>" id="bookingFilterPanel">
+                <form method="GET" class="filter-grid">
+                    <div class="filter-field">
+                        <label>Search</label>
+                        <input type="text" name="search" placeholder="Player or court name..." value="<?php echo htmlspecialchars($filter_search); ?>">
+                    </div>
+                    <div class="filter-field">
+                        <label>Status</label>
+                        <select name="status">
+                            <option value="">All Status</option>
+                            <option value="Pending"   <?php echo ($filter_status === 'Pending')   ? 'selected' : ''; ?>>Pending</option>
+                            <option value="Confirmed" <?php echo ($filter_status === 'Confirmed') ? 'selected' : ''; ?>>Confirmed</option>
+                            <option value="Completed" <?php echo ($filter_status === 'Completed') ? 'selected' : ''; ?>>Completed</option>
+                            <option value="Cancelled" <?php echo ($filter_status === 'Cancelled') ? 'selected' : ''; ?>>Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="filter-field">
+                        <label>Court</label>
+                        <select name="court">
+                            <option value="0">All Courts</option>
+                            <?php foreach($courts_list as $court): ?>
+                                <option value="<?php echo $court['id']; ?>" <?php echo ($filter_court === $court['id']) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($court['court_name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="filter-field">
+                        <label>Coach</label>
+                        <select name="coach">
+                            <option value="0">All Coaches</option>
+                            <?php foreach($coaches_list as $coach): ?>
+                                <option value="<?php echo $coach['id']; ?>" <?php echo ($filter_coach === $coach['id']) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($coach['name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="filter-field">
+                        <label>Date From</label>
+                        <input type="date" name="date_from" value="<?php echo htmlspecialchars($filter_date_from); ?>">
+                    </div>
+                    <div class="filter-field">
+                        <label>Date To</label>
+                        <input type="date" name="date_to" value="<?php echo htmlspecialchars($filter_date_to); ?>">
+                    </div>
+                    <div class="filter-actions">
+                        <button type="submit" class="btn-filter-apply"><i class="fas fa-search"></i> Apply</button>
+                        <a href="ManageBookings.php" class="btn-filter-clear">Clear</a>
+                    </div>
+                </form>
             </div>
 
             <!-- Update Success Message -->
@@ -157,8 +221,7 @@
                         <td><?php echo date("h:i A", strtotime($row['end_time'])); ?></td>
                         <td>RM <?php echo number_format($row['total_price'], 2); ?></td>
                         <td onclick="event.stopPropagation()">
-                            <!-- Status Dropdown (mirrors AdminManagement.php style) -->
-                            <!-- stopPropagation prevents row click when using dropdown -->
+                            <!-- Status Dropdown — stopPropagation prevents row click when using dropdown -->
                             <select class="status-select <?php 
                                 if($row['status'] == 'Confirmed') echo 'status-active';
                                 elseif($row['status'] == 'Pending') echo 'status-inactive';
@@ -230,7 +293,7 @@
                 <button class="modal-close" onclick="closeEditModal()">✕</button>
             </div>
 
-            <form action="UpdateBooking.php" method="POST">
+            <form action="UpdateBookingsStatus.php" method="POST">
                 <input type="hidden" name="booking_id" id="modal-booking-id">
 
                 <div class="modal-grid">
@@ -299,52 +362,7 @@
         </div>
     </div>
 
+    <script src="ManageBookings.js"></script>
     <script src="SuperAdminDashboard.js"></script>
-
-    <script>
-        // Toggle details row open/close when main row is clicked
-        function toggleDetails(id, row) {
-            var detailsRow = document.getElementById('details-' + id);
-            var isOpen = detailsRow.classList.contains('open');
-
-            // Close all open detail rows first
-            document.querySelectorAll('.details-row.open').forEach(function(r) {
-                r.classList.remove('open');
-            });
-            document.querySelectorAll('.main-row.open').forEach(function(r) {
-                r.classList.remove('open');
-            });
-
-            // If it was not open, open it
-            if (!isOpen) {
-                detailsRow.classList.add('open');
-                row.classList.add('open');
-            }
-        }
-
-        // Open edit modal and populate fields with current booking data
-        function openEditModal(id, date, startTime, endTime, courtId, coachId, sessionType, notes) {
-            document.getElementById('modal-booking-id').value   = id;
-            document.getElementById('modal-booking-date').value = date;
-            document.getElementById('modal-start-time').value   = startTime;
-            document.getElementById('modal-end-time').value     = endTime;
-            document.getElementById('modal-court-id').value     = courtId;
-            document.getElementById('modal-coach-id').value     = coachId;
-            document.getElementById('modal-session-type').value = sessionType;
-            document.getElementById('modal-notes').value        = notes;
-
-            document.getElementById('editModal').classList.add('active');
-        }
-
-        // Close edit modal
-        function closeEditModal() {
-            document.getElementById('editModal').classList.remove('active');
-        }
-
-        // Close modal when clicking outside the card
-        document.getElementById('editModal').addEventListener('click', function(e) {
-            if (e.target === this) closeEditModal();
-        });
-    </script>
 </body>
 </html>

@@ -85,17 +85,21 @@ $message = "";
 
 // Handle account creation
 if (isset($_POST['add_account'])) {
-    $user = mysqli_real_escape_string($conn, $_POST['username']);
-    $email = mysqli_real_escape_string($conn, $_POST['email']);
+    $user        = mysqli_real_escape_string($conn, $_POST['username']);
+    $email       = mysqli_real_escape_string($conn, $_POST['email']);
     $role_to_add = mysqli_real_escape_string($conn, $_POST['role']);
-    $spec = isset($_POST['spec']) ? mysqli_real_escape_string($conn, $_POST['spec']) : NULL;
-    $coach_price = isset($_POST['coach_price_per_hour']) ? (float)$_POST['coach_price_per_hour'] : 20.00;
-    
+    $spec        = isset($_POST['spec']) ? mysqli_real_escape_string($conn, $_POST['spec']) : NULL;
+
     // Coach accounts log in through admins, while customer pages read public coach details from coaches.
     $is_coach_val = ($role_to_add === 'Coach') ? 1 : 0;
 
-    $temp_pass = bin2hex(random_bytes(4));
+    $temp_pass   = bin2hex(random_bytes(4));
     $hashed_pass = password_hash($temp_pass, PASSWORD_DEFAULT);
+
+    // Fix: HTML input value="0" always sends "0", so check > 0 instead of checking empty string
+    $coach_price_raw = isset($_POST['coach_price_per_hour']) ? $_POST['coach_price_per_hour'] : '';
+    $coach_price     = ($coach_price_raw !== '' && (float)$coach_price_raw > 0) ? (float)$coach_price_raw : NULL;
+    $coach_price_sql = ($coach_price === NULL) ? "NULL" : $coach_price;
 
     // Check for duplicate username OR email
     $check = mysqli_query($conn, "SELECT username, email FROM admins WHERE username = '$user' OR email = '$email'");
@@ -107,15 +111,16 @@ if (isset($_POST['add_account'])) {
             $message = "<div class='badge pending' style='width:100%; padding:15px; margin-bottom:20px;'>Error: Email address already exists!</div>";
         }
     } else {
+        // Note: $coach_price_sql must NOT have quotes around it so NULL inserts correctly
         $sql = "INSERT INTO admins (username, email, password, role, status, specialisation, is_coach, coach_price_per_hour, first_login) 
-                VALUES ('$user', '$email', '$hashed_pass', '$role_to_add', 'Inactive', '$spec', '$is_coach_val', '$coach_price', 0)";
+                VALUES ('$user', '$email', '$hashed_pass', '$role_to_add', 'Inactive', '$spec', '$is_coach_val', $coach_price_sql, 0)";
         
         if (mysqli_query($conn, $sql)) {
             $admin_id = mysqli_insert_id($conn);
 
             if ($role_to_add === 'Coach') {
                 $coach_sql = "INSERT INTO coaches (admin_id, name, specialty, price_per_hour, is_active)
-                              VALUES ('$admin_id', '$user', '$spec', '$coach_price', 0)";
+                              VALUES ('$admin_id', '$user', '$spec', $coach_price_sql, 0)";
                 mysqli_query($conn, $coach_sql);
             }
 
@@ -137,7 +142,7 @@ if (isset($_POST['add_account'])) {
 
 // Handle toggle status by fetching from DB 
 if (isset($_GET['update_id']) && isset($_GET['new_status'])) {
-    $uid = intval($_GET['update_id']);
+    $uid    = intval($_GET['update_id']);
     $status = mysqli_real_escape_string($conn, $_GET['new_status']);
     mysqli_query($conn, "UPDATE admins SET status = '$status' WHERE id = $uid");
     $coach_active = ($status === 'Active') ? 1 : 0;
@@ -174,7 +179,6 @@ $result = mysqli_query($conn, $query);
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap">
     <link rel="stylesheet" href="SuperAdminDashboard.css">
-    <link rel="stylesheet" href="AdminManagement.css">
     <link rel="stylesheet" href="AdminManagement.css">
 </head>
 <body>
@@ -228,7 +232,7 @@ $result = mysqli_query($conn, $query);
                         <option value="Junior Development">Junior Development</option>
                         <option value="Tournament Preparation">Tournament Preparation</option>
                     </select>
-                    <input type="number" name="coach_price_per_hour" placeholder="Coach Price Per Hour (RM)" value="20.00" step="0.01" min="0" required>
+                    <input type="number" name="coach_price_per_hour" placeholder="Coach Price Per Hour (RM)" step="0.01" min="0" required>
                     <button type="submit" name="add_account" class="btn-create">Create Account</button>
                 </form>
             </div>
@@ -298,14 +302,7 @@ $result = mysqli_query($conn, $query);
         </div>
     </main>
 
-    <script>
-        function toggleForm(id) {
-            document.getElementById('adminForm').classList.remove('active');
-            document.getElementById('coachForm').classList.remove('active');
-            document.getElementById(id).classList.add('active');
-        }
-    </script>
-    
+    <script src="AdminManagement.js"></script>
     <script src="SuperAdminDashboard.js"></script>
 </body>
 </html>

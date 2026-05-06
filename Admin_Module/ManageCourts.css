@@ -1,4 +1,4 @@
-/* Filter Toggle Button — same style as btn-add-account */
+/* Filter Toggle Button */
 .btn-filter-toggle {
     position: relative;
     padding: 11px 22px;
@@ -35,39 +35,33 @@
 .filter-panel {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.4s ease, padding 0.3s ease;
+    transition: max-height 0.3s ease, padding 0.3s ease;
     background: #fff;
     border-radius: 14px;
     margin-bottom: 0;
 }
 
 .filter-panel.open {
-    max-height: 500px;
+    max-height: 200px;
     padding: 14px 22px;
     margin-bottom: 22px;
     border: 1px solid var(--border);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-/* Grid: 3 columns per row, actions on new line */
 .filter-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-    align-items: end;
-}
-
-.filter-actions {
-    grid-column: 1 / -1;
     display: flex;
-    gap: 8px;
-    padding-top: 4px;
+    gap: 14px;
+    align-items: flex-end;
+    flex-wrap: wrap;
 }
 
 .filter-field {
     display: flex;
     flex-direction: column;
     gap: 5px;
+    flex: 1;
+    min-width: 160px;
 }
 
 .filter-field label {
@@ -96,6 +90,13 @@
     border-color: var(--primary);
 }
 
+.filter-actions {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+    padding-bottom: 1px;
+}
+
 .btn-filter-apply {
     padding: 9px 18px;
     border-radius: 9px;
@@ -117,7 +118,7 @@
 }
 
 .btn-filter-clear {
-    padding: 9px 16px;
+    padding: 9px 14px;
     border-radius: 9px;
     border: 1.5px solid var(--border);
     background: #fff;
@@ -134,119 +135,13 @@
     background: #f1f5f9;
 }
 
-/*Expandable row styles */
+/* Clickable Table Row */
 .data-table tbody tr.main-row {
     cursor: pointer;
 }
 
 .data-table tbody tr.main-row:hover {
-    background: rgba(99, 102, 241, 0.06);
-}
-
-.details-row {
-    display: none;
-}
-
-.details-row.open {
-    display: table-row;
-}
-
-.details-row td {
-    padding: 0;
-    border-top: none;
-}
-
-/* Details inner */
-.details-inner {
-    padding: 16px 24px;
-    border-left: 4px solid #e5e7eb;
-    background: #f8f9ff;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 20px;
-}
-
-.details-inner.status-Confirmed {
-    border-left-color: #16a34a;
-    background: #f0fdf4;
-}
-
-.details-inner.status-Pending {
-    border-left-color: #d97706;
-    background: #fffbeb;
-}
-
-.details-inner.status-Cancelled {
-    border-left-color: #dc2626;
-    background: #fef2f2;
-}
-
-.details-inner.status-Completed {
-    border-left-color: #6366f1;
-    background: #f5f3ff;
-}
-
-.details-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px 24px;
-    flex: 1;
-}
-
-.details-item label {
-    font-size: 11px;
-    font-weight: 600;
-    color: #9ca3af;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    display: block;
-    margin-bottom: 3px;
-}
-
-.details-item span {
-    font-size: 14px;
-    color: #1f2937;
-    font-weight: 500;
-}
-
-.details-item.notes-item {
-    grid-column: 1 / -1;
-}
-
-.expand-icon {
-    font-size: 11px;
-    color: #9ca3af;
-    margin-left: 6px;
-    transition: transform 0.2s;
-    display: inline-block;
-}
-
-.main-row.open .expand-icon {
-    transform: rotate(180deg);
-}
-
-/* Edit button */
-.btn-edit-booking {
-    padding: 8px 18px;
-    border-radius: 6px;
-    border: none;
-    background: #6366f1;
-    color: white;
-    font-size: 13px;
-    font-weight: 600;
-    font-family: 'Outfit', sans-serif;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
-    flex-shrink: 0;
-    transition: background 0.2s;
-}
-
-.btn-edit-booking:hover {
-    background: #4f46e5;
+    background: rgba(245, 158, 11, 0.05);
 }
 
 /* Modal */
@@ -269,7 +164,7 @@
     border-radius: 12px;
     padding: 28px;
     width: 100%;
-    max-width: 520px;
+    max-width: 540px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
 }
 
@@ -332,8 +227,7 @@
 }
 
 .modal-field input,
-.modal-field select,
-.modal-field textarea {
+.modal-field select {
     padding: 10px 12px;
     border: 1.5px solid #e5e7eb;
     border-radius: 8px;
@@ -346,22 +240,60 @@
 }
 
 .modal-field input:focus,
-.modal-field select:focus,
-.modal-field textarea:focus {
-    border-color: #6366f1;
+.modal-field select:focus {
+    border-color: var(--primary);
     background: #fff;
 }
 
-.modal-field textarea {
-    resize: vertical;
-    min-height: 75px;
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #374151 !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    cursor: pointer;
 }
 
+.checkbox-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--primary);
+    padding: 0;
+    border: none;
+    background: none;
+}
+
+/* Modal Action Bar */
 .modal-actions {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
     gap: 10px;
     margin-top: 20px;
+}
+
+.btn-modal-delete {
+    padding: 10px 18px;
+    border-radius: 6px;
+    border: 1.5px solid #fee2e2;
+    background: #fff;
+    color: #dc2626;
+    font-weight: 600;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.btn-modal-delete:hover {
+    background: #fef2f2;
+    border-color: #dc2626;
 }
 
 .btn-modal-cancel {
@@ -385,15 +317,15 @@
     padding: 10px 22px;
     border-radius: 6px;
     border: none;
-    background: #6366f1;
-    color: white;
+    background: var(--primary);
+    color: #0f172a;
     font-weight: 700;
     font-family: 'Outfit', sans-serif;
     cursor: pointer;
     font-size: 13px;
-    transition: background 0.2s;
+    transition: opacity 0.2s;
 }
 
 .btn-modal-save:hover {
-    background: #4f46e5;
+    opacity: 0.85;
 }
