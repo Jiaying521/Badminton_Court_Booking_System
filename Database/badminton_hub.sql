@@ -515,17 +515,6 @@ COMMIT;
 --
 ALTER TABLE `courts` ADD COLUMN `court_image` VARCHAR(255) DEFAULT NULL AFTER `price_peak`;
 
-UPDATE `courts` SET `court_image` = 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=400&h=300&fit=crop' WHERE `court_name` = 'Court A';
-UPDATE `courts` SET `court_image` = 'https://images.unsplash.com/photo-1613918108466-2923af9f6f5a?w=400&h=300&fit=crop' WHERE `court_name` = 'Court B';
-UPDATE `courts` SET `court_image` = 'https://images.unsplash.com/photo-1594919032176-6a0b81f1845f?w=400&h=300&fit=crop' WHERE `court_name` = 'Court C';
-UPDATE `courts` SET `court_image` = 'https://images.unsplash.com/photo-1613921409641-4e574be92cf0?w=400&h=300&fit=crop' WHERE `court_name` = 'Court D';
-UPDATE `courts` SET `court_image` = 'https://images.unsplash.com/photo-1574634268455-db4d22b6d02a?w=400&h=300&fit=crop' WHERE `court_name` = 'Court E';
-UPDATE `courts` SET `court_image` = 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=400&h=300&fit=crop' WHERE `court_name` = 'Court F';
-UPDATE `courts` SET `court_image` = 'https://images.unsplash.com/photo-1526453815751-29f3e5a63c9c?w=400&h=300&fit=crop' WHERE `court_name` = 'Court G';
-UPDATE `courts` SET `court_image` = 'https://images.unsplash.com/photo-1519008638618-84feb34f79c6?w=400&h=300&fit=crop' WHERE `court_name` = 'Court H';
-UPDATE `courts` SET `court_image` = 'https://images.unsplash.com/photo-1566738780863-f9958c7b6f9b?w=400&h=300&fit=crop' WHERE `court_name` = 'Court I';
-UPDATE `courts` SET `court_image` = 'https://images.unsplash.com/photo-1607450367960-89d9b4d1ef72?w=400&h=300&fit=crop' WHERE `court_name` = 'Court J';
-
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
