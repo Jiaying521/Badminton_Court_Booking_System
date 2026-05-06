@@ -24,7 +24,6 @@
         <?php elseif ($role === 'Admin'): ?>
             <li><a href="ManageCourts.php">Coach Management</a></li>
             <li><a href="ManageBookings.php">Manage Bookings</a></li>
-            <li><a href="CourtSchedule.php">Court Schedule</a></li>
 
             <li class="dropdown">
                 <a href="#" class="drop-btn">More Options ▼</a>
@@ -32,16 +31,13 @@
                     <li><a href="#">Player List</a></li>
                     <li><a href="#">Reports & Analytics</a></li>
                     <li><a href="#">Notifications</a></li>
-                    <li><a href="#">Conflict Management</a></li>
-                    <li><a href="#">Appointment Settings</a></li>
                 </ul>
             </li>
 
         <?php elseif ($role === 'Coach'): ?>
-            <li><a href="#">My Bookings</a></li>
+            <li><a href="ManageBookings.php">My Bookings</a></li>
             <li><a href="#">My Schedule</a></li>
-            <li><a href="#">My Players</a></li>
-            <li><a href="#">Profile</a></li>
+            <li><a href="#">My Profile</a></li>
         <?php endif; ?>
 
         <li>

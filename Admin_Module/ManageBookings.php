@@ -5,8 +5,8 @@
         exit();
     }
 
-    // Check role - only Superadmin and Admin can access
-    if(!in_array($_SESSION['role'], ['Superadmin', 'Admin'])){
+    // Check role - only Superadmin, Admin and Coach can access
+    if(!in_array($_SESSION['role'], ['Superadmin', 'Admin', 'Coach'])){
         header("Location: LoginPage.php");
         exit();
     }
@@ -33,6 +33,11 @@
     $coaches_list   = [];
     while($c = mysqli_fetch_assoc($coaches_result)) $coaches_list[] = $c;
 
+    // Fetch all users for add booking modal dropdown
+    $users_result = mysqli_query($conn, "SELECT id, name FROM users ORDER BY name ASC");
+    $users_list   = [];
+    while($u = mysqli_fetch_assoc($users_result)) $users_list[] = $u;
+
     // Filter values from GET
     $filter_status  = isset($_GET['status'])   ? $_GET['status']   : '';
     $filter_court   = isset($_GET['court'])    ? intval($_GET['court'])   : 0;
@@ -46,12 +51,20 @@
 
     // Build WHERE clause
     $where_parts = [];
-    if($filter_status !== '')   $where_parts[] = "bookings.status = '$filter_status'";
-    if($filter_court > 0)       $where_parts[] = "bookings.court_id = $filter_court";
-    if($filter_coach > 0)       $where_parts[] = "bookings.coach_id = $filter_coach";
-    if($filter_date_from !== '') $where_parts[] = "bookings.booking_date >= '$filter_date_from'";
-    if($filter_date_to !== '')   $where_parts[] = "bookings.booking_date <= '$filter_date_to'";
-    if($filter_search !== '')    $where_parts[] = "(users.name LIKE '%$filter_search%' OR courts.court_name LIKE '%$filter_search%')";
+    if($filter_status !== '')    $where_parts[] = "bookings.status = '$filter_status'";
+    if($filter_court > 0)        $where_parts[] = "bookings.court_id = $filter_court";
+    if($filter_coach > 0)        $where_parts[] = "bookings.coach_id = $filter_coach";
+    if($filter_date_from !== '')  $where_parts[] = "bookings.booking_date >= '$filter_date_from'";
+    if($filter_date_to !== '')    $where_parts[] = "bookings.booking_date <= '$filter_date_to'";
+    if($filter_search !== '')     $where_parts[] = "(users.name LIKE '%$filter_search%' OR courts.court_name LIKE '%$filter_search%')";
+
+    // Coach only sees bookings assigned to them
+    if($role === 'Coach'){
+        $coach_id_query = mysqli_query($conn, "SELECT id FROM coaches WHERE admin_id = " . (int)$_SESSION['id']);
+        $coach_row      = mysqli_fetch_assoc($coach_id_query);
+        $my_coach_id    = $coach_row ? (int)$coach_row['id'] : 0;
+        $where_parts[]  = "bookings.coach_id = $my_coach_id";
+    }
 
     $where_sql = count($where_parts) > 0 ? "WHERE " . implode(" AND ", $where_parts) : "";
 
@@ -114,8 +127,8 @@
             
             <header class="management-header">
                 <div>
-                    <h1>Bookings Management</h1>
-                    <p>Manage all court bookings, view details, and update booking statuses.</p>
+                    <h1><?php echo ($role === 'Coach') ? 'My Bookings' : 'Bookings Management'; ?></h1>
+                    <p><?php echo ($role === 'Coach') ? 'View your assigned court sessions.' : 'Manage all court bookings, view details, and update booking statuses.'; ?></p>
                 </div>
                 <div class="btn-add-group">
                     <button class="btn-filter-toggle" onclick="toggleBookingFilter()">
@@ -124,6 +137,11 @@
                             <span class="filter-dot"></span>
                         <?php endif; ?>
                     </button>
+                    <?php if($role !== 'Coach'): ?>
+                    <a href="#" class="btn-add-account" onclick="openAddModal(); return false;" style="text-decoration:none;">
+                        <i class="fas fa-plus"></i> Add Booking
+                    </a>
+                    <?php endif; ?>
                 </div>
             </header>
 
@@ -195,6 +213,20 @@
                 </div>
             <?php endif; ?>
 
+            <!-- Add Success Message -->
+            <?php if(isset($_GET['added'])): ?>
+                <div class="badge success" style="width:100%; padding:15px; margin-bottom:20px;">
+                    Booking added successfully!
+                </div>
+            <?php endif; ?>
+
+            <!-- Add Conflict Error Message -->
+            <?php if(isset($_GET['conflict'])): ?>
+                <div class="badge pending" style="width:100%; padding:15px; margin-bottom:20px;">
+                    This time slot is already booked. Please choose another time.
+                </div>
+            <?php endif; ?>
+
             <table class="data-table">
                 <thead>
                     <tr>
@@ -222,17 +254,26 @@
                         <td>RM <?php echo number_format($row['total_price'], 2); ?></td>
                         <td onclick="event.stopPropagation()">
                             <!-- Status Dropdown — stopPropagation prevents row click when using dropdown -->
-                            <select class="status-select <?php 
-                                if($row['status'] == 'Confirmed') echo 'status-active';
-                                elseif($row['status'] == 'Pending') echo 'status-inactive';
-                                elseif($row['status'] == 'Cancelled') echo 'status-suspended';
-                                else echo 'status-active'; // Completed
-                            ?>" onchange="location.href='UpdateBookingsStatus.php?id=<?php echo $row['id']; ?>&status=' + this.value">
-                                <option value="Pending"   <?php echo ($row['status'] == 'Pending'   ? 'selected' : ''); ?>>Pending</option>
-                                <option value="Confirmed" <?php echo ($row['status'] == 'Confirmed' ? 'selected' : ''); ?>>Confirmed</option>
-                                <option value="Completed" <?php echo ($row['status'] == 'Completed' ? 'selected' : ''); ?>>Completed</option>
-                                <option value="Cancelled" <?php echo ($row['status'] == 'Cancelled' ? 'selected' : ''); ?>>Cancelled</option>
-                            </select>
+                            <?php if($role === 'Coach'): ?>
+                                <span class="status-select <?php 
+                                    if($row['status'] == 'Confirmed') echo 'status-active';
+                                    elseif($row['status'] == 'Pending') echo 'status-inactive';
+                                    elseif($row['status'] == 'Cancelled') echo 'status-suspended';
+                                    else echo 'status-active';
+                                ?>"><?php echo $row['status']; ?></span>
+                            <?php else: ?>
+                                <select class="status-select <?php 
+                                    if($row['status'] == 'Confirmed') echo 'status-active';
+                                    elseif($row['status'] == 'Pending') echo 'status-inactive';
+                                    elseif($row['status'] == 'Cancelled') echo 'status-suspended';
+                                    else echo 'status-active'; // Completed
+                                ?>" onchange="location.href='UpdateBookingsStatus.php?id=<?php echo $row['id']; ?>&status=' + this.value">
+                                    <option value="Pending"   <?php echo ($row['status'] == 'Pending'   ? 'selected' : ''); ?>>Pending</option>
+                                    <option value="Confirmed" <?php echo ($row['status'] == 'Confirmed' ? 'selected' : ''); ?>>Confirmed</option>
+                                    <option value="Completed" <?php echo ($row['status'] == 'Completed' ? 'selected' : ''); ?>>Completed</option>
+                                    <option value="Cancelled" <?php echo ($row['status'] == 'Cancelled' ? 'selected' : ''); ?>>Cancelled</option>
+                                </select>
+                            <?php endif; ?>
                         </td>
                     </tr>
 
@@ -261,6 +302,7 @@
                                 </div>
 
                                 <!-- Edit button — stopPropagation so clicking it doesn't collapse the row -->
+                                <?php if($role !== 'Coach'): ?>
                                 <button class="btn-edit-booking" onclick="event.stopPropagation(); openEditModal(
                                     <?php echo $row['id']; ?>,
                                     '<?php echo $row['booking_date']; ?>',
@@ -273,6 +315,7 @@
                                 )">
                                     <i class="fas fa-pen"></i> Edit
                                 </button>
+                                <?php endif; ?>
                             </div>
                         </td>
                     </tr>
@@ -356,6 +399,97 @@
                 <div class="modal-actions">
                     <button type="button" class="btn-modal-cancel" onclick="closeEditModal()">Cancel</button>
                     <button type="submit" class="btn-modal-save">Save Changes</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Booking Modal -->
+    <div class="modal-overlay" id="addModal">
+        <div class="modal-card">
+
+            <div class="modal-header">
+                <h2><i class="fas fa-plus"></i> Add Booking</h2>
+                <button class="modal-close" onclick="closeAddModal()">✕</button>
+            </div>
+
+            <form action="AddBooking.php" method="POST">
+
+                <div class="modal-grid">
+
+                    <div class="modal-field full-width">
+                        <label>Player</label>
+                        <select name="user_id" required>
+                            <option value="">Select Player</option>
+                            <?php foreach($users_list as $user): ?>
+                                <option value="<?php echo $user['id']; ?>">
+                                    <?php echo htmlspecialchars($user['name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="modal-field full-width">
+                        <label>Booking Date</label>
+                        <input type="date" name="booking_date" required>
+                    </div>
+
+                    <div class="modal-field">
+                        <label>Start Time</label>
+                        <input type="time" name="start_time" required>
+                    </div>
+
+                    <div class="modal-field">
+                        <label>End Time</label>
+                        <input type="time" name="end_time" required>
+                    </div>
+
+                    <div class="modal-field">
+                        <label>Court</label>
+                        <select name="court_id" required>
+                            <option value="">Select Court</option>
+                            <?php foreach($courts_list as $court): ?>
+                                <option value="<?php echo $court['id']; ?>">
+                                    <?php echo htmlspecialchars($court['court_name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="modal-field">
+                        <label>Coach</label>
+                        <select name="coach_id">
+                            <option value="0">No Coach</option>
+                            <?php foreach($coaches_list as $coach): ?>
+                                <option value="<?php echo $coach['id']; ?>">
+                                    <?php echo htmlspecialchars($coach['name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="modal-field full-width">
+                        <label>Session Type</label>
+                        <select name="session_type">
+                            <option value="">— None —</option>
+                            <option value="Training">Training</option>
+                            <option value="Casual Play">Casual Play</option>
+                            <option value="Tournament">Tournament</option>
+                            <option value="Friendly Game">Friendly Game</option>
+                        </select>
+                    </div>
+
+                    <div class="modal-field full-width">
+                        <label>Notes</label>
+                        <textarea name="notes" placeholder="Enter notes..."></textarea>
+                    </div>
+
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-modal-cancel" onclick="closeAddModal()">Cancel</button>
+                    <button type="submit" class="btn-modal-save">Add Booking</button>
                 </div>
 
             </form>

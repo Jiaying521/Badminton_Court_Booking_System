@@ -47,3 +47,18 @@ function closeEditModal() {
 document.getElementById('editModal').addEventListener('click', function(e) {
     if (e.target === this) closeEditModal();
 });
+
+// Open add booking modal
+function openAddModal() {
+    document.getElementById('addModal').classList.add('active');
+}
+
+// Close add booking modal
+function closeAddModal() {
+    document.getElementById('addModal').classList.remove('active');
+}
+
+// Close add modal when clicking outside the card
+document.getElementById('addModal').addEventListener('click', function(e) {
+    if (e.target === this) closeAddModal();
+});
