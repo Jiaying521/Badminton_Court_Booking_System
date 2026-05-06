@@ -14,53 +14,59 @@ require_once __DIR__ . '/../config.php';
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:'Inter',sans-serif; background:linear-gradient(145deg,#f5f9f0 0%,#e8efe2 100%); color:#1e2a2e; line-height:1.5; }
-        .navbar { display:flex; justify-content:space-between; align-items:center; padding:1rem 5%; background:rgba(255,255,255,0.95); backdrop-filter:blur(12px); position:sticky; top:0; z-index:100; border-bottom:1px solid rgba(43,126,58,0.2); }
-        .logo { font-size:1.9rem; font-weight:800; background:linear-gradient(135deg,#2b7e3a,#1b5e2a); -webkit-background-clip:text; background-clip:text; color:transparent; }
-        .nav-links { display:flex; gap:2rem; align-items:center; }
-        .btn-outline { background:transparent; border:1.5px solid #2b7e3a; padding:0.5rem 1.4rem; border-radius:40px; color:#2b7e3a; cursor:pointer; font-weight:600; transition:all 0.2s; }
-        .btn-outline:hover { background:#2b7e3a; color:white; transform:translateY(-2px); }
-        .btn-solid { background:#2b7e3a; border:none; padding:0.5rem 1.4rem; border-radius:40px; color:white; cursor:pointer; font-weight:600; transition:all 0.2s; box-shadow:0 2px 6px rgba(43,126,58,0.2); }
-        .btn-solid:hover { background:#1f5a2a; transform:translateY(-2px); }
         
-        /* Hero Section - 图片在右边 */
-        .hero { display:flex; align-items:center; justify-content:space-between; padding:4rem 5%; gap:4rem; flex-wrap:wrap; max-width:1400px; margin:0 auto; }
-        .hero-text { flex:1; min-width:280px; }
-        .hero-text h1 { font-size:3.8rem; font-weight:800; background:linear-gradient(125deg,#2b7e3a,#1b5e2a); -webkit-background-clip:text; background-clip:text; color:transparent; margin-bottom:1.2rem; line-height:1.2; }
-        .hero-text p { font-size:1.2rem; color:#4a6e4a; margin-bottom:2rem; max-width:500px; }
-        .hero-image { flex:1; text-align:right; }
-        .hero-image img { max-width:100%; border-radius:32px; box-shadow:0 25px 40px -15px rgba(43,126,58,0.3); transition:transform 0.3s; }
-        .hero-image img:hover { transform:scale(1.02); }
+        /* 导航栏 */
+        .navbar { display:flex; justify-content:space-between; align-items:center; padding:0.8rem 5%; background:rgba(255,255,255,0.98); backdrop-filter:blur(12px); position:sticky; top:0; z-index:100; border-bottom:1px solid rgba(43,126,58,0.15); box-shadow:0 2px 20px rgba(0,0,0,0.03); }
+        .logo img { height: 50px; width: auto; transition:transform 0.3s; }
+        .logo img:hover { transform:scale(1.02); }
+        .nav-links { display:flex; gap:1.5rem; align-items:center; }
+        .btn-outline { background:transparent; border:2px solid #2b7e3a; padding:0.5rem 1.5rem; border-radius:50px; color:#2b7e3a; cursor:pointer; font-weight:600; transition:all 0.3s; }
+        .btn-outline:hover { background:#2b7e3a; color:white; transform:translateY(-2px); box-shadow:0 4px 12px rgba(43,126,58,0.3); }
+        .btn-solid { background:#2b7e3a; border:none; padding:0.5rem 1.5rem; border-radius:50px; color:white; cursor:pointer; font-weight:600; transition:all 0.3s; box-shadow:0 2px 8px rgba(43,126,58,0.2); }
+        .btn-solid:hover { background:#1f5a2a; transform:translateY(-2px); box-shadow:0 6px 16px rgba(43,126,58,0.4); }
         
-        .features { padding:4rem 5%; background:white; border-radius:48px 48px 0 0; margin-top:2rem; }
-        .features h2 { text-align:center; font-size:2.5rem; font-weight:700; color:#1e3a2a; margin-bottom:3rem; }
+        /* Hero Section - 现代设计 */
+        .hero { display:flex; align-items:center; justify-content:space-between; padding:5rem 5%; gap:4rem; flex-wrap:wrap; max-width:1400px; margin:0 auto; }
+        .hero-text { flex:1; min-width:300px; }
+        .hero-text .badge { display:inline-block; background:#eaf5e6; color:#2b7e3a; padding:0.3rem 1rem; border-radius:50px; font-size:0.8rem; font-weight:600; margin-bottom:1.5rem; }
+        .hero-text h1 { font-size:4rem; font-weight:800; background:linear-gradient(135deg,#2b7e3a,#1b5e2a,#0f3d1a); -webkit-background-clip:text; background-clip:text; color:transparent; margin-bottom:1.2rem; line-height:1.2; letter-spacing:-0.02em; }
+        .hero-text p { font-size:1.2rem; color:#4a6e4a; margin-bottom:2rem; max-width:500px; line-height:1.6; }
+        .hero-buttons { display:flex; gap:1rem; flex-wrap:wrap; }
+        .hero-image { flex:1; text-align:right; position:relative; }
+        .hero-image::before { content:''; position:absolute; top:-20px; right:-20px; width:200px; height:200px; background:radial-gradient(circle,#2b7e3a20,transparent); border-radius:50%; z-index:-1; }
+        .hero-image img { max-width:100%; border-radius:40px; box-shadow:0 30px 50px -20px rgba(43,126,58,0.4); transition:transform 0.5s; }
+        .hero-image img:hover { transform:scale(1.02) translateY(-5px); }
+        
+        /* 统计栏 */
+        .stats-bar { background:white; margin:2rem 5% 0; padding:1.5rem 2rem; border-radius:60px; box-shadow:0 10px 30px rgba(0,0,0,0.05); display:flex; justify-content:space-around; flex-wrap:wrap; gap:1.5rem; }
+        .stat-item { text-align:center; }
+        .stat-number { font-size:2rem; font-weight:800; color:#2b7e3a; }
+        .stat-label { color:#5a6e5c; font-size:0.85rem; }
+        
+        /* Features Section */
+        .features { padding:5rem 5%; background:white; border-radius:60px 60px 0 0; margin-top:3rem; }
+        .features h2 { text-align:center; font-size:2.5rem; font-weight:700; color:#1e3a2a; margin-bottom:1rem; }
+        .features-sub { text-align:center; color:#5a6e5c; margin-bottom:3rem; font-size:1rem; }
         .features-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:2rem; max-width:1200px; margin:0 auto; }
-        .feature-card { background:#fefdf8; border-radius:28px; padding:2rem; text-align:center; transition:0.3s; border:1px solid rgba(43,126,58,0.1); }
-        .feature-card:hover { transform:translateY(-6px); border-color:rgba(43,126,58,0.3); box-shadow:0 16px 32px rgba(43,126,58,0.1); }
-        .feature-icon { font-size:3rem; background:#eaf5e6; width:80px; height:80px; display:flex; align-items:center; justify-content:center; border-radius:60px; margin:0 auto 1.2rem; }
-        .feature-card h3 { font-size:1.4rem; font-weight:700; color:#2b7e3a; margin-bottom:0.8rem; }
-        .feature-card p { color:#5a6e5c; font-size:0.95rem; }
+        .feature-card { background:#fefdf8; border-radius:28px; padding:2rem; text-align:center; transition:all 0.3s ease; border:1px solid rgba(43,126,58,0.08); box-shadow:0 4px 12px rgba(0,0,0,0.02); }
+        .feature-card:hover { transform:translateY(-8px); border-color:rgba(43,126,58,0.2); box-shadow:0 20px 35px rgba(43,126,58,0.1); }
+        .feature-icon { font-size:2.5rem; background:#eaf5e6; width:70px; height:70px; display:flex; align-items:center; justify-content:center; border-radius:50%; margin:0 auto 1.2rem; color:#2b7e3a; }
+        .feature-card h3 { font-size:1.3rem; font-weight:700; color:#1e3a2a; margin-bottom:0.8rem; }
+        .feature-card p { color:#5a6e5c; font-size:0.9rem; line-height:1.5; }
         
-        /* 模态框样式 - 支持滚动 */
-        .modal { display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); backdrop-filter:blur(8px); }
-        .modal-content {
-            background: #fff;
-            margin: 3% auto;
-            padding: 2rem;
-            width: 90%;
-            max-width: 480px;
-            max-height: 85vh;
-            overflow-y: auto;
-            border-radius: 32px;
-            position: relative;
-            animation: fadeInUp 0.4s;
-            border: 1px solid rgba(43, 126, 58, 0.1);
-        }
+        /* CTA Banner */
+        .cta-banner { background:linear-gradient(135deg,#2b7e3a,#1b5e2a); margin:2rem 5%; padding:3rem; border-radius:40px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1.5rem; color:white; }
+        .cta-banner h3 { font-size:1.8rem; margin-bottom:0.5rem; }
+        .cta-banner p { opacity:0.9; }
+        .cta-btn { background:white; color:#2b7e3a; border:none; padding:0.8rem 2rem; border-radius:50px; font-weight:700; cursor:pointer; transition:0.3s; }
+        .cta-btn:hover { transform:translateY(-3px); box-shadow:0 8px 20px rgba(0,0,0,0.2); }
         
-        /* 自定义滚动条样式 */
-        .modal-content::-webkit-scrollbar { width: 6px; }
-        .modal-content::-webkit-scrollbar-track { background: #e0e0e0; border-radius: 3px; }
-        .modal-content::-webkit-scrollbar-thumb { background: #2b7e3a; border-radius: 3px; }
-        
+        /* 模态框样式 */
+        .modal { display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.6); backdrop-filter:blur(8px); }
+        .modal-content { background:#fff; margin:3% auto; padding:2rem; width:90%; max-width:480px; max-height:85vh; overflow-y:auto; border-radius:32px; position:relative; animation:fadeInUp 0.4s; border:1px solid rgba(43,126,58,0.1); }
+        .modal-content::-webkit-scrollbar { width:6px; }
+        .modal-content::-webkit-scrollbar-track { background:#e0e0e0; border-radius:3px; }
+        .modal-content::-webkit-scrollbar-thumb { background:#2b7e3a; border-radius:3px; }
         @keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
         .close { position:absolute; right:1.5rem; top:1.2rem; font-size:1.8rem; cursor:pointer; color:#94a3b8; transition:0.2s; }
         .close:hover { color:#2b7e3a; }
@@ -79,18 +85,16 @@ require_once __DIR__ . '/../config.php';
         .toggle-link a { color:#2b7e3a; text-decoration:none; font-weight:600; cursor:pointer; }
         .error-msg { background:#fee2dd; border-left:5px solid #e67e22; color:#b45f1b; padding:0.7rem; margin-top:1rem; border-radius:16px; font-size:0.85rem; display:none; }
         
-        /* 密码强度条样式 */
-        .strength-meter { margin-top: -0.8rem; margin-bottom: 1rem; height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden; }
-        .strength-meter-fill { height: 100%; width: 0%; transition: width 0.2s, background 0.2s; border-radius: 3px; }
-        .strength-text { font-size: 0.75rem; margin-top: 0.2rem; text-align: right; color: #5a6e5c; }
+        /* 密码强度条 */
+        .strength-meter { margin-top:-0.8rem; margin-bottom:1rem; height:6px; background:#e0e0e0; border-radius:3px; overflow:hidden; }
+        .strength-meter-fill { height:100%; width:0%; transition:width 0.2s; border-radius:3px; }
+        .strength-text { font-size:0.75rem; margin-top:0.2rem; text-align:right; color:#5a6e5c; }
+        .username-status { font-size:0.75rem; margin-top:-0.8rem; margin-bottom:0.5rem; }
+        .username-valid { color:#2b7e3a; }
+        .username-invalid { color:#e67e22; }
         
-        /* 用户名实时验证状态 */
-        .username-status { font-size: 0.75rem; margin-top: -0.8rem; margin-bottom: 0.5rem; }
-        .username-valid { color: #2b7e3a; }
-        .username-invalid { color: #e67e22; }
-        
-        /* Footer 样式 */
-        .footer { background:#0f1f12; color:#cbd5c0; padding:3rem 5% 1.5rem; margin-top:4rem; }
+        /* Footer */
+        .footer { background:#0f1f12; color:#cbd5c0; padding:3rem 5% 1.5rem; margin-top:2rem; }
         .footer-container { max-width:1400px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:2rem; margin-bottom:2rem; }
         .footer-col h3, .footer-col h4 { color:#2b7e3a; margin-bottom:1rem; }
         .footer-col p { margin-bottom:0.5rem; display:flex; align-items:center; gap:0.6rem; font-size:0.9rem; }
@@ -99,25 +103,30 @@ require_once __DIR__ . '/../config.php';
         .social-icons { display:flex; gap:1rem; margin-top:1rem; }
         .social-icons a { background:#2c4a2e; width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:0.2s; color:#cbd5c0; text-decoration:none; }
         .social-icons a:hover { background:#2b7e3a; transform:translateY(-3px); }
-        .footer-bottom { text-align:center; border-top:1px solid #2c4a2e; padding-top:1.5rem; font-size:0.85rem; }
+        .footer-bottom { text-align:center; border-top:1px solid #2c4a2e; padding-top:1.5rem; font-size:0.8rem; }
         
         @media (max-width:768px) {
             .hero-text h1 { font-size:2.5rem; }
             .navbar { flex-direction:column; gap:1rem; }
             .hero { flex-direction:column; text-align:center; }
             .hero-image { text-align:center; }
-            .hero-text p { margin-left:auto; margin-right:auto; }
+            .hero-text p { margin:0 auto 1.5rem; }
+            .hero-buttons { justify-content:center; }
+            .stats-bar { flex-direction:column; align-items:center; border-radius:30px; }
             .features h2 { font-size:2rem; }
-            .footer-container { grid-template-columns:1fr; text-align:center; }
+            .cta-banner { text-align:center; justify-content:center; }
+            .footer-container { text-align:center; }
             .footer-col p { justify-content:center; }
             .social-icons { justify-content:center; }
-            .modal-content { margin: 5% auto; max-height: 80vh; padding: 1.5rem; }
         }
     </style>
 </head>
 <body>
 <nav class="navbar">
-    <div class="logo">Smash Arena</div>
+    <div class="logo">
+        <img src="../Admin_Module/Pictures/logo.png" alt="Smash Arena" onerror="this.style.display='none'; this.nextSibling.style.display='block';">
+        <span style="display:none; font-size:1.5rem; font-weight:800; background:linear-gradient(135deg,#2b7e3a,#1b5e2a); -webkit-background-clip:text; background-clip:text; color:transparent;">Smash Arena</span>
+    </div>
     <div class="nav-links">
         <button class="btn-outline" id="loginBtn">Login</button>
         <button class="btn-solid" id="signupBtn">Sign Up</button>
@@ -127,41 +136,63 @@ require_once __DIR__ . '/../config.php';
 <!-- Hero Section - 图片在右边 -->
 <section class="hero">
     <div class="hero-text">
+        <span class="badge"><i class="fas fa-shuttlecock"></i> Malaysia's Premier Badminton Hub</span>
         <h1>Smash & Play<br>Book Courts Instantly</h1>
         <p>Professional badminton courts, flexible hours, and secure online booking. Play your best game today.</p>
-        <button class="btn-solid" id="heroBookBtn" style="padding:0.8rem 2rem; font-size:1rem;">Book Now →</button>
+        <div class="hero-buttons">
+            <button class="btn-solid" id="heroBookBtn" style="padding:0.8rem 2rem; font-size:1rem;"><i class="fas fa-calendar-check"></i> Book Now →</button>
+            <button class="btn-outline" onclick="scrollToFeatures()"><i class="fas fa-arrow-down"></i> Learn More</button>
+        </div>
     </div>
     <div class="hero-image">
         <img src="https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=600" alt="Badminton court">
     </div>
 </section>
 
+<!-- Statistics Bar -->
+<div class="stats-bar">
+    <div class="stat-item"><div class="stat-number">10+</div><div class="stat-label">Premium Courts</div></div>
+    <div class="stat-item"><div class="stat-number">8am-1am</div><div class="stat-label">Daily Operation</div></div>
+    <div class="stat-item"><div class="stat-number">RM10-15</div><div class="stat-label">Per Hour</div></div>
+    <div class="stat-item"><div class="stat-number">24/7</div><div class="stat-label">Online Booking</div></div>
+</div>
+
 <!-- Features Section -->
 <section class="features">
     <h2>Why Choose Smash Arena?</h2>
+    <div class="features-sub">Experience the best badminton facilities in Malaysia</div>
     <div class="features-grid">
         <div class="feature-card">
             <div class="feature-icon"><i class="fas fa-calendar-check"></i></div>
             <h3>Easy Booking</h3>
-            <p>Select court, pick time, pay online – done in under a minute.</p>
+            <p>Select court, pick time, pay online – done in under a minute. No phone calls needed.</p>
         </div>
         <div class="feature-card">
             <div class="feature-icon"><i class="fas fa-clock"></i></div>
             <h3>Extended Hours</h3>
-            <p>Open daily 8am - 1am. Early bird and late night sessions available.</p>
+            <p>Open daily 8am - 1am. Early bird and late night sessions available for night owls.</p>
         </div>
         <div class="feature-card">
             <div class="feature-icon"><i class="fas fa-chalkboard-user"></i></div>
             <h3>Training Courts</h3>
-            <p>Training courts available with professional coaches.</p>
+            <p>Professional coaches available for all levels. Improve your game with expert guidance.</p>
         </div>
         <div class="feature-card">
             <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
             <h3>Secure Payments</h3>
-            <p>Multiple payment options with full encryption.</p>
+            <p>Multiple payment options with full encryption. Your transactions are 100% secure.</p>
         </div>
     </div>
 </section>
+
+<!-- CTA Banner -->
+<div class="cta-banner">
+    <div>
+        <h3>Ready to Play?</h3>
+        <p>Book your court now and enjoy 10% off your first booking!</p>
+    </div>
+    <button class="cta-btn" id="ctaBookBtn">Book Now <i class="fas fa-arrow-right"></i></button>
+</div>
 
 <footer class="footer">
     <div class="footer-container">
@@ -258,6 +289,11 @@ require_once __DIR__ . '/../config.php';
 
 <script>
     const baseUrl = './';
+    
+    function scrollToFeatures() {
+        document.querySelector('.features').scrollIntoView({ behavior: 'smooth' });
+    }
+    
     // Modal elements
     const loginModal = document.getElementById('loginModal');
     const registerModal = document.getElementById('registerModal');
@@ -267,6 +303,7 @@ require_once __DIR__ . '/../config.php';
     document.getElementById('loginBtn').onclick = openLogin;
     document.getElementById('signupBtn').onclick = openRegister;
     document.getElementById('heroBookBtn').onclick = openLogin;
+    document.getElementById('ctaBookBtn').onclick = openLogin;
     document.getElementById('closeLogin').onclick = () => loginModal.style.display = 'none';
     document.getElementById('closeRegister').onclick = () => registerModal.style.display = 'none';
     window.onclick = (e) => { if(e.target === loginModal) loginModal.style.display = 'none'; if(e.target === registerModal) registerModal.style.display = 'none'; };
