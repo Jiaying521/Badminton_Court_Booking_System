@@ -3,7 +3,8 @@
 
 include 'db_connect.php';
 
-// 1. Catch the data from the gateway
+// 1. Catch ALL the data from the gateway (Added booking_id!)
+$booking_id = $_POST['booking_id'] ?? 0;
 $amount = $_POST['amount'] ?? 0;
 $method = $_POST['payment_method'] ?? 'Not Specified';
 $promo  = $_POST['promo_code'] ?? ''; 
@@ -29,7 +30,8 @@ if (!empty($promo)) {
     } else {
         print "<h2 style='color: #ffaa00; text-align: center;'>⚠️ Invalid Promo Code</h2>";
         print "<p style='text-align: center;'>The code '<strong>" . htmlspecialchars($promo) . "</strong>' is incorrect or expired.</p>";
-        print "<a href='checkout.php' style='background-color: #1a2930; color: white; padding: 10px; border-radius: 6px;'>Go Back and Try Again</a>";
+        // Fixed the back link so it remembers the booking!
+        print "<a href='checkout.php?booking_id=$booking_id&amount=$amount' style='background-color: #1a2930; color: white; padding: 10px; border-radius: 6px; text-decoration: none; display: inline-block; margin-top: 15px;'>Go Back and Try Again</a>";
         print "</div></body></html>";
         die(); 
     }
@@ -45,15 +47,21 @@ if ($final_amount < 0) {
 $simulation_result = rand(1, 100);
 $status = ($simulation_result <= 90) ? "Success" : "Failed";
 
-// 5. Save to Database
-$sql = "INSERT INTO payments (amount, discount_applied, final_amount, payment_method, payment_status) 
-        VALUES ('$amount', '$discount_applied', '$final_amount', '$method', '$status')";
-
+// 5. Save to Payments Database
+$sql = "INSERT INTO payments (booking_id, amount, discount_applied, final_amount, payment_method, payment_status) 
+        VALUES ('$booking_id', '$amount', '$discount_applied', '$final_amount', '$method', '$status')";
 if ($conn->query($sql) === TRUE) {
     
     $payment_id = $conn->insert_id; 
 
     if ($status === "Success") {
+        
+        // 🟢 THE BRAIN: Tell the bookings table this is PAID! 🟢
+        if($booking_id) {
+            $update_sql = "UPDATE bookings SET status = 'Confirmed' WHERE id = '$booking_id'";
+            $conn->query($update_sql);
+        }
+
         // 🟢 SUCCESSFUL RECEIPT UI
         print "<h2 style='color: #00b33c; border-bottom: none; margin-bottom: 5px;'>✅ Booking Confirmed!</h2>";
         print "<p style='color: #666; margin-top: 0;'>Your court is secured.</p>";
@@ -61,10 +69,11 @@ if ($conn->query($sql) === TRUE) {
         // The Receipt Ticket Design
         print "<div style='background-color: #f9f9f9; padding: 25px; border: 2px dashed #ccc; border-radius: 8px; margin-bottom: 20px; text-align: left;'>";
         
-        print "<h3 style='text-align: center; margin-top: 0; color: #1a2930; font-size: 24px; letter-spacing: 2px;'>PRO COURT CENTER</h3>";
+        print "<h3 style='text-align: center; margin-top: 0; color: #1a2930; font-size: 24px; letter-spacing: 2px;'>SMASH ARENA</h3>";
         print "<p style='text-align: center; color: #888; font-size: 12px; margin-top: -10px; margin-bottom: 20px;'>OFFICIAL E-RECEIPT</p>";
         
-        print "<p><strong>Booking Ref:</strong> PC-" . str_pad($payment_id, 4, '0', STR_PAD_LEFT) . "</p>";
+        print "<p><strong>Booking Ref:</strong> #" . htmlspecialchars($booking_id) . "</p>";
+        print "<p><strong>Receipt No:</strong> RCPT-" . str_pad($payment_id, 4, '0', STR_PAD_LEFT) . "</p>";
         print "<p><strong>Date:</strong> " . date("Y-m-d h:i A") . "</p>";
         print "<p><strong>Payment Method:</strong> " . htmlspecialchars($method) . "</p>";
         print "<hr style='border: 0; border-top: 1px solid #ddd; margin: 15px 0;'>";
@@ -79,14 +88,16 @@ if ($conn->query($sql) === TRUE) {
         print "<h2 style='color: #1a2930; text-align: left; border: none; padding: 0; margin: 0;'>TOTAL PAID: <span style='float: right; color: #00b33c;'>RM " . number_format($final_amount, 2) . "</span></h2>";
         print "</div>";
         
-        print "<a href='checkout.php' style='background-color: #1a2930; color: white; padding: 15px; border-radius: 6px;'>Book Another Court</a>";
+        // Return ticket back to your friend's system!
+        print "<a href='../Customer_Module/dashboard.php' style='background-color: #00b33c; color: white; padding: 15px; border-radius: 6px; text-decoration: none; display: inline-block; width: 80%;'>Return to Dashboard</a>";
         
     } else {
         // 🔴 FAILED PAYMENT UI
         print "<h2 style='color: #dc3545; border-bottom: none;'>❌ Payment Failed</h2>";
         print "<p style='text-align: center;'>We were unable to process your transaction via " . htmlspecialchars($method) . ".</p>";
         print "<p style='text-align: center; color: #666;'>Please check your balance and try again.</p>";
-        print "<a href='checkout.php' style='background-color: #dc3545; color: white; padding: 15px; border-radius: 6px;'>Return to Checkout</a>";
+        // Fixed the back link here too!
+        print "<a href='checkout.php?booking_id=$booking_id&amount=$amount' style='background-color: #dc3545; color: white; padding: 15px; border-radius: 6px; text-decoration: none; display: inline-block; margin-top: 15px;'>Try Payment Again</a>";
     }
 
 } else {

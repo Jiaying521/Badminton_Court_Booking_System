@@ -13,6 +13,12 @@ if (!$user) {
     redirect('homepage.php');
 }
 
+// 🟢 NEW: Fetch REAL wallet balance from database
+$stmt_bal = $pdo->prepare("SELECT wallet_balance FROM users WHERE id = ?");
+$stmt_bal->execute([$user_id]);
+$balance_row = $stmt_bal->fetch();
+$real_balance = $balance_row['wallet_balance'] ?? 0.00;
+
 // 获取所有场地类型
 $types = [];
 $typeResult = $pdo->query("SELECT DISTINCT court_type FROM courts WHERE is_active = 1");
@@ -149,7 +155,6 @@ sort($facilities);
 </head>
 <body>
 <div class="container">
-    <!-- Navbar -->
     <div class="navbar">
         <div class="logo">
             <img src="../Admin_Module/Pictures/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
@@ -157,21 +162,30 @@ sort($facilities);
         <div class="nav-links">
             <a href="dashboard.php" class="active"><i class="fas fa-home"></i> Courts</a>
             <a href="my_bookings.php"><i class="fas fa-bookmark"></i> My Bookings</a>
+            
+           <a href="../Payment_Module/wallet.php?return=dashboard"><i class="fas fa-wallet"></i> My Wallet</a>
+            
             <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
             <span class="user-greeting">🏸 <?php echo htmlspecialchars($user['name'] ?? 'Player'); ?></span>
         </div>
     </div>
     
-    <!-- Welcome Banner -->
     <div class="welcome-banner">
         <div>
             <h1>Ready to play, <?php echo htmlspecialchars($user['name'] ?? 'Player'); ?>! 🏸</h1>
             <p>Find your perfect court below and start your game</p>
+            
+            <div style="margin-top: 15px; display: flex; gap: 10px; align-items: center;">
+                <span style="background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 50px; font-size: 14px;">
+                    <i class="fas fa-wallet"></i> Balance: <strong>RM <?php echo number_format($real_balance, 2); ?></strong>
+                </span>
+                
+                <a href="../Payment_Module/wallet.php" style="color: #aaffaa; font-size: 14px; text-decoration: underline; font-weight: 600;">Top Up</a>
+            </div>
         </div>
         <a href="my_bookings.php" class="btn-my-bookings"><i class="fas fa-bookmark"></i> My Bookings</a>
     </div>
 
-    <!-- Filter Form -->
     <div class="filter-form">
         <form method="GET" style="display:contents;">
             <div class="filter-group">
@@ -203,7 +217,6 @@ sort($facilities);
         </form>
     </div>
 
-    <!-- Courts Grid -->
     <div class="courts-grid">
         <?php if (count($courts) > 0): ?>
             <?php foreach ($courts as $c): 

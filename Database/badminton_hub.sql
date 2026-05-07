@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 06, 2026 at 06:39 AM
+-- Generation Time: May 07, 2026 at 07:44 AM
 -- Server version: 10.4.32-MariaDB
--- PHP Version: 8.0.30
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -90,7 +90,25 @@ INSERT INTO `bookings` (`id`, `user_id`, `court_id`, `booking_date`, `start_time
 (11, 7, 1, '2026-05-05', '13:00:00', '15:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 'Daniel weekday practice', '2026-04-30 16:34:47'),
 (12, 8, 3, '2026-05-06', '16:00:00', '18:00:00', 2, NULL, 0, 0.00, '', 50.00, 'Completed', 'Priya competitive game', '2026-04-30 16:34:47'),
 (13, 9, 2, '2026-05-06', '19:00:00', '21:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 'Jason night practice', '2026-04-30 16:34:47'),
-(14, 10, 1, '2026-05-07', '07:00:00', '09:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 'Nurul early session', '2026-04-30 16:34:47');
+(14, 10, 1, '2026-05-07', '07:00:00', '09:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 'Nurul early session', '2026-04-30 16:34:47'),
+(15, 11, 1, '2026-05-15', '21:00:00', '23:00:00', 2, 0, 0, 0.00, 'Casual Play', 30.00, 'Cancelled', '', '2026-05-07 03:29:21'),
+(16, 11, 1, '2026-05-08', '09:00:00', '11:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', '', '2026-05-07 03:40:37'),
+(17, 11, 1, '2026-05-08', '11:00:00', '01:00:00', 14, 0, 0, 0.00, 'Casual Play', 195.00, 'Cancelled', '', '2026-05-07 03:43:56'),
+(18, 11, 1, '2026-05-08', '12:00:00', '18:00:00', 6, 0, 0, 0.00, 'Casual Play', 80.00, 'Cancelled', '', '2026-05-07 03:44:12'),
+(19, 11, 3, '2026-05-08', '08:00:00', '10:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', '', '2026-05-07 03:50:54'),
+(20, 11, 3, '2026-05-08', '14:00:00', '20:00:00', 6, 0, 0, 0.00, 'Casual Play', 90.00, 'Cancelled', '', '2026-05-07 03:59:49'),
+(21, 11, 1, '2026-05-23', '08:00:00', '09:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', '', '2026-05-07 04:02:04'),
+(22, 11, 1, '2026-05-22', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', '', '2026-05-07 04:02:30'),
+(23, 11, 2, '2026-05-08', '16:00:00', '21:00:00', 5, 0, 0, 0.00, 'Casual Play', 75.00, 'Cancelled', '', '2026-05-07 04:02:54'),
+(24, 11, 1, '2026-05-15', '10:00:00', '16:00:00', 6, 0, 0, 0.00, 'Casual Play', 70.00, 'Cancelled', '', '2026-05-07 04:05:31'),
+(25, 11, 2, '2026-05-08', '13:00:00', '14:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', '', '2026-05-07 04:05:43'),
+(26, 11, 2, '2026-05-29', '13:00:00', '00:00:00', 11, 0, 0, 0.00, 'Casual Play', 160.00, 'Cancelled', '', '2026-05-07 04:06:31'),
+(27, 11, 1, '2026-05-08', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', '', '2026-05-07 04:16:32'),
+(28, 11, 1, '2026-05-07', '13:00:00', '14:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Confirmed', '', '2026-05-07 04:24:15'),
+(29, 11, 2, '2026-05-08', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Pending', '', '2026-05-07 04:40:34'),
+(30, 11, 2, '2026-05-28', '08:00:00', '09:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', '', '2026-05-07 05:24:25'),
+(31, 11, 2, '2026-05-14', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', '', '2026-05-07 05:33:03'),
+(32, 11, 2, '2026-05-23', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', '', '2026-05-07 05:37:58');
 
 -- --------------------------------------------------------
 
@@ -152,6 +170,7 @@ CREATE TABLE `courts` (
   `facilities` varchar(255) DEFAULT NULL,
   `price_off_peak` decimal(10,2) NOT NULL DEFAULT 10.00 COMMENT '非高峰价格 8am-2pm',
   `price_peak` decimal(10,2) NOT NULL DEFAULT 15.00 COMMENT '高峰价格 3pm-1am',
+  `court_image` varchar(255) DEFAULT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -160,17 +179,17 @@ CREATE TABLE `courts` (
 -- Dumping data for table `courts`
 --
 
-INSERT INTO `courts` (`id`, `court_name`, `court_type`, `location`, `facilities`, `price_off_peak`, `price_peak`, `is_active`, `created_at`) VALUES
-(1, 'Court A', 'Standard', 'Main Hall 1', 'Shower, Locker', 10.00, 15.00, 1, '2026-04-30 16:17:09'),
-(2, 'Court B', 'Standard', 'Main Hall 1', 'Shower, Locker', 10.00, 15.00, 1, '2026-04-30 16:17:09'),
-(3, 'Court C', 'Standard', 'Main Hall 2', 'Shower, Locker', 10.00, 15.00, 1, '2026-04-30 16:17:09'),
-(4, 'Court D', 'Standard', 'Main Hall 2', 'Shower, Locker', 10.00, 15.00, 1, '2026-04-30 16:17:09'),
-(5, 'Court E', 'Standard', 'Main Hall 3', 'Shower, Locker', 10.00, 15.00, 1, '2026-04-30 16:17:09'),
-(6, 'Court F', 'Standard', 'Main Hall 3', 'Shower, Locker', 10.00, 15.00, 1, '2026-04-30 16:17:09'),
-(7, 'Court G', 'Standard', 'Main Hall 4', 'Shower, Locker', 10.00, 15.00, 1, '2026-04-30 16:17:09'),
-(8, 'Court H', 'Training', 'Training Hall', 'Coaching area, Video analysis, Shower', 10.00, 15.00, 1, '2026-04-30 16:17:09'),
-(9, 'Court I', 'Training', 'Training Hall', 'Coaching area, Video analysis, Shower', 10.00, 15.00, 1, '2026-04-30 16:17:09'),
-(10, 'Court J', 'Training', 'Training Hall', 'Coaching area, Video analysis, Shower', 10.00, 15.00, 1, '2026-04-30 16:17:09');
+INSERT INTO `courts` (`id`, `court_name`, `court_type`, `location`, `facilities`, `price_off_peak`, `price_peak`, `court_image`, `is_active`, `created_at`) VALUES
+(1, 'Court A', 'Standard', 'Main Hall 1', 'Shower, Locker', 10.00, 15.00, NULL, 1, '2026-04-30 16:17:09'),
+(2, 'Court B', 'Standard', 'Main Hall 1', 'Shower, Locker', 10.00, 15.00, NULL, 1, '2026-04-30 16:17:09'),
+(3, 'Court C', 'Standard', 'Main Hall 2', 'Shower, Locker', 10.00, 15.00, NULL, 1, '2026-04-30 16:17:09'),
+(4, 'Court D', 'Standard', 'Main Hall 2', 'Shower, Locker', 10.00, 15.00, NULL, 1, '2026-04-30 16:17:09'),
+(5, 'Court E', 'Standard', 'Main Hall 3', 'Shower, Locker', 10.00, 15.00, NULL, 1, '2026-04-30 16:17:09'),
+(6, 'Court F', 'Standard', 'Main Hall 3', 'Shower, Locker', 10.00, 15.00, NULL, 1, '2026-04-30 16:17:09'),
+(7, 'Court G', 'Standard', 'Main Hall 4', 'Shower, Locker', 10.00, 15.00, NULL, 1, '2026-04-30 16:17:09'),
+(8, 'Court H', 'Training', 'Training Hall', 'Coaching area, Video analysis, Shower', 10.00, 15.00, NULL, 1, '2026-04-30 16:17:09'),
+(9, 'Court I', 'Training', 'Training Hall', 'Coaching area, Video analysis, Shower', 10.00, 15.00, NULL, 1, '2026-04-30 16:17:09'),
+(10, 'Court J', 'Training', 'Training Hall', 'Coaching area, Video analysis, Shower', 10.00, 15.00, NULL, 1, '2026-04-30 16:17:09');
 
 -- --------------------------------------------------------
 
@@ -296,6 +315,14 @@ CREATE TABLE `payments` (
   `payment_date` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `payments`
+--
+
+INSERT INTO `payments` (`payment_id`, `booking_id`, `amount`, `discount_applied`, `final_amount`, `payment_method`, `payment_status`, `transaction_id`, `payment_date`) VALUES
+(5, 26, 160.00, 0.00, 160.00, 'Center App Wallet', 'success', NULL, '2026-05-07 04:14:24'),
+(6, 28, 10.00, 0.00, 10.00, 'App Wallet', 'success', NULL, '2026-05-07 04:39:33');
+
 -- --------------------------------------------------------
 
 --
@@ -324,24 +351,26 @@ CREATE TABLE `users` (
   `email` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
   `phone` varchar(20) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `wallet_balance` decimal(10,2) DEFAULT 0.00
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `created_at`) VALUES
-(1, 'John Doe', 'john@example.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', '+60123456789', '2026-04-30 16:17:09'),
-(2, 'Alice Tan', 'alice@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60111222333', '2026-04-30 16:34:47'),
-(3, 'Michael Lee', 'michael@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60199888777', '2026-04-30 16:34:47'),
-(4, 'Siti Aminah', 'siti@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60122334455', '2026-04-30 16:34:47'),
-(5, 'Ahmad Firdaus', 'ahmad@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60155667788', '2026-04-30 16:34:47'),
-(6, 'Rachel Lim', 'rachel@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60166778899', '2026-04-30 16:34:47'),
-(7, 'Daniel Wong', 'daniel@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60177889900', '2026-04-30 16:34:47'),
-(8, 'Priya Kumar', 'priya@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60188990011', '2026-04-30 16:34:47'),
-(9, 'Jason Teh', 'jason@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60199001122', '2026-04-30 16:34:47'),
-(10, 'Nurul Huda', 'nurul@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60110101010', '2026-04-30 16:34:47');
+INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `created_at`, `wallet_balance`) VALUES
+(1, 'John Doe', 'john@example.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', '+60123456789', '2026-04-30 16:17:09', 0.00),
+(2, 'Alice Tan', 'alice@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60111222333', '2026-04-30 16:34:47', 0.00),
+(3, 'Michael Lee', 'michael@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60199888777', '2026-04-30 16:34:47', 0.00),
+(4, 'Siti Aminah', 'siti@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60122334455', '2026-04-30 16:34:47', 0.00),
+(5, 'Ahmad Firdaus', 'ahmad@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60155667788', '2026-04-30 16:34:47', 0.00),
+(6, 'Rachel Lim', 'rachel@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60166778899', '2026-04-30 16:34:47', 0.00),
+(7, 'Daniel Wong', 'daniel@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60177889900', '2026-04-30 16:34:47', 0.00),
+(8, 'Priya Kumar', 'priya@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60188990011', '2026-04-30 16:34:47', 0.00),
+(9, 'Jason Teh', 'jason@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60199001122', '2026-04-30 16:34:47', 0.00),
+(10, 'Nurul Huda', 'nurul@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60110101010', '2026-04-30 16:34:47', 0.00),
+(11, 'wz', 'zhefurry@gmail.com', '$2y$10$ti8t5iVME5.hWJhMY0cE5ukBX67z0z4xPn8HL0pskzUS9Kn0PL9iS', '+60123456789', '2026-05-07 03:28:20', 70.00);
 
 --
 -- Indexes for dumped tables
@@ -432,7 +461,7 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `closed_days`
@@ -462,13 +491,13 @@ ALTER TABLE `court_availability`
 -- AUTO_INCREMENT for table `otp_codes`
 --
 ALTER TABLE `otp_codes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `tasks`
@@ -480,7 +509,7 @@ ALTER TABLE `tasks`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- Constraints for dumped tables
@@ -511,10 +540,6 @@ ALTER TABLE `court_availability`
 ALTER TABLE `payments`
   ADD CONSTRAINT `fk_payments_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE;
 COMMIT;
-
---
-ALTER TABLE `courts` ADD COLUMN `court_image` VARCHAR(255) DEFAULT NULL AFTER `price_peak`;
-
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

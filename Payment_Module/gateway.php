@@ -1,10 +1,13 @@
 <?php
 // gateway.php - The Mock Payment Interfaces
 
-// Catch the data from your checkout page
+$booking_id = $_POST['booking_id'] ?? 0;
 $amount = $_POST['amount'] ?? 0;
 $method = $_POST['payment_method'] ?? 'Unknown';
 $promo  = $_POST['promo_code'] ?? '';
+
+// Catch the specific choice (Bank, Card, or TNG) from checkout.php
+$sub_method = $_POST['sub_method'] ?? ''; 
 ?>
 
 <!DOCTYPE html>
@@ -13,160 +16,77 @@ $promo  = $_POST['promo_code'] ?? '';
     <meta charset="UTF-8">
     <title>Secure Payment Gateway</title>
     <link rel="stylesheet" href="style.css">
-    
     <style>
-        /* Chrome, Safari, Edge, Opera */
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        /* Firefox */
-        input[type=number] {
-            -moz-appearance: textfield;
-        }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+        .clone-container { background: white; padding: 20px; border-radius: 12px; border: 1px solid #eee; margin-top: 10px; }
     </style>
 </head>
-<body>
+<body style="background-color: #f4f7f6;">
 
-<div class="container" style="text-align: center;">
+<div class="container" style="text-align: center; border-top: 6px solid #2b7e3a;">
     
-    <?php if ($method === 'Center App Wallet'): ?>
-        <h2 style="color: #1a2930;">📱 Center e-Wallet</h2>
+    <form action="process_payment.php" method="POST">
+        <input type="hidden" name="booking_id" value="<?php echo htmlspecialchars($booking_id); ?>">
+        <input type="hidden" name="amount" value="<?php echo htmlspecialchars($amount); ?>">
+        <input type="hidden" name="promo_code" value="<?php echo htmlspecialchars($promo); ?>">
         
-        <div style="background: linear-gradient(135deg, #00b33c, #004d1a); color: white; padding: 20px; border-radius: 12px; 
-        margin: 20px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
-            <p style="margin: 0; font-size: 14px; opacity: 0.9;">Available Balance</p>
-            <h1 style="margin: 5px 0; font-size: 36px;" id="wallet_balance">RM 15.00</h1>
-            <p style="margin: 0; font-size: 14px; color: #ffcccc; font-weight: bold;" id="wallet_status">
-                Insufficient Balance for RM <?php print $amount; ?></p>
-        </div>
+        <input type="hidden" name="payment_method" value="<?php echo ($method == 'Online Payment') ? htmlspecialchars($sub_method) : htmlspecialchars($method); ?>">
 
-        <div id="topup_section" style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd; 
-        margin-bottom: 20px;">
-            <h3 style="margin-top: 0; color: #333; font-size: 18px;">Top-Up Required</h3>
-            
-            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <button type="button" onclick="setTopUpAmount(10)" style="flex: 1; background-color: white; color: #333; 
-                border: 2px solid #00b33c; margin: 0; padding: 10px;">RM 10</button>
-                <button type="button" onclick="setTopUpAmount(20)" style="flex: 1; background-color: white; color: #333; 
-                border: 2px solid #00b33c; margin: 0; padding: 10px;">RM 20</button>
-                <button type="button" onclick="setTopUpAmount(50)" style="flex: 1; background-color: white; color: #333; 
-                border: 2px solid #00b33c; margin: 0; padding: 10px;">RM 50</button>
+        <?php if ($method === 'Center App Wallet'): ?>
+            <h2 style="color: #1a2930;">📱 Center e-Wallet</h2>
+            <div style="background: linear-gradient(135deg, #00b33c, #004d1a); color: white; padding: 20px; border-radius: 12px; margin: 20px 0;">
+                <p style="margin: 0; opacity: 0.9;">Available Balance</p>
+                <h1 style="margin: 5px 0;">RM 15.00</h1>
+            </div>
+            <p>Paying: <strong>RM <?php echo number_format($amount, 2); ?></strong></p>
+
+        <?php elseif ($sub_method === 'Bank'): ?>
+            <div class="clone-container">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/a/a0/FPX_logo.png" width="100">
+                <h3>Select Your Bank</h3>
+                <select style="margin-bottom: 15px;">
+                    <option>Maybank2u</option>
+                    <option>CIMB Clicks</option>
+                    <option>Public Bank</option>
+                    <option>RHB Now</option>
+                </select>
+                <input type="text" placeholder="Username / Login ID" required>
+                <input type="password" placeholder="Password" required>
+                <p style="font-size: 12px; color: #777;">You will be redirected to your bank's secure site.</p>
             </div>
 
-            <label style="display: block; text-align: center; font-weight: bold; margin-bottom: 8px; 
-            color: #555;">Or Type Custom Amount:</label>
-            <input type="number" id="custom_amount" placeholder="0.00" min="1" 
-                   oninput="clearQuickButtons()" 
-                   onkeydown="if(event.key === '-' || event.key === 'e') event.preventDefault();"
-                   style="width: 100%; font-size: 32px; font-weight: bold; text-align: center; padding: 20px; 
-                   margin-bottom: 25px; 
-                   border: 3px solid #00b33c; border-radius: 8px; 
-                   background-color: #e6ffed; box-sizing: border-box; color: #006622;">
-
-            <label style="display: block; text-align: left; font-weight: bold; margin-bottom: 5px; 
-            font-size: 14px;">Pay With:</label>
-            <select id="topup_method" style="margin-bottom: 20px;">
-                <option value="FPX">FPX Online Banking</option>
-                <option value="Card">Credit/Debit Card</option>
-                <option value="TNG">Touch 'n Go eWallet</option>
-            </select>
-
-            <button type="button" onclick="processTopUp()" style="background-color: #ffaa00; color: black; margin: 0; 
-            font-size: 20px; padding: 15px;">Confirm Top-Up</button>
-        </div>
-
-        <form action="process_payment.php" method="POST" id="wallet_form">
-            <input type="hidden" name="amount" value="<?php print $amount; ?>">
-            <input type="hidden" name="payment_method" value="<?php print $method; ?>">
-            <input type="hidden" name="promo_code" value="<?php print $promo; ?>">
-            
-            <button type="submit" id="pay_btn" style="background-color: #00b33c; display: none; 
-            margin-top: 10px;">Pay RM 
-                <?php print $amount; ?> Now</button>
-        </form>
-
-        <script>
-            let currentBalance = 15.00;
-            let requiredAmount = <?php print $amount; ?>;
-            let selectedTopUp = 0;
-
-            function setTopUpAmount(amount) {
-                selectedTopUp = amount;
-                document.getElementById('custom_amount').value = amount; 
-            }
-
-            function clearQuickButtons() {
-                selectedTopUp = 0; 
-            }
-
-            function processTopUp() {
-                let customVal = parseFloat(document.getElementById('custom_amount').value);
-                if(customVal > 0) {
-                    selectedTopUp = customVal;
-                }
-
-                if(selectedTopUp <= 0 || isNaN(selectedTopUp)) {
-                    alert("Please enter a valid top-up amount.");
-                    return;
-                }
-
-                currentBalance += selectedTopUp;
-                document.getElementById('wallet_balance').innerText = "RM " + currentBalance.toFixed(2);
-
-                if(currentBalance >= requiredAmount) {
-                    document.getElementById('wallet_status').innerText = "✅ Balance Sufficient!";
-                    document.getElementById('wallet_status').style.color = "#aaffaa";
-                    document.getElementById('topup_section').style.display = 'none';
-                    document.getElementById('pay_btn').style.display = 'block';
-                } else {
-                    let shortAmount = requiredAmount - currentBalance;
-                    document.getElementById('wallet_status').innerText = "⚠️ Still short RM " + shortAmount.toFixed(2) + "!";
-                    document.getElementById('custom_amount').value = ''; 
-                    alert("Top-Up successful, but you still need RM " + shortAmount.toFixed(2) + " to book the court.");
-                }
-            }
-        </script>
-
-    <?php elseif ($method === 'Credit Card'): ?>
-        <h2>💳 Enter Card Details</h2>
-        <p style="color: #666;">Total to pay: RM <?php print $amount; ?></p>
-        <form action="process_payment.php" method="POST" style="text-align: left;">
-            <input type="hidden" name="amount" value="<?php print $amount; ?>">
-            <input type="hidden" name="payment_method" value="<?php print $method; ?>">
-            <input type="hidden" name="promo_code" value="<?php print $promo; ?>">
-            <label>Card Number:</label>
-            <input type="text" placeholder="0000 0000 0000 0000" required maxlength="19">
-            <div style="display: flex; gap: 10px;">
-                <div style="flex: 1;"><label>Expiry (MM/YY):</label><input type="text" placeholder="12/25" required maxlength="5"></div>
-                <div style="flex: 1;"><label>CVV:</label><input type="text" placeholder="123" required maxlength="3"></div>
+        <?php elseif ($sub_method === 'Card'): ?>
+            <div class="clone-container" style="text-align: left;">
+                <h3 style="text-align: center;">Secure Card Payment</h3>
+                <label>Cardholder Name</label>
+                <input type="text" placeholder="e.g. CHIN ZHEN XIN" required>
+                <label>Card Number</label>
+                <input type="text" placeholder="4111 1111 1111 1111" maxlength="16" required>
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex:1;"><label>Expiry</label><input type="text" placeholder="MM/YY" maxlength="5" required></div>
+                    <div style="flex:1;"><label>CVV</label><input type="password" placeholder="***" maxlength="3" required></div>
+                </div>
             </div>
-            <button type="submit">Secure Pay RM <?php print $amount; ?></button>
-        </form>
 
-    <?php elseif ($method === 'Bank Transfer' || $method === 'E-Wallet'): ?>
-        <h2><?php print ($method === 'Bank Transfer') ? '🏦 FPX Online Banking' : '📱 Touch n Go eWallet'; ?></h2>
-        <p>Merchant: Pro Court Sports Center<br>Amount: RM <?php print $amount; ?></p>
-        <form action="process_payment.php" method="POST" style="text-align: left;">
-            <input type="hidden" name="amount" value="<?php print $amount; ?>">
-            <input type="hidden" name="payment_method" value="<?php print $method; ?>">
-            <input type="hidden" name="promo_code" value="<?php print $promo; ?>">
-            <label>Login ID / Phone Number:</label>
-            <input type="text" placeholder="Enter details" required>
-            <label>Password / PIN:</label>
-            <input type="password" placeholder="Enter password or PIN" required style="width: 100%; padding: 12px; 
-            margin: 8px 0 20px 0; border: 2px solid #e0e0e0; border-radius: 6px; 
-            box-sizing: border-box; font-size: 16px; background-color: #f9f9f9;">
-            <button type="submit">Authorize RM <?php print $amount; ?></button>
-        </form>
+        <?php elseif ($sub_method === 'TNG'): ?>
+            <div class="clone-container" style="background: #005eb8; color: white;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Touch_%27n_Go_eWallet_logo.svg/1200px-Touch_%27n_Go_eWallet_logo.svg.png" width="80" style="background: white; border-radius: 5px; padding: 5px;">
+                <h3>Scan QR to Pay</h3>
+                <div style="background: white; padding: 10px; display: inline-block; border-radius: 8px; margin: 10px 0;">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=SMASH-ARENA-PAYMENT-ID-<?php echo $booking_id; ?>" alt="QR Code">
+                </div>
+                <p style="font-size: 14px;">Total: RM <?php echo number_format($amount, 2); ?></p>
+            </div>
+            <input type="text" placeholder="Or Enter Phone No: 601xxxxxxx" style="margin-top: 15px;">
 
-    <?php else: ?>
-        <h2>Error</h2>
-        <p>No payment method selected.</p>
-    <?php endif; ?>
+        <?php endif; ?>
 
-    <a href="checkout.php" style="color: #ff4d4d; font-weight: normal; margin-top: 20px;">← Cancel and Return</a>
+        <button type="submit" class="confirm-btn" style="margin-top: 20px; background-color: #2b7e3a;">Authorize Payment</button>
+        
+        <a href="checkout.php?booking_id=<?php echo htmlspecialchars($booking_id); ?>&amount=<?php echo htmlspecialchars($amount); ?>" 
+           style="color: #ff4d4d; display: block; margin-top: 20px; text-decoration: none;">← Cancel and Return</a>
+    </form>
 </div>
 
 </body>

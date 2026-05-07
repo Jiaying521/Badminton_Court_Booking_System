@@ -52,7 +52,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     // ========== 跳转到队友的支付页面 ==========
     // 传递 booking_id 和金额到 checkout.php
-    header("Location: checkout.php?booking_id=$booking_id&amount=$total_price");
+   header("Location: ../Payment_Module/checkout.php?booking_id=$booking_id&amount=$total_price");
     exit;
 }
 ?>

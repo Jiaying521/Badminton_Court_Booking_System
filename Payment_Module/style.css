@@ -3,7 +3,6 @@
 /* 1. The Background & Font */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    /* Dark, energetic overlay with a fresh Badminton Unsplash background */
     background-image: linear-gradient(rgba(15, 32, 39, 0.8), rgba(32, 58, 67, 0.8)), url('https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?q=80&w=2000&auto=format&fit=crop');
     background-size: cover;
     background-position: center;
@@ -13,146 +12,107 @@ body {
     color: #333;
 }
 
-/* 2. The Main White Box (The App Container) */
+/* 2. The Main White Box */
 .container {
     background-color: #ffffff;
-    max-width: 600px;
-    margin: 0 auto; /* Centers the box perfectly */
-    padding: 30px 40px;
-    border-radius: 12px;
+    max-width: 500px; /* Made it a bit slimmer like a phone screen */
+    margin: 0 auto; 
+    padding: 30px;
+    border-radius: 20px; /* Rounder corners like the app screenshot */
     box-shadow: 0px 15px 25px rgba(0,0,0,0.4);
 }
 
 /* 3. Headings */
-h2 {
-    color: #1a2930; /* Dark Slate */
+h2, h3 {
+    color: #1a2930;
     text-align: center;
-    border-bottom: 3px solid #00b33c; /* Court Green accent */
-    padding-bottom: 15px;
     margin-top: 0;
-    text-transform: uppercase;
-    letter-spacing: 1px;
 }
 
-/* 4. Form Inputs & Dropdowns */
-input[type=text], select, textarea {
+/* 4. The NEW Payment Card Style (Like the AFA App) */
+.payment-option-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+/* When the card is selected, it turns orange */
+.payment-option-card:hover, .payment-option-card:has(input[type="radio"]:checked) {
+    border: 2px solid #ff6600;
+    background-color: #fff9f5;
+}
+
+/* 5. Badges & Small Buttons */
+.fee-badge {
+    background-color: #ffe6d9;
+    color: #2b7e3a;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+.topup-btn {
+    background-color: #2b7e3a;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* 6. Inputs & Forms */
+input[type=text], input[type=number], select {
     width: 100%;
     padding: 12px;
     margin: 8px 0 20px 0;
-    display: inline-block;
-    border: 2px solid #e0e0e0;
-    border-radius: 6px;
-    box-sizing: border-box; 
+    border: 1.5px solid #e0e0e0;
+    border-radius: 8px;
     font-size: 16px;
-    background-color: #f9f9f9;
-    transition: border-color 0.3s;
+    background-color: #fcfcfc;
 }
 
-input[type=text]:focus, select:focus {
-    border-color: #00b33c; /* Highlights green when clicked */
-    outline: none;
-}
-
-/* 5. The Main Buttons */
-button {
-    background-color: #00b33c; /* Action Green */
+/* 7. The BIG Confirm Button */
+.confirm-btn {
+    background-color: #2b7e3a; /* Changed to Orange */
     color: white;
-    padding: 16px 20px;
-    margin: 15px 0 8px 0;
+    padding: 18px;
+    margin-top: 20px;
     border: none;
-    border-radius: 6px;
+    border-radius: 12px;
     cursor: pointer;
     width: 100%;
     font-size: 18px;
     font-weight: bold;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: background-color 0.3s, transform 0.1s; 
 }
 
-button:hover {
-    background-color: #009933; /* Darker green on hover */
-    transform: translateY(-2px); /* Tiny lift effect */
+.confirm-btn:hover {
+    background-color: #2b7e3a;
+    transform: translateY(-2px);
 }
 
-/* 6. Links */
-a {
-    color: #00b33c;
+/* Cancel Link */
+.cancel-link {
+    color: #888;
     text-decoration: none;
-    font-weight: bold;
     display: block;
     text-align: center;
-    margin-top: 15px;
-}
-
-a:hover {
-    text-decoration: underline;
-    color: #00802b;
-}
-
-/* 7. Tables (For History and Admin Pages later) */
-table {
-    width: 100%;
-    border-collapse: collapse;
     margin-top: 20px;
-}
-th {
-    background-color: #1a2930;
-    color: white;
-    padding: 12px;
-    text-align: left;
-}
-td {
-    padding: 12px;
-    border-bottom: 1px solid #ddd;
-}
-tr:hover {
-    background-color: #f5f5f5;
+    font-size: 14px;
 }
 
-.payment-card {
-    display: flex;
-    align-items: center;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 12px;
-    background-color: #f9f9f9;
-    cursor: pointer;
-    transition: border-color 0.3s, background-color 0.3s;
-}
-
-.payment-card:has(input[type="radio"]:checked) {
-    border-color: #00b33c;
-    background-color: #e6ffed;
-}
-
-.payment-info {
-    flex-grow: 1;
-    margin-left: 15px;
-    text-align: left;
-}
-
-.payment-title {
-    font-weight: bold;
-    font-size: 16px;
-    color: #333;
-    margin: 0 0 4px 0;
-}
-
-.payment-subtitle {
-    font-size: 13px;
-    color: #777;
-    margin: 0;
-}
-
-.badge-orange {
-    background-color: #ffe6cc;
-    color: #ff6600;
-    font-size: 11px;
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-weight: bold;
-    margin-left: 8px;
-    vertical-align: middle;
+.cancel-link:hover {
+    color: #ff4d4d;
+    text-decoration: underline;
 }
