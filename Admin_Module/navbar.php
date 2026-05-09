@@ -20,10 +20,12 @@
             <li><a href="AdminManagement.php">Admin Management</a></li>
             <li><a href="ManageCourts.php">Court Management</a></li>
             <li><a href="ManageBookings.php">Manage Bookings</a></li>
+            <li><a href="SystemSettings.php">System Settings</a></li>
 
         <?php elseif ($role === 'Admin'): ?>
             <li><a href="ManageCourts.php">Coach Management</a></li>
             <li><a href="ManageBookings.php">Manage Bookings</a></li>
+            <li><a href="SystemSettings.php">System Settings</a></li>
 
             <li class="dropdown">
                 <a href="#" class="drop-btn">More Options ▼</a>
