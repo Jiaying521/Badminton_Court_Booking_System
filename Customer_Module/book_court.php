@@ -22,7 +22,7 @@ if($court['court_type'] == 'Training') {
     <title>Book <?=htmlspecialchars($court['court_name'])?> | Smash Arena</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <style>
@@ -118,6 +118,7 @@ if($court['court_type'] == 'Training') {
         <input type="hidden" id="coach_price_total" name="coach_price_total" value="0">
         <input type="hidden" id="coach_id" name="coach_id" value="0">
         <input type="hidden" id="coach_hours" name="coach_hours" value="0">
+        <input type="hidden" name="notes" value="">
         
         <label>📅 Select Date</label>
         <input type="text" id="datepicker" name="booking_date" placeholder="Click to select a date" required readonly>
@@ -183,8 +184,7 @@ if($court['court_type'] == 'Training') {
         </div>
         <?php endif; ?>
         
-        <label>📝 Special Requests (optional)</label>
-        <textarea name="notes" rows="2" placeholder="e.g., need racket rental..."></textarea>
+        <!-- Special Requests 已移除，使用 Add-ons 页面选择商品 -->
         
         <div id="paymentSummary" class="payment-summary" style="display:none;">
             <span>💰 Total Amount:</span>
