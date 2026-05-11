@@ -50,9 +50,9 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     $booking_id = $pdo->lastInsertId();
     
-    // ========== 跳转到队友的支付页面 ==========
-    // 传递 booking_id 和金额到 checkout.php
-   header("Location: ../Payment_Module/checkout.php?booking_id=$booking_id&amount=$total_price");
+    // ========== Add-on 询问页面 ==========
+    // 跳转到 Add-on 页面让用户选择是否添加商品
+    header("Location: addons.php?booking_id=$booking_id");
     exit;
 }
 ?>

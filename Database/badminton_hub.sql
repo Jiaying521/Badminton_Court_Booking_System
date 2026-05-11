@@ -607,6 +607,91 @@ ALTER TABLE `payments`
   ADD CONSTRAINT `fk_payments_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE;
 COMMIT;
 
+CREATE TABLE IF NOT EXISTS `products` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `category` enum('racket','string','shuttlecock','grip','snack','drink') NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `description` text DEFAULT NULL,
+  `price` decimal(10,2) NOT NULL,
+  `image_url` varchar(255) DEFAULT NULL,
+  `stock` int(11) DEFAULT 0,
+  `is_active` tinyint(1) DEFAULT 1,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `booking_addons` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `booking_id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `quantity` int(11) NOT NULL DEFAULT 1,
+  `price` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_addon_booking` (`booking_id`),
+  KEY `fk_addon_product` (`product_id`),
+  CONSTRAINT `fk_addon_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_addon_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO `products` (`category`, `name`, `description`, `price`, `is_active`) VALUES
+-- 球拍 Rackets (10种)
+('racket', 'Yonex Astrox 100ZZ', 'Professional grade, head heavy balance', 899.00, 1),
+('racket', 'Yonex Nanflare 800', 'Ultra light, head light balance', 799.00, 1),
+('racket', 'Li-Ning Axforce 80', 'Powerful smash, stiff shaft', 699.00, 1),
+('racket', 'Victor Thruster F', 'Enhanced power, box frame', 649.00, 1),
+('racket', 'Yonex Arcsaber 11', 'All-round performance', 599.00, 1),
+('racket', 'Apacs Z-Ziggler', 'High speed, affordable', 299.00, 1),
+('racket', 'Protech Classic', 'Entry level, good for beginners', 199.00, 1),
+('racket', 'Yonex Astrox 99', 'Extreme power for advanced', 899.00, 1),
+('racket', 'Victor Auraspeed 90S', 'Fast swing, aerodynamic frame', 749.00, 1),
+('racket', 'Li-Ning 3D Calibar 900', '3D frame design, powerful', 799.00, 1),
+
+-- 球拍线 Strings
+('string', 'Yonex BG-65', 'Durable, all-round performance', 35.00, 1),
+('string', 'Yonex BG-66 Ultimax', 'Repulsive power, thin gauge', 40.00, 1),
+('string', 'Yonex BG-80 Power', 'Rough surface for spin', 45.00, 1),
+('string', 'Li-Ning No.1', 'High repulsion, durable', 42.00, 1),
+('string', 'Victor VBS-66N', 'Excellent control', 38.00, 1),
+('string', 'Apacs L66', 'Affordable performance', 28.00, 1),
+
+-- 羽毛球 Shuttlecocks
+('shuttlecock', 'Aeroplane EG1130 (Speed 77)', 'Tournament grade, goose feather', 85.00, 1),
+('shuttlecock', 'Protech Masterpiece', 'High durability, consistent flight', 75.00, 1),
+('shuttlecock', 'Yonex Aerosensa 30', 'Official tournament shuttle', 95.00, 1),
+('shuttlecock', 'RSL Classic Tourney', 'Premium quality, good speed', 78.00, 1),
+('shuttlecock', 'Apacs Shuttle Pro', 'Good for training', 55.00, 1),
+('shuttlecock', 'Aeroplane Black Label', 'Durable, good for heavy use', 65.00, 1),
+
+-- 手胶 Grips
+('grip', 'Yonex Super Grap (Red)', 'Tacky feel, absorbs sweat', 12.00, 1),
+('grip', 'Yonex Super Grap (Yellow)', 'Tacky feel, absorbs sweat', 12.00, 1),
+('grip', 'Yonex Super Grap (Black)', 'Tacky feel, absorbs sweat', 12.00, 1),
+('grip', 'Li-Ning GP1000', 'Cushioning, anti-slip', 15.00, 1),
+('grip', 'Victor GR233', 'Excellent absorption', 14.00, 1),
+('grip', 'Apacs Cushion Grip', 'Affordable, comfortable', 8.00, 1),
+
+-- 零食 Snacks
+('snack', 'KitKat Chocolate', 'Crispy wafer chocolate bar', 4.50, 1),
+('snack', 'Oreo Biscuits', 'Original flavor', 3.50, 1),
+('snack', 'Pringles Original', 'Potato chips', 6.50, 1),
+('snack', 'Mister Potato', 'Crispy potato snack', 4.00, 1),
+('snack', 'Cadbury Dairy Milk', 'Milk chocolate bar', 5.00, 1),
+
+-- 饮料 Drinks
+('drink', '100 Plus Isotonic', 'Replenish energy, 500ml', 3.50, 1),
+('drink', 'Mineral Water', '500ml', 1.50, 1),
+('drink', 'Coca Cola', '330ml can', 2.50, 1),
+('drink', 'Sprite', '330ml can', 2.50, 1),
+('drink', 'Revive Isotonic', 'Sports drink, 500ml', 3.00, 1),
+('drink', 'Milo', 'Chocolate malt drink', 3.00, 1);
+
+-- 查看当前 type 字段允许的值
+SHOW COLUMNS FROM otp_codes LIKE 'type';
+
+-- 2. 修改 type 字段，添加 'reset' 选项
+ALTER TABLE `otp_codes` MODIFY COLUMN `type` enum('register','login','reset') NOT NULL;
+
+-- 3. 验证修改成功
+SHOW COLUMNS FROM otp_codes LIKE 'type';
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

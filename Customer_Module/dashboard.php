@@ -5,7 +5,7 @@ if (!isLoggedIn()) redirect('homepage.php');
 $user_id = $_SESSION['user_id'];
 
 // 获取用户信息
-$stmt = $pdo->prepare("SELECT name FROM users WHERE id = ?");
+$stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch();
 if (!$user) {
@@ -13,11 +13,24 @@ if (!$user) {
     redirect('homepage.php');
 }
 
-// 🟢 NEW: Fetch REAL wallet balance from database
+// 获取钱包余额
 $stmt_bal = $pdo->prepare("SELECT wallet_balance FROM users WHERE id = ?");
 $stmt_bal->execute([$user_id]);
 $balance_row = $stmt_bal->fetch();
 $real_balance = $balance_row['wallet_balance'] ?? 0.00;
+
+// 获取统计数据
+$stmt = $pdo->prepare("SELECT COUNT(*) FROM bookings WHERE user_id = ? AND booking_date >= CURDATE() AND status IN ('Pending', 'Confirmed')");
+$stmt->execute([$user_id]);
+$upcomingCount = $stmt->fetchColumn();
+
+$stmt = $pdo->prepare("SELECT COUNT(*) FROM bookings WHERE user_id = ?");
+$stmt->execute([$user_id]);
+$totalBookings = $stmt->fetchColumn();
+
+$stmt = $pdo->prepare("SELECT SUM(total_price) FROM bookings WHERE user_id = ? AND status = 'Confirmed'");
+$stmt->execute([$user_id]);
+$totalSpent = $stmt->fetchColumn() ?? 0;
 
 // 获取所有场地类型
 $types = [];
@@ -68,6 +81,18 @@ if ($facRes) {
     }
 }
 sort($facilities);
+
+// 获取最近预订
+$stmt = $pdo->prepare("
+    SELECT b.*, c.court_name 
+    FROM bookings b 
+    JOIN courts c ON b.court_id = c.id 
+    WHERE b.user_id = ? 
+    ORDER BY b.created_at DESC 
+    LIMIT 5
+");
+$stmt->execute([$user_id]);
+$recentBookings = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
 <html>
@@ -85,17 +110,31 @@ sort($facilities);
         
         /* Navbar */
         .navbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; padding-bottom:1rem; border-bottom:1px solid rgba(43,126,58,0.15); }
-        .logo img { height: 45px; width: auto; }
-        .nav-links a { margin-left:1.5rem; color:#2c4a2e; text-decoration:none; font-weight:500; transition:0.2s; }
+        .logo img { height: 65px; width: auto; }
+        .nav-links { display:flex; align-items:center; gap:1rem; flex-wrap:wrap; }
+        .nav-links a { color:#2c4a2e; text-decoration:none; font-weight:500; transition:0.2s; }
         .nav-links a:hover, .nav-links a.active { color:#2b7e3a; }
-        .user-greeting { color:#2b7e3a; margin-left:1rem; font-weight:500; }
+        .user-greeting { color:#2b7e3a; font-weight:500; }
+        .btn-logout { background:#fee2e2; color:#e67e22; padding:0.3rem 1rem; border-radius:50px; text-decoration:none; font-size:0.8rem; transition:0.2s; }
+        .btn-logout:hover { background:#e67e22; color:white; }
         
         /* Welcome Banner */
         .welcome-banner { background:linear-gradient(135deg,#2b7e3a,#1b5e2a); color:white; padding:2rem; border-radius:32px; margin-bottom:2rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; }
         .welcome-banner h1 { font-size:1.8rem; margin-bottom:0.3rem; }
         .welcome-banner p { opacity:0.9; }
+        .wallet-info { background:rgba(255,255,255,0.2); padding:0.5rem 1rem; border-radius:50px; display:inline-flex; align-items:center; gap:0.5rem; margin-top:0.5rem; }
+        .wallet-info i { font-size:0.9rem; }
+        .btn-wallet { color:#aaffaa; text-decoration:underline; font-size:0.8rem; margin-left:0.5rem; }
         .btn-my-bookings { background:white; color:#2b7e3a; border:none; padding:0.6rem 1.2rem; border-radius:50px; cursor:pointer; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:0.5rem; transition:0.2s; }
         .btn-my-bookings:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(0,0,0,0.15); }
+        
+        /* Stats Grid */
+        .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; margin-bottom:2rem; }
+        .stat-card { background:white; border-radius:24px; padding:1.2rem; display:flex; align-items:center; gap:1rem; box-shadow:0 4px 15px rgba(0,0,0,0.03); transition:0.3s; }
+        .stat-card:hover { transform:translateY(-3px); box-shadow:0 8px 25px rgba(43,126,58,0.1); }
+        .stat-icon { width:50px; height:50px; background:#eaf5e6; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.5rem; color:#2b7e3a; }
+        .stat-info h3 { font-size:1.6rem; font-weight:800; color:#1e3a2a; }
+        .stat-info p { color:#5a6e5c; font-size:0.8rem; }
         
         /* Filter Form */
         .filter-form { background:white; padding:1.5rem; border-radius:28px; margin-bottom:2rem; display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; align-items:end; border:1px solid rgba(43,126,58,0.1); }
@@ -111,50 +150,48 @@ sort($facilities);
         .court-card { background:white; border-radius:28px; overflow:hidden; box-shadow:0 8px 20px rgba(0,0,0,0.05); transition:0.3s; border-bottom:4px solid #2b7e3a; }
         .court-card:hover { transform:translateY(-5px); box-shadow:0 16px 32px rgba(43,126,58,0.12); }
         
-        /* 图片区域 - 全图标设计 */
-        .court-image { 
-            height: 200px; 
-            background: linear-gradient(135deg, #2b7e3a, #1a5c2a);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
+        .court-image { height: 200px; background: linear-gradient(135deg, #2b7e3a, #1a5c2a); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
         .court-icon { font-size: 5rem; color: white; margin-bottom: 0.5rem; }
         .court-name-big { font-size: 1.5rem; font-weight: 700; color: white; letter-spacing: 1px; }
         .court-location { font-size: 0.8rem; color: #aaffaa; margin-top: 0.3rem; }
-        .court-type-badge { 
-            position: absolute; 
-            top: 12px; 
-            right: 12px; 
-            background: rgba(0,0,0,0.5); 
-            backdrop-filter: blur(4px);
-            color: white; 
-            padding: 0.3rem 0.8rem; 
-            border-radius: 50px; 
-            font-size: 0.7rem; 
-            font-weight: 600; 
-        }
+        .court-type-badge { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); color: white; padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.7rem; font-weight: 600; }
         
         .court-info { padding: 1.2rem; }
-        .court-name { font-size: 1.3rem; font-weight: 800; color: #2b7e3a; margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.5rem; }
-        .court-details { color: #5a6e5c; font-size: 0.85rem; margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.5rem; }
-        .court-price { background: #f8faf5; padding: 0.8rem; border-radius: 16px; margin: 0.8rem 0; }
-        .price-row { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.3rem; }
-        .price-offpeak { color: #2b7e3a; font-weight: 500; }
-        .price-peak { color: #e67e22; font-weight: 500; }
-        .btn-book { background: #2b7e3a; color: white; border: none; padding: 0.7rem 1rem; border-radius: 50px; width: 100%; cursor: pointer; font-weight: 600; margin-top: 0.5rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none; transition: 0.2s; }
-        .btn-book:hover { background: #1f5a2a; transform: translateY(-2px); }
+        .court-name { font-size: 1.3rem; font-weight: 800; color:#2b7e3a; margin-bottom:0.3rem; }
+        .court-details { color:#5a6e5c; font-size:0.85rem; margin-bottom:0.3rem; display:flex; align-items:center; gap:0.5rem; }
+        .court-price { background:#f8faf5; padding:0.8rem; border-radius:16px; margin:0.8rem 0; }
+        .price-row { display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:0.3rem; }
+        .price-offpeak { color:#2b7e3a; font-weight:500; }
+        .price-peak { color:#e67e22; font-weight:500; }
+        .btn-book { background:#2b7e3a; color:white; border:none; padding:0.7rem 1rem; border-radius:50px; width:100%; cursor:pointer; font-weight:600; margin-top:0.5rem; display:inline-flex; align-items:center; justify-content:center; gap:0.5rem; text-decoration:none; transition:0.2s; }
+        .btn-book:hover { background:#1f5a2a; transform:translateY(-2px); }
         
-        /* Training Court 特殊颜色 */
         .court-card.training .court-image { background: linear-gradient(135deg, #1b5e2a, #0f3d1a); }
         
-        @media (max-width:768px) { body { padding:1rem; } .filter-form { grid-template-columns:1fr; } .courts-grid { grid-template-columns:1fr; } }
+        /* Recent Bookings Table */
+        .recent-section { margin-top:2rem; }
+        .section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
+        .section-header h2 { color:#1e3a2a; font-size:1.5rem; }
+        .recent-table { background:white; border-radius:24px; overflow-x:auto; }
+        table { width:100%; border-collapse:collapse; }
+        th { background:#2b7e3a; color:white; padding:1rem; text-align:left; font-weight:600; }
+        td { padding:1rem; border-bottom:1px solid #e0e0e0; }
+        .status { display:inline-block; padding:0.25rem 0.8rem; border-radius:50px; font-size:0.75rem; font-weight:600; }
+        .status-Confirmed { background:#d4edda; color:#155724; }
+        .status-Pending { background:#fff3cd; color:#856404; }
+        .status-Completed { background:#cce5ff; color:#004085; }
+        .status-Cancelled { background:#f8d7da; color:#721c24; }
+        
+        .quick-actions { display:flex; gap:1rem; flex-wrap:wrap; margin-top:1.5rem; }
+        .action-btn { background:white; border:1px solid #2b7e3a; padding:0.6rem 1.2rem; border-radius:50px; color:#2b7e3a; text-decoration:none; font-weight:500; transition:0.2s; display:inline-flex; align-items:center; gap:0.5rem; }
+        .action-btn:hover { background:#2b7e3a; color:white; transform:translateY(-2px); }
+        
+        @media (max-width:768px) { body { padding:1rem; } .filter-form { grid-template-columns:1fr; } .courts-grid { grid-template-columns:1fr; } .navbar { flex-direction:column; } }
     </style>
 </head>
 <body>
 <div class="container">
+    <!-- Navbar -->
     <div class="navbar">
         <div class="logo">
             <img src="../Admin_Module/Pictures/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
@@ -162,30 +199,35 @@ sort($facilities);
         <div class="nav-links">
             <a href="dashboard.php" class="active"><i class="fas fa-home"></i> Courts</a>
             <a href="my_bookings.php"><i class="fas fa-bookmark"></i> My Bookings</a>
-            
-           <a href="../Payment_Module/wallet.php?return=dashboard"><i class="fas fa-wallet"></i> My Wallet</a>
-            
-            <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <a href="../Payment_Module/wallet.php"><i class="fas fa-wallet"></i> Wallet</a>
             <span class="user-greeting">🏸 <?php echo htmlspecialchars($user['name'] ?? 'Player'); ?></span>
+            <a href="edit_profile.php" class="action-btn" style="padding:0.3rem 1rem; background:#eaf5e6;"><i class="fas fa-user-edit"></i> Profile</a>
+            <a href="logout.php" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
     </div>
     
+    <!-- Welcome Banner -->
     <div class="welcome-banner">
         <div>
             <h1>Ready to play, <?php echo htmlspecialchars($user['name'] ?? 'Player'); ?>! 🏸</h1>
             <p>Find your perfect court below and start your game</p>
-            
-            <div style="margin-top: 15px; display: flex; gap: 10px; align-items: center;">
-                <span style="background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 50px; font-size: 14px;">
-                    <i class="fas fa-wallet"></i> Balance: <strong>RM <?php echo number_format($real_balance, 2); ?></strong>
-                </span>
-                
-                <a href="../Payment_Module/wallet.php" style="color: #aaffaa; font-size: 14px; text-decoration: underline; font-weight: 600;">Top Up</a>
+            <div class="wallet-info">
+                <i class="fas fa-wallet"></i> Balance: <strong>RM <?php echo number_format($real_balance, 2); ?></strong>
+                <a href="../Payment_Module/wallet.php" class="btn-wallet">Top Up</a>
             </div>
         </div>
         <a href="my_bookings.php" class="btn-my-bookings"><i class="fas fa-bookmark"></i> My Bookings</a>
     </div>
-
+    
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon"><i class="fas fa-calendar-check"></i></div><div class="stat-info"><h3><?php echo $upcomingCount; ?></h3><p>Upcoming Bookings</p></div></div>
+        <div class="stat-card"><div class="stat-icon"><i class="fas fa-history"></i></div><div class="stat-info"><h3><?php echo $totalBookings; ?></h3><p>Total Bookings</p></div></div>
+        <div class="stat-card"><div class="stat-icon"><i class="fas fa-coins"></i></div><div class="stat-info"><h3>RM <?php echo number_format($totalSpent, 2); ?></h3><p>Total Spent</p></div></div>
+        <div class="stat-card"><div class="stat-icon"><i class="fas fa-star"></i></div><div class="stat-info"><h3><?php echo floor($totalSpent * 0.1); ?></h3><p>Reward Points</p></div></div>
+    </div>
+    
+    <!-- Filter Form -->
     <div class="filter-form">
         <form method="GET" style="display:contents;">
             <div class="filter-group">
@@ -216,7 +258,8 @@ sort($facilities);
             </div>
         </form>
     </div>
-
+    
+    <!-- Courts Grid -->
     <div class="courts-grid">
         <?php if (count($courts) > 0): ?>
             <?php foreach ($courts as $c): 
@@ -234,14 +277,8 @@ sort($facilities);
                         <div class="court-name">🏸 <?php echo htmlspecialchars($c['court_name']); ?></div>
                         <div class="court-details"><i class="fas fa-tools"></i> <?php echo htmlspecialchars($c['facilities'] ?? 'Shower, Locker'); ?></div>
                         <div class="court-price">
-                            <div class="price-row">
-                                <span><i class="fas fa-sun"></i> 8am - 2pm</span>
-                                <span class="price-offpeak">RM <?php echo number_format($c['price_off_peak'], 2); ?> / hour</span>
-                            </div>
-                            <div class="price-row">
-                                <span><i class="fas fa-moon"></i> 3pm - 1am</span>
-                                <span class="price-peak">RM <?php echo number_format($c['price_peak'], 2); ?> / hour</span>
-                            </div>
+                            <div class="price-row"><span><i class="fas fa-sun"></i> 8am - 2pm</span><span class="price-offpeak">RM <?php echo number_format($c['price_off_peak'], 2); ?> / hour</span></div>
+                            <div class="price-row"><span><i class="fas fa-moon"></i> 3pm - 1am</span><span class="price-peak">RM <?php echo number_format($c['price_peak'], 2); ?> / hour</span></div>
                         </div>
                         <a href="book_court.php?court_id=<?php echo $c['id']; ?>" class="btn-book"><i class="fas fa-calendar-check"></i> Book Now →</a>
                     </div>
@@ -250,6 +287,43 @@ sort($facilities);
         <?php else: ?>
             <div class="court-card" style="text-align:center; padding:2rem; color:#888;">No courts found. Try different filters.</div>
         <?php endif; ?>
+    </div>
+    
+    <!-- Recent Bookings -->
+    <?php if(count($recentBookings) > 0): ?>
+    <div class="recent-section">
+        <div class="section-header">
+            <h2><i class="fas fa-clock"></i> Recent Bookings</h2>
+            <a href="my_bookings.php" style="color:#2b7e3a;">View All →</a>
+        </div>
+        <div class="recent-table">
+            <table>
+                <thead><tr><th>Court</th><th>Date</th><th>Time</th><th>Hours</th><th>Total</th><th>Status</th><th></th></tr></thead>
+                <tbody>
+                    <?php foreach($recentBookings as $b): ?>
+                    <tr>
+                        <td><strong><?php echo htmlspecialchars($b['court_name']); ?></strong></td>
+                        <td><?php echo date('M j, Y', strtotime($b['booking_date'])); ?></td>
+                        <td><?php echo date('h:i A', strtotime($b['start_time'])); ?> - <?php echo date('h:i A', strtotime($b['end_time'])); ?></td>
+                        <td><?php echo $b['total_hours']; ?>h</td>
+                        <td>RM <?php echo number_format($b['total_price'], 2); ?></td>
+                        <td><span class="status status-<?php echo $b['status']; ?>"><?php echo $b['status']; ?></span></td>
+                        <td><a href="booking_details.php?id=<?php echo $b['id']; ?>" style="color:#2b7e3a;"><i class="fas fa-eye"></i></a></td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <?php endif; ?>
+    
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <a href="dashboard.php" class="action-btn"><i class="fas fa-plus"></i> Book a Court</a>
+        <a href="my_bookings.php" class="action-btn"><i class="fas fa-list"></i> My Bookings</a>
+        <a href="../Payment_Module/wallet.php" class="action-btn"><i class="fas fa-wallet"></i> Top Up Wallet</a>
+        <a href="edit_profile.php" class="action-btn"><i class="fas fa-user-cog"></i> Edit Profile</a>
+        <a href="change_password.php" class="action-btn"><i class="fas fa-key"></i> Change Password</a>
     </div>
 </div>
 </body>

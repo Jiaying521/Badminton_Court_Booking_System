@@ -15,9 +15,8 @@ require_once __DIR__ . '/../config.php';
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:'Inter',sans-serif; background:linear-gradient(145deg,#f5f9f0 0%,#e8efe2 100%); color:#1e2a2e; line-height:1.5; }
         
-        /* 导航栏 */
         .navbar { display:flex; justify-content:space-between; align-items:center; padding:0.8rem 5%; background:rgba(255,255,255,0.98); backdrop-filter:blur(12px); position:sticky; top:0; z-index:100; border-bottom:1px solid rgba(43,126,58,0.15); box-shadow:0 2px 20px rgba(0,0,0,0.03); }
-        .logo img { height: 50px; width: auto; transition:transform 0.3s; }
+        .logo img { height: 65px; width: auto; transition:transform 0.3s; }
         .logo img:hover { transform:scale(1.02); }
         .nav-links { display:flex; gap:1.5rem; align-items:center; }
         .btn-outline { background:transparent; border:2px solid #2b7e3a; padding:0.5rem 1.5rem; border-radius:50px; color:#2b7e3a; cursor:pointer; font-weight:600; transition:all 0.3s; }
@@ -25,7 +24,6 @@ require_once __DIR__ . '/../config.php';
         .btn-solid { background:#2b7e3a; border:none; padding:0.5rem 1.5rem; border-radius:50px; color:white; cursor:pointer; font-weight:600; transition:all 0.3s; box-shadow:0 2px 8px rgba(43,126,58,0.2); }
         .btn-solid:hover { background:#1f5a2a; transform:translateY(-2px); box-shadow:0 6px 16px rgba(43,126,58,0.4); }
         
-        /* Hero Section - 现代设计 */
         .hero { display:flex; align-items:center; justify-content:space-between; padding:5rem 5%; gap:4rem; flex-wrap:wrap; max-width:1400px; margin:0 auto; }
         .hero-text { flex:1; min-width:300px; }
         .hero-text .badge { display:inline-block; background:#eaf5e6; color:#2b7e3a; padding:0.3rem 1rem; border-radius:50px; font-size:0.8rem; font-weight:600; margin-bottom:1.5rem; }
@@ -37,13 +35,11 @@ require_once __DIR__ . '/../config.php';
         .hero-image img { max-width:100%; border-radius:40px; box-shadow:0 30px 50px -20px rgba(43,126,58,0.4); transition:transform 0.5s; }
         .hero-image img:hover { transform:scale(1.02) translateY(-5px); }
         
-        /* 统计栏 */
         .stats-bar { background:white; margin:2rem 5% 0; padding:1.5rem 2rem; border-radius:60px; box-shadow:0 10px 30px rgba(0,0,0,0.05); display:flex; justify-content:space-around; flex-wrap:wrap; gap:1.5rem; }
         .stat-item { text-align:center; }
         .stat-number { font-size:2rem; font-weight:800; color:#2b7e3a; }
         .stat-label { color:#5a6e5c; font-size:0.85rem; }
         
-        /* Features Section */
         .features { padding:5rem 5%; background:white; border-radius:60px 60px 0 0; margin-top:3rem; }
         .features h2 { text-align:center; font-size:2.5rem; font-weight:700; color:#1e3a2a; margin-bottom:1rem; }
         .features-sub { text-align:center; color:#5a6e5c; margin-bottom:3rem; font-size:1rem; }
@@ -54,7 +50,6 @@ require_once __DIR__ . '/../config.php';
         .feature-card h3 { font-size:1.3rem; font-weight:700; color:#1e3a2a; margin-bottom:0.8rem; }
         .feature-card p { color:#5a6e5c; font-size:0.9rem; line-height:1.5; }
         
-        /* CTA Banner */
         .cta-banner { background:linear-gradient(135deg,#2b7e3a,#1b5e2a); margin:2rem 5%; padding:3rem; border-radius:40px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1.5rem; color:white; }
         .cta-banner h3 { font-size:1.8rem; margin-bottom:0.5rem; }
         .cta-banner p { opacity:0.9; }
@@ -63,15 +58,15 @@ require_once __DIR__ . '/../config.php';
         
         /* 模态框样式 */
         .modal { display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.6); backdrop-filter:blur(8px); }
-        .modal-content { background:#fff; margin:3% auto; padding:2rem; width:90%; max-width:480px; max-height:85vh; overflow-y:auto; border-radius:32px; position:relative; animation:fadeInUp 0.4s; border:1px solid rgba(43,126,58,0.1); }
+        .modal-content { background:#fff; margin:3% auto; padding:2rem; width:90%; max-width:500px; max-height:85vh; overflow-y:auto; border-radius:32px; position:relative; animation:fadeInUp 0.4s; border:1px solid rgba(43,126,58,0.1); }
         .modal-content::-webkit-scrollbar { width:6px; }
         .modal-content::-webkit-scrollbar-track { background:#e0e0e0; border-radius:3px; }
         .modal-content::-webkit-scrollbar-thumb { background:#2b7e3a; border-radius:3px; }
         @keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
         .close { position:absolute; right:1.5rem; top:1.2rem; font-size:1.8rem; cursor:pointer; color:#94a3b8; transition:0.2s; }
         .close:hover { color:#2b7e3a; }
-        .modal-content h2 { font-size:1.8rem; font-weight:700; text-align:center; margin-bottom:1.8rem; background:linear-gradient(135deg,#2b7e3a,#1b5e2a); -webkit-background-clip:text; background-clip:text; color:transparent; }
-        .modal-content input, .modal-content select { width:100%; padding:0.9rem 1rem; margin:0.4rem 0 1rem; border:1.5px solid #dde4dc; border-radius:60px; background:#fefdf8; font-family:'Inter',sans-serif; }
+        .modal-content h2 { font-size:1.8rem; font-weight:700; text-align:center; margin-bottom:1rem; background:linear-gradient(135deg,#2b7e3a,#1b5e2a); -webkit-background-clip:text; background-clip:text; color:transparent; }
+        .modal-content input, .modal-content select { width:100%; padding:0.9rem 1rem; margin:0.4rem 0 0.8rem; border:1.5px solid #dde4dc; border-radius:60px; background:#fefdf8; font-family:'Inter',sans-serif; }
         .modal-content input:focus { border-color:#2b7e3a; outline:none; }
         .btn-primary-modal { background:linear-gradient(105deg,#2b7e3a,#1f5a2a); color:white; border:none; padding:0.9rem; border-radius:60px; width:100%; font-weight:700; cursor:pointer; margin-top:0.5rem; transition:0.2s; }
         .btn-primary-modal:hover { transform:translateY(-2px); box-shadow:0 6px 14px rgba(43,126,58,0.3); }
@@ -81,19 +76,21 @@ require_once __DIR__ . '/../config.php';
         .hr-text::before, .hr-text::after { content:''; position:absolute; top:50%; width:40%; height:1px; background:#dde4dc; }
         .hr-text::before { left:0; }
         .hr-text::after { right:0; }
-        .toggle-link { text-align:center; margin-top:1.5rem; }
+        .toggle-link { text-align:center; margin-top:1rem; }
         .toggle-link a { color:#2b7e3a; text-decoration:none; font-weight:600; cursor:pointer; }
         .error-msg { background:#fee2dd; border-left:5px solid #e67e22; color:#b45f1b; padding:0.7rem; margin-top:1rem; border-radius:16px; font-size:0.85rem; display:none; }
+        .success-msg { background:#d4edda; border-left:5px solid #2b7e3a; color:#155724; padding:0.7rem; margin-top:1rem; border-radius:16px; font-size:0.85rem; display:none; }
         
-        /* 密码强度条 */
         .strength-meter { margin-top:-0.8rem; margin-bottom:1rem; height:6px; background:#e0e0e0; border-radius:3px; overflow:hidden; }
         .strength-meter-fill { height:100%; width:0%; transition:width 0.2s; border-radius:3px; }
         .strength-text { font-size:0.75rem; margin-top:0.2rem; text-align:right; color:#5a6e5c; }
         .username-status { font-size:0.75rem; margin-top:-0.8rem; margin-bottom:0.5rem; }
         .username-valid { color:#2b7e3a; }
         .username-invalid { color:#e67e22; }
+        .password-match { font-size:0.75rem; margin-top:-0.5rem; margin-bottom:0.5rem; }
+        .password-match.valid { color:#2b7e3a; }
+        .password-match.invalid { color:#e67e22; }
         
-        /* Footer */
         .footer { background:#0f1f12; color:#cbd5c0; padding:3rem 5% 1.5rem; margin-top:2rem; }
         .footer-container { max-width:1400px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:2rem; margin-bottom:2rem; }
         .footer-col h3, .footer-col h4 { color:#2b7e3a; margin-bottom:1rem; }
@@ -125,7 +122,7 @@ require_once __DIR__ . '/../config.php';
 <nav class="navbar">
     <div class="logo">
         <img src="../Admin_Module/Pictures/logo.png" alt="Smash Arena" onerror="this.style.display='none'; this.nextSibling.style.display='block';">
-        <span style="display:none; font-size:1.5rem; font-weight:800; background:linear-gradient(135deg,#2b7e3a,#1b5e2a); -webkit-background-clip:text; background-clip:text; color:transparent;">Smash Arena</span>
+        <span style="display:none; font-size:1.8rem; font-weight:800; background:linear-gradient(135deg,#2b7e3a,#1b5e2a); -webkit-background-clip:text; background-clip:text; color:transparent;">Smash Arena</span>
     </div>
     <div class="nav-links">
         <button class="btn-outline" id="loginBtn">Login</button>
@@ -133,7 +130,7 @@ require_once __DIR__ . '/../config.php';
     </div>
 </nav>
 
-<!-- Hero Section - 图片在右边 -->
+<!-- Hero Section -->
 <section class="hero">
     <div class="hero-text">
         <span class="badge"><i class="fas fa-shuttlecock"></i> Malaysia's Premier Badminton Hub</span>
@@ -165,22 +162,22 @@ require_once __DIR__ . '/../config.php';
         <div class="feature-card">
             <div class="feature-icon"><i class="fas fa-calendar-check"></i></div>
             <h3>Easy Booking</h3>
-            <p>Select court, pick time, pay online – done in under a minute. No phone calls needed.</p>
+            <p>Select court, pick time, pay online – done in under a minute.</p>
         </div>
         <div class="feature-card">
             <div class="feature-icon"><i class="fas fa-clock"></i></div>
             <h3>Extended Hours</h3>
-            <p>Open daily 8am - 1am. Early bird and late night sessions available for night owls.</p>
+            <p>Open daily 8am - 1am. Early bird and late night sessions available.</p>
         </div>
         <div class="feature-card">
             <div class="feature-icon"><i class="fas fa-chalkboard-user"></i></div>
             <h3>Training Courts</h3>
-            <p>Professional coaches available for all levels. Improve your game with expert guidance.</p>
+            <p>Professional coaches available for all levels. Improve your game.</p>
         </div>
         <div class="feature-card">
             <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
             <h3>Secure Payments</h3>
-            <p>Multiple payment options with full encryption. Your transactions are 100% secure.</p>
+            <p>Multiple payment options with full encryption. 100% secure.</p>
         </div>
     </div>
 </section>
@@ -239,7 +236,9 @@ require_once __DIR__ . '/../config.php';
 
 <!-- Login Modal -->
 <div id="loginModal" class="modal">
-    <div class="modal-content"><span class="close" id="closeLogin">&times;</span><h2>Welcome Back</h2>
+    <div class="modal-content">
+        <span class="close" id="closeLogin">&times;</span>
+        <h2>Welcome Back</h2>
         <div id="loginPasswordMode">
             <input type="email" id="loginEmail" placeholder="Email address">
             <input type="password" id="loginPassword" placeholder="Password">
@@ -252,14 +251,47 @@ require_once __DIR__ . '/../config.php';
             <input type="text" id="loginOtpCode" placeholder="Enter 6-digit OTP" style="display:none;">
             <button class="btn-primary-modal" id="verifyLoginOtpBtn" style="display:none;">Verify & Login</button>
         </div>
-        <div class="toggle-link"><a id="switchToRegisterFromLogin">No account? Sign up</a></div>
+        <div class="toggle-link">
+            <a id="forgotPasswordLink">Forgot Password?</a>
+            <span style="margin:0 10px;">|</span>
+            <a id="switchToRegisterFromLogin">No account? Sign up</a>
+        </div>
         <div id="loginError" class="error-msg"></div>
+    </div>
+</div>
+
+<!-- Forgot Password Modal -->
+<div id="forgotPasswordModal" class="modal">
+    <div class="modal-content">
+        <span class="close" id="closeForgotPassword">&times;</span>
+        <h2>Reset Password</h2>
+        <div id="forgotStep1">
+            <label>Email Address</label>
+            <input type="email" id="forgotEmail" placeholder="Enter your registered email">
+            <button class="btn-primary-modal" id="sendResetOtpBtn">Send Reset Code</button>
+        </div>
+        <div id="forgotStep2" style="display:none;">
+            <label>Verification Code</label>
+            <input type="text" id="forgotOtpCode" placeholder="Enter 6-digit code">
+            <label>New Password</label>
+            <input type="password" id="forgotNewPassword" placeholder="At least 6 characters + 1 symbol">
+            <div class="strength-meter"><div class="strength-meter-fill" id="forgotStrengthFill"></div></div>
+            <div id="forgotStrengthText" class="strength-text"></div>
+            <label>Confirm Password</label>
+            <input type="password" id="forgotConfirmPassword" placeholder="Confirm your new password">
+            <div id="forgotPasswordMatch" class="password-match"></div>
+            <button class="btn-primary-modal" id="resetPasswordBtn">Reset Password</button>
+        </div>
+        <div id="forgotError" class="error-msg"></div>
+        <div id="forgotSuccess" class="success-msg"></div>
     </div>
 </div>
 
 <!-- Register Modal -->
 <div id="registerModal" class="modal">
-    <div class="modal-content"><span class="close" id="closeRegister">&times;</span><h2>Create Account</h2>
+    <div class="modal-content">
+        <span class="close" id="closeRegister">&times;</span>
+        <h2>Create Account</h2>
         <label>Name <span style="color:#e67e22;">*</span></label>
         <input type="text" id="regName" placeholder="Your display name">
         <div id="nameStatus" class="username-status"></div>
@@ -271,6 +303,10 @@ require_once __DIR__ . '/../config.php';
         <input type="password" id="regPassword" placeholder="At least 6 characters + 1 symbol">
         <div class="strength-meter"><div class="strength-meter-fill" id="passwordStrengthFill"></div></div>
         <div id="passwordStrengthText" class="strength-text"></div>
+
+        <label>Confirm Password <span style="color:#e67e22;">*</span></label>
+        <input type="password" id="regConfirmPassword" placeholder="Confirm your password">
+        <div id="passwordMatch" class="password-match"></div>
 
         <label>Phone <span style="color:#e67e22;">*</span></label>
         <div style="display:flex; gap:8px;">
@@ -297,16 +333,42 @@ require_once __DIR__ . '/../config.php';
     // Modal elements
     const loginModal = document.getElementById('loginModal');
     const registerModal = document.getElementById('registerModal');
+    const forgotPasswordModal = document.getElementById('forgotPasswordModal');
+    
     function openLogin() { loginModal.style.display = 'block'; }
     function openRegister() { registerModal.style.display = 'block'; }
-    function closeAll() { loginModal.style.display = 'none'; registerModal.style.display = 'none'; }
+    function openForgotPassword() { 
+        forgotPasswordModal.style.display = 'block';
+        // Reset forgot password form
+        document.getElementById('forgotStep1').style.display = 'block';
+        document.getElementById('forgotStep2').style.display = 'none';
+        document.getElementById('forgotEmail').value = '';
+        document.getElementById('forgotOtpCode').value = '';
+        document.getElementById('forgotNewPassword').value = '';
+        document.getElementById('forgotConfirmPassword').value = '';
+        document.getElementById('forgotError').style.display = 'none';
+        document.getElementById('forgotSuccess').style.display = 'none';
+    }
+    function closeAll() { 
+        loginModal.style.display = 'none'; 
+        registerModal.style.display = 'none';
+        forgotPasswordModal.style.display = 'none';
+    }
+    
     document.getElementById('loginBtn').onclick = openLogin;
     document.getElementById('signupBtn').onclick = openRegister;
     document.getElementById('heroBookBtn').onclick = openLogin;
     document.getElementById('ctaBookBtn').onclick = openLogin;
     document.getElementById('closeLogin').onclick = () => loginModal.style.display = 'none';
     document.getElementById('closeRegister').onclick = () => registerModal.style.display = 'none';
-    window.onclick = (e) => { if(e.target === loginModal) loginModal.style.display = 'none'; if(e.target === registerModal) registerModal.style.display = 'none'; };
+    document.getElementById('closeForgotPassword').onclick = () => forgotPasswordModal.style.display = 'none';
+    document.getElementById('forgotPasswordLink').onclick = (e) => { e.preventDefault(); closeAll(); openForgotPassword(); };
+    
+    window.onclick = (e) => { 
+        if(e.target === loginModal) loginModal.style.display = 'none'; 
+        if(e.target === registerModal) registerModal.style.display = 'none';
+        if(e.target === forgotPasswordModal) forgotPasswordModal.style.display = 'none';
+    };
     document.getElementById('switchToRegisterFromLogin').onclick = (e) => { e.preventDefault(); closeAll(); openRegister(); };
     document.getElementById('switchToLoginFromRegister').onclick = (e) => { e.preventDefault(); closeAll(); openLogin(); };
 
@@ -316,6 +378,33 @@ require_once __DIR__ . '/../config.php';
         else { btn.innerText = btn._orig; btn.disabled=false; }
     }
     function showError(el, msg) { el.innerText = msg; el.style.display = 'block'; setTimeout(()=>el.style.display='none',5000); }
+    function showSuccess(el, msg) { el.innerText = msg; el.style.display = 'block'; setTimeout(()=>el.style.display='none',5000); }
+
+    // ---------- Confirm Password Validation ----------
+    const regPasswordInput = document.getElementById('regPassword');
+    const regConfirmPassword = document.getElementById('regConfirmPassword');
+    const passwordMatchDiv = document.getElementById('passwordMatch');
+    let passwordMatchValid = false;
+
+    function validatePasswordMatch() {
+        const password = regPasswordInput.value;
+        const confirm = regConfirmPassword.value;
+        
+        if(confirm.length === 0) {
+            passwordMatchDiv.innerHTML = '';
+            passwordMatchValid = false;
+        } else if(password === confirm) {
+            passwordMatchDiv.innerHTML = '<span class="valid">✓ Passwords match</span>';
+            passwordMatchValid = true;
+        } else {
+            passwordMatchDiv.innerHTML = '<span class="invalid">✗ Passwords do not match</span>';
+            passwordMatchValid = false;
+        }
+        validateRegisterButton();
+    }
+
+    regConfirmPassword.addEventListener('input', validatePasswordMatch);
+    regPasswordInput.addEventListener('input', validatePasswordMatch);
 
     // ---------- 用户名唯一性实时检查 ----------
     const regNameInput = document.getElementById('regName');
@@ -346,7 +435,6 @@ require_once __DIR__ . '/../config.php';
     });
 
     // ---------- 密码强度检测 ----------
-    const regPasswordInput = document.getElementById('regPassword');
     const strengthFill = document.getElementById('passwordStrengthFill');
     const strengthText = document.getElementById('passwordStrengthText');
     let passwordValid = false;
@@ -383,15 +471,56 @@ require_once __DIR__ . '/../config.php';
         strengthText.innerText = result.text;
         passwordValid = result.valid;
         validateRegisterButton();
+        validatePasswordMatch();
     });
+
+    // Forgot password strength
+    const forgotNewPassword = document.getElementById('forgotNewPassword');
+    const forgotConfirmPassword = document.getElementById('forgotConfirmPassword');
+    const forgotStrengthFill = document.getElementById('forgotStrengthFill');
+    const forgotStrengthText = document.getElementById('forgotStrengthText');
+    const forgotPasswordMatchDiv = document.getElementById('forgotPasswordMatch');
+    
+    if(forgotNewPassword) {
+        forgotNewPassword.addEventListener('input', function() {
+            const pwd = this.value;
+            const result = checkPasswordStrength(pwd);
+            forgotStrengthFill.style.width = result.percent + '%';
+            if(result.percent <= 25) forgotStrengthFill.style.background = '#e67e22';
+            else if(result.percent <= 50) forgotStrengthFill.style.background = '#f1c40f';
+            else if(result.percent <= 75) forgotStrengthFill.style.background = '#2b7e3a';
+            else forgotStrengthFill.style.background = '#2b7e3a';
+            forgotStrengthText.innerText = result.text;
+            
+            // Check match
+            if(forgotConfirmPassword.value.length > 0) {
+                if(pwd === forgotConfirmPassword.value) {
+                    forgotPasswordMatchDiv.innerHTML = '<span class="valid">✓ Passwords match</span>';
+                } else {
+                    forgotPasswordMatchDiv.innerHTML = '<span class="invalid">✗ Passwords do not match</span>';
+                }
+            }
+        });
+        
+        forgotConfirmPassword.addEventListener('input', function() {
+            if(this.value.length > 0 && this.value === forgotNewPassword.value) {
+                forgotPasswordMatchDiv.innerHTML = '<span class="valid">✓ Passwords match</span>';
+            } else if(this.value.length > 0) {
+                forgotPasswordMatchDiv.innerHTML = '<span class="invalid">✗ Passwords do not match</span>';
+            } else {
+                forgotPasswordMatchDiv.innerHTML = '';
+            }
+        });
+    }
 
     function validateRegisterButton() {
         const nameOk = nameValid;
         const emailOk = regEmail.value.trim().includes('@');
         const phoneOk = regPhone.value.trim().length > 5;
         const otpVerified = regVerified;
+        const passwordOk = passwordValid && passwordMatchValid;
         const registerBtn = document.getElementById('registerFinalBtn');
-        if(nameOk && emailOk && phoneOk && passwordValid && otpVerified) {
+        if(nameOk && emailOk && phoneOk && passwordOk && otpVerified) {
             registerBtn.disabled = false;
         } else {
             registerBtn.disabled = true;
@@ -487,7 +616,7 @@ require_once __DIR__ . '/../config.php';
     registerFinalBtn.onclick = async () => {
         if(!regVerified) { showError(regError, "Verify your email first."); return; }
         if(!nameValid) { showError(regError, "Name is invalid or already taken."); return; }
-        if(!passwordValid) { showError(regError, "Password does not meet requirements."); return; }
+        if(!passwordValid || !passwordMatchValid) { showError(regError, "Password does not meet requirements or passwords do not match."); return; }
         const name = regName.value.trim();
         const email = regEmail.value.trim();
         const password = regPassword.value;
@@ -509,12 +638,14 @@ require_once __DIR__ . '/../config.php';
                 regName.value = ''; 
                 regEmail.value = ''; 
                 regPassword.value = ''; 
+                regConfirmPassword.value = '';
                 regPhoneInput.value = ''; 
                 regVerifyCode.value = ''; 
                 registerFinalBtn.disabled = true; 
                 regVerified = false; 
                 nameValid = false; 
                 passwordValid = false; 
+                passwordMatchValid = false;
             } else {
                 showError(regError, data.message);
             }
@@ -623,6 +754,75 @@ require_once __DIR__ . '/../config.php';
         }
         finally { setButtonLoading(verifyLoginOtpBtn, false); }
     };
+    
+    // Forgot Password - Send Reset OTP
+    const sendResetOtpBtn = document.getElementById('sendResetOtpBtn');
+    if(sendResetOtpBtn) {
+        sendResetOtpBtn.onclick = async () => {
+            const email = document.getElementById('forgotEmail').value.trim();
+            if(!email) { showError(document.getElementById('forgotError'), "Please enter your email"); return; }
+            setButtonLoading(sendResetOtpBtn, true);
+            try {
+                const res = await fetch(baseUrl+'send_reset_otp.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    document.getElementById('forgotStep1').style.display = 'none';
+                    document.getElementById('forgotStep2').style.display = 'block';
+                    showSuccess(document.getElementById('forgotSuccess'), "Reset code sent to your email!");
+                } else {
+                    showError(document.getElementById('forgotError'), data.message);
+                }
+            } catch(err) {
+                showError(document.getElementById('forgotError'), "Network error");
+            } finally {
+                setButtonLoading(sendResetOtpBtn, false);
+            }
+        };
+    }
+    
+    // Reset Password
+    const resetPasswordBtn = document.getElementById('resetPasswordBtn');
+    if(resetPasswordBtn) {
+        resetPasswordBtn.onclick = async () => {
+            const email = document.getElementById('forgotEmail').value.trim();
+            const code = document.getElementById('forgotOtpCode').value.trim();
+            const newPassword = document.getElementById('forgotNewPassword').value;
+            const confirmPassword = document.getElementById('forgotConfirmPassword').value;
+            
+            if(!code) { showError(document.getElementById('forgotError'), "Please enter verification code"); return; }
+            if(newPassword !== confirmPassword) { showError(document.getElementById('forgotError'), "Passwords do not match"); return; }
+            
+            const pwdResult = checkPasswordStrength(newPassword);
+            if(!pwdResult.valid) { showError(document.getElementById('forgotError'), pwdResult.text); return; }
+            
+            setButtonLoading(resetPasswordBtn, true);
+            try {
+                const res = await fetch(baseUrl+'reset_password.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, code, new_password: newPassword })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    showSuccess(document.getElementById('forgotSuccess'), "Password reset successful! Please login.");
+                    setTimeout(() => {
+                        forgotPasswordModal.style.display = 'none';
+                        openLogin();
+                    }, 2000);
+                } else {
+                    showError(document.getElementById('forgotError'), data.message);
+                }
+            } catch(err) {
+                showError(document.getElementById('forgotError'), "Network error");
+            } finally {
+                setButtonLoading(resetPasswordBtn, false);
+            }
+        };
+    }
 </script>
 </body>
 </html>
