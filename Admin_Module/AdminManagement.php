@@ -222,7 +222,7 @@ $result = mysqli_query($conn, $query);
                 <h3>Coach Management</h3>
                 <form method="POST" class="form-grid">
                     <input type="hidden" name="role" value="Coach">
-                    <input type="text" name="username" placeholder="Coach Management" required>
+                    <input type="text" name="username" placeholder="Coach Name" required>
                     <input type="email" name="email" placeholder="Email" required>
                     <select name="spec" required>
                         <option value="" disabled selected>Select Coaching Specialty</option>

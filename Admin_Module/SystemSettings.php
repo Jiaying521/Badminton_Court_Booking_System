@@ -9,9 +9,8 @@
 session_start();
 
 // ---------- 2. Access Control ----------
-// Only Superadmin is allowed on this page.
 // Anyone else gets redirected to the login page.
-if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'Superadmin') {
+if (!isset($_SESSION['username']) || !in_array($_SESSION['role'], ['Superadmin', 'Admin'])) {
     header("Location: LoginPage.php");
     exit();
 }

@@ -43,7 +43,7 @@ if (isset($_GET['ajax_fetch'])) {
             WHERE b.booking_date = '$safe_date'";
     
     if (strtolower($u_role) === 'coach') {
-        $sql .= " AND (co.admin_id = $u_id OR TRIM(LOWER(co.name)) = TRIM(LOWER('$safe_name')))";
+        $sql .= " AND co.admin_id = $u_id";
     }
     
     $sql .= " ORDER BY b.start_time ASC LIMIT 10"; 
@@ -141,7 +141,7 @@ if (strtolower($role) === 'coach') {
     $admin_id = isset($_SESSION['id']) ? (int)$_SESSION['id'] : 0;
     $safe_username = mysqli_real_escape_string($db, $username);
     $booking_join = " LEFT JOIN coaches co ON b.coach_id = co.id";
-    $booking_filter = " AND (co.admin_id = $admin_id OR TRIM(LOWER(co.name)) = TRIM(LOWER('$safe_username')))";
+    $booking_filter = " AND co.admin_id = $admin_id";
 }
 
 $query_today = mysqli_query($db, "SELECT COUNT(*) AS today_bookings FROM bookings b $booking_join WHERE b.booking_date = '$today' $booking_filter");
@@ -178,7 +178,7 @@ if (strtolower($role) === 'coach') {
     $admin_id = isset($_SESSION['id']) ? (int)$_SESSION['id'] : 0;
     $safe_username = mysqli_real_escape_string($db, $username);
     $coach_join = " LEFT JOIN coaches co ON b.coach_id = co.id";
-    $coach_filter = " AND (co.admin_id = $admin_id OR TRIM(LOWER(co.name)) = TRIM(LOWER('$safe_username')))"; 
+    $coach_filter = " AND co.admin_id = $admin_id"; 
 }
 
 $status_sql = "SELECT MONTH(b.booking_date) AS month_num, b.status, COUNT(*) AS count

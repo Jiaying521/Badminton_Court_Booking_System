@@ -14,6 +14,20 @@
     //Database Connection
     $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
 
+    // Handle status change from dropdown
+    if(isset($_GET['id']) && isset($_GET['status'])){
+        $id      = (int)$_GET['id'];
+        $status  = mysqli_real_escape_string($conn, $_GET['status']);
+        $allowed = ['Pending', 'Confirmed', 'Completed', 'Cancelled'];
+
+        if(in_array($status, $allowed) && $id > 0){
+            mysqli_query($conn, "UPDATE bookings SET status = '$status' WHERE id = $id");
+        }
+
+        header("Location: ManageBookings.php?updated=1");
+        exit();
+    }
+
     // Get POST data
     $booking_id   = (int)$_POST['booking_id'];
     $booking_date = mysqli_real_escape_string($conn, $_POST['booking_date']);
