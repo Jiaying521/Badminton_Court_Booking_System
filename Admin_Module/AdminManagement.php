@@ -34,7 +34,6 @@ function sendTemporaryPassword($to_email, $username, $temp_pass) {
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com'; 
         $mail->SMTPAuth   = true;
-        // Use your working credentials from SendResetLogic
         $mail->Username   = 'smasharenabadminton@gmail.com'; 
         $mail->Password   = 'hgrk ocze fowx rbrd';   
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
@@ -82,6 +81,24 @@ function sendTemporaryPassword($to_email, $username, $temp_pass) {
 }
 
 $message = "";
+
+// Handle edit coach profile
+if (isset($_POST['update_coach'])) {
+    $coach_id       = intval($_POST['coach_id']);
+    $specialty      = mysqli_real_escape_string($conn, $_POST['specialty']);
+    $phone          = mysqli_real_escape_string($conn, $_POST['phone']);
+    $price_per_hour = floatval($_POST['price_per_hour']);
+
+    mysqli_query($conn, "
+        UPDATE coaches SET
+            specialty      = '$specialty',
+            phone          = '$phone',
+            price_per_hour = $price_per_hour
+        WHERE id = $coach_id
+    ");
+
+    $message = "<div class='badge success' style='width:100%; padding:15px; margin-bottom:20px;'>Coach profile updated successfully!</div>";
+}
 
 // Handle account creation
 if (isset($_POST['add_account'])) {
@@ -180,6 +197,7 @@ $result = mysqli_query($conn, $query);
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap">
     <link rel="stylesheet" href="SuperAdminDashboard.css">
     <link rel="stylesheet" href="AdminManagement.css">
+    <link rel="stylesheet" href="ManageCourts.css">
 </head>
 <body>
 
@@ -260,7 +278,24 @@ $result = mysqli_query($conn, $query);
                 </thead>
                 <tbody>
                     <?php while($row = mysqli_fetch_assoc($result)): ?>
-                    <tr>
+                    <tr <?php if($row['role'] === 'Coach'): ?>
+                        class="main-row"
+                        onclick="<?php
+                            $coach_q2   = mysqli_query($conn, "SELECT id, specialty, phone, price_per_hour FROM coaches WHERE admin_id = {$row['id']} LIMIT 1");
+                            $coach_row2 = mysqli_fetch_assoc($coach_q2);
+
+                            if($coach_row2){
+                                echo "openCoachEditModal(
+                                    {$coach_row2['id']},
+                                    '" . addslashes($coach_row2['specialty']) . "',
+                                    '" . addslashes($coach_row2['phone'] ?? '') . "',
+                                    '{$coach_row2['price_per_hour']}'
+                                )";
+                            }
+                        ?>"
+                        style="cursor:pointer;"
+                    <?php endif; ?>>
+
                         <td>#<?php echo $row['id']; ?></td>
                         <td>
                             <strong><?php echo htmlspecialchars($row['username']); ?></strong><br>
@@ -302,7 +337,66 @@ $result = mysqli_query($conn, $query);
         </div>
     </main>
 
+    <!-- Edit Coach Modal -->
+    <div class="modal-overlay" id="coachEditModal">
+        <div class="modal-card">
+
+            <div class="modal-header">
+                <h2><i class="fas fa-pen"></i> Edit Coach Profile</h2>
+                <button class="modal-close" onclick="closeCoachEditModal()">✕</button>
+            </div>
+
+            <form action="AdminManagement.php" method="POST">
+                <input type="hidden" name="coach_id" id="coach-modal-id">
+
+                <div class="modal-grid">
+
+                    <div class="modal-field full-width">
+                        <label>Specialty</label>
+                        <input type="text" name="specialty" id="coach-modal-specialty" required>
+                    </div>
+
+                    <div class="modal-field">
+                        <label>Phone</label>
+                        <input type="text" name="phone" id="coach-modal-phone">
+                    </div>
+
+                    <div class="modal-field">
+                        <label>Price Per Hour (RM)</label>
+                        <input type="number" name="price_per_hour" id="coach-modal-price" step="0.01" min="0" required>
+                    </div>
+
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-modal-cancel" onclick="closeCoachEditModal()">Cancel</button>
+                    <button type="submit" name="update_coach" class="btn-modal-save">Save Changes</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
     <script src="AdminManagement.js"></script>
     <script src="SuperAdminDashboard.js"></script>
+
+    <script>
+        function openCoachEditModal(id, specialty, phone, price) {
+            document.getElementById('coach-modal-id').value        = id;
+            document.getElementById('coach-modal-specialty').value = specialty;
+            document.getElementById('coach-modal-phone').value     = phone;
+            document.getElementById('coach-modal-price').value     = price;
+            document.getElementById('coachEditModal').style.display = 'flex';
+        }
+
+        function closeCoachEditModal() {
+            document.getElementById('coachEditModal').style.display = 'none';
+        }
+
+        document.getElementById('coachEditModal').addEventListener('click', function(e) {
+            if(e.target === this) closeCoachEditModal();
+        });
+    </script>
+
 </body>
 </html>

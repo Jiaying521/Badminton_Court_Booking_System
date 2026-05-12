@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 09, 2026 at 01:28 PM
+-- Generation Time: May 12, 2026 at 05:27 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -113,6 +113,20 @@ INSERT INTO `bookings` (`id`, `user_id`, `court_id`, `booking_date`, `start_time
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `booking_addons`
+--
+
+CREATE TABLE `booking_addons` (
+  `id` int(11) NOT NULL,
+  `booking_id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `quantity` int(11) NOT NULL DEFAULT 1,
+  `price` decimal(10,2) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `closed_days`
 --
 
@@ -143,6 +157,7 @@ CREATE TABLE `coaches` (
   `admin_id` int(11) DEFAULT NULL,
   `name` varchar(100) NOT NULL,
   `specialty` varchar(100) DEFAULT NULL,
+  `phone` varchar(20) DEFAULT NULL,
   `price_per_hour` decimal(10,2) DEFAULT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -151,10 +166,10 @@ CREATE TABLE `coaches` (
 -- Dumping data for table `coaches`
 --
 
-INSERT INTO `coaches` (`id`, `admin_id`, `name`, `specialty`, `price_per_hour`, `is_active`) VALUES
-(1, 2, 'Coach Lim', '🏸 Professional Training - Overall skill improvement, power hitting, consistency', 25.00, 1),
-(2, 3, 'Coach Wong', '🎯 Technique & Footwork - Basic strokes, footwork, body positioning', 20.00, 1),
-(3, 4, 'Coach Tan', '🏆 Strategy & Match Play - Game tactics, mental training, competition prep', 30.00, 1);
+INSERT INTO `coaches` (`id`, `admin_id`, `name`, `specialty`, `phone`, `price_per_hour`, `is_active`) VALUES
+(1, 2, 'Coach Lim', '🏸 Professional Training - Overall skill improvement, power hitting, consistency', NULL, 25.00, 1),
+(2, 3, 'Coach Wong', '🎯 Technique & Footwork - Basic strokes, footwork, body positioning', NULL, 20.00, 1),
+(3, 4, 'Coach Tan', '🏆 Strategy & Match Play - Game tactics, mental training, competition prep', NULL, 30.00, 1);
 
 -- --------------------------------------------------------
 
@@ -292,7 +307,7 @@ CREATE TABLE `otp_codes` (
   `id` int(11) NOT NULL,
   `email` varchar(255) NOT NULL,
   `code` varchar(6) NOT NULL,
-  `type` enum('register','login') NOT NULL,
+  `type` enum('register','login','reset') NOT NULL,
   `expires_at` datetime NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -322,6 +337,68 @@ CREATE TABLE `payments` (
 INSERT INTO `payments` (`payment_id`, `booking_id`, `amount`, `discount_applied`, `final_amount`, `payment_method`, `payment_status`, `transaction_id`, `payment_date`) VALUES
 (5, 26, 160.00, 0.00, 160.00, 'Center App Wallet', 'success', NULL, '2026-05-07 04:14:24'),
 (6, 28, 10.00, 0.00, 10.00, 'App Wallet', 'success', NULL, '2026-05-07 04:39:33');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `products`
+--
+
+CREATE TABLE `products` (
+  `id` int(11) NOT NULL,
+  `category` enum('racket','string','shuttlecock','grip','snack','drink') NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `description` text DEFAULT NULL,
+  `price` decimal(10,2) NOT NULL,
+  `image_url` varchar(255) DEFAULT NULL,
+  `stock` int(11) DEFAULT 0,
+  `is_active` tinyint(1) DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `products`
+--
+
+INSERT INTO `products` (`id`, `category`, `name`, `description`, `price`, `image_url`, `stock`, `is_active`) VALUES
+(1, 'racket', 'Yonex Astrox 100ZZ', 'Professional grade, head heavy balance', 899.00, NULL, 0, 1),
+(2, 'racket', 'Yonex Nanflare 800', 'Ultra light, head light balance', 799.00, NULL, 0, 1),
+(3, 'racket', 'Li-Ning Axforce 80', 'Powerful smash, stiff shaft', 699.00, NULL, 0, 1),
+(4, 'racket', 'Victor Thruster F', 'Enhanced power, box frame', 649.00, NULL, 0, 1),
+(5, 'racket', 'Yonex Arcsaber 11', 'All-round performance', 599.00, NULL, 0, 1),
+(6, 'racket', 'Apacs Z-Ziggler', 'High speed, affordable', 299.00, NULL, 0, 1),
+(7, 'racket', 'Protech Classic', 'Entry level, good for beginners', 199.00, NULL, 0, 1),
+(8, 'racket', 'Yonex Astrox 99', 'Extreme power for advanced', 899.00, NULL, 0, 1),
+(9, 'racket', 'Victor Auraspeed 90S', 'Fast swing, aerodynamic frame', 749.00, NULL, 0, 1),
+(10, 'racket', 'Li-Ning 3D Calibar 900', '3D frame design, powerful', 799.00, NULL, 0, 1),
+(11, 'string', 'Yonex BG-65', 'Durable, all-round performance', 35.00, NULL, 0, 1),
+(12, 'string', 'Yonex BG-66 Ultimax', 'Repulsive power, thin gauge', 40.00, NULL, 0, 1),
+(13, 'string', 'Yonex BG-80 Power', 'Rough surface for spin', 45.00, NULL, 0, 1),
+(14, 'string', 'Li-Ning No.1', 'High repulsion, durable', 42.00, NULL, 0, 1),
+(15, 'string', 'Victor VBS-66N', 'Excellent control', 38.00, NULL, 0, 1),
+(16, 'string', 'Apacs L66', 'Affordable performance', 28.00, NULL, 0, 1),
+(17, 'shuttlecock', 'Aeroplane EG1130 (Speed 77)', 'Tournament grade, goose feather', 85.00, NULL, 0, 1),
+(18, 'shuttlecock', 'Protech Masterpiece', 'High durability, consistent flight', 75.00, NULL, 0, 1),
+(19, 'shuttlecock', 'Yonex Aerosensa 30', 'Official tournament shuttle', 95.00, NULL, 0, 1),
+(20, 'shuttlecock', 'RSL Classic Tourney', 'Premium quality, good speed', 78.00, NULL, 0, 1),
+(21, 'shuttlecock', 'Apacs Shuttle Pro', 'Good for training', 55.00, NULL, 0, 1),
+(22, 'shuttlecock', 'Aeroplane Black Label', 'Durable, good for heavy use', 65.00, NULL, 0, 1),
+(23, 'grip', 'Yonex Super Grap (Red)', 'Tacky feel, absorbs sweat', 12.00, NULL, 0, 1),
+(24, 'grip', 'Yonex Super Grap (Yellow)', 'Tacky feel, absorbs sweat', 12.00, NULL, 0, 1),
+(25, 'grip', 'Yonex Super Grap (Black)', 'Tacky feel, absorbs sweat', 12.00, NULL, 0, 1),
+(26, 'grip', 'Li-Ning GP1000', 'Cushioning, anti-slip', 15.00, NULL, 0, 1),
+(27, 'grip', 'Victor GR233', 'Excellent absorption', 14.00, NULL, 0, 1),
+(28, 'grip', 'Apacs Cushion Grip', 'Affordable, comfortable', 8.00, NULL, 0, 1),
+(29, 'snack', 'KitKat Chocolate', 'Crispy wafer chocolate bar', 4.50, NULL, 0, 1),
+(30, 'snack', 'Oreo Biscuits', 'Original flavor', 3.50, NULL, 0, 1),
+(31, 'snack', 'Pringles Original', 'Potato chips', 6.50, NULL, 0, 1),
+(32, 'snack', 'Mister Potato', 'Crispy potato snack', 4.00, NULL, 0, 1),
+(33, 'snack', 'Cadbury Dairy Milk', 'Milk chocolate bar', 5.00, NULL, 0, 1),
+(34, 'drink', '100 Plus Isotonic', 'Replenish energy, 500ml', 3.50, NULL, 0, 1),
+(35, 'drink', 'Mineral Water', '500ml', 1.50, NULL, 0, 1),
+(36, 'drink', 'Coca Cola', '330ml can', 2.50, NULL, 0, 1),
+(37, 'drink', 'Sprite', '330ml can', 2.50, NULL, 0, 1),
+(38, 'drink', 'Revive Isotonic', 'Sports drink, 500ml', 3.00, NULL, 0, 1),
+(39, 'drink', 'Milo', 'Chocolate malt drink', 3.00, NULL, 0, 1);
 
 -- --------------------------------------------------------
 
@@ -433,6 +510,14 @@ ALTER TABLE `bookings`
   ADD KEY `fk_bookings_court` (`court_id`);
 
 --
+-- Indexes for table `booking_addons`
+--
+ALTER TABLE `booking_addons`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_addon_booking` (`booking_id`),
+  ADD KEY `fk_addon_product` (`product_id`);
+
+--
 -- Indexes for table `closed_days`
 --
 ALTER TABLE `closed_days`
@@ -472,6 +557,12 @@ ALTER TABLE `otp_codes`
 ALTER TABLE `payments`
   ADD PRIMARY KEY (`payment_id`),
   ADD KEY `fk_payments_booking` (`booking_id`);
+
+--
+-- Indexes for table `products`
+--
+ALTER TABLE `products`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `promo_codes`
@@ -518,6 +609,12 @@ ALTER TABLE `bookings`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
+-- AUTO_INCREMENT for table `booking_addons`
+--
+ALTER TABLE `booking_addons`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `closed_days`
 --
 ALTER TABLE `closed_days`
@@ -552,6 +649,12 @@ ALTER TABLE `otp_codes`
 --
 ALTER TABLE `payments`
   MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT for table `products`
+--
+ALTER TABLE `products`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
 
 --
 -- AUTO_INCREMENT for table `promo_codes`
@@ -589,6 +692,13 @@ ALTER TABLE `bookings`
   ADD CONSTRAINT `fk_bookings_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
+-- Constraints for table `booking_addons`
+--
+ALTER TABLE `booking_addons`
+  ADD CONSTRAINT `fk_addon_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_addon_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE;
+
+--
 -- Constraints for table `coaches`
 --
 ALTER TABLE `coaches`
@@ -607,91 +717,6 @@ ALTER TABLE `payments`
   ADD CONSTRAINT `fk_payments_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE;
 COMMIT;
 
-CREATE TABLE IF NOT EXISTS `products` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `category` enum('racket','string','shuttlecock','grip','snack','drink') NOT NULL,
-  `name` varchar(100) NOT NULL,
-  `description` text DEFAULT NULL,
-  `price` decimal(10,2) NOT NULL,
-  `image_url` varchar(255) DEFAULT NULL,
-  `stock` int(11) DEFAULT 0,
-  `is_active` tinyint(1) DEFAULT 1,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-CREATE TABLE IF NOT EXISTS `booking_addons` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `booking_id` int(11) NOT NULL,
-  `product_id` int(11) NOT NULL,
-  `quantity` int(11) NOT NULL DEFAULT 1,
-  `price` decimal(10,2) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_addon_booking` (`booking_id`),
-  KEY `fk_addon_product` (`product_id`),
-  CONSTRAINT `fk_addon_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_addon_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-INSERT INTO `products` (`category`, `name`, `description`, `price`, `is_active`) VALUES
--- 球拍 Rackets (10种)
-('racket', 'Yonex Astrox 100ZZ', 'Professional grade, head heavy balance', 899.00, 1),
-('racket', 'Yonex Nanflare 800', 'Ultra light, head light balance', 799.00, 1),
-('racket', 'Li-Ning Axforce 80', 'Powerful smash, stiff shaft', 699.00, 1),
-('racket', 'Victor Thruster F', 'Enhanced power, box frame', 649.00, 1),
-('racket', 'Yonex Arcsaber 11', 'All-round performance', 599.00, 1),
-('racket', 'Apacs Z-Ziggler', 'High speed, affordable', 299.00, 1),
-('racket', 'Protech Classic', 'Entry level, good for beginners', 199.00, 1),
-('racket', 'Yonex Astrox 99', 'Extreme power for advanced', 899.00, 1),
-('racket', 'Victor Auraspeed 90S', 'Fast swing, aerodynamic frame', 749.00, 1),
-('racket', 'Li-Ning 3D Calibar 900', '3D frame design, powerful', 799.00, 1),
-
--- 球拍线 Strings
-('string', 'Yonex BG-65', 'Durable, all-round performance', 35.00, 1),
-('string', 'Yonex BG-66 Ultimax', 'Repulsive power, thin gauge', 40.00, 1),
-('string', 'Yonex BG-80 Power', 'Rough surface for spin', 45.00, 1),
-('string', 'Li-Ning No.1', 'High repulsion, durable', 42.00, 1),
-('string', 'Victor VBS-66N', 'Excellent control', 38.00, 1),
-('string', 'Apacs L66', 'Affordable performance', 28.00, 1),
-
--- 羽毛球 Shuttlecocks
-('shuttlecock', 'Aeroplane EG1130 (Speed 77)', 'Tournament grade, goose feather', 85.00, 1),
-('shuttlecock', 'Protech Masterpiece', 'High durability, consistent flight', 75.00, 1),
-('shuttlecock', 'Yonex Aerosensa 30', 'Official tournament shuttle', 95.00, 1),
-('shuttlecock', 'RSL Classic Tourney', 'Premium quality, good speed', 78.00, 1),
-('shuttlecock', 'Apacs Shuttle Pro', 'Good for training', 55.00, 1),
-('shuttlecock', 'Aeroplane Black Label', 'Durable, good for heavy use', 65.00, 1),
-
--- 手胶 Grips
-('grip', 'Yonex Super Grap (Red)', 'Tacky feel, absorbs sweat', 12.00, 1),
-('grip', 'Yonex Super Grap (Yellow)', 'Tacky feel, absorbs sweat', 12.00, 1),
-('grip', 'Yonex Super Grap (Black)', 'Tacky feel, absorbs sweat', 12.00, 1),
-('grip', 'Li-Ning GP1000', 'Cushioning, anti-slip', 15.00, 1),
-('grip', 'Victor GR233', 'Excellent absorption', 14.00, 1),
-('grip', 'Apacs Cushion Grip', 'Affordable, comfortable', 8.00, 1),
-
--- 零食 Snacks
-('snack', 'KitKat Chocolate', 'Crispy wafer chocolate bar', 4.50, 1),
-('snack', 'Oreo Biscuits', 'Original flavor', 3.50, 1),
-('snack', 'Pringles Original', 'Potato chips', 6.50, 1),
-('snack', 'Mister Potato', 'Crispy potato snack', 4.00, 1),
-('snack', 'Cadbury Dairy Milk', 'Milk chocolate bar', 5.00, 1),
-
--- 饮料 Drinks
-('drink', '100 Plus Isotonic', 'Replenish energy, 500ml', 3.50, 1),
-('drink', 'Mineral Water', '500ml', 1.50, 1),
-('drink', 'Coca Cola', '330ml can', 2.50, 1),
-('drink', 'Sprite', '330ml can', 2.50, 1),
-('drink', 'Revive Isotonic', 'Sports drink, 500ml', 3.00, 1),
-('drink', 'Milo', 'Chocolate malt drink', 3.00, 1);
-
--- 查看当前 type 字段允许的值
-SHOW COLUMNS FROM otp_codes LIKE 'type';
-
--- 2. 修改 type 字段，添加 'reset' 选项
-ALTER TABLE `otp_codes` MODIFY COLUMN `type` enum('register','login','reset') NOT NULL;
-
--- 3. 验证修改成功
-SHOW COLUMNS FROM otp_codes LIKE 'type';
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
