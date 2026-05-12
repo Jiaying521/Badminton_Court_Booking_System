@@ -344,61 +344,62 @@ INSERT INTO `payments` (`payment_id`, `booking_id`, `amount`, `discount_applied`
 -- Table structure for table `products`
 --
 
-CREATE TABLE `products` (
-  `id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `products` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `category` enum('racket','string','shuttlecock','grip','snack','drink') NOT NULL,
   `name` varchar(100) NOT NULL,
   `description` text DEFAULT NULL,
   `price` decimal(10,2) NOT NULL,
   `image_url` varchar(255) DEFAULT NULL,
   `stock` int(11) DEFAULT 0,
-  `is_active` tinyint(1) DEFAULT 1
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `is_active` tinyint(1) DEFAULT 1,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data for table `products`
 --
 
-INSERT INTO `products` (`id`, `category`, `name`, `description`, `price`, `image_url`, `stock`, `is_active`) VALUES
-(1, 'racket', 'Yonex Astrox 100ZZ', 'Professional grade, head heavy balance', 899.00, NULL, 0, 1),
-(2, 'racket', 'Yonex Nanflare 800', 'Ultra light, head light balance', 799.00, NULL, 0, 1),
-(3, 'racket', 'Li-Ning Axforce 80', 'Powerful smash, stiff shaft', 699.00, NULL, 0, 1),
-(4, 'racket', 'Victor Thruster F', 'Enhanced power, box frame', 649.00, NULL, 0, 1),
-(5, 'racket', 'Yonex Arcsaber 11', 'All-round performance', 599.00, NULL, 0, 1),
-(6, 'racket', 'Apacs Z-Ziggler', 'High speed, affordable', 299.00, NULL, 0, 1),
-(7, 'racket', 'Protech Classic', 'Entry level, good for beginners', 199.00, NULL, 0, 1),
-(8, 'racket', 'Yonex Astrox 99', 'Extreme power for advanced', 899.00, NULL, 0, 1),
-(9, 'racket', 'Victor Auraspeed 90S', 'Fast swing, aerodynamic frame', 749.00, NULL, 0, 1),
-(10, 'racket', 'Li-Ning 3D Calibar 900', '3D frame design, powerful', 799.00, NULL, 0, 1),
-(11, 'string', 'Yonex BG-65', 'Durable, all-round performance', 35.00, NULL, 0, 1),
-(12, 'string', 'Yonex BG-66 Ultimax', 'Repulsive power, thin gauge', 40.00, NULL, 0, 1),
-(13, 'string', 'Yonex BG-80 Power', 'Rough surface for spin', 45.00, NULL, 0, 1),
-(14, 'string', 'Li-Ning No.1', 'High repulsion, durable', 42.00, NULL, 0, 1),
-(15, 'string', 'Victor VBS-66N', 'Excellent control', 38.00, NULL, 0, 1),
-(16, 'string', 'Apacs L66', 'Affordable performance', 28.00, NULL, 0, 1),
-(17, 'shuttlecock', 'Aeroplane EG1130 (Speed 77)', 'Tournament grade, goose feather', 85.00, NULL, 0, 1),
-(18, 'shuttlecock', 'Protech Masterpiece', 'High durability, consistent flight', 75.00, NULL, 0, 1),
-(19, 'shuttlecock', 'Yonex Aerosensa 30', 'Official tournament shuttle', 95.00, NULL, 0, 1),
-(20, 'shuttlecock', 'RSL Classic Tourney', 'Premium quality, good speed', 78.00, NULL, 0, 1),
-(21, 'shuttlecock', 'Apacs Shuttle Pro', 'Good for training', 55.00, NULL, 0, 1),
-(22, 'shuttlecock', 'Aeroplane Black Label', 'Durable, good for heavy use', 65.00, NULL, 0, 1),
-(23, 'grip', 'Yonex Super Grap (Red)', 'Tacky feel, absorbs sweat', 12.00, NULL, 0, 1),
-(24, 'grip', 'Yonex Super Grap (Yellow)', 'Tacky feel, absorbs sweat', 12.00, NULL, 0, 1),
-(25, 'grip', 'Yonex Super Grap (Black)', 'Tacky feel, absorbs sweat', 12.00, NULL, 0, 1),
-(26, 'grip', 'Li-Ning GP1000', 'Cushioning, anti-slip', 15.00, NULL, 0, 1),
-(27, 'grip', 'Victor GR233', 'Excellent absorption', 14.00, NULL, 0, 1),
-(28, 'grip', 'Apacs Cushion Grip', 'Affordable, comfortable', 8.00, NULL, 0, 1),
-(29, 'snack', 'KitKat Chocolate', 'Crispy wafer chocolate bar', 4.50, NULL, 0, 1),
-(30, 'snack', 'Oreo Biscuits', 'Original flavor', 3.50, NULL, 0, 1),
-(31, 'snack', 'Pringles Original', 'Potato chips', 6.50, NULL, 0, 1),
-(32, 'snack', 'Mister Potato', 'Crispy potato snack', 4.00, NULL, 0, 1),
-(33, 'snack', 'Cadbury Dairy Milk', 'Milk chocolate bar', 5.00, NULL, 0, 1),
-(34, 'drink', '100 Plus Isotonic', 'Replenish energy, 500ml', 3.50, NULL, 0, 1),
-(35, 'drink', 'Mineral Water', '500ml', 1.50, NULL, 0, 1),
-(36, 'drink', 'Coca Cola', '330ml can', 2.50, NULL, 0, 1),
-(37, 'drink', 'Sprite', '330ml can', 2.50, NULL, 0, 1),
-(38, 'drink', 'Revive Isotonic', 'Sports drink, 500ml', 3.00, NULL, 0, 1),
-(39, 'drink', 'Milo', 'Chocolate malt drink', 3.00, NULL, 0, 1);
+INSERT INTO `products` (`id`, `category`, `name`, `description`, `price`, `is_active`) VALUES
+(1, 'racket', 'Yonex Astrox 100ZZ', 'Professional grade, head heavy balance', 899.00, 1),
+(2, 'racket', 'Yonex Nanflare 800', 'Ultra light, head light balance', 799.00, 1),
+(3, 'racket', 'Li-Ning Axforce 80', 'Powerful smash, stiff shaft', 699.00, 1),
+(4, 'racket', 'Victor Thruster F', 'Enhanced power, box frame', 649.00, 1),
+(5, 'racket', 'Yonex Arcsaber 11', 'All-round performance', 599.00, 1),
+(6, 'racket', 'Apacs Z-Ziggler', 'High speed, affordable', 299.00, 0),
+(7, 'racket', 'Protech Classic', 'Entry level, good for beginners', 199.00, 0),
+(8, 'racket', 'Yonex Astrox 99', 'Extreme power for advanced', 899.00, 0),
+(9, 'racket', 'Victor Auraspeed 90S', 'Fast swing, aerodynamic frame', 749.00, 0),
+(10, 'racket', 'Li-Ning 3D Calibar 900', '3D frame design, powerful', 799.00, 0),
+(11, 'string', 'Yonex BG-65', 'Durable, all-round performance', 35.00, 0),
+(12, 'string', 'Yonex BG-66 Ultimax', 'Repulsive power, thin gauge', 40.00, 0),
+(13, 'string', 'Yonex BG-80 Power', 'Rough surface for spin', 45.00, 0),
+(14, 'string', 'Li-Ning No.1', 'High repulsion, durable', 42.00, 0),
+(15, 'string', 'Victor VBS-66N', 'Excellent control', 38.00, 0),
+(16, 'string', 'Apacs L66', 'Affordable performance', 28.00, 0),
+(17, 'shuttlecock', 'Aeroplane EG1130 (Speed 77)', 'Tournament grade, goose feather', 85.00, 0),
+(18, 'shuttlecock', 'Protech Masterpiece', 'High durability , consistent flight', 75.00, 0),
+(19, 'shuttlecock', 'Yonex Aerosensa 30', 'Official tournament shuttle', 95.00, 0),
+(20, 'shuttlecock', 'RSL Classic Tourney', 'Premium quality, good speed', 78.00, 0),
+(21, 'shuttlecock', 'Apacs Shuttle Pro', 'Good for training', 55.00, 0),
+(22, 'shuttlecock', 'Aeroplane Black Label', 'Durable, good for heavy use', 65.00, 0),
+(23, 'grip', 'Yonex Super Grap (Red)', 'Tacky feel, absorbs sweat', 12.00, 0),
+(24, 'grip', 'Yonex Super Grap (Yellow)', 'Tacky feel, absorbs sweat', 12.00, 0),
+(25, 'grip', 'Yonex Super Grap (Black)', 'Tacky feel, absorbs sweat', 12.00, 0),
+(26, 'grip', 'Li-Ning GP1000', 'Cushioning, anti-slip', 15.00, 0),
+(27, 'grip', 'Victor GR233', 'Excellent absorption', 14.00, 0),
+(28, 'grip', 'Apacs Cushion Grip', 'Affordable, comfortable', 8.00, 0),
+(29, 'snack', 'KitKat Chocolate', 'Crispy wafer chocolate bar', 4.50, 0),
+(30, 'snack', 'Oreo Biscuits', 'Original flavor', 3.50, 0),
+(31, 'snack', 'Pringles Original', 'Potato chips', 6.50, 0),
+(32, 'snack', 'Mister Potato', 'Crispy potato snack', 4.00, 0),
+(33, 'snack', 'Cadbury Dairy Milk', 'Milk chocolate bar', 5.00, 0),
+(34, 'drink', '100 Plus Isotonic', 'Replenish energy, 500ml', 3.50, 0),
+(35, 'drink', 'Mineral Water', '500ml', 1.50, 0),
+(36, 'drink', 'Coca Cola', '330ml can', 2.50, 0),
+(37, 'drink', 'Sprite', '330ml can', 2.50, 0),
+(38, 'drink', 'Revive Isotonic', 'Sports drink, 500ml', 3.00, 0),
+(39, 'drink', 'Milo', 'Chocolate malt drink', 3.00, 0);
 
 -- --------------------------------------------------------
 
@@ -558,11 +559,6 @@ ALTER TABLE `payments`
   ADD PRIMARY KEY (`payment_id`),
   ADD KEY `fk_payments_booking` (`booking_id`);
 
---
--- Indexes for table `products`
---
-ALTER TABLE `products`
-  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `promo_codes`
@@ -715,6 +711,9 @@ ALTER TABLE `court_availability`
 --
 ALTER TABLE `payments`
   ADD CONSTRAINT `fk_payments_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE;
+
+UPDATE `products` SET `is_active` = 1;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

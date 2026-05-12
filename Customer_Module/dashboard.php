@@ -93,6 +93,19 @@ $stmt = $pdo->prepare("
 ");
 $stmt->execute([$user_id]);
 $recentBookings = $stmt->fetchAll();
+
+// 获取场地图片路径
+function getCourtImage($courtName) {
+    // 转换场地名称为文件名 (Court A -> court_a.png)
+    $fileName = strtolower(str_replace(' ', '_', $courtName)) . '.png';
+    $imagePath = 'images/court/' . $fileName;
+    
+    // 检查文件是否存在
+    if (file_exists(__DIR__ . '/' . $imagePath)) {
+        return $imagePath;
+    }
+    return null;
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -139,7 +152,7 @@ $recentBookings = $stmt->fetchAll();
         /* Filter Form */
         .filter-form { background:white; padding:1.5rem; border-radius:28px; margin-bottom:2rem; display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; align-items:end; border:1px solid rgba(43,126,58,0.1); }
         .filter-group label { font-weight:600; color:#2c4a2e; display:block; margin-bottom:0.3rem; font-size:0.85rem; }
-        .filter-group select, .filter-group input { width:100%; padding:0.6rem 1rem; border:1.5px solid #e0e8dc; border-radius:50px; background:#fefdf8; font-family:'Inter',sans-serif; }
+        .filter-group select, .filter-group input { width:100%; padding:0.6rem 1rem; border:1.5px solid #e0e8dc; border-radius:50px; background:#fefdf8; family:'Inter',sans-serif; }
         .filter-group select:focus, .filter-group input:focus { outline:none; border-color:#2b7e3a; }
         .search-btn, .reset-btn { background:#2b7e3a; color:white; border:none; padding:0.6rem 1.2rem; border-radius:50px; cursor:pointer; font-weight:600; transition:0.2s; }
         .reset-btn { background:#cbd5c0; color:#2c4a2e; }
@@ -150,11 +163,14 @@ $recentBookings = $stmt->fetchAll();
         .court-card { background:white; border-radius:28px; overflow:hidden; box-shadow:0 8px 20px rgba(0,0,0,0.05); transition:0.3s; border-bottom:4px solid #2b7e3a; }
         .court-card:hover { transform:translateY(-5px); box-shadow:0 16px 32px rgba(43,126,58,0.12); }
         
-        .court-image { height: 200px; background: linear-gradient(135deg, #2b7e3a, #1a5c2a); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
-        .court-icon { font-size: 5rem; color: white; margin-bottom: 0.5rem; }
-        .court-name-big { font-size: 1.5rem; font-weight: 700; color: white; letter-spacing: 1px; }
-        .court-location { font-size: 0.8rem; color: #aaffaa; margin-top: 0.3rem; }
-        .court-type-badge { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); color: white; padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.7rem; font-weight: 600; }
+        .court-image { height: 200px; overflow:hidden; background: linear-gradient(135deg, #2b7e3a, #1a5c2a); position: relative; }
+        .court-image img { width:100%; height:100%; object-fit:cover; transition:transform 0.4s; }
+        .court-card:hover .court-image img { transform:scale(1.05); }
+        .court-image .placeholder { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; }
+        .court-image .court-icon { font-size: 4rem; color: white; margin-bottom: 0.5rem; }
+        .court-image .court-name-big { font-size: 1.3rem; font-weight: 700; color: white; }
+        .court-image .court-location { font-size: 0.7rem; color: #aaffaa; margin-top: 0.3rem; }
+        .court-type-badge { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); color: white; padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.7rem; font-weight: 600; z-index: 2; }
         
         .court-info { padding: 1.2rem; }
         .court-name { font-size: 1.3rem; font-weight: 800; color:#2b7e3a; margin-bottom:0.3rem; }
@@ -165,8 +181,6 @@ $recentBookings = $stmt->fetchAll();
         .price-peak { color:#e67e22; font-weight:500; }
         .btn-book { background:#2b7e3a; color:white; border:none; padding:0.7rem 1rem; border-radius:50px; width:100%; cursor:pointer; font-weight:600; margin-top:0.5rem; display:inline-flex; align-items:center; justify-content:center; gap:0.5rem; text-decoration:none; transition:0.2s; }
         .btn-book:hover { background:#1f5a2a; transform:translateY(-2px); }
-        
-        .court-card.training .court-image { background: linear-gradient(135deg, #1b5e2a, #0f3d1a); }
         
         /* Recent Bookings Table */
         .recent-section { margin-top:2rem; }
@@ -263,14 +277,20 @@ $recentBookings = $stmt->fetchAll();
     <div class="courts-grid">
         <?php if (count($courts) > 0): ?>
             <?php foreach ($courts as $c): 
-                $icon = ($c['court_type'] == 'Training') ? '🏋️‍♂️' : '🏸';
-                $bgClass = ($c['court_type'] == 'Training') ? 'training' : '';
+                $imagePath = getCourtImage($c['court_name']);
             ?>
-                <div class="court-card <?php echo $bgClass; ?>">
+                <div class="court-card">
                     <div class="court-image">
-                        <div class="court-icon"><?php echo $icon; ?></div>
-                        <div class="court-name-big"><?php echo htmlspecialchars($c['court_name']); ?></div>
-                        <div class="court-location"><?php echo htmlspecialchars($c['location'] ?? 'Main Hall'); ?></div>
+                        <?php if ($imagePath): ?>
+                            <img src="<?php echo $imagePath; ?>" alt="<?php echo htmlspecialchars($c['court_name']); ?>">
+                        <?php else: ?>
+                            <div class="placeholder">
+                                <?php $icon = ($c['court_type'] == 'Training') ? '🏋️‍♂️' : '🏸'; ?>
+                                <div class="court-icon"><?php echo $icon; ?></div>
+                                <div class="court-name-big"><?php echo htmlspecialchars($c['court_name']); ?></div>
+                                <div class="court-location"><?php echo htmlspecialchars($c['location'] ?? 'Main Hall'); ?></div>
+                            </div>
+                        <?php endif; ?>
                         <span class="court-type-badge"><?php echo htmlspecialchars($c['court_type']); ?></span>
                     </div>
                     <div class="court-info">
@@ -298,7 +318,9 @@ $recentBookings = $stmt->fetchAll();
         </div>
         <div class="recent-table">
             <table>
-                <thead><tr><th>Court</th><th>Date</th><th>Time</th><th>Hours</th><th>Total</th><th>Status</th><th></th></tr></thead>
+                <thead>
+                    <tr><th>Court</th><th>Date</th><th>Time</th><th>Hours</th><th>Total</th><th>Status</th><th></th></tr>
+                </thead>
                 <tbody>
                     <?php foreach($recentBookings as $b): ?>
                     <tr>
