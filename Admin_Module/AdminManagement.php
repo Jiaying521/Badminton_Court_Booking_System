@@ -85,19 +85,48 @@ $message = "";
 // Handle edit coach profile
 if (isset($_POST['update_coach'])) {
     $coach_id       = intval($_POST['coach_id']);
+    $name           = mysqli_real_escape_string($conn, $_POST['coach_name']);
     $specialty      = mysqli_real_escape_string($conn, $_POST['specialty']);
     $phone          = mysqli_real_escape_string($conn, $_POST['phone']);
+    $gender         = mysqli_real_escape_string($conn, $_POST['gender']);
+    $age            = intval($_POST['age']);
     $price_per_hour = floatval($_POST['price_per_hour']);
+
+    // Handle profile image upload
+    $img_sql = "";
+    if (isset($_FILES['profile_img']) && $_FILES['profile_img']['error'] === 0) {
+        $img_name    = time() . '_' . basename($_FILES['profile_img']['name']);
+        $upload_path = 'Pictures/coaches/' . $img_name;
+
+        // move_uploaded_file = save the uploaded file to the folder
+        if (move_uploaded_file($_FILES['profile_img']['tmp_name'], $upload_path)) {
+            $img_sql = ", profile_img = '$img_name'";
+        }
+    }
 
     mysqli_query($conn, "
         UPDATE coaches SET
+            name           = '$name',
             specialty      = '$specialty',
             phone          = '$phone',
+            gender         = '$gender',
+            age            = $age,
             price_per_hour = $price_per_hour
+            $img_sql
         WHERE id = $coach_id
     ");
 
     $message = "<div class='badge success' style='width:100%; padding:15px; margin-bottom:20px;'>Coach profile updated successfully!</div>";
+}
+
+// Handle availability status change
+if (isset($_GET['avail_id']) && isset($_GET['avail_status'])) {
+    $avail_id     = intval($_GET['avail_id']);
+    $avail_status = mysqli_real_escape_string($conn, $_GET['avail_status']);
+
+    mysqli_query($conn, "UPDATE coaches SET availability_status = '$avail_status' WHERE id = $avail_id");
+    header("Location: AdminManagement.php?updated=1");
+    exit();
 }
 
 // Handle account creation
@@ -129,8 +158,8 @@ if (isset($_POST['add_account'])) {
         }
     } else {
         // Note: $coach_price_sql must NOT have quotes around it so NULL inserts correctly
-        $sql = "INSERT INTO admins (username, email, password, role, status, specialisation, is_coach, coach_price_per_hour, first_login) 
-                VALUES ('$user', '$email', '$hashed_pass', '$role_to_add', 'Inactive', '$spec', '$is_coach_val', $coach_price_sql, 0)";
+        $sql = "INSERT INTO admins (username, email, password, role, status, specialisation, is_coach, coach_price_per_hour) 
+                VALUES ('$user', '$email', '$hashed_pass', '$role_to_add', 'Inactive', '$spec', '$is_coach_val', $coach_price_sql)";
         
         if (mysqli_query($conn, $sql)) {
             $admin_id = mysqli_insert_id($conn);
@@ -223,6 +252,9 @@ $result = mysqli_query($conn, $query);
             </header>
 
             <?php if($message !== "") echo $message; ?>
+            <?php if(isset($_GET['updated'])): ?>
+                <div class="badge success" style="width:100%; padding:15px; margin-bottom:20px;">Status updated successfully!</div>
+            <?php endif; ?>
 
             <!-- Add Admin Form -->
             <div id="adminForm" class="form-card">
@@ -271,28 +303,36 @@ $result = mysqli_query($conn, $query);
                     <tr>
                         <th>ID</th>
                         <th>Staff Info</th>
-                        <th>Role</th>
-                        <th>Status Selection</th>
-                        <th>Actions</th>
+                        <th style="text-align:center;">Role</th>
+                        <th style="text-align:center;">Availability</th>
+                        <th style="text-align:center;">Account Status</th>
+                        <th style="text-align:center;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php while($row = mysqli_fetch_assoc($result)): ?>
+
+                    <?php
+                        // Fetch coach data if role is Coach
+                        $coach_row2 = null;
+                        if($row['role'] === 'Coach') {
+                            $coach_q2   = mysqli_query($conn, "SELECT id, name, specialty, phone, gender, age, price_per_hour, profile_img, availability_status FROM coaches WHERE admin_id = {$row['id']} LIMIT 1");
+                            $coach_row2 = mysqli_fetch_assoc($coach_q2);
+                        }
+                    ?>
+
                     <tr <?php if($row['role'] === 'Coach'): ?>
                         class="main-row"
-                        onclick="<?php
-                            $coach_q2   = mysqli_query($conn, "SELECT id, specialty, phone, price_per_hour FROM coaches WHERE admin_id = {$row['id']} LIMIT 1");
-                            $coach_row2 = mysqli_fetch_assoc($coach_q2);
-
-                            if($coach_row2){
-                                echo "openCoachEditModal(
-                                    {$coach_row2['id']},
-                                    '" . addslashes($coach_row2['specialty']) . "',
-                                    '" . addslashes($coach_row2['phone'] ?? '') . "',
-                                    '{$coach_row2['price_per_hour']}'
-                                )";
-                            }
-                        ?>"
+                        onclick="openCoachEditModal(
+                            <?php echo $coach_row2['id']; ?>,
+                            '<?php echo addslashes($coach_row2['name'] ?? ''); ?>',
+                            '<?php echo addslashes($coach_row2['specialty'] ?? ''); ?>',
+                            '<?php echo addslashes($coach_row2['phone'] ?? ''); ?>',
+                            '<?php echo addslashes($coach_row2['gender'] ?? ''); ?>',
+                            '<?php echo $coach_row2['age'] ?? ''; ?>',
+                            '<?php echo $coach_row2['price_per_hour'] ?? ''; ?>',
+                            '<?php echo $coach_row2['profile_img'] ?? ''; ?>'
+                        )"
                         style="cursor:pointer;"
                     <?php endif; ?>>
 
@@ -304,14 +344,46 @@ $result = mysqli_query($conn, $query);
                                 <br><small style="color:#64748b;"><?php echo htmlspecialchars($row['specialisation']); ?> | RM <?php echo number_format((float)$row['coach_price_per_hour'], 2); ?>/hour</small>
                             <?php endif; ?>
                         </td>
-                        <td><span class="role-label"><?php echo $row['role']; ?></span></td>
-                        <td>
+
+                        <!-- Role: centered -->
+                        <td style="text-align:center;">
+                            <span class="role-label"><?php echo $row['role']; ?></span>
+                        </td>
+
+                        <!-- Availability: only for Coach, dash for others -->
+                        <td style="text-align:center;" onclick="event.stopPropagation()">
+                            <?php if($row['role'] === 'Coach' && $coach_row2): ?>
+                                <?php
+                                    $avail = $coach_row2['availability_status'] ?? 'Available';
+                                    $avail_class = match($avail) {
+                                        'Available' => 'status-active',
+                                        'On Leave'  => 'status-inactive',
+                                        'Sick'      => 'status-suspended',
+                                        'Off Day'   => 'status-inactive',
+                                        default     => 'status-inactive'
+                                    };
+                                ?>
+                                <select class="status-select <?php echo $avail_class; ?>"
+                                    onclick="event.stopPropagation()"
+                                    onchange="location.href='AdminManagement.php?avail_id=<?php echo $coach_row2['id']; ?>&avail_status=' + this.value">
+                                    <option value="Available" <?php echo $avail === 'Available' ? 'selected' : ''; ?>>Available</option>
+                                    <option value="On Leave"  <?php echo $avail === 'On Leave'  ? 'selected' : ''; ?>>On Leave</option>
+                                    <option value="Sick"      <?php echo $avail === 'Sick'      ? 'selected' : ''; ?>>Sick</option>
+                                    <option value="Off Day"   <?php echo $avail === 'Off Day'   ? 'selected' : ''; ?>>Off Day</option>
+                                </select>
+                            <?php else: ?>
+                                <span style="color:#cbd5e1;">—</span>
+                            <?php endif; ?>
+                        </td>
+
+                        <!-- Account Status: centered -->
+                        <td style="text-align:center;" onclick="event.stopPropagation()">
                             <?php if ($row['role'] !== 'Superadmin'): ?>
                             <select class="status-select <?php 
                                 if($row['status'] == 'Active') echo 'status-active';
                                 elseif($row['status'] == 'Inactive') echo 'status-inactive';
                                 else echo 'status-suspended';
-                            ?>" onchange="location.href='AdminManagement.php?update_id=<?php echo $row['id']; ?>&new_status=' + this.value">
+                            ?>" onclick="event.stopPropagation()" onchange="location.href='AdminManagement.php?update_id=<?php echo $row['id']; ?>&new_status=' + this.value">
                                 <option value="Active" <?php echo ($row['status'] == 'Active' ? 'selected' : ''); ?>>Active</option>
                                 <option value="Inactive" <?php echo ($row['status'] == 'Inactive' ? 'selected' : ''); ?>>Inactive</option>
                                 <option value="Suspended" <?php echo ($row['status'] == 'Suspended' ? 'selected' : ''); ?>>Suspended</option>
@@ -320,9 +392,12 @@ $result = mysqli_query($conn, $query);
                                 <span class="status-master">MASTER</span>
                             <?php endif; ?>
                         </td>
-                        <td>
+
+                        <!-- Actions: centered, stopPropagation on td -->
+                        <td style="text-align:center;" onclick="event.stopPropagation()">
                             <?php if ($row['role'] !== 'Superadmin'): ?>
-                            <a href="?delete_id=<?php echo $row['id']; ?>" onclick="return confirm('Delete permanently?')">
+                            <a href="?delete_id=<?php echo $row['id']; ?>" 
+                                onclick="event.stopPropagation(); return confirm('Delete permanently?')">
                                 <i class="fas fa-trash-alt delete-icon"></i>
                             </a>
                             <?php else: ?>
@@ -346,24 +421,61 @@ $result = mysqli_query($conn, $query);
                 <button class="modal-close" onclick="closeCoachEditModal()">✕</button>
             </div>
 
-            <form action="AdminManagement.php" method="POST">
+            <!-- enctype needed for file upload -->
+            <form action="AdminManagement.php" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="coach_id" id="coach-modal-id">
 
                 <div class="modal-grid">
 
+                    <!-- Profile Image -->
+                    <div class="modal-field full-width" style="display:flex; flex-direction:column; align-items:center;">
+                        <img id="coach-modal-img-preview"
+                            src="Pictures/coaches/default.png"
+                            style="width:80px; height:80px; border-radius:50%; object-fit:cover; margin-bottom:8px; border:3px solid #f59e0b;">
+                        <label class="btn-create" style="cursor:pointer; padding:8px 16px; font-size:13px;">
+                            <i class="fas fa-camera"></i> Change Photo
+                            <input type="file" name="profile_img" id="coach-img-input" accept="image/*" style="display:none;">
+                        </label>
+                    </div>
+
+                    <!-- Name -->
+                    <div class="modal-field full-width">
+                        <label>Name</label>
+                        <input type="text" name="coach_name" id="coach-modal-name" required>
+                    </div>
+
+                    <!-- Specialty -->
                     <div class="modal-field full-width">
                         <label>Specialty</label>
                         <input type="text" name="specialty" id="coach-modal-specialty" required>
                     </div>
 
+                    <!-- Phone -->
                     <div class="modal-field">
                         <label>Phone</label>
                         <input type="text" name="phone" id="coach-modal-phone">
                     </div>
 
+                    <!-- Price -->
                     <div class="modal-field">
                         <label>Price Per Hour (RM)</label>
                         <input type="number" name="price_per_hour" id="coach-modal-price" step="0.01" min="0" required>
+                    </div>
+
+                    <!-- Gender -->
+                    <div class="modal-field">
+                        <label>Gender</label>
+                        <select name="gender" id="coach-modal-gender">
+                            <option value="">-- Select --</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+
+                    <!-- Age -->
+                    <div class="modal-field">
+                        <label>Age</label>
+                        <input type="number" name="age" id="coach-modal-age" min="18" max="80">
                     </div>
 
                 </div>
@@ -372,31 +484,13 @@ $result = mysqli_query($conn, $query);
                     <button type="button" class="btn-modal-cancel" onclick="closeCoachEditModal()">Cancel</button>
                     <button type="submit" name="update_coach" class="btn-modal-save">Save Changes</button>
                 </div>
-
             </form>
+
         </div>
     </div>
 
     <script src="AdminManagement.js"></script>
     <script src="SuperAdminDashboard.js"></script>
-
-    <script>
-        function openCoachEditModal(id, specialty, phone, price) {
-            document.getElementById('coach-modal-id').value        = id;
-            document.getElementById('coach-modal-specialty').value = specialty;
-            document.getElementById('coach-modal-phone').value     = phone;
-            document.getElementById('coach-modal-price').value     = price;
-            document.getElementById('coachEditModal').style.display = 'flex';
-        }
-
-        function closeCoachEditModal() {
-            document.getElementById('coachEditModal').style.display = 'none';
-        }
-
-        document.getElementById('coachEditModal').addEventListener('click', function(e) {
-            if(e.target === this) closeCoachEditModal();
-        });
-    </script>
 
 </body>
 </html>

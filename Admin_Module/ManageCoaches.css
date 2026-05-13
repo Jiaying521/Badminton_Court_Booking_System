@@ -1,0 +1,35 @@
+/* Expandable row: hidden by default */
+.expand-row {
+    display: none;
+    background: #f8fafc;
+}
+
+/* Show when open class is added */
+.expand-row.open {
+    display: table-row;
+}
+
+.expand-content {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 14px 20px;
+    flex-wrap: wrap;
+}
+
+.expand-info {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    flex: 1;
+}
+
+.expand-info span {
+    font-size: 13px;
+    color: #475569;
+}
+
+.expand-info i {
+    color: #f59e0b;
+    margin-right: 5px;
+}
