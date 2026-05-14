@@ -17,7 +17,7 @@ $booking = $stmt->fetch();
 
 if (!$booking) redirect('dashboard.php');
 
-// ========== 获取所有产品 - 修复版 ==========
+// ========== 获取所有产品 ==========
 $products = [
     'racket' => [],
     'shuttlecock' => [],
@@ -51,12 +51,52 @@ $stmt = $pdo->prepare("SELECT * FROM products WHERE category = 'drink' AND is_ac
 $stmt->execute();
 $products['drink'] = $stmt->fetchAll();
 
-// 调试：查看是否有数据
-// echo '<pre>'; print_r($products['racket']); echo '</pre>'; exit; // 取消注释可调试
-
-// 产品图片URL映射函数
-function getProductImage($productName) {
-    // 根据产品名称返回对应图标占位图
+// 获取产品图片（本地）
+function getProductImage($category, $productName) {
+    $folderMap = [
+        'racket' => 'rackets',
+        'shuttlecock' => 'shuttlecocks',
+        'grip' => 'grips',
+        'snack' => 'snacks',
+        'drink' => 'drinks'
+    ];
+    
+    $folder = $folderMap[$category] ?? 'products';
+    
+    // 球拍文件名映射（根据您的实际文件名）
+    $racketFileMap = [
+        'Protech Classic' => 'protech_classic.jpg',
+        'Apacs Z-Ziggler' => 'apacs_z_ziggler.jpg',
+        'Yonex Arcsaber 11' => 'yonex_arcsaber_11.jpg',
+        'Victor Thruster F' => 'victor_thruster_f.jpg',
+        'Li-Ning Axforce 80' => 'li-ning_axforce_80.jpg',
+        'Victor Auraspeed 90S' => 'victor_auraspeed_90s.jpg',
+        'Yonex Nanflare 800' => 'yonex_nanoflare_800.jpg',
+        'Li-Ning 3D Calibar 900' => 'li-ning_3d_calibar_900.jpg',
+        'Yonex Astrox 100ZZ' => 'yonex_astrox_100zz.jpg',
+        'Yonex Astrox 99' => 'yonex_astrox_99.jpg'
+    ];
+    
+    // 球拍使用映射
+    if ($category == 'racket' && isset($racketFileMap[$productName])) {
+        $imagePath = 'images/' . $folder . '/' . $racketFileMap[$productName];
+        if (file_exists(__DIR__ . '/' . $imagePath)) {
+            return $imagePath;
+        }
+    }
+    
+    // 其他类别自动查找
+    $baseName = strtolower(str_replace(' ', '_', $productName));
+    $baseName = str_replace('-', '_', $baseName);
+    
+    // 先尝试 .jpg，再尝试 .png
+    if (file_exists(__DIR__ . '/images/' . $folder . '/' . $baseName . '.jpg')) {
+        return 'images/' . $folder . '/' . $baseName . '.jpg';
+    } elseif (file_exists(__DIR__ . '/images/' . $folder . '/' . $baseName . '.png')) {
+        return 'images/' . $folder . '/' . $baseName . '.png';
+    }
+    
+    // 默认占位图
     return 'https://placehold.co/120x120/2b7e3a/white?text=🏸';
 }
 ?>
@@ -141,7 +181,9 @@ function getProductImage($productName) {
                         <?php foreach($products['racket'] as $item): ?>
                         <div class="product-card">
                             <div class="product-image">
-                                <img src="<?php echo getProductImage($item['name']); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
+                                <img src="<?php echo getProductImage('racket', $item['name']); ?>" 
+                                     alt="<?php echo htmlspecialchars($item['name']); ?>"
+                                     onerror="this.src='https://placehold.co/120x120/2b7e3a/white?text=🏸'">
                             </div>
                             <div class="product-info">
                                 <div class="product-name"><?php echo htmlspecialchars($item['name']); ?></div>
@@ -168,7 +210,9 @@ function getProductImage($productName) {
                         <?php foreach($products['shuttlecock'] as $item): ?>
                         <div class="product-card">
                             <div class="product-image">
-                                <img src="https://placehold.co/120x120/2b7e3a/white?text=🏸" alt="<?php echo htmlspecialchars($item['name']); ?>">
+                                <img src="<?php echo getProductImage('shuttlecock', $item['name']); ?>" 
+                                     alt="<?php echo htmlspecialchars($item['name']); ?>"
+                                     onerror="this.src='https://placehold.co/120x120/2b7e3a/white?text=🏸'">
                             </div>
                             <div class="product-info">
                                 <div class="product-name"><?php echo htmlspecialchars($item['name']); ?></div>
@@ -195,7 +239,9 @@ function getProductImage($productName) {
                         <?php foreach($products['grip'] as $item): ?>
                         <div class="product-card">
                             <div class="product-image">
-                                <img src="https://placehold.co/120x120/2b7e3a/white?text=🎾" alt="<?php echo htmlspecialchars($item['name']); ?>">
+                                <img src="<?php echo getProductImage('grip', $item['name']); ?>" 
+                                     alt="<?php echo htmlspecialchars($item['name']); ?>"
+                                     onerror="this.src='https://placehold.co/120x120/2b7e3a/white?text=🎾'">
                             </div>
                             <div class="product-info">
                                 <div class="product-name"><?php echo htmlspecialchars($item['name']); ?></div>
@@ -222,7 +268,9 @@ function getProductImage($productName) {
                         <?php foreach($products['snack'] as $item): ?>
                         <div class="product-card">
                             <div class="product-image">
-                                <img src="https://placehold.co/120x120/f39c12/white?text=🍪" alt="<?php echo htmlspecialchars($item['name']); ?>">
+                                <img src="<?php echo getProductImage('snack', $item['name']); ?>" 
+                                     alt="<?php echo htmlspecialchars($item['name']); ?>"
+                                     onerror="this.src='https://placehold.co/120x120/f39c12/white?text=🍪'">
                             </div>
                             <div class="product-info">
                                 <div class="product-name"><?php echo htmlspecialchars($item['name']); ?></div>
@@ -249,7 +297,9 @@ function getProductImage($productName) {
                         <?php foreach($products['drink'] as $item): ?>
                         <div class="product-card">
                             <div class="product-image">
-                                <img src="https://placehold.co/120x120/3498db/white?text=🥤" alt="<?php echo htmlspecialchars($item['name']); ?>">
+                                <img src="<?php echo getProductImage('drink', $item['name']); ?>" 
+                                     alt="<?php echo htmlspecialchars($item['name']); ?>"
+                                     onerror="this.src='https://placehold.co/120x120/3498db/white?text=🥤'">
                             </div>
                             <div class="product-info">
                                 <div class="product-name"><?php echo htmlspecialchars($item['name']); ?></div>

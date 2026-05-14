@@ -15,6 +15,12 @@ if($court['court_type'] == 'Training') {
     $coachStmt = $pdo->query("SELECT * FROM coaches WHERE is_active = 1 ORDER BY price_per_hour");
     $coaches = $coachStmt->fetchAll();
 }
+
+// 获取教练头像函数（全部使用 default.png）
+function getCoachImage($coachName) {
+    // 三个教练都使用 default.png
+    return '../Admin_Module/Pictures/coaches/default.png';
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -71,17 +77,20 @@ if($court['court_type'] == 'Training') {
         .info-text { font-size:0.8rem; color:#2b7e3a; margin-top:0.5rem; padding:0.5rem; background:#e0f0dc; border-radius:12px; text-align:center; }
         .warning-text { font-size:0.8rem; color:#e67e22; margin-top:0.5rem; padding:0.5rem; background:#fff0e0; border-radius:12px; text-align:center; }
         
+        /* 教练选项样式 - 带头像 */
         .coach-container { display:flex; flex-direction:column; gap:0.8rem; margin-top:0.5rem; }
-        .coach-option { display:flex; align-items:center; justify-content:space-between; padding:1rem; border:2px solid #e0e0e0; border-radius:16px; cursor:pointer; transition:0.2s; background:white; }
+        .coach-option { display:flex; align-items:center; gap:1rem; padding:1rem; border:2px solid #e0e0e0; border-radius:20px; cursor:pointer; transition:0.2s; background:white; }
         .coach-option:hover { border-color:#2b7e3a; background:#eaf5e6; }
         .coach-option.selected { border-color:#2b7e3a; background:#e0f0dc; }
+        .coach-avatar { width:60px; height:60px; border-radius:50%; overflow:hidden; background:#e8efe2; flex-shrink:0; }
+        .coach-avatar img { width:100%; height:100%; object-fit:cover; }
         .coach-info { flex:1; }
         .coach-name { font-weight:700; font-size:1.1rem; color:#1e2a2e; }
         .coach-specialty { font-size:0.8rem; color:#666; margin-top:0.2rem; }
         .coach-price { text-align:right; min-width:100px; }
         .coach-price .price { font-weight:700; color:#e67e22; font-size:1.2rem; }
         .coach-price .unit { font-size:0.7rem; color:#888; }
-        .coach-badge { background:#2b7e3a; color:white; padding:0.2rem 0.5rem; border-radius:20px; font-size:0.7rem; display:inline-block; margin-top:0.3rem; }
+        .coach-badge { display:inline-block; background:#2b7e3a; color:white; padding:0.2rem 0.5rem; border-radius:20px; font-size:0.65rem; margin-top:0.3rem; }
         
         .coach-hours-selector { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.5rem; }
         .coach-hour-btn { background:#fff0e0; border:1px solid #e67e22; padding:0.5rem 1rem; border-radius:40px; cursor:pointer; font-size:0.85rem; transition:0.2s; min-width:60px; text-align:center; }
@@ -147,6 +156,9 @@ if($court['court_type'] == 'Training') {
             <label>🎓 Select Coach (Optional)</label>
             <div id="coachContainer" class="coach-container">
                 <div class="coach-option" data-coach-id="0" data-coach-price="0" data-coach-name="No coach">
+                    <div class="coach-avatar">
+                        <img src="../Admin_Module/Pictures/coaches/default.png" alt="No coach" onerror="this.src='https://placehold.co/60x60/2b7e3a/white?text=👤'">
+                    </div>
                     <div class="coach-info">
                         <div class="coach-name">📝 No coach (self-training)</div>
                         <div class="coach-specialty">Practice on your own</div>
@@ -157,6 +169,9 @@ if($court['court_type'] == 'Training') {
                 </div>
                 <?php foreach($coaches as $coach): ?>
                 <div class="coach-option" data-coach-id="<?=$coach['id']?>" data-coach-price="<?=$coach['price_per_hour']?>" data-coach-name="<?=htmlspecialchars($coach['name'])?>">
+                    <div class="coach-avatar">
+                        <img src="../Admin_Module/Pictures/coaches/default.png" alt="<?=htmlspecialchars($coach['name'])?>" onerror="this.src='https://placehold.co/60x60/2b7e3a/white?text=🏸'">
+                    </div>
                     <div class="coach-info">
                         <div class="coach-name"><?=htmlspecialchars($coach['name'])?></div>
                         <div class="coach-specialty"><?=htmlspecialchars($coach['specialty'])?></div>
@@ -183,8 +198,6 @@ if($court['court_type'] == 'Training') {
             </div>
         </div>
         <?php endif; ?>
-        
-        <!-- Special Requests 已移除，使用 Add-ons 页面选择商品 -->
         
         <div id="paymentSummary" class="payment-summary" style="display:none;">
             <span>💰 Total Amount:</span>

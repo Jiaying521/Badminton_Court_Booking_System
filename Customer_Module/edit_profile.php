@@ -1,0 +1,421 @@
+<?php
+require_once __DIR__ . '/../config.php';
+if (!isLoggedIn()) redirect('homepage.php');
+
+$user_id = $_SESSION['user_id'];
+
+// 获取用户信息
+$stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+$stmt->execute([$user_id]);
+$user = $stmt->fetch();
+
+if (!$user) {
+    session_destroy();
+    redirect('homepage.php');
+}
+
+// 获取钱包余额
+$real_balance = $user['wallet_balance'] ?? 0.00;
+
+// 检查是否已验证身份
+$verified = isset($_SESSION['profile_verified']) && $_SESSION['profile_verified'] === true;
+$verify_error = '';
+
+// 处理密码验证
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'verify') {
+    $verify_password = $_POST['verify_password'] ?? '';
+    
+    if (empty($verify_password)) {
+        $verify_error = 'Please enter your password';
+    } elseif (password_verify($verify_password, $user['password'])) {
+        $_SESSION['profile_verified'] = true;
+        $verified = true;
+    } else {
+        $verify_error = 'Incorrect password. Please try again.';
+    }
+}
+
+// 如果已验证，处理表单提交
+$message = '';
+$error = '';
+$password_message = '';
+$password_error = '';
+
+if ($verified) {
+    // 处理个人信息更新
+    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'update_profile') {
+        $name = trim($_POST['name'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $phone = trim($_POST['phone'] ?? '');
+        
+        if (empty($name) || empty($email) || empty($phone)) {
+            $error = 'All fields are required';
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $error = 'Invalid email format';
+        } elseif (strlen($phone) < 5) {
+            $error = 'Please enter a valid phone number';
+        } else {
+            $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
+            $stmt->execute([$email, $user_id]);
+            if ($stmt->fetch()) {
+                $error = 'Email already used by another account';
+            } else {
+                $stmt = $pdo->prepare("SELECT id FROM users WHERE name = ? AND id != ?");
+                $stmt->execute([$name, $user_id]);
+                if ($stmt->fetch()) {
+                    $error = 'Name already taken by another user';
+                } else {
+                    $stmt = $pdo->prepare("UPDATE users SET name = ?, email = ?, phone = ? WHERE id = ?");
+                    if ($stmt->execute([$name, $email, $phone, $user_id])) {
+                        $message = 'Profile updated successfully!';
+                        $user['name'] = $name;
+                        $user['email'] = $email;
+                        $user['phone'] = $phone;
+                    } else {
+                        $error = 'Failed to update profile';
+                    }
+                }
+            }
+        }
+    }
+    
+    // 处理密码更新
+    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'change_password') {
+        $current_password = $_POST['current_password'] ?? '';
+        $new_password = $_POST['new_password'] ?? '';
+        $confirm_password = $_POST['confirm_password'] ?? '';
+        
+        if (empty($current_password) || empty($new_password) || empty($confirm_password)) {
+            $password_error = 'All password fields are required';
+        } elseif ($new_password !== $confirm_password) {
+            $password_error = 'New password and confirm password do not match';
+        } elseif (strlen($new_password) < 6) {
+            $password_error = 'Password must be at least 6 characters';
+        } elseif (!preg_match('/[!@#$%^&*(),.?":{}|<>]/', $new_password)) {
+            $password_error = 'Password must contain at least one symbol (!@#$%^&* etc.)';
+        } else {
+            if (!password_verify($current_password, $user['password'])) {
+                $password_error = 'Current password is incorrect';
+            } elseif (password_verify($new_password, $user['password'])) {
+                $password_error = 'New password cannot be the same as your current password';
+            } else {
+                $hashed = password_hash($new_password, PASSWORD_DEFAULT);
+                $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
+                if ($stmt->execute([$hashed, $user_id])) {
+                    $password_message = 'Password changed successfully!';
+                } else {
+                    $password_error = 'Failed to change password';
+                }
+            }
+        }
+    }
+}
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Profile | Smash Arena</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:linear-gradient(145deg,#f5f9f0 0%,#e8efe2 100%); color:#1e2a2e; padding:2rem; }
+        .container { max-width:900px; margin:0 auto; }
+        
+        /* Navbar */
+        .navbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; padding-bottom:1rem; border-bottom:1px solid rgba(43,126,58,0.15); }
+        .logo img { height: 65px; width: auto; transition:transform 0.3s; }
+        .logo img:hover { transform:scale(1.02); }
+        .nav-links { display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap; }
+        .nav-links a { color:#2c4a2e; text-decoration:none; font-weight:500; transition:0.2s; }
+        .nav-links a:hover { color:#2b7e3a; }
+        .user-greeting { color:#2b7e3a; font-weight:500; }
+        .btn-logout { background:#fee2e2; color:#e67e22; padding:0.3rem 1rem; border-radius:50px; text-decoration:none; font-size:0.8rem; transition:0.2s; }
+        .btn-logout:hover { background:#e67e22; color:white; }
+        
+        /* Verify Card */
+        .verify-card { background:white; border-radius:32px; overflow:hidden; box-shadow:0 12px 28px rgba(0,0,0,0.08); max-width:450px; margin:0 auto; }
+        .verify-header { background:linear-gradient(135deg,#2b7e3a,#1b5e2a); color:white; padding:2rem; text-align:center; }
+        .verify-header .icon { font-size:3rem; margin-bottom:0.5rem; }
+        .verify-header h2 { font-size:1.5rem; margin-bottom:0.3rem; }
+        .verify-header p { opacity:0.9; font-size:0.9rem; }
+        .verify-body { padding:2rem; }
+        .verify-body .info-group { margin-bottom:1.5rem; }
+        .verify-body label { display:block; font-weight:600; color:#1e3a2a; margin-bottom:0.5rem; }
+        .verify-body input { width:100%; padding:0.8rem 1rem; border:1.5px solid #e0e8dc; border-radius:16px; background:#fefdf8; font-size:1rem; }
+        .verify-body input:focus { outline:none; border-color:#2b7e3a; }
+        .btn-verify { background:#2b7e3a; color:white; border:none; padding:0.9rem; border-radius:50px; width:100%; font-size:1rem; font-weight:700; cursor:pointer; transition:0.2s; margin-top:0.5rem; }
+        .btn-verify:hover { background:#1f5a2a; transform:translateY(-2px); }
+        .error-msg { background:#fee2dd; color:#b45f1b; padding:0.8rem; border-radius:16px; margin-bottom:1rem; border-left:4px solid #e67e22; }
+        
+        /* Profile Card */
+        .profile-card { background:white; border-radius:32px; overflow:hidden; box-shadow:0 12px 28px rgba(0,0,0,0.08); margin-bottom:1.5rem; }
+        .profile-header { background:linear-gradient(135deg,#2b7e3a,#1b5e2a); color:white; padding:2rem; text-align:center; }
+        .profile-header .avatar { width:100px; height:100px; background:rgba(255,255,255,0.2); border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:3rem; margin-bottom:1rem; }
+        .profile-header h2 { font-size:1.5rem; margin-bottom:0.3rem; }
+        .profile-header p { opacity:0.9; }
+        .profile-body { padding:2rem; }
+        
+        .form-section { margin-bottom:2rem; padding-bottom:2rem; border-bottom:1px solid #e0e0e0; }
+        .form-section:last-child { border-bottom:none; margin-bottom:0; padding-bottom:0; }
+        .form-section h3 { color:#2b7e3a; margin-bottom:1rem; font-size:1.2rem; display:flex; align-items:center; gap:0.5rem; }
+        
+        .info-group { margin-bottom:1.2rem; }
+        .info-group label { display:block; font-weight:600; color:#1e3a2a; margin-bottom:0.5rem; font-size:0.85rem; }
+        .info-group input { width:100%; padding:0.8rem 1rem; border:1.5px solid #e0e8dc; border-radius:16px; background:#fefdf8; font-size:1rem; }
+        .info-group input:focus { outline:none; border-color:#2b7e3a; }
+        .info-group .readonly { background:#e8f0e5; color:#5a6e5c; cursor:not-allowed; }
+        
+        .btn-save { background:#2b7e3a; color:white; border:none; padding:0.9rem; border-radius:50px; width:100%; font-size:1rem; font-weight:700; cursor:pointer; transition:0.2s; margin-top:0.5rem; }
+        .btn-save:hover { background:#1f5a2a; transform:translateY(-2px); }
+        .btn-cancel { background:#e0e0e0; color:#333; border:none; padding:0.8rem; border-radius:50px; width:100%; font-weight:600; cursor:pointer; margin-top:0.5rem; transition:0.2s; text-decoration:none; display:inline-block; text-align:center; }
+        .btn-cancel:hover { background:#ccc; }
+        
+        .message { background:#d4edda; color:#155724; padding:0.8rem; border-radius:16px; margin-bottom:1rem; border-left:4px solid #2b7e3a; }
+        .error { background:#fee2dd; color:#b45f1b; padding:0.8rem; border-radius:16px; margin-bottom:1rem; border-left:4px solid #e67e22; }
+        
+        .wallet-info { background:#eaf5e6; padding:0.8rem 1rem; border-radius:16px; display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
+        .wallet-info span:first-child { font-weight:600; }
+        .wallet-info span:last-child { font-size:1.2rem; font-weight:700; color:#2b7e3a; }
+        .wallet-info a { color:#e67e22; text-decoration:underline; font-size:0.8rem; }
+        
+        .strength-meter { margin-top:0.3rem; margin-bottom:0.5rem; height:5px; background:#e0e0e0; border-radius:3px; overflow:hidden; }
+        .strength-meter-fill { height:100%; width:0%; transition:width 0.2s; border-radius:3px; }
+        .strength-text { font-size:0.7rem; text-align:right; color:#888; margin-top:0.2rem; }
+        
+        @media (max-width:768px) { body { padding:1rem; } .navbar { flex-direction:column; } .nav-links { gap:0.8rem; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">
+            <img src="../Admin_Module/Pictures/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
+        </div>
+        <div class="nav-links">
+            <a href="dashboard.php"><i class="fas fa-home"></i> Courts</a>
+            <a href="my_bookings.php"><i class="fas fa-bookmark"></i> My Bookings</a>
+            <a href="../Payment_Module/wallet.php"><i class="fas fa-wallet"></i> Wallet</a>
+            <a href="edit_profile.php" style="color:#2b7e3a;"><i class="fas fa-user-edit"></i> Profile</a>
+            <a href="logout.php" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <span class="user-greeting">🏸 <?php echo htmlspecialchars($user['name'] ?? 'Player'); ?></span>
+        </div>
+    </div>
+    
+    <?php if (!$verified): ?>
+        <!-- Password Verification Page -->
+        <div class="verify-card">
+            <div class="verify-header">
+                <div class="icon"><i class="fas fa-shield-alt"></i></div>
+                <h2>Verify Identity</h2>
+                <p>Please enter your password to access your profile</p>
+            </div>
+            <div class="verify-body">
+                <?php if ($verify_error): ?>
+                    <div class="error-msg"><?php echo htmlspecialchars($verify_error); ?></div>
+                <?php endif; ?>
+                <form method="POST" action="">
+                    <input type="hidden" name="action" value="verify">
+                    <div class="info-group">
+                        <label><i class="fas fa-lock"></i> Your Password</label>
+                        <input type="password" name="verify_password" placeholder="Enter your password" required autofocus>
+                    </div>
+                    <button type="submit" class="btn-verify"><i class="fas fa-unlock-alt"></i> Verify & Continue</button>
+                </form>
+            </div>
+        </div>
+    <?php else: ?>
+        <!-- Profile Card -->
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <h2><?php echo htmlspecialchars($user['name']); ?></h2>
+                <p>Member since <?php echo date('F Y', strtotime($user['created_at'])); ?></p>
+            </div>
+            <div class="profile-body">
+                <!-- Wallet Info -->
+                <div class="wallet-info">
+                    <span><i class="fas fa-wallet"></i> Wallet Balance</span>
+                    <span>RM <?php echo number_format($real_balance, 2); ?></span>
+                    <a href="../Payment_Module/wallet.php">Top Up</a>
+                </div>
+                
+                <!-- Edit Profile Form -->
+                <div class="form-section">
+                    <h3><i class="fas fa-user-edit"></i> Personal Information</h3>
+                    
+                    <?php if ($message): ?>
+                        <div class="message"><?php echo htmlspecialchars($message); ?></div>
+                    <?php endif; ?>
+                    <?php if ($error): ?>
+                        <div class="error"><?php echo htmlspecialchars($error); ?></div>
+                    <?php endif; ?>
+                    
+                    <form method="POST" action="">
+                        <input type="hidden" name="action" value="update_profile">
+                        
+                        <div class="info-group">
+                            <label><i class="fas fa-user"></i> Full Name</label>
+                            <input type="text" name="name" value="<?php echo htmlspecialchars($user['name']); ?>" required>
+                        </div>
+                        
+                        <div class="info-group">
+                            <label><i class="fas fa-envelope"></i> Email Address</label>
+                            <input type="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required>
+                        </div>
+                        
+                        <div class="info-group">
+                            <label><i class="fas fa-phone"></i> Phone Number</label>
+                            <input type="tel" name="phone" value="<?php echo htmlspecialchars($user['phone']); ?>" required>
+                        </div>
+                        
+                        <div class="info-group">
+                            <label><i class="fas fa-calendar-alt"></i> Member Since</label>
+                            <input type="text" value="<?php echo date('F j, Y', strtotime($user['created_at'])); ?>" class="readonly" readonly disabled>
+                        </div>
+                        
+                        <button type="submit" class="btn-save"><i class="fas fa-save"></i> Save Changes</button>
+                    </form>
+                </div>
+                
+                <!-- Change Password Form -->
+                <div class="form-section">
+                    <h3><i class="fas fa-key"></i> Change Password (Optional)</h3>
+                    
+                    <?php if ($password_message): ?>
+                        <div class="message"><?php echo htmlspecialchars($password_message); ?></div>
+                    <?php endif; ?>
+                    <?php if ($password_error): ?>
+                        <div class="error"><?php echo htmlspecialchars($password_error); ?></div>
+                    <?php endif; ?>
+                    
+                    <form method="POST" action="" onsubmit="return validatePasswordForm()">
+                        <input type="hidden" name="action" value="change_password">
+                        <div class="info-group">
+                            <label><i class="fas fa-lock"></i> Current Password</label>
+                            <input type="password" name="current_password" id="current_password" required>
+                        </div>
+                        
+                        <div class="info-group">
+                            <label><i class="fas fa-lock"></i> New Password</label>
+                            <input type="password" name="new_password" id="new_password" required oninput="checkPasswordStrength()">
+                            <div class="strength-meter">
+                                <div class="strength-meter-fill" id="strengthFill"></div>
+                            </div>
+                            <div id="strengthText" class="strength-text"></div>
+                        </div>
+                        
+                        <div class="info-group">
+                            <label><i class="fas fa-lock"></i> Confirm New Password</label>
+                            <input type="password" name="confirm_password" id="confirm_password" required oninput="checkPasswordMatch()">
+                            <div id="matchText" class="strength-text"></div>
+                        </div>
+                        
+                        <button type="submit" class="btn-save"><i class="fas fa-key"></i> Change Password</button>
+                    </form>
+                </div>
+                
+                <a href="dashboard.php" class="btn-cancel"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+            </div>
+        </div>
+    <?php endif; ?>
+</div>
+
+<script>
+    function checkPasswordStrength() {
+        const password = document.getElementById('new_password').value;
+        const strengthFill = document.getElementById('strengthFill');
+        const strengthText = document.getElementById('strengthText');
+        
+        let score = 0;
+        if (password.length >= 6) score++;
+        if (password.length >= 8) score++;
+        if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score++;
+        if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score++;
+        if (/\d/.test(password)) score++;
+        
+        let percent = 0;
+        let text = '';
+        let color = '#e67e22';
+        
+        if (password.length === 0) {
+            percent = 0;
+            text = '';
+        } else if (score <= 2) {
+            percent = 25;
+            text = 'Weak';
+            color = '#e67e22';
+        } else if (score === 3) {
+            percent = 50;
+            text = 'Fair';
+            color = '#f1c40f';
+        } else if (score === 4) {
+            percent = 75;
+            text = 'Good';
+            color = '#2b7e3a';
+        } else {
+            percent = 100;
+            text = 'Strong';
+            color = '#2b7e3a';
+        }
+        
+        const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+        if (password.length < 6) {
+            text = 'Too short (min 6)';
+            percent = 25;
+            color = '#e67e22';
+        } else if (!hasSymbol) {
+            text = 'Need at least 1 symbol';
+            percent = 50;
+            color = '#f1c40f';
+        }
+        
+        strengthFill.style.width = percent + '%';
+        strengthFill.style.background = color;
+        strengthText.innerHTML = text;
+        strengthText.style.color = color;
+    }
+    
+    function checkPasswordMatch() {
+        const newPassword = document.getElementById('new_password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        const matchText = document.getElementById('matchText');
+        
+        if (confirmPassword.length === 0) {
+            matchText.innerHTML = '';
+        } else if (newPassword === confirmPassword) {
+            matchText.innerHTML = '✓ Passwords match';
+            matchText.style.color = '#2b7e3a';
+        } else {
+            matchText.innerHTML = '✗ Passwords do not match';
+            matchText.style.color = '#e67e22';
+        }
+    }
+    
+    function validatePasswordForm() {
+        const newPassword = document.getElementById('new_password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(newPassword);
+        
+        if (newPassword !== confirmPassword) {
+            alert('New password and confirm password do not match');
+            return false;
+        }
+        if (newPassword.length < 6) {
+            alert('Password must be at least 6 characters');
+            return false;
+        }
+        if (!hasSymbol) {
+            alert('Password must contain at least one symbol (!@#$%^&* etc.)');
+            return false;
+        }
+        return true;
+    }
+</script>
+</body>
+</html>

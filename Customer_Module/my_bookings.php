@@ -21,6 +21,12 @@ $bookings = $stmt->fetchAll();
 $userStmt = $pdo->prepare("SELECT name FROM users WHERE id = ?");
 $userStmt->execute([$user_id]);
 $user = $userStmt->fetch();
+
+// 获取钱包余额
+$stmt_bal = $pdo->prepare("SELECT wallet_balance FROM users WHERE id = ?");
+$stmt_bal->execute([$user_id]);
+$balance_row = $stmt_bal->fetch();
+$real_balance = $balance_row['wallet_balance'] ?? 0.00;
 ?>
 <!DOCTYPE html>
 <html>
@@ -37,19 +43,28 @@ $user = $userStmt->fetch();
         
         /* Navbar */
         .navbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; padding-bottom:1rem; border-bottom:1px solid rgba(43,126,58,0.15); }
-        .logo img { height: 45px; width: auto; transition:transform 0.3s; }
+        .logo img { height: 65px; width: auto; transition:transform 0.3s; }
         .logo img:hover { transform:scale(1.02); }
-        .nav-links a { margin-left:1.5rem; color:#2c4a2e; text-decoration:none; font-weight:500; transition:0.2s; }
+        .nav-links { display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap; }
+        .nav-links a { color:#2c4a2e; text-decoration:none; font-weight:500; transition:0.2s; }
         .nav-links a:hover { color:#2b7e3a; }
         .nav-links a.active { color:#2b7e3a; font-weight:600; }
-        .user-greeting { color:#2b7e3a; margin-left:1rem; font-weight:500; }
+        .user-greeting { color:#2b7e3a; font-weight:500; }
+        .btn-logout { background:#fee2e2; color:#e67e22; padding:0.3rem 1rem; border-radius:50px; text-decoration:none; font-size:0.8rem; transition:0.2s; }
+        .btn-logout:hover { background:#e67e22; color:white; }
         
         /* Page Header */
-        .page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; }
+        .page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem; }
         .page-header h1 { color:#1e3a2a; font-size:1.8rem; }
         .page-header h1 i { color:#2b7e3a; margin-right:0.5rem; }
         .btn-book { background:#2b7e3a; color:white; border:none; padding:0.6rem 1.2rem; border-radius:50px; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:0.5rem; font-weight:600; transition:0.2s; }
         .btn-book:hover { background:#1f5a2a; transform:translateY(-2px); }
+        
+        /* Wallet Card */
+        .wallet-card { background:linear-gradient(135deg,#2b7e3a,#1b5e2a); color:white; padding:0.8rem 1.2rem; border-radius:50px; display:inline-flex; align-items:center; gap:0.8rem; margin-bottom:1.5rem; }
+        .wallet-card i { font-size:1.2rem; }
+        .wallet-card .amount { font-weight:700; font-size:1.1rem; }
+        .wallet-card a { color:#aaffaa; text-decoration:underline; font-size:0.8rem; margin-left:0.5rem; }
         
         /* Stats Cards */
         .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; margin-bottom:2rem; }
@@ -107,7 +122,7 @@ $user = $userStmt->fetch();
         .print-btn { background:#2b7e3a; color:white; border:none; padding:0.6rem; border-radius:50px; width:100%; margin-top:1rem; cursor:pointer; font-weight:600; transition:0.2s; }
         .print-btn:hover { background:#1f5a2a; transform:translateY(-2px); }
         
-        @media (max-width:768px) { body { padding:1rem; } th, td { padding:0.5rem; font-size:0.8rem; } .action-btns { flex-direction:column; } .stats-grid { grid-template-columns:repeat(2,1fr); } }
+        @media (max-width:768px) { body { padding:1rem; } th, td { padding:0.5rem; font-size:0.8rem; } .action-btns { flex-direction:column; } .stats-grid { grid-template-columns:repeat(2,1fr); } .nav-links { gap:0.8rem; } .logo img { height: 50px; } }
     </style>
 </head>
 <body>
@@ -115,13 +130,14 @@ $user = $userStmt->fetch();
     <!-- Navbar -->
     <div class="navbar">
         <div class="logo">
-            <img src="../Admin_Module/Pictures/logo.png" alt="Smash Arena" style="height: 45px; width: auto;" onerror="this.style.display='none'; this.nextSibling.style.display='block';">
+            <img src="../Admin_Module/Pictures/logo.png" alt="Smash Arena" style="height: 65px; width: auto;" onerror="this.style.display='none'; this.nextSibling.style.display='block';">
             <span style="display:none; font-size:1.5rem; font-weight:800; background:linear-gradient(135deg,#2b7e3a,#1b5e2a); -webkit-background-clip:text; background-clip:text; color:transparent;">Smash Arena</span>
         </div>
         <div class="nav-links">
             <a href="dashboard.php"><i class="fas fa-home"></i> Courts</a>
             <a href="my_bookings.php" class="active"><i class="fas fa-bookmark"></i> My Bookings</a>
-            <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <a href="../Payment_Module/wallet.php"><i class="fas fa-wallet"></i> Wallet</a>
+            <a href="logout.php" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
             <span class="user-greeting">🏸 <?php echo htmlspecialchars($user['name'] ?? 'Player'); ?></span>
         </div>
     </div>
@@ -130,6 +146,13 @@ $user = $userStmt->fetch();
     <div class="page-header">
         <h1><i class="fas fa-bookmark"></i> My Bookings</h1>
         <a href="dashboard.php" class="btn-book"><i class="fas fa-plus"></i> Book New Court</a>
+    </div>
+    
+    <!-- Wallet Balance Card -->
+    <div class="wallet-card">
+        <i class="fas fa-wallet"></i>
+        <span>Wallet Balance: <span class="amount">RM <?php echo number_format($real_balance, 2); ?></span></span>
+        <a href="../Payment_Module/wallet.php">Top Up</a>
     </div>
     
     <!-- Stats Cards -->
