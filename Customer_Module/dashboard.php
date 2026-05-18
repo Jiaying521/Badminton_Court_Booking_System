@@ -96,11 +96,8 @@ $recentBookings = $stmt->fetchAll();
 
 // 获取场地图片路径
 function getCourtImage($courtName) {
-    // 转换场地名称为文件名 (Court A -> court_a.png)
     $fileName = strtolower(str_replace(' ', '_', $courtName)) . '.png';
     $imagePath = 'images/court/' . $fileName;
-    
-    // 检查文件是否存在
     if (file_exists(__DIR__ . '/' . $imagePath)) {
         return $imagePath;
     }
@@ -152,7 +149,7 @@ function getCourtImage($courtName) {
         /* Filter Form */
         .filter-form { background:white; padding:1.5rem; border-radius:28px; margin-bottom:2rem; display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; align-items:end; border:1px solid rgba(43,126,58,0.1); }
         .filter-group label { font-weight:600; color:#2c4a2e; display:block; margin-bottom:0.3rem; font-size:0.85rem; }
-        .filter-group select, .filter-group input { width:100%; padding:0.6rem 1rem; border:1.5px solid #e0e8dc; border-radius:50px; background:#fefdf8; family:'Inter',sans-serif; }
+        .filter-group select, .filter-group input { width:100%; padding:0.6rem 1rem; border:1.5px solid #e0e8dc; border-radius:50px; background:#fefdf8; font-family:'Inter',sans-serif; }
         .filter-group select:focus, .filter-group input:focus { outline:none; border-color:#2b7e3a; }
         .search-btn, .reset-btn { background:#2b7e3a; color:white; border:none; padding:0.6rem 1.2rem; border-radius:50px; cursor:pointer; font-weight:600; transition:0.2s; }
         .reset-btn { background:#cbd5c0; color:#2c4a2e; }
@@ -200,7 +197,27 @@ function getCourtImage($courtName) {
         .action-btn { background:white; border:1px solid #2b7e3a; padding:0.6rem 1.2rem; border-radius:50px; color:#2b7e3a; text-decoration:none; font-weight:500; transition:0.2s; display:inline-flex; align-items:center; gap:0.5rem; }
         .action-btn:hover { background:#2b7e3a; color:white; transform:translateY(-2px); }
         
-        @media (max-width:768px) { body { padding:1rem; } .filter-form { grid-template-columns:1fr; } .courts-grid { grid-template-columns:1fr; } .navbar { flex-direction:column; } }
+        /* Footer */
+        .footer { background:#0f1f12; color:#cbd5c0; padding:3rem 5% 1.5rem; margin-top:4rem; }
+        .footer-container { max-width:1400px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:2rem; margin-bottom:2rem; }
+        .footer-col h3, .footer-col h4 { color:#2b7e3a; margin-bottom:1rem; }
+        .footer-col p { margin-bottom:0.5rem; display:flex; align-items:center; gap:0.6rem; font-size:0.9rem; }
+        .footer-col a { color:#cbd5c0; text-decoration:none; display:block; margin-bottom:0.6rem; transition:0.2s; font-size:0.9rem; }
+        .footer-col a:hover { color:#2b7e3a; padding-left:5px; }
+        .social-icons { display:flex; gap:1rem; margin-top:1rem; }
+        .social-icons a { background:#2c4a2e; width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:0.2s; color:#cbd5c0; text-decoration:none; }
+        .social-icons a:hover { background:#2b7e3a; transform:translateY(-3px); }
+        .footer-bottom { text-align:center; border-top:1px solid #2c4a2e; padding-top:1.5rem; font-size:0.8rem; }
+
+        @media (max-width:768px) { 
+            body { padding:1rem; } 
+            .filter-form { grid-template-columns:1fr; } 
+            .courts-grid { grid-template-columns:1fr; } 
+            .navbar { flex-direction:column; }
+            .footer-container { text-align:center; }
+            .footer-col p { justify-content:center; }
+            .social-icons { justify-content:center; }
+        }
     </style>
 </head>
 <body>
@@ -348,5 +365,48 @@ function getCourtImage($courtName) {
         <a href="change_password.php" class="action-btn"><i class="fas fa-key"></i> Change Password</a>
     </div>
 </div>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-col">
+            <h3>Smash Arena</h3>
+            <p><i class="fas fa-map-marker-alt"></i> 123 Jalan Badminton, Kuala Lumpur</p>
+            <p><i class="fas fa-phone-alt"></i> +603-1234 5678</p>
+            <p><i class="fas fa-envelope"></i> smasharenabadminton@gmail.com</p>
+            <div class="social-icons">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-whatsapp"></i></a>
+            </div>
+        </div>
+        <div class="footer-col">
+            <h4>Quick Links</h4>
+            <a href="dashboard.php">Find a Court</a>
+            <a href="my_bookings.php">Book Session</a>
+            <a href="../Payment_Module/wallet.php">Wallet</a>
+        </div>
+        <div class="footer-col">
+            <h4>Support</h4>
+            <a href="faq.php">FAQs</a>
+            <a href="cancellation_policy.php">Cancellation Policy</a>
+            <a href="privacy_policy.php">Privacy Policy</a>
+            <a href="terms_of_use.php">Terms of Use</a>
+            <a href="contact_us.php">Contact Us</a>
+        </div>
+        <div class="footer-col">
+            <h4>Operating Hours</h4>
+            <p><i class="fas fa-clock"></i> Monday - Sunday: 8:00 AM - 1:00 AM</p>
+            <p><i class="fas fa-tag"></i> 8am - 2pm: RM10/hour</p>
+            <p><i class="fas fa-tag"></i> 3pm - 1am: RM15/hour</p>
+            <p><i class="fas fa-calendar-alt"></i> Open daily including public holidays</p>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2025 Smash Arena – Your Game, Our Court. All rights reserved.</p>
+    </div>
+</footer>
+
 </body>
 </html>

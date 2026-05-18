@@ -102,6 +102,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         .btn-view:hover { background:#2b7e3a; color:white; }
         .btn-cancel { background:#fee2e2; color:#e67e22; border:none; padding:0.3rem 0.9rem; border-radius:50px; cursor:pointer; font-size:0.75rem; display:inline-flex; align-items:center; gap:0.3rem; transition:0.2s; }
         .btn-cancel:hover { background:#e67e22; color:white; }
+        .btn-cancel-disabled { background:#e0e0e0; color:#888; border:none; padding:0.3rem 0.9rem; border-radius:50px; cursor:not-allowed; font-size:0.75rem; display:inline-flex; align-items:center; gap:0.3rem; }
         
         /* Empty State */
         .empty-state { text-align:center; padding:4rem; background:white; border-radius:28px; }
@@ -122,7 +123,29 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         .print-btn { background:#2b7e3a; color:white; border:none; padding:0.6rem; border-radius:50px; width:100%; margin-top:1rem; cursor:pointer; font-weight:600; transition:0.2s; }
         .print-btn:hover { background:#1f5a2a; transform:translateY(-2px); }
         
-        @media (max-width:768px) { body { padding:1rem; } th, td { padding:0.5rem; font-size:0.8rem; } .action-btns { flex-direction:column; } .stats-grid { grid-template-columns:repeat(2,1fr); } .nav-links { gap:0.8rem; } .logo img { height: 50px; } }
+        /* Footer */
+        .footer { background:#0f1f12; color:#cbd5c0; padding:3rem 5% 1.5rem; margin-top:4rem; }
+        .footer-container { max-width:1400px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:2rem; margin-bottom:2rem; }
+        .footer-col h3, .footer-col h4 { color:#2b7e3a; margin-bottom:1rem; }
+        .footer-col p { margin-bottom:0.5rem; display:flex; align-items:center; gap:0.6rem; font-size:0.9rem; }
+        .footer-col a { color:#cbd5c0; text-decoration:none; display:block; margin-bottom:0.6rem; transition:0.2s; font-size:0.9rem; }
+        .footer-col a:hover { color:#2b7e3a; padding-left:5px; }
+        .social-icons { display:flex; gap:1rem; margin-top:1rem; }
+        .social-icons a { background:#2c4a2e; width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:0.2s; color:#cbd5c0; text-decoration:none; }
+        .social-icons a:hover { background:#2b7e3a; transform:translateY(-3px); }
+        .footer-bottom { text-align:center; border-top:1px solid #2c4a2e; padding-top:1.5rem; font-size:0.8rem; }
+        
+        @media (max-width:768px) { 
+            body { padding:1rem; } 
+            th, td { padding:0.5rem; font-size:0.8rem; } 
+            .action-btns { flex-direction:column; } 
+            .stats-grid { grid-template-columns:repeat(2,1fr); } 
+            .nav-links { gap:0.8rem; } 
+            .logo img { height: 50px; }
+            .footer-container { text-align:center; }
+            .footer-col p { justify-content:center; }
+            .social-icons { justify-content:center; }
+        }
     </style>
 </head>
 <body>
@@ -195,6 +218,13 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
                     $booking_date = date('M j, Y', strtotime($b['booking_date']));
                     $start_time = date('h:i A', strtotime($b['start_time']));
                     $end_time = date('h:i A', strtotime($b['end_time']));
+                    
+                    // 计算是否可以取消
+                    $booking_datetime = $b['booking_date'] . ' ' . $b['start_time'];
+                    $booking_timestamp = strtotime($booking_datetime);
+                    $current_timestamp = time();
+                    $hours_until_booking = ($booking_timestamp - $current_timestamp) / 3600;
+                    $can_cancel = ($b['status'] == 'Pending' || $b['status'] == 'Confirmed') && $hours_until_booking >= 2;
                 ?>
                 <tr data-status="<?php echo $b['status']; ?>">
                     <td><strong><?php echo htmlspecialchars($b['court_name']); ?></strong><div class="court-badge"><?php echo htmlspecialchars($b['court_type']); ?></div></td>
@@ -206,7 +236,13 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
                     <td class="action-btns">
                         <button class="btn-view" onclick="viewReceipt(<?php echo $b['id']; ?>)"><i class="fas fa-receipt"></i> Receipt</button>
                         <?php if($b['status'] == 'Pending' || $b['status'] == 'Confirmed'): ?>
-                        <button class="btn-cancel" onclick="cancelBooking(<?php echo $b['id']; ?>)"><i class="fas fa-times"></i> Cancel</button>
+                            <?php if($can_cancel): ?>
+                                <button class="btn-cancel" onclick="cancelBooking(<?php echo $b['id']; ?>)"><i class="fas fa-times"></i> Cancel</button>
+                            <?php else: ?>
+                                <button class="btn-cancel-disabled" disabled title="Cannot cancel within 2 hours of booking time (RM50 cancellation fee applies)">
+                                    <i class="fas fa-times"></i> Cancel (Need 2h notice)
+                                </button>
+                            <?php endif; ?>
                         <?php endif; ?>
                     </td>
                 </tr>
@@ -234,6 +270,48 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         <div class="modal-body" id="receiptBody"></div>
     </div>
 </div>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-col">
+            <h3>Smash Arena</h3>
+            <p><i class="fas fa-map-marker-alt"></i> 123 Jalan Badminton, Kuala Lumpur</p>
+            <p><i class="fas fa-phone-alt"></i> +603-1234 5678</p>
+            <p><i class="fas fa-envelope"></i> smasharenabadminton@gmail.com</p>
+            <div class="social-icons">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-whatsapp"></i></a>
+            </div>
+        </div>
+        <div class="footer-col">
+            <h4>Quick Links</h4>
+            <a href="dashboard.php">Find a Court</a>
+            <a href="my_bookings.php">Book Session</a>
+            <a href="../Payment_Module/wallet.php">Wallet</a>
+        </div>
+        <div class="footer-col">
+            <h4>Support</h4>
+            <a href="faq.php">FAQs</a>
+            <a href="cancellation_policy.php">Cancellation Policy</a>
+            <a href="privacy_policy.php">Privacy Policy</a>
+            <a href="terms_of_use.php">Terms of Use</a>
+            <a href="contact_us.php">Contact Us</a>
+        </div>
+        <div class="footer-col">
+            <h4>Operating Hours</h4>
+            <p><i class="fas fa-clock"></i> Monday - Sunday: 8:00 AM - 1:00 AM</p>
+            <p><i class="fas fa-tag"></i> 8am - 2pm: RM10/hour</p>
+            <p><i class="fas fa-tag"></i> 3pm - 1am: RM15/hour</p>
+            <p><i class="fas fa-calendar-alt"></i> Open daily including public holidays</p>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2025 Smash Arena – Your Game, Our Court. All rights reserved.</p>
+    </div>
+</footer>
 
 <script>
     // Filter functionality
@@ -303,26 +381,68 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         if(event.target === modal) closeModal();
     }
     
-    // Cancel Booking
+    // Cancel Booking with cancellation policy (2 hours notice, RM10 fee)
     async function cancelBooking(bookingId) {
-        if(confirm('Are you sure you want to cancel this booking? Cancellation fees may apply.')) {
-            try {
-                const response = await fetch(`cancel_booking.php`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ booking_id: bookingId })
-                });
-                const data = await response.json();
-                if(data.success) {
-                    alert('Booking cancelled successfully');
-                    location.reload();
-                } else {
-                    alert(data.message || 'Failed to cancel booking');
+        try {
+            // Get booking details first
+            const response = await fetch(`get_booking_details.php?id=${bookingId}`);
+            const data = await response.json();
+            
+            if(data.success) {
+                const booking = data.booking;
+                const bookingDateTime = new Date(booking.booking_date + ' ' + booking.start_time);
+                const now = new Date();
+                const hoursDiff = (bookingDateTime - now) / (1000 * 60 * 60);
+                
+                // Check if within 2 hours
+                if (hoursDiff < 2) {
+                    alert(`⚠️ Cannot cancel booking!\n\nYour booking starts in ${hoursDiff.toFixed(1)} hours.\nYou need to cancel at least 2 hours before your booking time.\n\nNote: RM50 cancellation fee applies for late cancellation.`);
+                    return;
                 }
-            } catch(e) {
-                console.error(e);
-                alert('Error cancelling booking');
+                
+                // Show cancellation policy confirmation
+                const confirmMessage = `⚠️ CANCELLATION POLICY ⚠️\n\n` +
+                    `Booking: ${booking.court_name}\n` +
+                    `Date: ${booking.booking_date}\n` +
+                    `Time: ${booking.start_time} - ${booking.end_time}\n\n` +
+                    `📌 Cancellation Fee: RM 10.00\n` +
+                    `💰 Refund Amount: RM ${(parseFloat(booking.total_price) - 10).toFixed(2)}\n\n` +
+                    `The remaining amount will be refunded to your wallet.\n\n` +
+                    `Do you want to proceed with cancellation?`;
+                
+                if(confirm(confirmMessage)) {
+                    await proceedCancel(bookingId);
+                }
+            } else {
+                if(confirm('Are you sure you want to cancel this booking? A cancellation fee of RM 50.00 will apply.')) {
+                    await proceedCancel(bookingId);
+                }
             }
+        } catch(e) {
+            console.error(e);
+            if(confirm('Are you sure you want to cancel this booking? A cancellation fee of RM 50.00 will apply.')) {
+                await proceedCancel(bookingId);
+            }
+        }
+    }
+    
+    async function proceedCancel(bookingId) {
+        try {
+            const response = await fetch(`cancel_booking.php`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ booking_id: bookingId })
+            });
+            const data = await response.json();
+            if(data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert(data.message || 'Failed to cancel booking');
+            }
+        } catch(e) {
+            console.error(e);
+            alert('Error cancelling booking');
         }
     }
 </script>

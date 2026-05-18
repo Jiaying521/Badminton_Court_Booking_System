@@ -495,7 +495,17 @@ INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `created_at`, `
 --
 -- Indexes for dumped tables
 --
-
+CREATE TABLE IF NOT EXISTS `contact_messages` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `name` varchar(100) NOT NULL,
+    `email` varchar(255) NOT NULL,
+    `subject` varchar(255) NOT NULL,
+    `message` text NOT NULL,
+    `user_id` int(11) DEFAULT NULL,
+    `status` enum('unread','read','replied') DEFAULT 'unread',
+    `created_at` datetime NOT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 --
 -- Indexes for table `admins`
 --
@@ -718,6 +728,9 @@ ALTER TABLE `court_availability`
 --
 ALTER TABLE `payments`
   ADD CONSTRAINT `fk_payments_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE;
+
+ALTER TABLE `bookings` 
+  ADD COLUMN `cancellation_fee` DECIMAL(10,2) DEFAULT 0.00 AFTER `status`;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

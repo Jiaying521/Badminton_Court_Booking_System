@@ -209,17 +209,15 @@ require_once __DIR__ . '/../config.php';
             <h4>Quick Links</h4>
             <a href="#">Find a Court</a>
             <a href="#">Book Session</a>
-            <a href="#">Membership</a>
-            <a href="#">Coaching</a>
-            <a href="#">Tournaments</a>
+            <a href="#">Wallet</a>
         </div>
         <div class="footer-col">
             <h4>Support</h4>
-            <a href="#">FAQs</a>
-            <a href="#">Cancellation Policy</a>
-            <a href="#">Privacy Policy</a>
-            <a href="#">Terms of Use</a>
-            <a href="#">Contact Us</a>
+            <a href="faq.php">FAQs</a>
+            <a href="cancellation_policy.php">Cancellation Policy</a>
+            <a href="privacy_policy.php">Privacy Policy</a>
+            <a href="terms_of_use.php">Terms of Use</a>
+            <a href="contact_us.php">Contact Us</a>
         </div>
         <div class="footer-col">
             <h4>Operating Hours</h4>
