@@ -731,6 +731,25 @@ ALTER TABLE `payments`
 
 ALTER TABLE `bookings` 
   ADD COLUMN `cancellation_fee` DECIMAL(10,2) DEFAULT 0.00 AFTER `status`;
+
+-- 添加缺失的设置（如果不存在）
+INSERT INTO `settings` (`setting_key`, `setting_value`) VALUES 
+('off_peak_price', '10.00'),
+('peak_price', '15.00'),
+('cancellation_fee', '50.00'),
+('cancellation_hours', '2')
+ON DUPLICATE KEY UPDATE `setting_value` = VALUES(`setting_value`);
+
+-- 更新现有的营业时间（改为 8am - 1am）
+UPDATE `settings` SET `setting_value` = '01:00' WHERE `setting_key` = 'close_time';
+UPDATE `settings` SET `setting_value` = '15:00' WHERE `setting_key` = 'peak_start';
+UPDATE `settings` SET `setting_value` = '01:00' WHERE `setting_key` = 'peak_end';
+
+-- 添加 profile_picture 字段到 users 表
+ALTER TABLE `users` ADD COLUMN `profile_picture` VARCHAR(255) NULL AFTER `wallet_balance`;
+
+-- 如果已经存在但需要确认
+DESCRIBE users;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

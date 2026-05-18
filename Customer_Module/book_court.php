@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/functions.php';
 if(!isLoggedIn()) redirect('homepage.php');
 $court_id = $_GET['court_id'] ?? 0;
 if(!$court_id) redirect('dashboard.php');
@@ -16,9 +17,34 @@ if($court['court_type'] == 'Training') {
     $coaches = $coachStmt->fetchAll();
 }
 
-// 获取教练头像函数（全部使用 default.png）
-function getCoachImage($coachName) {
-    // 三个教练都使用 default.png
+// 获取教练头像函数 - 从数据库读取管理员上传的照片
+function getCoachImage($coach) {
+    // 基础路径 - 教练照片存储位置
+    $basePath = '../Admin_Module/Pictures/coaches/';
+    
+    // 检查数据库中是否有照片记录
+    if (!empty($coach['profile_img'])) {
+        $photoPath = $coach['profile_img'];
+        
+        // 处理不同的路径格式
+        if (strpos($photoPath, 'http') === 0) {
+            return $photoPath; // 完整URL
+        } elseif (strpos($photoPath, '/') === 0) {
+            return $photoPath; // 绝对路径
+        } elseif (strpos($photoPath, '../') === 0) {
+            return $photoPath; // 已经是相对路径
+        } elseif (strpos($photoPath, 'Admin_Module/') === 0) {
+            return '../' . $photoPath;
+        } else {
+            // 只是文件名，构建完整路径
+            $fullPath = $basePath . $photoPath;
+            if (file_exists($fullPath)) {
+                return $fullPath;
+            }
+        }
+    }
+    
+    // 如果没有上传照片，使用默认图片
     return '../Admin_Module/Pictures/coaches/default.png';
 }
 ?>
@@ -78,7 +104,7 @@ function getCoachImage($coachName) {
         .warning-text { font-size:0.8rem; color:#e67e22; margin-top:0.5rem; padding:0.5rem; background:#fff0e0; border-radius:12px; text-align:center; }
         
         /* 教练选项样式 - 带头像 */
-        .coach-container { display:flex; flex-direction:column; gap:0.8rem; margin-top:0.5rem; }
+        .coach-container { display:flex; flex-direction:column; gap:0.8rem; margin-top:0.5rem; max-height:400px; overflow-y:auto; padding:0.5rem; }
         .coach-option { display:flex; align-items:center; gap:1rem; padding:1rem; border:2px solid #e0e0e0; border-radius:20px; cursor:pointer; transition:0.2s; background:white; }
         .coach-option:hover { border-color:#2b7e3a; background:#eaf5e6; }
         .coach-option.selected { border-color:#2b7e3a; background:#e0f0dc; }
@@ -115,8 +141,8 @@ function getCoachImage($coachName) {
             <div><strong>🎓 Training Features:</strong> Professional coaching available</div>
         <?php endif; ?>
         <div class="price-info">
-            <span class="price-offpeak">🕗 8am - 2pm: RM <?=$court['price_off_peak']?>/hour</span>
-            <span class="price-peak">🕒 3pm - 1am: RM <?=$court['price_peak']?>/hour</span>
+            <span class="price-offpeak">🕗 8am - <?php echo date('h:i A', strtotime(getSetting('peak_start', '15:00'))); ?>: RM <?php echo getSetting('off_peak_price', '10'); ?>/hour</span>
+            <span class="price-peak">🕒 <?php echo date('h:i A', strtotime(getSetting('peak_start', '15:00'))); ?> - <?php echo date('h:i A', strtotime(getSetting('close_time', '01:00'))); ?>: RM <?php echo getSetting('peak_price', '15'); ?>/hour</span>
         </div>
     </div>
 
@@ -155,9 +181,10 @@ function getCoachImage($coachName) {
         <div id="coachSection" style="display:none;">
             <label>🎓 Select Coach (Optional)</label>
             <div id="coachContainer" class="coach-container">
+                <!-- No coach option -->
                 <div class="coach-option" data-coach-id="0" data-coach-price="0" data-coach-name="No coach">
                     <div class="coach-avatar">
-                        <img src="../Admin_Module/Pictures/coaches/default.png" alt="No coach" onerror="this.src='https://placehold.co/60x60/2b7e3a/white?text=👤'">
+                        <img src="../Admin_Module/Pictures/coaches/default.png" alt="No coach">
                     </div>
                     <div class="coach-info">
                         <div class="coach-name">📝 No coach (self-training)</div>
@@ -167,10 +194,17 @@ function getCoachImage($coachName) {
                         <div class="price">FREE</div>
                     </div>
                 </div>
+                
+                <!-- Coach options from database -->
                 <?php foreach($coaches as $coach): ?>
-                <div class="coach-option" data-coach-id="<?=$coach['id']?>" data-coach-price="<?=$coach['price_per_hour']?>" data-coach-name="<?=htmlspecialchars($coach['name'])?>">
+                <div class="coach-option" 
+                     data-coach-id="<?=$coach['id']?>" 
+                     data-coach-price="<?=$coach['price_per_hour']?>" 
+                     data-coach-name="<?=htmlspecialchars($coach['name'])?>">
                     <div class="coach-avatar">
-                        <img src="../Admin_Module/Pictures/coaches/default.png" alt="<?=htmlspecialchars($coach['name'])?>" onerror="this.src='https://placehold.co/60x60/2b7e3a/white?text=🏸'">
+                        <img src="<?=htmlspecialchars(getCoachImage($coach))?>" 
+                             alt="<?=htmlspecialchars($coach['name'])?>"
+                             onerror="this.onerror=null; this.src='../Admin_Module/Pictures/coaches/default.png'">
                     </div>
                     <div class="coach-info">
                         <div class="coach-name"><?=htmlspecialchars($coach['name'])?></div>

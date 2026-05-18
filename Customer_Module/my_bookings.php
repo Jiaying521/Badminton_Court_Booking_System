@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/functions.php';
 if(!isLoggedIn()) redirect('homepage.php');
 
 $user_id = $_SESSION['user_id'];
@@ -289,7 +290,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         <div class="footer-col">
             <h4>Quick Links</h4>
             <a href="dashboard.php">Find a Court</a>
-            <a href="my_bookings.php">Book Session</a>
+            <a href="my_bookings.php">My Bookings</a>
             <a href="../Payment_Module/wallet.php">Wallet</a>
         </div>
         <div class="footer-col">
@@ -302,9 +303,9 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         </div>
         <div class="footer-col">
             <h4>Operating Hours</h4>
-            <p><i class="fas fa-clock"></i> Monday - Sunday: 8:00 AM - 1:00 AM</p>
-            <p><i class="fas fa-tag"></i> 8am - 2pm: RM10/hour</p>
-            <p><i class="fas fa-tag"></i> 3pm - 1am: RM15/hour</p>
+            <p><i class="fas fa-clock"></i> Monday - Sunday: <?php echo getOperatingHours(); ?></p>
+            <p><i class="fas fa-tag"></i> 8am - <?php echo date('h:i A', strtotime(getSetting('peak_start', '15:00'))); ?>: RM <?php echo getSetting('off_peak_price', '10'); ?>/hour</p>
+            <p><i class="fas fa-tag"></i> <?php echo date('h:i A', strtotime(getSetting('peak_start', '15:00'))); ?> - <?php echo date('h:i A', strtotime(getSetting('close_time', '01:00'))); ?>: RM <?php echo getSetting('peak_price', '15'); ?>/hour</p>
             <p><i class="fas fa-calendar-alt"></i> Open daily including public holidays</p>
         </div>
     </div>

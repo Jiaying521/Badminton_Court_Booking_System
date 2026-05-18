@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/functions.php';
 // 注释掉自动跳转，让用户每次都要手动登录
 // if (isLoggedIn()) redirect('dashboard.php');
 ?>
@@ -154,7 +155,7 @@ require_once __DIR__ . '/../config.php';
     <div class="stat-item"><div class="stat-number">24/7</div><div class="stat-label">Online Booking</div></div>
 </div>
 
-<!-- Features Section -->
+<!-- Features Section - 6 cards -->
 <section class="features">
     <h2>Why Choose Smash Arena?</h2>
     <div class="features-sub">Experience the best badminton facilities in Malaysia</div>
@@ -162,22 +163,32 @@ require_once __DIR__ . '/../config.php';
         <div class="feature-card">
             <div class="feature-icon"><i class="fas fa-calendar-check"></i></div>
             <h3>Easy Booking</h3>
-            <p>Select court, pick time, pay online – done in under a minute.</p>
+            <p>Select court, pick time, pay online – done in under a minute. No phone calls needed.</p>
         </div>
         <div class="feature-card">
             <div class="feature-icon"><i class="fas fa-clock"></i></div>
             <h3>Extended Hours</h3>
-            <p>Open daily 8am - 1am. Early bird and late night sessions available.</p>
+            <p>Open daily 8am - 1am. Early bird and late night sessions available for night owls.</p>
         </div>
         <div class="feature-card">
             <div class="feature-icon"><i class="fas fa-chalkboard-user"></i></div>
             <h3>Training Courts</h3>
-            <p>Professional coaches available for all levels. Improve your game.</p>
+            <p>Professional coaches available for all levels. Improve your game with expert guidance.</p>
         </div>
         <div class="feature-card">
             <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
             <h3>Secure Payments</h3>
-            <p>Multiple payment options with full encryption. 100% secure.</p>
+            <p>Multiple payment options with full encryption. Your transactions are 100% secure.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-wallet"></i></div>
+            <h3>Wallet System</h3>
+            <p>Easy top-up and instant refunds to your digital wallet. Manage your funds easily.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-star"></i></div>
+            <h3>Reward Points</h3>
+            <p>Earn points with every booking and redeem them for discounts on future sessions.</p>
         </div>
     </div>
 </section>
@@ -191,6 +202,7 @@ require_once __DIR__ . '/../config.php';
     <button class="cta-btn" id="ctaBookBtn">Book Now <i class="fas fa-arrow-right"></i></button>
 </div>
 
+<!-- Footer -->
 <footer class="footer">
     <div class="footer-container">
         <div class="footer-col">
@@ -207,9 +219,9 @@ require_once __DIR__ . '/../config.php';
         </div>
         <div class="footer-col">
             <h4>Quick Links</h4>
-            <a href="#">Find a Court</a>
-            <a href="#">Book Session</a>
-            <a href="#">Wallet</a>
+            <a href="dashboard.php">Find a Court</a>
+            <a href="my_bookings.php">My Booking</a>
+            <a href="../Payment_Module/wallet.php">Wallet</a>
         </div>
         <div class="footer-col">
             <h4>Support</h4>
@@ -221,9 +233,9 @@ require_once __DIR__ . '/../config.php';
         </div>
         <div class="footer-col">
             <h4>Operating Hours</h4>
-            <p><i class="fas fa-clock"></i> Monday - Sunday: 8:00 AM - 1:00 AM</p>
-            <p><i class="fas fa-tag"></i> 8am - 2pm: RM10/hour</p>
-            <p><i class="fas fa-tag"></i> 3pm - 1am: RM15/hour</p>
+            <p><i class="fas fa-clock"></i> Monday - Sunday: <?php echo getOperatingHours(); ?></p>
+            <p><i class="fas fa-tag"></i> 8am - <?php echo date('h:i A', strtotime(getSetting('peak_start', '15:00'))); ?>: RM <?php echo getSetting('off_peak_price', '10'); ?>/hour</p>
+            <p><i class="fas fa-tag"></i> <?php echo date('h:i A', strtotime(getSetting('peak_start', '15:00'))); ?> - <?php echo date('h:i A', strtotime(getSetting('close_time', '01:00'))); ?>: RM <?php echo getSetting('peak_price', '15'); ?>/hour</p>
             <p><i class="fas fa-calendar-alt"></i> Open daily including public holidays</p>
         </div>
     </div>
@@ -337,7 +349,6 @@ require_once __DIR__ . '/../config.php';
     function openRegister() { registerModal.style.display = 'block'; }
     function openForgotPassword() { 
         forgotPasswordModal.style.display = 'block';
-        // Reset forgot password form
         document.getElementById('forgotStep1').style.display = 'block';
         document.getElementById('forgotStep2').style.display = 'none';
         document.getElementById('forgotEmail').value = '';
@@ -490,7 +501,6 @@ require_once __DIR__ . '/../config.php';
             else forgotStrengthFill.style.background = '#2b7e3a';
             forgotStrengthText.innerText = result.text;
             
-            // Check match
             if(forgotConfirmPassword.value.length > 0) {
                 if(pwd === forgotConfirmPassword.value) {
                     forgotPasswordMatchDiv.innerHTML = '<span class="valid">✓ Passwords match</span>';

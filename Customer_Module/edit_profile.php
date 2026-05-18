@@ -35,6 +35,75 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     }
 }
 
+// 获取用户头像
+$profile_picture = $user['profile_picture'] ?? '';
+$avatarPath = !empty($profile_picture) ? '../' . $profile_picture : '../Admin_Module/Pictures/users/default_avatar.png';
+
+// 处理头像上传
+$avatar_message = '';
+$avatar_error = '';
+
+if ($verified && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'upload_avatar') {
+    if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] == 0) {
+        $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        $filename = $_FILES['profile_picture']['name'];
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        
+        if (!in_array($ext, $allowed)) {
+            $avatar_error = 'Only JPG, PNG, GIF, and WEBP files are allowed';
+        } elseif ($_FILES['profile_picture']['size'] > 2 * 1024 * 1024) {
+            $avatar_error = 'File size must be less than 2MB';
+        } else {
+            // 创建用户头像目录
+            $upload_dir = __DIR__ . '/../Admin_Module/Pictures/users/';
+            if (!file_exists($upload_dir)) {
+                mkdir($upload_dir, 0777, true);
+            }
+            
+            // 生成唯一文件名
+            $new_filename = 'user_' . $user_id . '_' . time() . '.' . $ext;
+            $upload_path = $upload_dir . $new_filename;
+            
+            if (move_uploaded_file($_FILES['profile_picture']['tmp_name'], $upload_path)) {
+                // 删除旧头像（如果不是默认头像）
+                if (!empty($profile_picture) && file_exists(__DIR__ . '/../' . $profile_picture)) {
+                    unlink(__DIR__ . '/../' . $profile_picture);
+                }
+                
+                // 更新数据库
+                $db_path = 'Admin_Module/Pictures/users/' . $new_filename;
+                $stmt = $pdo->prepare("UPDATE users SET profile_picture = ? WHERE id = ?");
+                if ($stmt->execute([$db_path, $user_id])) {
+                    $avatar_message = 'Profile picture updated successfully!';
+                    $profile_picture = $db_path;
+                    $avatarPath = '../' . $db_path;
+                } else {
+                    $avatar_error = 'Failed to update database';
+                }
+            } else {
+                $avatar_error = 'Failed to upload file';
+            }
+        }
+    } else {
+        $avatar_error = 'Please select a file to upload';
+    }
+}
+
+// 处理删除头像
+if ($verified && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'delete_avatar') {
+    if (!empty($profile_picture) && file_exists(__DIR__ . '/../' . $profile_picture)) {
+        unlink(__DIR__ . '/../' . $profile_picture);
+    }
+    $stmt = $pdo->prepare("UPDATE users SET profile_picture = NULL WHERE id = ?");
+    if ($stmt->execute([$user_id])) {
+        $avatar_message = 'Profile picture removed';
+        $profile_picture = '';
+        $avatarPath = '../Admin_Module/Pictures/users/default_avatar.png';
+    } else {
+        $avatar_error = 'Failed to remove profile picture';
+    }
+}
+
 // 如果已验证，处理表单提交
 $message = '';
 $error = '';
@@ -153,10 +222,27 @@ if ($verified) {
         /* Profile Card */
         .profile-card { background:white; border-radius:32px; overflow:hidden; box-shadow:0 12px 28px rgba(0,0,0,0.08); margin-bottom:1.5rem; }
         .profile-header { background:linear-gradient(135deg,#2b7e3a,#1b5e2a); color:white; padding:2rem; text-align:center; }
-        .profile-header .avatar { width:100px; height:100px; background:rgba(255,255,255,0.2); border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:3rem; margin-bottom:1rem; }
+        .profile-header .avatar { width:120px; height:120px; background:rgba(255,255,255,0.2); border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:1rem; overflow:hidden; position:relative; cursor:pointer; }
+        .profile-header .avatar img { width:100%; height:100%; object-fit:cover; }
+        .profile-header .avatar .default-icon { font-size:4rem; }
+        .profile-header .avatar .edit-overlay { position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.6); color:white; text-align:center; padding:5px; font-size:12px; opacity:0; transition:0.2s; }
+        .profile-header .avatar:hover .edit-overlay { opacity:1; }
         .profile-header h2 { font-size:1.5rem; margin-bottom:0.3rem; }
         .profile-header p { opacity:0.9; }
         .profile-body { padding:2rem; }
+        
+        /* Avatar Upload Modal */
+        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; }
+        .modal-content { background:white; border-radius:32px; max-width:450px; width:90%; padding:2rem; text-align:center; }
+        .modal-content h3 { color:#2b7e3a; margin-bottom:1rem; }
+        .modal-content .preview { width:150px; height:150px; border-radius:50%; margin:1rem auto; overflow:hidden; background:#e8efe2; }
+        .modal-content .preview img { width:100%; height:100%; object-fit:cover; }
+        .modal-content input[type="file"] { margin:1rem 0; }
+        .modal-buttons { display:flex; gap:1rem; margin-top:1rem; }
+        .modal-buttons button { flex:1; padding:0.8rem; border-radius:50px; border:none; cursor:pointer; font-weight:600; }
+        .btn-upload { background:#2b7e3a; color:white; }
+        .btn-delete { background:#e67e22; color:white; }
+        .btn-cancel-modal { background:#e0e0e0; color:#333; }
         
         .form-section { margin-bottom:2rem; padding-bottom:2rem; border-bottom:1px solid #e0e0e0; }
         .form-section:last-child { border-bottom:none; margin-bottom:0; padding-bottom:0; }
@@ -231,8 +317,11 @@ if ($verified) {
         <!-- Profile Card -->
         <div class="profile-card">
             <div class="profile-header">
-                <div class="avatar">
-                    <i class="fas fa-user-circle"></i>
+                <div class="avatar" onclick="openAvatarModal()">
+                    <img src="<?php echo htmlspecialchars($avatarPath); ?>" alt="Profile Picture" onerror="this.src='../Admin_Module/Pictures/users/default_avatar.png'">
+                    <div class="edit-overlay">
+                        <i class="fas fa-camera"></i> Change
+                    </div>
                 </div>
                 <h2><?php echo htmlspecialchars($user['name']); ?></h2>
                 <p>Member since <?php echo date('F Y', strtotime($user['created_at'])); ?></p>
@@ -243,6 +332,40 @@ if ($verified) {
                     <span><i class="fas fa-wallet"></i> Wallet Balance</span>
                     <span>RM <?php echo number_format($real_balance, 2); ?></span>
                     <a href="../Payment_Module/wallet.php">Top Up</a>
+                </div>
+                
+                <!-- Avatar Upload Modal -->
+                <div id="avatarModal" class="modal">
+                    <div class="modal-content">
+                        <h3><i class="fas fa-camera"></i> Change Profile Picture</h3>
+                        <div class="preview">
+                            <img id="previewImage" src="<?php echo htmlspecialchars($avatarPath); ?>" alt="Preview">
+                        </div>
+                        
+                        <?php if ($avatar_message): ?>
+                            <div class="message"><?php echo htmlspecialchars($avatar_message); ?></div>
+                        <?php endif; ?>
+                        <?php if ($avatar_error): ?>
+                            <div class="error"><?php echo htmlspecialchars($avatar_error); ?></div>
+                        <?php endif; ?>
+                        
+                        <form id="avatarForm" method="POST" action="" enctype="multipart/form-data">
+                            <input type="hidden" name="action" value="upload_avatar">
+                            <input type="file" name="profile_picture" id="avatarInput" accept="image/jpeg,image/png,image/gif,image/webp" onchange="previewImage(this)">
+                            <div class="modal-buttons">
+                                <button type="submit" class="btn-upload"><i class="fas fa-upload"></i> Upload</button>
+                                <?php if (!empty($profile_picture)): ?>
+                                    <button type="button" class="btn-delete" onclick="deleteAvatar()"><i class="fas fa-trash"></i> Remove</button>
+                                <?php endif; ?>
+                                <button type="button" class="btn-cancel-modal" onclick="closeAvatarModal()"><i class="fas fa-times"></i> Cancel</button>
+                            </div>
+                        </form>
+                        
+                        <!-- Delete Form -->
+                        <form id="deleteAvatarForm" method="POST" action="" style="display:none;">
+                            <input type="hidden" name="action" value="delete_avatar">
+                        </form>
+                    </div>
                 </div>
                 
                 <!-- Edit Profile Form -->
@@ -327,6 +450,43 @@ if ($verified) {
 </div>
 
 <script>
+    // Avatar Modal Functions
+    function openAvatarModal() {
+        document.getElementById('avatarModal').style.display = 'flex';
+    }
+    
+    function closeAvatarModal() {
+        document.getElementById('avatarModal').style.display = 'none';
+        document.getElementById('avatarInput').value = '';
+        // Reset preview
+        document.getElementById('previewImage').src = '<?php echo htmlspecialchars($avatarPath); ?>';
+    }
+    
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('previewImage').src = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+    
+    function deleteAvatar() {
+        if (confirm('Are you sure you want to remove your profile picture?')) {
+            document.getElementById('deleteAvatarForm').submit();
+        }
+    }
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        var modal = document.getElementById('avatarModal');
+        if (event.target == modal) {
+            closeAvatarModal();
+        }
+    }
+    
+    // Password Functions
     function checkPasswordStrength() {
         const password = document.getElementById('new_password').value;
         const strengthFill = document.getElementById('strengthFill');
