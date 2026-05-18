@@ -35,9 +35,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     }
 }
 
-// 获取用户头像
+// 获取用户头像 - 修复路径问题
 $profile_picture = $user['profile_picture'] ?? '';
-$avatarPath = !empty($profile_picture) ? '../' . $profile_picture : '../Admin_Module/Pictures/users/default_avatar.png';
+
+// 构建正确的头像路径
+if (!empty($profile_picture)) {
+    // 如果数据库中的路径已经是完整路径
+    if (file_exists(__DIR__ . '/../' . $profile_picture)) {
+        $avatarPath = '../' . $profile_picture;
+    } 
+    // 如果只是文件名
+    elseif (file_exists(__DIR__ . '/../Admin_Module/Pictures/users/' . $profile_picture)) {
+        $avatarPath = '../Admin_Module/Pictures/users/' . $profile_picture;
+    }
+    // 如果路径以 Admin_Module 开头
+    elseif (strpos($profile_picture, 'Admin_Module/') === 0) {
+        $avatarPath = '../' . $profile_picture;
+    }
+    else {
+        $avatarPath = '../Admin_Module/Pictures/users/default_avatar.png';
+    }
+} else {
+    $avatarPath = '../Admin_Module/Pictures/users/default_avatar.png';
+}
+
+// 确保默认头像存在，如果不存在则使用 Font Awesome 图标
+$defaultAvatarExists = file_exists(__DIR__ . '/../Admin_Module/Pictures/users/default_avatar.png');
+if (!$defaultAvatarExists && empty($profile_picture)) {
+    // 使用 CSS 背景色代替图片
+    $useIconFallback = true;
+} else {
+    $useIconFallback = false;
+}
 
 // 处理头像上传
 $avatar_message = '';
@@ -65,18 +94,24 @@ if ($verified && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])
             $upload_path = $upload_dir . $new_filename;
             
             if (move_uploaded_file($_FILES['profile_picture']['tmp_name'], $upload_path)) {
-                // 删除旧头像（如果不是默认头像）
-                if (!empty($profile_picture) && file_exists(__DIR__ . '/../' . $profile_picture)) {
-                    unlink(__DIR__ . '/../' . $profile_picture);
+                // 删除旧头像（如果不是默认头像且文件存在）
+                if (!empty($profile_picture)) {
+                    $old_path = __DIR__ . '/../' . $profile_picture;
+                    if (file_exists($old_path) && strpos($profile_picture, 'default') === false) {
+                        unlink($old_path);
+                    }
                 }
                 
-                // 更新数据库
+                // 更新数据库 - 存储相对路径
                 $db_path = 'Admin_Module/Pictures/users/' . $new_filename;
                 $stmt = $pdo->prepare("UPDATE users SET profile_picture = ? WHERE id = ?");
                 if ($stmt->execute([$db_path, $user_id])) {
                     $avatar_message = 'Profile picture updated successfully!';
                     $profile_picture = $db_path;
                     $avatarPath = '../' . $db_path;
+                    $useIconFallback = false;
+                    // 刷新用户数据
+                    $user['profile_picture'] = $db_path;
                 } else {
                     $avatar_error = 'Failed to update database';
                 }
@@ -91,14 +126,18 @@ if ($verified && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])
 
 // 处理删除头像
 if ($verified && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'delete_avatar') {
-    if (!empty($profile_picture) && file_exists(__DIR__ . '/../' . $profile_picture)) {
-        unlink(__DIR__ . '/../' . $profile_picture);
+    if (!empty($profile_picture) && strpos($profile_picture, 'default') === false) {
+        $old_path = __DIR__ . '/../' . $profile_picture;
+        if (file_exists($old_path)) {
+            unlink($old_path);
+        }
     }
     $stmt = $pdo->prepare("UPDATE users SET profile_picture = NULL WHERE id = ?");
     if ($stmt->execute([$user_id])) {
         $avatar_message = 'Profile picture removed';
         $profile_picture = '';
         $avatarPath = '../Admin_Module/Pictures/users/default_avatar.png';
+        $user['profile_picture'] = null;
     } else {
         $avatar_error = 'Failed to remove profile picture';
     }
@@ -235,8 +274,9 @@ if ($verified) {
         .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; }
         .modal-content { background:white; border-radius:32px; max-width:450px; width:90%; padding:2rem; text-align:center; }
         .modal-content h3 { color:#2b7e3a; margin-bottom:1rem; }
-        .modal-content .preview { width:150px; height:150px; border-radius:50%; margin:1rem auto; overflow:hidden; background:#e8efe2; }
+        .modal-content .preview { width:150px; height:150px; border-radius:50%; margin:1rem auto; overflow:hidden; background:#e8efe2; display:flex; align-items:center; justify-content:center; }
         .modal-content .preview img { width:100%; height:100%; object-fit:cover; }
+        .modal-content .preview .preview-icon { font-size:5rem; color:#2b7e3a; }
         .modal-content input[type="file"] { margin:1rem 0; }
         .modal-buttons { display:flex; gap:1rem; margin-top:1rem; }
         .modal-buttons button { flex:1; padding:0.8rem; border-radius:50px; border:none; cursor:pointer; font-weight:600; }
@@ -318,7 +358,11 @@ if ($verified) {
         <div class="profile-card">
             <div class="profile-header">
                 <div class="avatar" onclick="openAvatarModal()">
-                    <img src="<?php echo htmlspecialchars($avatarPath); ?>" alt="Profile Picture" onerror="this.src='../Admin_Module/Pictures/users/default_avatar.png'">
+                    <?php if ($useIconFallback): ?>
+                        <i class="fas fa-user-circle default-icon"></i>
+                    <?php else: ?>
+                        <img src="<?php echo htmlspecialchars($avatarPath); ?>" alt="Profile Picture" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\'fas fa-user-circle default-icon\'></i>';">
+                    <?php endif; ?>
                     <div class="edit-overlay">
                         <i class="fas fa-camera"></i> Change
                     </div>
@@ -338,8 +382,12 @@ if ($verified) {
                 <div id="avatarModal" class="modal">
                     <div class="modal-content">
                         <h3><i class="fas fa-camera"></i> Change Profile Picture</h3>
-                        <div class="preview">
-                            <img id="previewImage" src="<?php echo htmlspecialchars($avatarPath); ?>" alt="Preview">
+                        <div class="preview" id="previewContainer">
+                            <?php if ($useIconFallback): ?>
+                                <i class="fas fa-user-circle preview-icon"></i>
+                            <?php else: ?>
+                                <img id="previewImage" src="<?php echo htmlspecialchars($avatarPath); ?>" alt="Preview">
+                            <?php endif; ?>
                         </div>
                         
                         <?php if ($avatar_message): ?>
@@ -459,14 +507,21 @@ if ($verified) {
         document.getElementById('avatarModal').style.display = 'none';
         document.getElementById('avatarInput').value = '';
         // Reset preview
-        document.getElementById('previewImage').src = '<?php echo htmlspecialchars($avatarPath); ?>';
+        const previewContainer = document.getElementById('previewContainer');
+        const currentSrc = '<?php echo htmlspecialchars($avatarPath); ?>';
+        if (currentSrc && !<?php echo $useIconFallback ? 'true' : 'false'; ?>) {
+            previewContainer.innerHTML = '<img id="previewImage" src="' + currentSrc + '" alt="Preview">';
+        } else {
+            previewContainer.innerHTML = '<i class="fas fa-user-circle preview-icon"></i>';
+        }
     }
     
     function previewImage(input) {
+        const previewContainer = document.getElementById('previewContainer');
         if (input.files && input.files[0]) {
             var reader = new FileReader();
             reader.onload = function(e) {
-                document.getElementById('previewImage').src = e.target.result;
+                previewContainer.innerHTML = '<img id="previewImage" src="' + e.target.result + '" alt="Preview" style="width:100%;height:100%;object-fit:cover;">';
             };
             reader.readAsDataURL(input.files[0]);
         }
