@@ -17,8 +17,26 @@ require_once __DIR__ . '/functions.php';
         body { font-family:'Inter',sans-serif; background:linear-gradient(145deg,#f5f9f0 0%,#e8efe2 100%); color:#1e2a2e; line-height:1.5; }
         
         .navbar { display:flex; justify-content:space-between; align-items:center; padding:0.8rem 5%; background:rgba(255,255,255,0.98); backdrop-filter:blur(12px); position:sticky; top:0; z-index:100; border-bottom:1px solid rgba(43,126,58,0.15); box-shadow:0 2px 20px rgba(0,0,0,0.03); }
-        .logo img { height: 65px; width: auto; transition:transform 0.3s; }
-        .logo img:hover { transform:scale(1.02); }
+        .logo-area { display:flex; align-items:center; gap:0.8rem; text-decoration:none; cursor:pointer; }
+        .logo-area:hover .logo-text { transform:scale(1.02); }
+        .logo-area img { height: 50px; width: auto; transition:transform 0.3s; }
+        .logo-area:hover img { transform:scale(1.02); }
+        .logo-text { 
+            font-size:1.3rem; 
+            font-weight:700; 
+            background:linear-gradient(135deg,#2b7e3a,#1b5e2a,#0f3d1a); 
+            -webkit-background-clip:text; 
+            background-clip:text; 
+            color:transparent;
+            letter-spacing:-0.3px;
+            transition:transform 0.3s;
+        }
+        .logo-text span { 
+            background:linear-gradient(135deg,#e67e22,#f39c12); 
+            -webkit-background-clip:text; 
+            background-clip:text; 
+            color:transparent;
+        }
         .nav-links { display:flex; gap:1.5rem; align-items:center; }
         .btn-outline { background:transparent; border:2px solid #2b7e3a; padding:0.5rem 1.5rem; border-radius:50px; color:#2b7e3a; cursor:pointer; font-weight:600; transition:all 0.3s; }
         .btn-outline:hover { background:#2b7e3a; color:white; transform:translateY(-2px); box-shadow:0 4px 12px rgba(43,126,58,0.3); }
@@ -121,10 +139,10 @@ require_once __DIR__ . '/functions.php';
 </head>
 <body>
 <nav class="navbar">
-    <div class="logo">
-        <img src="../Admin_Module/Pictures/logo.png" alt="Smash Arena" onerror="this.style.display='none'; this.nextSibling.style.display='block';">
-        <span style="display:none; font-size:1.8rem; font-weight:800; background:linear-gradient(135deg,#2b7e3a,#1b5e2a); -webkit-background-clip:text; background-clip:text; color:transparent;">Smash Arena</span>
-    </div>
+    <a href="homepage.php" class="logo-area">
+        <img src="../Admin_Module/Pictures/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
+        <div class="logo-text">Smash <span>Arena</span></div>
+    </a>
     <div class="nav-links">
         <button class="btn-outline" id="loginBtn">Login</button>
         <button class="btn-solid" id="signupBtn">Sign Up</button>

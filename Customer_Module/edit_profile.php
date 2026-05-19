@@ -4,6 +4,16 @@ if (!isLoggedIn()) redirect('homepage.php');
 
 $user_id = $_SESSION['user_id'];
 
+// 先检查并添加 profile_picture 字段（如果不存在）
+try {
+    $stmt = $pdo->query("SHOW COLUMNS FROM users LIKE 'profile_picture'");
+    if ($stmt->rowCount() == 0) {
+        $pdo->exec("ALTER TABLE `users` ADD COLUMN `profile_picture` VARCHAR(255) NULL AFTER `wallet_balance`");
+    }
+} catch (PDOException $e) {
+    // 字段可能已存在，忽略错误
+}
+
 // 获取用户信息
 $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
@@ -35,37 +45,46 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     }
 }
 
-// 获取用户头像 - 修复路径问题
-$profile_picture = $user['profile_picture'] ?? '';
+// 获取用户头像
+$profile_picture = isset($user['profile_picture']) ? $user['profile_picture'] : '';
+
+$defaultAvatarPath = '../image/default_image.png';
 
 // 构建正确的头像路径
+$avatarPath = $defaultAvatarPath;
+
 if (!empty($profile_picture)) {
-    // 如果数据库中的路径已经是完整路径
-    if (file_exists(__DIR__ . '/../' . $profile_picture)) {
-        $avatarPath = '../' . $profile_picture;
-    } 
-    // 如果只是文件名
-    elseif (file_exists(__DIR__ . '/../Admin_Module/Pictures/users/' . $profile_picture)) {
-        $avatarPath = '../Admin_Module/Pictures/users/' . $profile_picture;
+    $fullPath = __DIR__ . '/../' . $profile_picture;
+    if (file_exists($fullPath)) {
+        $fileTime = filemtime($fullPath);
+        $avatarPath = '../' . $profile_picture . '?v=' . $fileTime;
     }
-    // 如果路径以 Admin_Module 开头
-    elseif (strpos($profile_picture, 'Admin_Module/') === 0) {
-        $avatarPath = '../' . $profile_picture;
-    }
-    else {
-        $avatarPath = '../Admin_Module/Pictures/users/default_avatar.png';
-    }
-} else {
-    $avatarPath = '../Admin_Module/Pictures/users/default_avatar.png';
 }
 
-// 确保默认头像存在，如果不存在则使用 Font Awesome 图标
-$defaultAvatarExists = file_exists(__DIR__ . '/../Admin_Module/Pictures/users/default_avatar.png');
-if (!$defaultAvatarExists && empty($profile_picture)) {
-    // 使用 CSS 背景色代替图片
-    $useIconFallback = true;
-} else {
-    $useIconFallback = false;
+// 检查默认头像是否存在，如果不存在则创建
+$defaultAvatarFullPath = __DIR__ . '/../image/default_image.png';
+if (!file_exists($defaultAvatarFullPath)) {
+    $imageDir = __DIR__ . '/../image/';
+    if (!file_exists($imageDir)) {
+        mkdir($imageDir, 0777, true);
+    }
+    // 创建一个简单的 PNG 默认头像
+    if (function_exists('imagecreate')) {
+        $img = imagecreate(200, 200);
+        $bgColor = imagecolorallocate($img, 43, 126, 58);
+        $textColor = imagecolorallocate($img, 255, 255, 255);
+        imagefilledrectangle($img, 0, 0, 200, 200, $bgColor);
+        $text = "👤";
+        imagestring($img, 5, 85, 90, $text, $textColor);
+        imagepng($img, $defaultAvatarFullPath);
+        imagedestroy($img);
+    } else {
+        // 如果 GD 库不可用，复制一个默认图片
+        $sourcePath = __DIR__ . '/../Admin_Module/Pictures/coaches/default.png';
+        if (file_exists($sourcePath)) {
+            copy($sourcePath, $defaultAvatarFullPath);
+        }
+    }
 }
 
 // 处理头像上传
@@ -83,35 +102,31 @@ if ($verified && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])
         } elseif ($_FILES['profile_picture']['size'] > 2 * 1024 * 1024) {
             $avatar_error = 'File size must be less than 2MB';
         } else {
-            // 创建用户头像目录
             $upload_dir = __DIR__ . '/../Admin_Module/Pictures/users/';
             if (!file_exists($upload_dir)) {
                 mkdir($upload_dir, 0777, true);
             }
             
-            // 生成唯一文件名
             $new_filename = 'user_' . $user_id . '_' . time() . '.' . $ext;
             $upload_path = $upload_dir . $new_filename;
             
             if (move_uploaded_file($_FILES['profile_picture']['tmp_name'], $upload_path)) {
-                // 删除旧头像（如果不是默认头像且文件存在）
-                if (!empty($profile_picture)) {
+                if (!empty($profile_picture) && strpos($profile_picture, 'default') === false) {
                     $old_path = __DIR__ . '/../' . $profile_picture;
-                    if (file_exists($old_path) && strpos($profile_picture, 'default') === false) {
+                    if (file_exists($old_path)) {
                         unlink($old_path);
                     }
                 }
                 
-                // 更新数据库 - 存储相对路径
                 $db_path = 'Admin_Module/Pictures/users/' . $new_filename;
                 $stmt = $pdo->prepare("UPDATE users SET profile_picture = ? WHERE id = ?");
                 if ($stmt->execute([$db_path, $user_id])) {
                     $avatar_message = 'Profile picture updated successfully!';
                     $profile_picture = $db_path;
-                    $avatarPath = '../' . $db_path;
-                    $useIconFallback = false;
-                    // 刷新用户数据
+                    $avatarPath = '../' . $db_path . '?v=' . time();
                     $user['profile_picture'] = $db_path;
+                    echo "<script>window.location.href = 'edit_profile.php';</script>";
+                    exit;
                 } else {
                     $avatar_error = 'Failed to update database';
                 }
@@ -136,8 +151,10 @@ if ($verified && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])
     if ($stmt->execute([$user_id])) {
         $avatar_message = 'Profile picture removed';
         $profile_picture = '';
-        $avatarPath = '../Admin_Module/Pictures/users/default_avatar.png';
+        $avatarPath = '../image/default_image.png?v=' . time();
         $user['profile_picture'] = null;
+        echo "<script>window.location.href = 'edit_profile.php';</script>";
+        exit;
     } else {
         $avatar_error = 'Failed to remove profile picture';
     }
@@ -232,18 +249,15 @@ if ($verified) {
         body { font-family:'Inter',sans-serif; background:linear-gradient(145deg,#f5f9f0 0%,#e8efe2 100%); color:#1e2a2e; padding:2rem; }
         .container { max-width:900px; margin:0 auto; }
         
-        /* Navbar */
         .navbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; padding-bottom:1rem; border-bottom:1px solid rgba(43,126,58,0.15); }
-        .logo img { height: 65px; width: auto; transition:transform 0.3s; }
-        .logo img:hover { transform:scale(1.02); }
+        .logo img { height: 65px; width: auto; }
         .nav-links { display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap; }
         .nav-links a { color:#2c4a2e; text-decoration:none; font-weight:500; transition:0.2s; }
         .nav-links a:hover { color:#2b7e3a; }
         .user-greeting { color:#2b7e3a; font-weight:500; }
-        .btn-logout { background:#fee2e2; color:#e67e22; padding:0.3rem 1rem; border-radius:50px; text-decoration:none; font-size:0.8rem; transition:0.2s; }
+        .btn-logout { background:#fee2e2; color:#e67e22; padding:0.3rem 1rem; border-radius:50px; text-decoration:none; font-size:0.8rem; }
         .btn-logout:hover { background:#e67e22; color:white; }
         
-        /* Verify Card */
         .verify-card { background:white; border-radius:32px; overflow:hidden; box-shadow:0 12px 28px rgba(0,0,0,0.08); max-width:450px; margin:0 auto; }
         .verify-header { background:linear-gradient(135deg,#2b7e3a,#1b5e2a); color:white; padding:2rem; text-align:center; }
         .verify-header .icon { font-size:3rem; margin-bottom:0.5rem; }
@@ -254,32 +268,28 @@ if ($verified) {
         .verify-body label { display:block; font-weight:600; color:#1e3a2a; margin-bottom:0.5rem; }
         .verify-body input { width:100%; padding:0.8rem 1rem; border:1.5px solid #e0e8dc; border-radius:16px; background:#fefdf8; font-size:1rem; }
         .verify-body input:focus { outline:none; border-color:#2b7e3a; }
-        .btn-verify { background:#2b7e3a; color:white; border:none; padding:0.9rem; border-radius:50px; width:100%; font-size:1rem; font-weight:700; cursor:pointer; transition:0.2s; margin-top:0.5rem; }
-        .btn-verify:hover { background:#1f5a2a; transform:translateY(-2px); }
+        .btn-verify { background:#2b7e3a; color:white; border:none; padding:0.9rem; border-radius:50px; width:100%; font-size:1rem; font-weight:700; cursor:pointer; margin-top:0.5rem; }
+        .btn-verify:hover { background:#1f5a2a; }
         .error-msg { background:#fee2dd; color:#b45f1b; padding:0.8rem; border-radius:16px; margin-bottom:1rem; border-left:4px solid #e67e22; }
         
-        /* Profile Card */
         .profile-card { background:white; border-radius:32px; overflow:hidden; box-shadow:0 12px 28px rgba(0,0,0,0.08); margin-bottom:1.5rem; }
         .profile-header { background:linear-gradient(135deg,#2b7e3a,#1b5e2a); color:white; padding:2rem; text-align:center; }
         .profile-header .avatar { width:120px; height:120px; background:rgba(255,255,255,0.2); border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:1rem; overflow:hidden; position:relative; cursor:pointer; }
         .profile-header .avatar img { width:100%; height:100%; object-fit:cover; }
-        .profile-header .avatar .default-icon { font-size:4rem; }
         .profile-header .avatar .edit-overlay { position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.6); color:white; text-align:center; padding:5px; font-size:12px; opacity:0; transition:0.2s; }
         .profile-header .avatar:hover .edit-overlay { opacity:1; }
         .profile-header h2 { font-size:1.5rem; margin-bottom:0.3rem; }
-        .profile-header p { opacity:0.9; }
+        .profile-header p { opacity:0.9; font-size:0.9rem; }
         .profile-body { padding:2rem; }
         
-        /* Avatar Upload Modal */
         .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; }
         .modal-content { background:white; border-radius:32px; max-width:450px; width:90%; padding:2rem; text-align:center; }
         .modal-content h3 { color:#2b7e3a; margin-bottom:1rem; }
         .modal-content .preview { width:150px; height:150px; border-radius:50%; margin:1rem auto; overflow:hidden; background:#e8efe2; display:flex; align-items:center; justify-content:center; }
         .modal-content .preview img { width:100%; height:100%; object-fit:cover; }
-        .modal-content .preview .preview-icon { font-size:5rem; color:#2b7e3a; }
-        .modal-content input[type="file"] { margin:1rem 0; }
-        .modal-buttons { display:flex; gap:1rem; margin-top:1rem; }
-        .modal-buttons button { flex:1; padding:0.8rem; border-radius:50px; border:none; cursor:pointer; font-weight:600; }
+        .modal-content input[type="file"] { margin:1rem 0; display:block; width:100%; }
+        .modal-buttons { display:flex; gap:1rem; margin-top:1rem; flex-wrap:wrap; }
+        .modal-buttons button { flex:1; padding:0.8rem; border-radius:50px; border:none; cursor:pointer; font-weight:600; min-width:100px; }
         .btn-upload { background:#2b7e3a; color:white; }
         .btn-delete { background:#e67e22; color:white; }
         .btn-cancel-modal { background:#e0e0e0; color:#333; }
@@ -294,15 +304,15 @@ if ($verified) {
         .info-group input:focus { outline:none; border-color:#2b7e3a; }
         .info-group .readonly { background:#e8f0e5; color:#5a6e5c; cursor:not-allowed; }
         
-        .btn-save { background:#2b7e3a; color:white; border:none; padding:0.9rem; border-radius:50px; width:100%; font-size:1rem; font-weight:700; cursor:pointer; transition:0.2s; margin-top:0.5rem; }
-        .btn-save:hover { background:#1f5a2a; transform:translateY(-2px); }
-        .btn-cancel { background:#e0e0e0; color:#333; border:none; padding:0.8rem; border-radius:50px; width:100%; font-weight:600; cursor:pointer; margin-top:0.5rem; transition:0.2s; text-decoration:none; display:inline-block; text-align:center; }
+        .btn-save { background:#2b7e3a; color:white; border:none; padding:0.9rem; border-radius:50px; width:100%; font-size:1rem; font-weight:700; cursor:pointer; margin-top:0.5rem; }
+        .btn-save:hover { background:#1f5a2a; }
+        .btn-cancel { background:#e0e0e0; color:#333; border:none; padding:0.8rem; border-radius:50px; width:100%; font-weight:600; cursor:pointer; margin-top:0.5rem; text-decoration:none; display:inline-block; text-align:center; }
         .btn-cancel:hover { background:#ccc; }
         
         .message { background:#d4edda; color:#155724; padding:0.8rem; border-radius:16px; margin-bottom:1rem; border-left:4px solid #2b7e3a; }
         .error { background:#fee2dd; color:#b45f1b; padding:0.8rem; border-radius:16px; margin-bottom:1rem; border-left:4px solid #e67e22; }
         
-        .wallet-info { background:#eaf5e6; padding:0.8rem 1rem; border-radius:16px; display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
+        .wallet-info { background:#eaf5e6; padding:0.8rem 1rem; border-radius:16px; display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.5rem; }
         .wallet-info span:first-child { font-weight:600; }
         .wallet-info span:last-child { font-size:1.2rem; font-weight:700; color:#2b7e3a; }
         .wallet-info a { color:#e67e22; text-decoration:underline; font-size:0.8rem; }
@@ -316,7 +326,6 @@ if ($verified) {
 </head>
 <body>
 <div class="container">
-    <!-- Navbar -->
     <div class="navbar">
         <div class="logo">
             <img src="../Admin_Module/Pictures/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
@@ -332,7 +341,6 @@ if ($verified) {
     </div>
     
     <?php if (!$verified): ?>
-        <!-- Password Verification Page -->
         <div class="verify-card">
             <div class="verify-header">
                 <div class="icon"><i class="fas fa-shield-alt"></i></div>
@@ -354,15 +362,10 @@ if ($verified) {
             </div>
         </div>
     <?php else: ?>
-        <!-- Profile Card -->
         <div class="profile-card">
             <div class="profile-header">
                 <div class="avatar" onclick="openAvatarModal()">
-                    <?php if ($useIconFallback): ?>
-                        <i class="fas fa-user-circle default-icon"></i>
-                    <?php else: ?>
-                        <img src="<?php echo htmlspecialchars($avatarPath); ?>" alt="Profile Picture" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\'fas fa-user-circle default-icon\'></i>';">
-                    <?php endif; ?>
+                    <img id="profileAvatar" src="<?php echo htmlspecialchars($avatarPath); ?>" alt="">
                     <div class="edit-overlay">
                         <i class="fas fa-camera"></i> Change
                     </div>
@@ -371,23 +374,17 @@ if ($verified) {
                 <p>Member since <?php echo date('F Y', strtotime($user['created_at'])); ?></p>
             </div>
             <div class="profile-body">
-                <!-- Wallet Info -->
                 <div class="wallet-info">
                     <span><i class="fas fa-wallet"></i> Wallet Balance</span>
                     <span>RM <?php echo number_format($real_balance, 2); ?></span>
                     <a href="../Payment_Module/wallet.php">Top Up</a>
                 </div>
                 
-                <!-- Avatar Upload Modal -->
                 <div id="avatarModal" class="modal">
                     <div class="modal-content">
                         <h3><i class="fas fa-camera"></i> Change Profile Picture</h3>
-                        <div class="preview" id="previewContainer">
-                            <?php if ($useIconFallback): ?>
-                                <i class="fas fa-user-circle preview-icon"></i>
-                            <?php else: ?>
-                                <img id="previewImage" src="<?php echo htmlspecialchars($avatarPath); ?>" alt="Preview">
-                            <?php endif; ?>
+                        <div class="preview">
+                            <img id="previewImage" src="<?php echo htmlspecialchars($avatarPath); ?>" alt="">
                         </div>
                         
                         <?php if ($avatar_message): ?>
@@ -409,14 +406,12 @@ if ($verified) {
                             </div>
                         </form>
                         
-                        <!-- Delete Form -->
                         <form id="deleteAvatarForm" method="POST" action="" style="display:none;">
                             <input type="hidden" name="action" value="delete_avatar">
                         </form>
                     </div>
                 </div>
                 
-                <!-- Edit Profile Form -->
                 <div class="form-section">
                     <h3><i class="fas fa-user-edit"></i> Personal Information</h3>
                     
@@ -454,7 +449,6 @@ if ($verified) {
                     </form>
                 </div>
                 
-                <!-- Change Password Form -->
                 <div class="form-section">
                     <h3><i class="fas fa-key"></i> Change Password (Optional)</h3>
                     
@@ -498,7 +492,6 @@ if ($verified) {
 </div>
 
 <script>
-    // Avatar Modal Functions
     function openAvatarModal() {
         document.getElementById('avatarModal').style.display = 'flex';
     }
@@ -506,22 +499,17 @@ if ($verified) {
     function closeAvatarModal() {
         document.getElementById('avatarModal').style.display = 'none';
         document.getElementById('avatarInput').value = '';
-        // Reset preview
-        const previewContainer = document.getElementById('previewContainer');
-        const currentSrc = '<?php echo htmlspecialchars($avatarPath); ?>';
-        if (currentSrc && !<?php echo $useIconFallback ? 'true' : 'false'; ?>) {
-            previewContainer.innerHTML = '<img id="previewImage" src="' + currentSrc + '" alt="Preview">';
-        } else {
-            previewContainer.innerHTML = '<i class="fas fa-user-circle preview-icon"></i>';
-        }
+        var previewImage = document.getElementById('previewImage');
+        var currentAvatar = document.getElementById('profileAvatar').src;
+        previewImage.src = currentAvatar;
     }
     
     function previewImage(input) {
-        const previewContainer = document.getElementById('previewContainer');
+        var previewImage = document.getElementById('previewImage');
         if (input.files && input.files[0]) {
             var reader = new FileReader();
             reader.onload = function(e) {
-                previewContainer.innerHTML = '<img id="previewImage" src="' + e.target.result + '" alt="Preview" style="width:100%;height:100%;object-fit:cover;">';
+                previewImage.src = e.target.result;
             };
             reader.readAsDataURL(input.files[0]);
         }
@@ -533,7 +521,6 @@ if ($verified) {
         }
     }
     
-    // Close modal when clicking outside
     window.onclick = function(event) {
         var modal = document.getElementById('avatarModal');
         if (event.target == modal) {
@@ -541,22 +528,21 @@ if ($verified) {
         }
     }
     
-    // Password Functions
     function checkPasswordStrength() {
-        const password = document.getElementById('new_password').value;
-        const strengthFill = document.getElementById('strengthFill');
-        const strengthText = document.getElementById('strengthText');
+        var password = document.getElementById('new_password').value;
+        var strengthFill = document.getElementById('strengthFill');
+        var strengthText = document.getElementById('strengthText');
         
-        let score = 0;
+        var score = 0;
         if (password.length >= 6) score++;
         if (password.length >= 8) score++;
         if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score++;
         if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score++;
         if (/\d/.test(password)) score++;
         
-        let percent = 0;
-        let text = '';
-        let color = '#e67e22';
+        var percent = 0;
+        var text = '';
+        var color = '#e67e22';
         
         if (password.length === 0) {
             percent = 0;
@@ -579,12 +565,11 @@ if ($verified) {
             color = '#2b7e3a';
         }
         
-        const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(password);
         if (password.length < 6) {
             text = 'Too short (min 6)';
             percent = 25;
             color = '#e67e22';
-        } else if (!hasSymbol) {
+        } else if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
             text = 'Need at least 1 symbol';
             percent = 50;
             color = '#f1c40f';
@@ -597,9 +582,9 @@ if ($verified) {
     }
     
     function checkPasswordMatch() {
-        const newPassword = document.getElementById('new_password').value;
-        const confirmPassword = document.getElementById('confirm_password').value;
-        const matchText = document.getElementById('matchText');
+        var newPassword = document.getElementById('new_password').value;
+        var confirmPassword = document.getElementById('confirm_password').value;
+        var matchText = document.getElementById('matchText');
         
         if (confirmPassword.length === 0) {
             matchText.innerHTML = '';
@@ -613,9 +598,8 @@ if ($verified) {
     }
     
     function validatePasswordForm() {
-        const newPassword = document.getElementById('new_password').value;
-        const confirmPassword = document.getElementById('confirm_password').value;
-        const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(newPassword);
+        var newPassword = document.getElementById('new_password').value;
+        var confirmPassword = document.getElementById('confirm_password').value;
         
         if (newPassword !== confirmPassword) {
             alert('New password and confirm password do not match');
@@ -625,7 +609,7 @@ if ($verified) {
             alert('Password must be at least 6 characters');
             return false;
         }
-        if (!hasSymbol) {
+        if (!/[!@#$%^&*(),.?":{}|<>]/.test(newPassword)) {
             alert('Password must contain at least one symbol (!@#$%^&* etc.)');
             return false;
         }

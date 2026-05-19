@@ -44,8 +44,26 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         
         /* Navbar */
         .navbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; padding-bottom:1rem; border-bottom:1px solid rgba(43,126,58,0.15); }
-        .logo img { height: 65px; width: auto; transition:transform 0.3s; }
-        .logo img:hover { transform:scale(1.02); }
+        .logo-area { display:flex; align-items:center; gap:0.8rem; text-decoration:none; cursor:pointer; }
+        .logo-area:hover .logo-text { transform:scale(1.02); }
+        .logo-area img { height: 50px; width: auto; transition:transform 0.3s; }
+        .logo-area:hover img { transform:scale(1.02); }
+        .logo-text { 
+            font-size:1.3rem; 
+            font-weight:700; 
+            background:linear-gradient(135deg,#2b7e3a,#1b5e2a,#0f3d1a); 
+            -webkit-background-clip:text; 
+            background-clip:text; 
+            color:transparent;
+            letter-spacing:-0.3px;
+            transition:transform 0.3s;
+        }
+        .logo-text span { 
+            background:linear-gradient(135deg,#e67e22,#f39c12); 
+            -webkit-background-clip:text; 
+            background-clip:text; 
+            color:transparent;
+        }
         .nav-links { display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap; }
         .nav-links a { color:#2c4a2e; text-decoration:none; font-weight:500; transition:0.2s; }
         .nav-links a:hover { color:#2b7e3a; }
@@ -142,7 +160,8 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             .action-btns { flex-direction:column; } 
             .stats-grid { grid-template-columns:repeat(2,1fr); } 
             .nav-links { gap:0.8rem; } 
-            .logo img { height: 50px; }
+            .logo-area img { height: 40px; }
+            .logo-text { font-size:1.1rem; }
             .footer-container { text-align:center; }
             .footer-col p { justify-content:center; }
             .social-icons { justify-content:center; }
@@ -153,14 +172,15 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
 <div class="container">
     <!-- Navbar -->
     <div class="navbar">
-        <div class="logo">
-            <img src="../Admin_Module/Pictures/logo.png" alt="Smash Arena" style="height: 65px; width: auto;" onerror="this.style.display='none'; this.nextSibling.style.display='block';">
-            <span style="display:none; font-size:1.5rem; font-weight:800; background:linear-gradient(135deg,#2b7e3a,#1b5e2a); -webkit-background-clip:text; background-clip:text; color:transparent;">Smash Arena</span>
-        </div>
+        <a href="dashboard.php" class="logo-area">
+            <img src="../Admin_Module/Pictures/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
+            <div class="logo-text">Smash <span>Arena</span></div>
+        </a>
         <div class="nav-links">
             <a href="dashboard.php"><i class="fas fa-home"></i> Courts</a>
             <a href="my_bookings.php" class="active"><i class="fas fa-bookmark"></i> My Bookings</a>
             <a href="../Payment_Module/wallet.php"><i class="fas fa-wallet"></i> Wallet</a>
+            <a href="edit_profile.php" class="btn-view" style="background:#eaf5e6;"><i class="fas fa-user-edit"></i> Profile</a>
             <a href="logout.php" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
             <span class="user-greeting">🏸 <?php echo htmlspecialchars($user['name'] ?? 'Player'); ?></span>
         </div>
@@ -240,7 +260,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
                             <?php if($can_cancel): ?>
                                 <button class="btn-cancel" onclick="cancelBooking(<?php echo $b['id']; ?>)"><i class="fas fa-times"></i> Cancel</button>
                             <?php else: ?>
-                                <button class="btn-cancel-disabled" disabled title="Cannot cancel within 2 hours of booking time (RM50 cancellation fee applies)">
+                                <button class="btn-cancel-disabled" disabled title="Cannot cancel within 2 hours of booking time (RM10 cancellation fee applies)">
                                     <i class="fas fa-times"></i> Cancel (Need 2h notice)
                                 </button>
                             <?php endif; ?>
@@ -397,7 +417,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
                 
                 // Check if within 2 hours
                 if (hoursDiff < 2) {
-                    alert(`⚠️ Cannot cancel booking!\n\nYour booking starts in ${hoursDiff.toFixed(1)} hours.\nYou need to cancel at least 2 hours before your booking time.\n\nNote: RM50 cancellation fee applies for late cancellation.`);
+                    alert(`⚠️ Cannot cancel booking!\n\nYour booking starts in ${hoursDiff.toFixed(1)} hours.\nYou need to cancel at least 2 hours before your booking time.\n\nNote: RM10 cancellation fee applies for late cancellation.`);
                     return;
                 }
                 
@@ -415,13 +435,13 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
                     await proceedCancel(bookingId);
                 }
             } else {
-                if(confirm('Are you sure you want to cancel this booking? A cancellation fee of RM 50.00 will apply.')) {
+                if(confirm('Are you sure you want to cancel this booking? A cancellation fee of RM 10.00 will apply.')) {
                     await proceedCancel(bookingId);
                 }
             }
         } catch(e) {
             console.error(e);
-            if(confirm('Are you sure you want to cancel this booking? A cancellation fee of RM 50.00 will apply.')) {
+            if(confirm('Are you sure you want to cancel this booking? A cancellation fee of RM 10.00 will apply.')) {
                 await proceedCancel(bookingId);
             }
         }

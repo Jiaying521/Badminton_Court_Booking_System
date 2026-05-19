@@ -121,7 +121,26 @@ function getCourtImage($courtName) {
         
         /* Navbar */
         .navbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; padding-bottom:1rem; border-bottom:1px solid rgba(43,126,58,0.15); }
-        .logo img { height: 65px; width: auto; }
+        .logo-area { display:flex; align-items:center; gap:0.8rem; text-decoration:none; cursor:pointer; }
+        .logo-area:hover .logo-text { transform:scale(1.02); }
+        .logo-area img { height: 50px; width: auto; transition:transform 0.3s; }
+        .logo-area:hover img { transform:scale(1.02); }
+        .logo-text { 
+            font-size:1.3rem; 
+            font-weight:700; 
+            background:linear-gradient(135deg,#2b7e3a,#1b5e2a,#0f3d1a); 
+            -webkit-background-clip:text; 
+            background-clip:text; 
+            color:transparent;
+            letter-spacing:-0.3px;
+            transition:transform 0.3s;
+        }
+        .logo-text span { 
+            background:linear-gradient(135deg,#e67e22,#f39c12); 
+            -webkit-background-clip:text; 
+            background-clip:text; 
+            color:transparent;
+        }
         .nav-links { display:flex; align-items:center; gap:1rem; flex-wrap:wrap; }
         .nav-links a { color:#2c4a2e; text-decoration:none; font-weight:500; transition:0.2s; }
         .nav-links a:hover, .nav-links a.active { color:#2b7e3a; }
@@ -225,9 +244,10 @@ function getCourtImage($courtName) {
 <div class="container">
     <!-- Navbar -->
     <div class="navbar">
-        <div class="logo">
+        <a href="dashboard.php" class="logo-area">
             <img src="../Admin_Module/Pictures/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
-        </div>
+            <div class="logo-text">Smash <span>Arena</span></div>
+        </a>
         <div class="nav-links">
             <a href="dashboard.php" class="active"><i class="fas fa-home"></i> Courts</a>
             <a href="my_bookings.php"><i class="fas fa-bookmark"></i> My Bookings</a>

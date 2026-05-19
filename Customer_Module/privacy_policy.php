@@ -20,8 +20,26 @@ $back_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
         
         /* Navbar */
         .navbar { display:flex; justify-content:space-between; align-items:center; padding:0.8rem 5%; background:rgba(255,255,255,0.98); backdrop-filter:blur(12px); position:sticky; top:0; z-index:100; border-bottom:1px solid rgba(43,126,58,0.15); box-shadow:0 2px 20px rgba(0,0,0,0.03); }
-        .logo img { height: 65px; width: auto; transition:transform 0.3s; }
-        .logo img:hover { transform:scale(1.02); }
+        .logo-area { display:flex; align-items:center; gap:0.8rem; text-decoration:none; cursor:pointer; }
+        .logo-area:hover .logo-text { transform:scale(1.02); }
+        .logo-area img { height: 50px; width: auto; transition:transform 0.3s; }
+        .logo-area:hover img { transform:scale(1.02); }
+        .logo-text { 
+            font-size:1.3rem; 
+            font-weight:700; 
+            background:linear-gradient(135deg,#2b7e3a,#1b5e2a,#0f3d1a); 
+            -webkit-background-clip:text; 
+            background-clip:text; 
+            color:transparent;
+            letter-spacing:-0.3px;
+            transition:transform 0.3s;
+        }
+        .logo-text span { 
+            background:linear-gradient(135deg,#e67e22,#f39c12); 
+            -webkit-background-clip:text; 
+            background-clip:text; 
+            color:transparent;
+        }
         .nav-links { display:flex; gap:1.5rem; align-items:center; }
         .nav-links a { color:#2c4a2e; text-decoration:none; font-weight:500; transition:0.2s; }
         .nav-links a:hover { color:#2b7e3a; }
@@ -95,10 +113,10 @@ $back_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
 </head>
 <body>
 <nav class="navbar">
-    <div class="logo">
-        <img src="../Admin_Module/Pictures/logo.png" alt="Smash Arena" onerror="this.style.display='none'; this.nextSibling.style.display='block';">
-        <span style="display:none; font-size:1.8rem; font-weight:800; background:linear-gradient(135deg,#2b7e3a,#1b5e2a); -webkit-background-clip:text; background-clip:text; color:transparent;">Smash Arena</span>
-    </div>
+    <a href="<?php echo $back_link; ?>" class="logo-area">
+        <img src="../Admin_Module/Pictures/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
+        <div class="logo-text">Smash <span>Arena</span></div>
+    </a>
     <div class="nav-links">
         <a href="homepage.php">Home</a>
         <a href="dashboard.php">Courts</a>
@@ -204,5 +222,47 @@ $back_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
         </div>
     </div>
 </div>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-col">
+            <h3>Smash Arena</h3>
+            <p><i class="fas fa-map-marker-alt"></i> 123 Jalan Badminton, Kuala Lumpur</p>
+            <p><i class="fas fa-phone-alt"></i> +603-1234 5678</p>
+            <p><i class="fas fa-envelope"></i> smasharenabadminton@gmail.com</p>
+            <div class="social-icons">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-whatsapp"></i></a>
+            </div>
+        </div>
+        <div class="footer-col">
+            <h4>Quick Links</h4>
+            <a href="dashboard.php">Find a Court</a>
+            <a href="my_bookings.php">My Bookings</a>
+            <a href="../Payment_Module/wallet.php">Wallet</a>
+        </div>
+        <div class="footer-col">
+            <h4>Support</h4>
+            <a href="faq.php">FAQs</a>
+            <a href="cancellation_policy.php">Cancellation Policy</a>
+            <a href="privacy_policy.php">Privacy Policy</a>
+            <a href="terms_of_use.php">Terms of Use</a>
+            <a href="contact_us.php">Contact Us</a>
+        </div>
+        <div class="footer-col">
+            <h4>Operating Hours</h4>
+            <p><i class="fas fa-clock"></i> Monday - Sunday: <?php echo getOperatingHours(); ?></p>
+            <p><i class="fas fa-tag"></i> 8am - <?php echo date('h:i A', strtotime(getSetting('peak_start', '15:00'))); ?>: RM <?php echo getSetting('off_peak_price', '10'); ?>/hour</p>
+            <p><i class="fas fa-tag"></i> <?php echo date('h:i A', strtotime(getSetting('peak_start', '15:00'))); ?> - <?php echo date('h:i A', strtotime(getSetting('close_time', '01:00'))); ?>: RM <?php echo getSetting('peak_price', '15'); ?>/hour</p>
+            <p><i class="fas fa-calendar-alt"></i> Open daily including public holidays</p>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2025 Smash Arena – Your Game, Our Court. All rights reserved.</p>
+    </div>
+</footer>
 </body>
 </html>

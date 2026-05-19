@@ -66,18 +66,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // 发送邮件通知管理员
             $mail = new PHPMailer(true);
             try {
-                // SMTP 配置
                 $mail->isSMTP();
                 $mail->Host       = 'smtp.gmail.com';
                 $mail->SMTPAuth   = true;
                 $mail->Username   = 'smasharenabadminton@gmail.com';
-                $mail->Password   = 'mrxd evvy oyyl boak'; // 请替换为您的应用密码
+                $mail->Password   = 'mrxd evvy oyyl boak';
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
                 $mail->Port       = 587;
                 
-                // 发送给管理员
                 $mail->setFrom('smasharenabadminton@gmail.com', 'Smash Arena Contact Form');
-                $mail->addAddress('smasharenabadminton@gmail.com'); // 管理员邮箱
+                $mail->addAddress('smasharenabadminton@gmail.com');
                 $mail->addReplyTo($email, $name);
                 
                 $mail->isHTML(true);
@@ -98,7 +96,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </html>
                 ";
                 $mail->AltBody = "New Contact Form Submission\n\nName: $name\nEmail: $email\nSubject: $subject\nMessage: $message";
-                
                 $mail->send();
                 
                 // 发送确认邮件给用户
@@ -134,7 +131,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $message_sent = 'Thank you for your message! We will get back to you within 24 hours. A confirmation email has been sent to your inbox.';
                 
             } catch (Exception $e) {
-                // 邮件发送失败，但数据已保存
                 $message_sent = 'Thank you for your message! We have received it and will get back to you soon.';
                 error_log("Email sending failed: " . $mail->ErrorInfo);
             }
@@ -157,8 +153,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         body { font-family:'Inter',sans-serif; background:linear-gradient(145deg,#f5f9f0 0%,#e8efe2 100%); color:#1e2a2e; line-height:1.5; }
         
         .navbar { display:flex; justify-content:space-between; align-items:center; padding:0.8rem 5%; background:rgba(255,255,255,0.98); backdrop-filter:blur(12px); position:sticky; top:0; z-index:100; border-bottom:1px solid rgba(43,126,58,0.15); }
-        .logo img { height: 65px; width: auto; transition:transform 0.3s; }
-        .logo img:hover { transform:scale(1.02); }
+        .logo-area { display:flex; align-items:center; gap:0.8rem; text-decoration:none; cursor:pointer; }
+        .logo-area:hover .logo-text { transform:scale(1.02); }
+        .logo-area img { height: 50px; width: auto; transition:transform 0.3s; }
+        .logo-area:hover img { transform:scale(1.02); }
+        .logo-text { 
+            font-size:1.3rem; 
+            font-weight:700; 
+            background:linear-gradient(135deg,#2b7e3a,#1b5e2a,#0f3d1a); 
+            -webkit-background-clip:text; 
+            background-clip:text; 
+            color:transparent;
+            letter-spacing:-0.3px;
+            transition:transform 0.3s;
+        }
+        .logo-text span { 
+            background:linear-gradient(135deg,#e67e22,#f39c12); 
+            -webkit-background-clip:text; 
+            background-clip:text; 
+            color:transparent;
+        }
         .nav-links { display:flex; gap:1.5rem; align-items:center; }
         .nav-links a { color:#2c4a2e; text-decoration:none; font-weight:500; transition:0.2s; }
         .nav-links a:hover { color:#2b7e3a; }
@@ -197,16 +211,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .map-placeholder { background:#e8efe2; border-radius:24px; padding:1.5rem; text-align:center; margin-top:1.5rem; }
         .map-placeholder i { font-size:3rem; color:#2b7e3a; margin-bottom:0.5rem; }
         
+        /* Footer */
+        .footer { background:#0f1f12; color:#cbd5c0; padding:3rem 5% 1.5rem; margin-top:2rem; }
+        .footer-container { max-width:1400px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:2rem; margin-bottom:2rem; }
+        .footer-col h3, .footer-col h4 { color:#2b7e3a; margin-bottom:1rem; }
+        .footer-col p { margin-bottom:0.5rem; display:flex; align-items:center; gap:0.6rem; font-size:0.9rem; }
+        .footer-col a { color:#cbd5c0; text-decoration:none; display:block; margin-bottom:0.6rem; transition:0.2s; font-size:0.9rem; }
+        .footer-col a:hover { color:#2b7e3a; padding-left:5px; }
+        .social-icons { display:flex; gap:1rem; margin-top:1rem; }
+        .social-icons a { background:#2c4a2e; width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:0.2s; color:#cbd5c0; text-decoration:none; }
+        .social-icons a:hover { background:#2b7e3a; transform:translateY(-3px); }
+        .footer-bottom { text-align:center; border-top:1px solid #2c4a2e; padding-top:1.5rem; font-size:0.8rem; }
+        
         @media (max-width:768px) {
             .navbar { flex-direction:column; gap:1rem; }
             .page-card { padding:1.5rem; }
             .contact-grid { grid-template-columns:1fr; }
+            .footer-container { text-align:center; }
+            .footer-col p { justify-content:center; }
+            .social-icons { justify-content:center; }
         }
     </style>
 </head>
 <body>
 <nav class="navbar">
-    <div class="logo"><img src="../Admin_Module/Pictures/logo.png" alt="Smash Arena" onerror="this.style.display='none'"></div>
+    <a href="<?php echo $back_link; ?>" class="logo-area">
+        <img src="../Admin_Module/Pictures/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
+        <div class="logo-text">Smash <span>Arena</span></div>
+    </a>
     <div class="nav-links">
         <a href="homepage.php">Home</a>
         <a href="dashboard.php">Courts</a>
@@ -293,5 +325,47 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
     </div>
 </div>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-col">
+            <h3>Smash Arena</h3>
+            <p><i class="fas fa-map-marker-alt"></i> 123 Jalan Badminton, Kuala Lumpur</p>
+            <p><i class="fas fa-phone-alt"></i> +603-1234 5678</p>
+            <p><i class="fas fa-envelope"></i> smasharenabadminton@gmail.com</p>
+            <div class="social-icons">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-whatsapp"></i></a>
+            </div>
+        </div>
+        <div class="footer-col">
+            <h4>Quick Links</h4>
+            <a href="dashboard.php">Find a Court</a>
+            <a href="my_bookings.php">My Bookings</a>
+            <a href="../Payment_Module/wallet.php">Wallet</a>
+        </div>
+        <div class="footer-col">
+            <h4>Support</h4>
+            <a href="faq.php">FAQs</a>
+            <a href="cancellation_policy.php">Cancellation Policy</a>
+            <a href="privacy_policy.php">Privacy Policy</a>
+            <a href="terms_of_use.php">Terms of Use</a>
+            <a href="contact_us.php">Contact Us</a>
+        </div>
+        <div class="footer-col">
+            <h4>Operating Hours</h4>
+            <p><i class="fas fa-clock"></i> Monday - Sunday: <?php echo getOperatingHours(); ?></p>
+            <p><i class="fas fa-tag"></i> 8am - <?php echo date('h:i A', strtotime(getSetting('peak_start', '15:00'))); ?>: RM <?php echo getSetting('off_peak_price', '10'); ?>/hour</p>
+            <p><i class="fas fa-tag"></i> <?php echo date('h:i A', strtotime(getSetting('peak_start', '15:00'))); ?> - <?php echo date('h:i A', strtotime(getSetting('close_time', '01:00'))); ?>: RM <?php echo getSetting('peak_price', '15'); ?>/hour</p>
+            <p><i class="fas fa-calendar-alt"></i> Open daily including public holidays</p>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2025 Smash Arena – Your Game, Our Court. All rights reserved.</p>
+    </div>
+</footer>
 </body>
 </html>
