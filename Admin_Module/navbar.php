@@ -5,11 +5,13 @@
 <nav class="nav-bar">
     <div class="nav-left">
         <button id="menu-toggle" class="menu-toggle">☰</button>
-        <img src="Pictures/logo.png" alt="logo" class="logo">
-        <span class="brand-name">
-            <span class="text-primary">Smash</span>
-            <span class="text-dark">Arena</span>
-        </span>
+        <a href="SuperAdminDashboard.php" style="display:flex; align-items:center; gap:8px; text-decoration:none;">
+            <img src="Pictures/logo.png" alt="logo" class="logo">
+            <span class="brand-name">
+                <span class="text-primary">Smash</span>
+                <span class="text-dark">Arena</span>
+            </span>
+        </a>
     </div>
 
     <ul id="nav-menu" class="nav-links">

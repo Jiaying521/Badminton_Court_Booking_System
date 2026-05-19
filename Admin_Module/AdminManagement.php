@@ -92,14 +92,17 @@ if (isset($_POST['update_coach'])) {
     $age            = intval($_POST['age']);
     $price_per_hour = floatval($_POST['price_per_hour']);
 
-    // Handle profile image upload
+    // Handle cropped image upload
     $img_sql = "";
-    if (isset($_FILES['profile_img']) && $_FILES['profile_img']['error'] === 0) {
-        $img_name    = time() . '_' . basename($_FILES['profile_img']['name']);
+    if (!empty($_POST['cropped_img_data'])) {
+        $img_data    = $_POST['cropped_img_data'];
+        $img_data    = str_replace('data:image/png;base64,', '', $img_data);
+        $img_data    = str_replace(' ', '+', $img_data);
+        $img_decoded = base64_decode($img_data);
+        $img_name    = time() . '_coach.png';
         $upload_path = 'Pictures/coaches/' . $img_name;
 
-        // move_uploaded_file = save the uploaded file to the folder
-        if (move_uploaded_file($_FILES['profile_img']['tmp_name'], $upload_path)) {
+        if (file_put_contents($upload_path, $img_decoded)) {
             $img_sql = ", profile_img = '$img_name'";
         }
     }
@@ -114,6 +117,14 @@ if (isset($_POST['update_coach'])) {
             price_per_hour = $price_per_hour
             $img_sql
         WHERE id = $coach_id
+    ");
+
+    // Sync updated info back to admins table
+    mysqli_query($conn, "
+        UPDATE admins SET
+            coach_price_per_hour = $price_per_hour,
+            specialisation       = '$specialty'
+        WHERE id = (SELECT admin_id FROM coaches WHERE id = $coach_id)
     ");
 
     $message = "<div class='badge success' style='width:100%; padding:15px; margin-bottom:20px;'>Coach profile updated successfully!</div>";
@@ -135,6 +146,8 @@ if (isset($_POST['add_account'])) {
     $email       = mysqli_real_escape_string($conn, $_POST['email']);
     $role_to_add = mysqli_real_escape_string($conn, $_POST['role']);
     $spec        = isset($_POST['spec']) ? mysqli_real_escape_string($conn, $_POST['spec']) : NULL;
+    $gender_add  = isset($_POST['gender_add']) ? mysqli_real_escape_string($conn, $_POST['gender_add']) : '';
+    $age_add     = isset($_POST['age_add']) && $_POST['age_add'] !== '' ? intval($_POST['age_add']) : 'NULL';
 
     // Coach accounts log in through admins, while customer pages read public coach details from coaches.
     $is_coach_val = ($role_to_add === 'Coach') ? 1 : 0;
@@ -165,8 +178,9 @@ if (isset($_POST['add_account'])) {
             $admin_id = mysqli_insert_id($conn);
 
             if ($role_to_add === 'Coach') {
-                $coach_sql = "INSERT INTO coaches (admin_id, name, specialty, price_per_hour, is_active)
-                              VALUES ('$admin_id', '$user', '$spec', $coach_price_sql, 0)";
+                $age_sql_val = ($age_add === 'NULL') ? 'NULL' : $age_add;
+                $coach_sql   = "INSERT INTO coaches (admin_id, name, specialty, price_per_hour, gender, age, is_active)
+                                VALUES ('$admin_id', '$user', '$spec', $coach_price_sql, '$gender_add', $age_sql_val, 0)";
                 mysqli_query($conn, $coach_sql);
             }
 
@@ -227,6 +241,9 @@ $result = mysqli_query($conn, $query);
     <link rel="stylesheet" href="SuperAdminDashboard.css">
     <link rel="stylesheet" href="AdminManagement.css">
     <link rel="stylesheet" href="ManageCourts.css">
+
+    <!-- Cropper.js CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 </head>
 <body>
 
@@ -283,6 +300,12 @@ $result = mysqli_query($conn, $query);
                         <option value="Tournament Preparation">Tournament Preparation</option>
                     </select>
                     <input type="number" name="coach_price_per_hour" placeholder="Coach Price Per Hour (RM)" step="0.01" min="0" required>
+                    <select name="gender_add">
+                        <option value="">-- Gender (Optional) --</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                    <input type="number" name="age_add" placeholder="Age (Optional)" min="18" max="80">
                     <button type="submit" name="add_account" class="btn-create">Create Account</button>
                 </form>
             </div>
@@ -421,9 +444,9 @@ $result = mysqli_query($conn, $query);
                 <button class="modal-close" onclick="closeCoachEditModal()">✕</button>
             </div>
 
-            <!-- enctype needed for file upload -->
-            <form action="AdminManagement.php" method="POST" enctype="multipart/form-data">
+            <form action="AdminManagement.php" method="POST">
                 <input type="hidden" name="coach_id" id="coach-modal-id">
+                <input type="hidden" name="cropped_img_data" id="cropped-img-data">
 
                 <div class="modal-grid">
 
@@ -434,8 +457,17 @@ $result = mysqli_query($conn, $query);
                             style="width:80px; height:80px; border-radius:50%; object-fit:cover; margin-bottom:8px; border:3px solid #f59e0b;">
                         <label class="btn-create" style="cursor:pointer; padding:8px 16px; font-size:13px;">
                             <i class="fas fa-camera"></i> Change Photo
-                            <input type="file" name="profile_img" id="coach-img-input" accept="image/*" style="display:none;">
+                            <input type="file" id="coach-img-input" accept="image/*" style="display:none;">
                         </label>
+                    </div>
+
+                    <!-- Crop Area (hidden until image selected) -->
+                    <div class="modal-field full-width" id="crop-area" style="display:none;">
+                        <img id="crop-img" style="max-width:100%;">
+                        <div style="margin-top:10px; display:flex; gap:10px; justify-content:center;">
+                            <button type="button" class="btn-modal-save" onclick="applyCrop()">Crop & Use</button>
+                            <button type="button" class="btn-modal-cancel" onclick="cancelCrop()">Cancel</button>
+                        </div>
                     </div>
 
                     <!-- Name -->
@@ -447,7 +479,14 @@ $result = mysqli_query($conn, $query);
                     <!-- Specialty -->
                     <div class="modal-field full-width">
                         <label>Specialty</label>
-                        <input type="text" name="specialty" id="coach-modal-specialty" required>
+                        <select name="specialty" id="coach-modal-specialty">
+                            <option value="">-- Select --</option>
+                            <option value="Singles Coaching">Singles Coaching</option>
+                            <option value="Doubles Coaching">Doubles Coaching</option>
+                            <option value="Fitness & Conditioning">Fitness &amp; Conditioning</option>
+                            <option value="Junior Development">Junior Development</option>
+                            <option value="Tournament Preparation">Tournament Preparation</option>
+                        </select>
                     </div>
 
                     <!-- Phone -->
@@ -489,8 +528,91 @@ $result = mysqli_query($conn, $query);
         </div>
     </div>
 
+    <!-- Cropper.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <script src="AdminManagement.js"></script>
     <script src="SuperAdminDashboard.js"></script>
+
+    <script>
+        let cropperInstance = null;
+
+        function openCoachEditModal(id, name, specialty, phone, gender, age, price, img) {
+            document.getElementById('coach-modal-id').value        = id;
+            document.getElementById('coach-modal-name').value      = name;
+            document.getElementById('coach-modal-specialty').value = specialty;
+            document.getElementById('coach-modal-phone').value     = phone;
+            document.getElementById('coach-modal-gender').value    = gender;
+            document.getElementById('coach-modal-age').value       = age;
+            document.getElementById('coach-modal-price').value     = price;
+            document.getElementById('cropped-img-data').value      = '';
+
+            const preview = document.getElementById('coach-modal-img-preview');
+            preview.src = img ? 'Pictures/coaches/' + img : 'Pictures/coaches/default.png';
+
+            document.getElementById('crop-area').style.display = 'none';
+            document.getElementById('coachEditModal').style.display = 'flex';
+        }
+
+        function closeCoachEditModal() {
+            if(cropperInstance) {
+                cropperInstance.destroy();
+                cropperInstance = null;
+            }
+            document.getElementById('crop-area').style.display = 'none';
+            document.getElementById('coachEditModal').style.display = 'none';
+        }
+
+        document.getElementById('coachEditModal').addEventListener('click', function(e) {
+            if(e.target === this) closeCoachEditModal();
+        });
+
+        document.getElementById('coach-img-input').addEventListener('change', function() {
+            const file = this.files[0];
+            if(!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const cropImg = document.getElementById('crop-img');
+                cropImg.src = e.target.result;
+
+                document.getElementById('crop-area').style.display = 'block';
+
+                if(cropperInstance) {
+                    cropperInstance.destroy();
+                }
+
+                cropperInstance = new Cropper(cropImg, {
+                    aspectRatio: 1,
+                    viewMode: 1,
+                    autoCropArea: 0.8
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+
+        function applyCrop() {
+            if(!cropperInstance) return;
+
+            const canvas = cropperInstance.getCroppedCanvas({ width: 300, height: 300 });
+            const dataUrl = canvas.toDataURL('image/png');
+
+            document.getElementById('coach-modal-img-preview').src = dataUrl;
+            document.getElementById('cropped-img-data').value = dataUrl;
+
+            cropperInstance.destroy();
+            cropperInstance = null;
+            document.getElementById('crop-area').style.display = 'none';
+        }
+
+        function cancelCrop() {
+            if(cropperInstance) {
+                cropperInstance.destroy();
+                cropperInstance = null;
+            }
+            document.getElementById('crop-area').style.display = 'none';
+            document.getElementById('coach-img-input').value = '';
+        }
+    </script>
 
 </body>
 </html>

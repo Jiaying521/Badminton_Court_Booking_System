@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 13, 2026 at 06:50 AM
+-- Generation Time: May 19, 2026 at 05:08 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -48,9 +48,9 @@ CREATE TABLE `admins` (
 
 INSERT INTO `admins` (`id`, `username`, `email`, `password`, `role`, `status`, `specialisation`, `is_coach`, `coach_price_per_hour`, `reset_token`, `token_expiry`, `created_at`) VALUES
 (1, 'superadmin', 'chinzx1814@gmail.com', '$2y$10$x5NsQGVwkkp5f4oivtMd..D9tsrJLMICxeSDnSe0peEwVN77QeFGu', 'Superadmin', 'Active', NULL, 0, 0.00, '6f7215969454a243bffe4f847c58375ca1a0e4dc2157e02a1757c75020bfa0c7', '2026-04-30 18:48:36', '2026-04-30 16:17:09'),
-(2, 'Coach Lim', 'coach.lim@smasharena.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Professional Training', 1, 25.00, NULL, NULL, '2026-04-30 16:17:09'),
-(3, 'Coach Wong', 'coach.wong@smasharena.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Technique & Footwork', 1, 20.00, NULL, NULL, '2026-04-30 16:17:09'),
-(4, 'Coach Tan', 'coach.tan@smasharena.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Strategy & Match Play', 1, 30.00, NULL, NULL, '2026-04-30 16:17:09'),
+(2, 'Coach Lim', 'coach.lim@smasharena.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Singles Coaching', 1, 25.00, NULL, NULL, '2026-04-30 16:17:09'),
+(3, 'Coach Wong', 'coach.wong@smasharena.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Doubles Coaching', 1, 20.00, NULL, NULL, '2026-04-30 16:17:09'),
+(4, 'Coach Tan', 'coach.tan@smasharena.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Junior Development', 1, 30.00, NULL, NULL, '2026-04-30 16:17:09'),
 (5, 'admin', '', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Admin', 'Active', NULL, 0, 0.00, NULL, NULL, '2026-04-30 16:37:03');
 
 -- --------------------------------------------------------
@@ -73,6 +73,7 @@ CREATE TABLE `bookings` (
   `session_type` enum('Casual Play','Training','Tournament','Friendly Game') DEFAULT 'Casual Play',
   `total_price` decimal(10,2) NOT NULL COMMENT 'total fee (court + coach)',
   `status` enum('Pending','Confirmed','Cancelled','Completed') DEFAULT 'Pending',
+  `cancellation_fee` decimal(10,2) DEFAULT 0.00,
   `notes` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -81,34 +82,36 @@ CREATE TABLE `bookings` (
 -- Dumping data for table `bookings`
 --
 
-INSERT INTO `bookings` (`id`, `user_id`, `court_id`, `booking_date`, `start_time`, `end_time`, `total_hours`, `coach_id`, `coach_hours`, `coach_price_total`, `session_type`, `total_price`, `status`, `notes`, `created_at`) VALUES
-(6, 2, 1, '2026-05-02', '09:00:00', '11:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 'Alice morning training', '2026-04-30 16:34:47'),
-(7, 3, 2, '2026-05-03', '14:00:00', '16:00:00', 2, NULL, 0, 0.00, '', 50.00, 'Pending', 'Michael weekend match', '2026-04-30 16:34:47'),
-(8, 4, 1, '2026-05-04', '08:00:00', '10:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 'Siti fitness practice', '2026-04-30 16:34:47'),
-(9, 5, 3, '2026-05-04', '18:00:00', '20:00:00', 2, NULL, 0, 0.00, '', 50.00, 'Confirmed', 'Ahmad evening session', '2026-04-30 16:34:47'),
-(10, 6, 2, '2026-05-05', '10:00:00', '12:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Cancelled', 'Rachel cancelled booking', '2026-04-30 16:34:47'),
-(11, 7, 1, '2026-05-05', '13:00:00', '15:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 'Daniel weekday practice', '2026-04-30 16:34:47'),
-(12, 8, 3, '2026-05-06', '16:00:00', '18:00:00', 2, NULL, 0, 0.00, '', 50.00, 'Completed', 'Priya competitive game', '2026-04-30 16:34:47'),
-(13, 9, 2, '2026-05-06', '19:00:00', '21:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 'Jason night practice', '2026-04-30 16:34:47'),
-(14, 10, 1, '2026-05-07', '07:00:00', '09:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 'Nurul early session', '2026-04-30 16:34:47'),
-(15, 11, 1, '2026-05-15', '21:00:00', '23:00:00', 2, 0, 0, 0.00, 'Casual Play', 30.00, 'Cancelled', '', '2026-05-07 03:29:21'),
-(16, 11, 1, '2026-05-08', '09:00:00', '11:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', '', '2026-05-07 03:40:37'),
-(17, 11, 1, '2026-05-08', '11:00:00', '01:00:00', 14, 0, 0, 0.00, 'Casual Play', 195.00, 'Cancelled', '', '2026-05-07 03:43:56'),
-(18, 11, 1, '2026-05-08', '12:00:00', '18:00:00', 6, 0, 0, 0.00, 'Casual Play', 80.00, 'Cancelled', '', '2026-05-07 03:44:12'),
-(19, 11, 3, '2026-05-08', '08:00:00', '10:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', '', '2026-05-07 03:50:54'),
-(20, 11, 3, '2026-05-08', '14:00:00', '20:00:00', 6, 0, 0, 0.00, 'Casual Play', 90.00, 'Cancelled', '', '2026-05-07 03:59:49'),
-(21, 11, 1, '2026-05-23', '08:00:00', '09:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', '', '2026-05-07 04:02:04'),
-(22, 11, 1, '2026-05-22', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', '', '2026-05-07 04:02:30'),
-(23, 11, 2, '2026-05-08', '16:00:00', '21:00:00', 5, 0, 0, 0.00, 'Casual Play', 75.00, 'Cancelled', '', '2026-05-07 04:02:54'),
-(24, 11, 1, '2026-05-15', '10:00:00', '16:00:00', 6, 0, 0, 0.00, 'Casual Play', 70.00, 'Cancelled', '', '2026-05-07 04:05:31'),
-(25, 11, 2, '2026-05-08', '13:00:00', '14:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', '', '2026-05-07 04:05:43'),
-(26, 11, 2, '2026-05-29', '13:00:00', '00:00:00', 11, 0, 0, 0.00, 'Casual Play', 160.00, 'Cancelled', '', '2026-05-07 04:06:31'),
-(27, 11, 1, '2026-05-08', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', '', '2026-05-07 04:16:32'),
-(28, 11, 1, '2026-05-07', '13:00:00', '14:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Confirmed', '', '2026-05-07 04:24:15'),
-(29, 11, 2, '2026-05-08', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Pending', '', '2026-05-07 04:40:34'),
-(30, 11, 2, '2026-05-28', '08:00:00', '09:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', '', '2026-05-07 05:24:25'),
-(31, 11, 2, '2026-05-14', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', '', '2026-05-07 05:33:03'),
-(32, 11, 2, '2026-05-23', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', '', '2026-05-07 05:37:58');
+INSERT INTO `bookings` (`id`, `user_id`, `court_id`, `booking_date`, `start_time`, `end_time`, `total_hours`, `coach_id`, `coach_hours`, `coach_price_total`, `session_type`, `total_price`, `status`, `cancellation_fee`, `notes`, `created_at`) VALUES
+(6, 2, 1, '2026-05-02', '09:00:00', '11:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 0.00, 'Alice morning training', '2026-04-30 16:34:47'),
+(7, 3, 2, '2026-05-03', '14:00:00', '16:00:00', 2, NULL, 0, 0.00, '', 50.00, 'Pending', 0.00, 'Michael weekend match', '2026-04-30 16:34:47'),
+(8, 4, 1, '2026-05-04', '08:00:00', '10:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 0.00, 'Siti fitness practice', '2026-04-30 16:34:47'),
+(9, 5, 3, '2026-05-04', '18:00:00', '20:00:00', 2, NULL, 0, 0.00, '', 50.00, 'Confirmed', 0.00, 'Ahmad evening session', '2026-04-30 16:34:47'),
+(10, 6, 2, '2026-05-05', '10:00:00', '12:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Cancelled', 0.00, 'Rachel cancelled booking', '2026-04-30 16:34:47'),
+(11, 7, 1, '2026-05-05', '13:00:00', '15:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 0.00, 'Daniel weekday practice', '2026-04-30 16:34:47'),
+(12, 8, 3, '2026-05-06', '16:00:00', '18:00:00', 2, NULL, 0, 0.00, '', 50.00, 'Completed', 0.00, 'Priya competitive game', '2026-04-30 16:34:47'),
+(13, 9, 2, '2026-05-06', '19:00:00', '21:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 0.00, 'Jason night practice', '2026-04-30 16:34:47'),
+(14, 10, 1, '2026-05-07', '07:00:00', '09:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 0.00, 'Nurul early session', '2026-04-30 16:34:47'),
+(15, 11, 1, '2026-05-15', '21:00:00', '23:00:00', 2, 0, 0, 0.00, 'Casual Play', 30.00, 'Cancelled', 0.00, '', '2026-05-07 03:29:21'),
+(16, 11, 1, '2026-05-08', '09:00:00', '11:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 0.00, '', '2026-05-07 03:40:37'),
+(17, 11, 1, '2026-05-08', '11:00:00', '01:00:00', 14, 0, 0, 0.00, 'Casual Play', 195.00, 'Cancelled', 0.00, '', '2026-05-07 03:43:56'),
+(18, 11, 1, '2026-05-08', '12:00:00', '18:00:00', 6, 0, 0, 0.00, 'Casual Play', 80.00, 'Cancelled', 0.00, '', '2026-05-07 03:44:12'),
+(19, 11, 3, '2026-05-08', '08:00:00', '10:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 0.00, '', '2026-05-07 03:50:54'),
+(20, 11, 3, '2026-05-08', '14:00:00', '20:00:00', 6, 0, 0, 0.00, 'Casual Play', 90.00, 'Cancelled', 0.00, '', '2026-05-07 03:59:49'),
+(21, 11, 1, '2026-05-23', '08:00:00', '09:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', 0.00, '', '2026-05-07 04:02:04'),
+(22, 11, 1, '2026-05-22', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', 0.00, '', '2026-05-07 04:02:30'),
+(23, 11, 2, '2026-05-08', '16:00:00', '21:00:00', 5, 0, 0, 0.00, 'Casual Play', 75.00, 'Cancelled', 0.00, '', '2026-05-07 04:02:54'),
+(24, 11, 1, '2026-05-15', '10:00:00', '16:00:00', 6, 0, 0, 0.00, 'Casual Play', 70.00, 'Cancelled', 0.00, '', '2026-05-07 04:05:31'),
+(25, 11, 2, '2026-05-08', '13:00:00', '14:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', 0.00, '', '2026-05-07 04:05:43'),
+(26, 11, 2, '2026-05-29', '13:00:00', '00:00:00', 11, 0, 0, 0.00, 'Casual Play', 160.00, 'Cancelled', 0.00, '', '2026-05-07 04:06:31'),
+(27, 11, 1, '2026-05-08', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-07 04:16:32'),
+(28, 11, 1, '2026-05-07', '13:00:00', '14:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Confirmed', 0.00, '', '2026-05-07 04:24:15'),
+(29, 11, 2, '2026-05-08', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Pending', 0.00, '', '2026-05-07 04:40:34'),
+(30, 11, 2, '2026-05-28', '08:00:00', '09:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-07 05:24:25'),
+(31, 11, 2, '2026-05-14', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-07 05:33:03'),
+(32, 11, 2, '2026-05-23', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-07 05:37:58'),
+(33, 1, 5, '2026-05-18', '16:00:00', '17:00:00', 1, 0, 0, 0.00, 'Casual Play', 15.00, 'Pending', 0.00, '', '2026-05-18 07:36:21'),
+(34, 1, 8, '2026-05-18', '16:00:00', '17:00:00', 1, 4, 1, 10.00, 'Casual Play', 224.00, 'Confirmed', 0.00, '', '2026-05-18 07:59:13');
 
 -- --------------------------------------------------------
 
@@ -123,6 +126,13 @@ CREATE TABLE `booking_addons` (
   `quantity` int(11) NOT NULL DEFAULT 1,
   `price` decimal(10,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `booking_addons`
+--
+
+INSERT INTO `booking_addons` (`id`, `booking_id`, `product_id`, `quantity`, `price`) VALUES
+(1, 34, 7, 1, 199.00);
 
 -- --------------------------------------------------------
 
@@ -171,9 +181,26 @@ CREATE TABLE `coaches` (
 --
 
 INSERT INTO `coaches` (`id`, `admin_id`, `name`, `specialty`, `phone`, `price_per_hour`, `is_active`, `gender`, `age`, `profile_img`, `availability_status`) VALUES
-(1, 2, 'Coach Lim', '🏸 Professional Training - Overall skill improvement, power hitting, consistency', NULL, 25.00, 1, NULL, NULL, NULL, 'Available'),
-(2, 3, 'Coach Wong', '🎯 Technique & Footwork - Basic strokes, footwork, body positioning', NULL, 20.00, 1, NULL, NULL, NULL, 'Available'),
-(3, 4, 'Coach Tan', '🏆 Strategy & Match Play - Game tactics, mental training, competition prep', NULL, 30.00, 1, NULL, NULL, NULL, 'Available');
+(1, 2, 'Coach Lim', 'Singles Coaching', '', 25.00, 1, '', 0, NULL, 'Available'),
+(2, 3, 'Coach Wong', 'Doubles Coaching', '', 20.00, 1, '', 0, NULL, 'Available'),
+(3, 4, 'Coach Tan', 'Junior Development', '', 30.00, 1, '', 0, NULL, 'Available');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `contact_messages`
+--
+
+CREATE TABLE `contact_messages` (
+  `id` int(11) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `subject` varchar(255) NOT NULL,
+  `message` text NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `status` enum('unread','read','replied') DEFAULT 'unread',
+  `created_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -340,7 +367,8 @@ CREATE TABLE `payments` (
 
 INSERT INTO `payments` (`payment_id`, `booking_id`, `amount`, `discount_applied`, `final_amount`, `payment_method`, `payment_status`, `transaction_id`, `payment_date`) VALUES
 (5, 26, 160.00, 0.00, 160.00, 'Center App Wallet', 'success', NULL, '2026-05-07 04:14:24'),
-(6, 28, 10.00, 0.00, 10.00, 'App Wallet', 'success', NULL, '2026-05-07 04:39:33');
+(6, 28, 10.00, 0.00, 10.00, 'App Wallet', 'success', NULL, '2026-05-07 04:39:33'),
+(8, 34, 224.00, 0.00, 224.00, 'TNG', 'success', NULL, '2026-05-18 08:00:12');
 
 -- --------------------------------------------------------
 
@@ -495,17 +523,7 @@ INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `created_at`, `
 --
 -- Indexes for dumped tables
 --
-CREATE TABLE IF NOT EXISTS `contact_messages` (
-    `id` int(11) NOT NULL AUTO_INCREMENT,
-    `name` varchar(100) NOT NULL,
-    `email` varchar(255) NOT NULL,
-    `subject` varchar(255) NOT NULL,
-    `message` text NOT NULL,
-    `user_id` int(11) DEFAULT NULL,
-    `status` enum('unread','read','replied') DEFAULT 'unread',
-    `created_at` datetime NOT NULL,
-    PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 --
 -- Indexes for table `admins`
 --
@@ -543,6 +561,12 @@ ALTER TABLE `closed_days`
 ALTER TABLE `coaches`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `admin_id` (`admin_id`);
+
+--
+-- Indexes for table `contact_messages`
+--
+ALTER TABLE `contact_messages`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `courts`
@@ -613,19 +637,19 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `admins`
 --
 ALTER TABLE `admins`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT for table `booking_addons`
 --
 ALTER TABLE `booking_addons`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `closed_days`
@@ -637,7 +661,13 @@ ALTER TABLE `closed_days`
 -- AUTO_INCREMENT for table `coaches`
 --
 ALTER TABLE `coaches`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `contact_messages`
+--
+ALTER TABLE `contact_messages`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `courts`
@@ -661,7 +691,7 @@ ALTER TABLE `otp_codes`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `products`
@@ -728,28 +758,6 @@ ALTER TABLE `court_availability`
 --
 ALTER TABLE `payments`
   ADD CONSTRAINT `fk_payments_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE;
-
-ALTER TABLE `bookings` 
-  ADD COLUMN `cancellation_fee` DECIMAL(10,2) DEFAULT 0.00 AFTER `status`;
-
--- 添加缺失的设置（如果不存在）
-INSERT INTO `settings` (`setting_key`, `setting_value`) VALUES 
-('off_peak_price', '10.00'),
-('peak_price', '15.00'),
-('cancellation_fee', '50.00'),
-('cancellation_hours', '2')
-ON DUPLICATE KEY UPDATE `setting_value` = VALUES(`setting_value`);
-
--- 更新现有的营业时间（改为 8am - 1am）
-UPDATE `settings` SET `setting_value` = '01:00' WHERE `setting_key` = 'close_time';
-UPDATE `settings` SET `setting_value` = '15:00' WHERE `setting_key` = 'peak_start';
-UPDATE `settings` SET `setting_value` = '01:00' WHERE `setting_key` = 'peak_end';
-
--- 添加 profile_picture 字段到 users 表
-ALTER TABLE `users` ADD COLUMN `profile_picture` VARCHAR(255) NULL AFTER `wallet_balance`;
-
--- 如果已经存在但需要确认
-DESCRIBE users;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
