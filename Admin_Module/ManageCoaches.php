@@ -254,9 +254,6 @@
                 <div class="btn-add-group">
                     <button class="btn-filter-toggle" onclick="toggleFilter()">
                         <i class="fas fa-filter"></i> Filter
-                        <?php if($has_filter): ?>
-                            <span class="filter-dot"></span>
-                        <?php endif; ?>
                     </button>
                     <button class="btn-add-account" onclick="toggleCoachForm()">
                         <i class="fas fa-plus"></i> Add Coach

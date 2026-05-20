@@ -28,6 +28,7 @@
     border-radius: 50%;
     background: #0f172a;
     display: inline-block;
+    flex-shrink: 0;
 }
 
 .filter-panel {
@@ -275,19 +276,22 @@
 /* Crop Panel */
 #cropPanel {
     width: 100%;
-    max-width: 560px;
-    max-height: 90vh;
+    max-width: 680px;
+    max-height: 92vh;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
 }
 
 #crop-area {
-    padding: 0 28px;
+    padding: 0 28px 16px;
+    flex: 1;
 }
 
 #crop-area img {
     display: block;
     width: 100%;
-    max-height: 360px;
+    max-height: 480px;
     object-fit: contain;
 }
 
