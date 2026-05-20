@@ -20,8 +20,17 @@
         <?php if ($role === 'Superadmin'): ?>
             <li><a href="AdminManagement.php">Admin Management</a></li>
             <li><a href="ManageCourts.php">Court Management</a></li>
-            <li><a href="ManageBookings.php">Manage Bookings</a></li>
             <li><a href="SystemSettings.php">System Settings</a></li>
+
+            <li class="dropdown">
+                <a href="#" class="drop-btn">More Options ▼</a>
+                <ul class="submenu">
+                    <li><a href="ManageCoaches.php">Manage Coach</a></li>
+                    <li><a href="ManageBookings.php">Manage Bookings</a></li>                    
+                    <li><a href="#">Reports & Analytics</a></li>
+                    <li><a href="#">Notifications</a></li>
+                </ul>
+            </li>
 
         <?php elseif ($role === 'Admin'): ?>
             <li><a href="ManageCourts.php">Court Management</a></li>

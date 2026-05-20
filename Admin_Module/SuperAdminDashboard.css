@@ -794,3 +794,13 @@ body {
         font-size: 22px;
     }
 }
+
+.stats-grid .stat-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.stats-grid .stat-link:hover {
+    transform: scale(1.02);
+}

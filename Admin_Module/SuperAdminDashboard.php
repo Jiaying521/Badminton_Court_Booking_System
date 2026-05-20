@@ -254,26 +254,32 @@ if ($stats_result) {
         <!-- Statistics Cards Grid -->
         <section class="stats-grid">
             <?php if ($role === 'Superadmin'): ?>
-                <div class="stat-box">
-                    <div class="stat-icon blue"><i class="fas fa-user-shield"></i></div>
-                    <div class="stat-info"><h3>Total Admins</h3><p><?php echo $total_admins; ?></p></div>
-                </div>
+                <a href="AdminManagement.php" class="stat-link">
+                    <div class="stat-box">
+                        <div class="stat-icon blue"><i class="fas fa-user-shield"></i></div>
+                        <div class="stat-info"><h3>Total Admins</h3><p><?php echo $total_admins; ?></p></div>
+                    </div>
+                </a>
             <?php endif; ?>
 
             <?php if ($role === 'Superadmin' || $role === 'Admin'): ?>
-                <div class="stat-box">
-                    <div class="stat-icon green"><i class="fas fa-user-md"></i></div>
-                    <div class="stat-info"><h3>Total Coaches</h3><p><?php echo $total_coaches; ?></p></div>
-                </div>
+                <a href="ManageCoaches.php" class="stat-link">
+                    <div class="stat-box">
+                        <div class="stat-icon green"><i class="fas fa-user-md"></i></div>
+                        <div class="stat-info"><h3>Total Coaches</h3><p><?php echo $total_coaches; ?></p></div>
+                    </div>
+                </a>
             <?php endif; ?>
 
-            <div class="stat-box">
-                <div class="stat-icon orange"><i class="fas fa-calendar-check"></i></div>
-                <div class="stat-info">
-                    <h3>Today's Bookings</h3>
-                    <p><?php echo $today_appointments; ?></p>
+            <a href="ManageBookings.php" class="stat-link">
+                <div class="stat-box">
+                    <div class="stat-icon orange"><i class="fas fa-calendar-check"></i></div>
+                    <div class="stat-info">
+                        <h3>Today's Bookings</h3>
+                        <p><?php echo $today_appointments; ?></p>
+                    </div>
                 </div>
-            </div>
+            </a>
         </section>
 
         <!-- Data Visualization and Shortcuts Layout -->

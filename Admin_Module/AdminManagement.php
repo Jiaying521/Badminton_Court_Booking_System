@@ -14,36 +14,33 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'Superadmin') {
     exit();
 }
 
-$username = $_SESSION['username'];
-$role = $_SESSION['role'];
+$username     = $_SESSION['username'];
+$role         = $_SESSION['role'];
 $display_name = $username;
 
-// --- Prevent browser caching (Solve the logout back-button issue) ---
-header("Cache-Control: no-cache, no-store, must-revalidate"); 
-header("Pragma: no-cache"); // HTTP 1.0.
-header("Expires: 0"); // Proxies.
+// Prevent browser caching
+header("Cache-Control: no-cache, no-store, must-revalidate");
+header("Pragma: no-cache");
+header("Expires: 0");
 
 // Database connection
 $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
 
-// Updated Function using PHPMailer
+// PHPMailer function
 function sendTemporaryPassword($to_email, $username, $temp_pass) {
     $mail = new PHPMailer(true);
     try {
-        // Server settings
         $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com'; 
+        $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'smasharenabadminton@gmail.com'; 
-        $mail->Password   = 'hgrk ocze fowx rbrd';   
+        $mail->Username   = 'smasharenabadminton@gmail.com';
+        $mail->Password   = 'hgrk ocze fowx rbrd';
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 
-        // Recipients
         $mail->setFrom('smasharenabadminton@gmail.com', 'Badminton Hub');
         $mail->addAddress($to_email);
 
-        // Content
         $mail->isHTML(true);
         $mail->CharSet = 'UTF-8';
         $mail->Subject = 'Badminton Hub Credentials';
@@ -76,91 +73,20 @@ function sendTemporaryPassword($to_email, $username, $temp_pass) {
         $mail->send();
         return true;
     } catch (Exception $e) {
-        return false; 
+        return false;
     }
 }
 
 $message = "";
 
-// Handle edit coach profile
-if (isset($_POST['update_coach'])) {
-    $coach_id       = intval($_POST['coach_id']);
-    $name           = mysqli_real_escape_string($conn, $_POST['coach_name']);
-    $specialty      = mysqli_real_escape_string($conn, $_POST['specialty']);
-    $phone          = mysqli_real_escape_string($conn, $_POST['phone']);
-    $gender         = mysqli_real_escape_string($conn, $_POST['gender']);
-    $age            = intval($_POST['age']);
-    $price_per_hour = floatval($_POST['price_per_hour']);
-
-    // Handle cropped image upload
-    $img_sql = "";
-    if (!empty($_POST['cropped_img_data'])) {
-        $img_data    = $_POST['cropped_img_data'];
-        $img_data    = str_replace('data:image/png;base64,', '', $img_data);
-        $img_data    = str_replace(' ', '+', $img_data);
-        $img_decoded = base64_decode($img_data);
-        $img_name    = time() . '_coach.png';
-        $upload_path = 'Pictures/coaches/' . $img_name;
-
-        if (file_put_contents($upload_path, $img_decoded)) {
-            $img_sql = ", profile_img = '$img_name'";
-        }
-    }
-
-    mysqli_query($conn, "
-        UPDATE coaches SET
-            name           = '$name',
-            specialty      = '$specialty',
-            phone          = '$phone',
-            gender         = '$gender',
-            age            = $age,
-            price_per_hour = $price_per_hour
-            $img_sql
-        WHERE id = $coach_id
-    ");
-
-    // Sync updated info back to admins table
-    mysqli_query($conn, "
-        UPDATE admins SET
-            coach_price_per_hour = $price_per_hour,
-            specialisation       = '$specialty'
-        WHERE id = (SELECT admin_id FROM coaches WHERE id = $coach_id)
-    ");
-
-    $message = "<div class='badge success' style='width:100%; padding:15px; margin-bottom:20px;'>Coach profile updated successfully!</div>";
-}
-
-// Handle availability status change
-if (isset($_GET['avail_id']) && isset($_GET['avail_status'])) {
-    $avail_id     = intval($_GET['avail_id']);
-    $avail_status = mysqli_real_escape_string($conn, $_GET['avail_status']);
-
-    mysqli_query($conn, "UPDATE coaches SET availability_status = '$avail_status' WHERE id = $avail_id");
-    header("Location: AdminManagement.php?updated=1");
-    exit();
-}
-
 // Handle account creation
 if (isset($_POST['add_account'])) {
     $user        = mysqli_real_escape_string($conn, $_POST['username']);
     $email       = mysqli_real_escape_string($conn, $_POST['email']);
-    $role_to_add = mysqli_real_escape_string($conn, $_POST['role']);
-    $spec        = isset($_POST['spec']) ? mysqli_real_escape_string($conn, $_POST['spec']) : NULL;
-    $gender_add  = isset($_POST['gender_add']) ? mysqli_real_escape_string($conn, $_POST['gender_add']) : '';
-    $age_add     = isset($_POST['age_add']) && $_POST['age_add'] !== '' ? intval($_POST['age_add']) : 'NULL';
-
-    // Coach accounts log in through admins, while customer pages read public coach details from coaches.
-    $is_coach_val = ($role_to_add === 'Coach') ? 1 : 0;
 
     $temp_pass   = bin2hex(random_bytes(4));
     $hashed_pass = password_hash($temp_pass, PASSWORD_DEFAULT);
 
-    // Fix: HTML input value="0" always sends "0", so check > 0 instead of checking empty string
-    $coach_price_raw = isset($_POST['coach_price_per_hour']) ? $_POST['coach_price_per_hour'] : '';
-    $coach_price     = ($coach_price_raw !== '' && (float)$coach_price_raw > 0) ? (float)$coach_price_raw : NULL;
-    $coach_price_sql = ($coach_price === NULL) ? "NULL" : $coach_price;
-
-    // Check for duplicate username OR email
     $check = mysqli_query($conn, "SELECT username, email FROM admins WHERE username = '$user' OR email = '$email'");
     if (mysqli_num_rows($check) > 0) {
         $found = mysqli_fetch_assoc($check);
@@ -170,43 +96,27 @@ if (isset($_POST['add_account'])) {
             $message = "<div class='badge pending' style='width:100%; padding:15px; margin-bottom:20px;'>Error: Email address already exists!</div>";
         }
     } else {
-        // Note: $coach_price_sql must NOT have quotes around it so NULL inserts correctly
-        $sql = "INSERT INTO admins (username, email, password, role, status, specialisation, is_coach, coach_price_per_hour) 
-                VALUES ('$user', '$email', '$hashed_pass', '$role_to_add', 'Inactive', '$spec', '$is_coach_val', $coach_price_sql)";
-        
+        $sql = "INSERT INTO admins (username, email, password, role, status, is_coach, coach_price_per_hour)
+                VALUES ('$user', '$email', '$hashed_pass', 'Admin', 'Inactive', 0, NULL)";
+
         if (mysqli_query($conn, $sql)) {
-            $admin_id = mysqli_insert_id($conn);
-
-            if ($role_to_add === 'Coach') {
-                $age_sql_val = ($age_add === 'NULL') ? 'NULL' : $age_add;
-                $coach_sql   = "INSERT INTO coaches (admin_id, name, specialty, price_per_hour, gender, age, is_active)
-                                VALUES ('$admin_id', '$user', '$spec', $coach_price_sql, '$gender_add', $age_sql_val, 0)";
-                mysqli_query($conn, $coach_sql);
-            }
-
-            // Call PHPMailer function
             $mail_sent = sendTemporaryPassword($email, $user, $temp_pass);
-            
             if ($mail_sent) {
                 $message = "<div class='badge success' style='width:100%; padding:15px; margin-bottom:20px;'>Success: Account Created & Email Sent.</div>";
             } else {
-                // If SMTP fails, it shows "Email skipped"
                 $message = "<div class='badge success' style='width:100%; padding:15px; margin-bottom:20px;'>Success: Account Created (Email skipped).</div>";
             }
         } else {
-            // Show error if DB structure still blocks insertion
             $message = "<div class='badge pending' style='width:100%; padding:15px; margin-bottom:20px;'>Database Error: " . mysqli_error($conn) . "</div>";
         }
     }
 }
 
-// Handle toggle status by fetching from DB 
+// Handle toggle status
 if (isset($_GET['update_id']) && isset($_GET['new_status'])) {
     $uid    = intval($_GET['update_id']);
     $status = mysqli_real_escape_string($conn, $_GET['new_status']);
     mysqli_query($conn, "UPDATE admins SET status = '$status' WHERE id = $uid");
-    $coach_active = ($status === 'Active') ? 1 : 0;
-    mysqli_query($conn, "UPDATE coaches SET is_active = '$coach_active' WHERE admin_id = $uid");
     header("Location: AdminManagement.php");
     exit();
 }
@@ -214,19 +124,26 @@ if (isset($_GET['update_id']) && isset($_GET['new_status'])) {
 // Handle delete
 if (isset($_GET['delete_id'])) {
     $did = intval($_GET['delete_id']);
-    // Prevent deleting superadmin for safety
-    mysqli_query($conn, "DELETE FROM coaches WHERE admin_id = $did");
     mysqli_query($conn, "DELETE FROM admins WHERE id = $did AND role != 'Superadmin'");
     header("Location: AdminManagement.php");
     exit();
 }
 
-// Filter Logic
-$current_filter = isset($_GET['filter']) ? $_GET['filter'] : 'All';
-$query = "SELECT * FROM admins WHERE 1=1"; 
-if ($current_filter !== 'All') {
-    $query .= " AND role = '$current_filter'";
-}
+// Filter values from GET
+$filter_role   = isset($_GET['filter']) ? $_GET['filter'] : 'All';
+$filter_status = isset($_GET['status']) ? $_GET['status'] : '';
+$filter_search = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
+
+$has_filter = ($filter_role !== 'All' || $filter_status !== '' || $filter_search !== '');
+
+// Build query
+$where_parts = ["role != 'Coach'"];
+if ($filter_role === 'Superadmin') $where_parts[] = "role = 'Superadmin'";
+elseif ($filter_role === 'Admin')  $where_parts[] = "role = 'Admin'";
+if ($filter_status !== '')         $where_parts[] = "status = '$filter_status'";
+if ($filter_search !== '')         $where_parts[] = "(username LIKE '%$filter_search%' OR email LIKE '%$filter_search%')";
+
+$query  = "SELECT * FROM admins WHERE " . implode(" AND ", $where_parts);
 $result = mysqli_query($conn, $query);
 ?>
 
@@ -241,37 +158,33 @@ $result = mysqli_query($conn, $query);
     <link rel="stylesheet" href="SuperAdminDashboard.css">
     <link rel="stylesheet" href="AdminManagement.css">
     <link rel="stylesheet" href="ManageCourts.css">
-
-    <!-- Cropper.js CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 </head>
 <body>
 
-    <!-- Nav Bar -->
     <?php include 'navbar.php'; ?>
-    
+
     <main class="content">
         <div class="manage-container">
-            
+
             <header class="management-header">
                 <div>
-                    <h1>Staff Management</h1>
-                    <p>Manage badminton hub staff accounts and permissions.</p>
+                    <h1>Admin Management</h1>
+                    <p>Manage admin accounts and access permissions.</p>
                 </div>
                 <div class="btn-add-group">
-                    <button class="btn-add-account" onclick="toggleForm('adminForm')">
-                        <i class="fas fa-plus"></i> Admin
+                    <button class="btn-filter-toggle" onclick="toggleFilter()">
+                        <i class="fas fa-filter"></i> Filter
+                        <?php if($has_filter): ?>
+                            <span class="filter-dot"></span>
+                        <?php endif; ?>
                     </button>
-                    <button class="btn-add-account" style="background-color: #17a2b8;" onclick="toggleForm('coachForm')">
-                        <i class="fas fa-user-shield"></i> Coach
+                    <button class="btn-add-account" onclick="toggleForm('adminForm')">
+                        <i class="fas fa-plus"></i> Add Admin
                     </button>
                 </div>
             </header>
 
             <?php if($message !== "") echo $message; ?>
-            <?php if(isset($_GET['updated'])): ?>
-                <div class="badge success" style="width:100%; padding:15px; margin-bottom:20px;">Status updated successfully!</div>
-            <?php endif; ?>
 
             <!-- Add Admin Form -->
             <div id="adminForm" class="form-card">
@@ -284,41 +197,35 @@ $result = mysqli_query($conn, $query);
                 </form>
             </div>
 
-            <!-- Coach Management Form -->
-            <div id="coachForm" class="form-card">
-                <h3>Coach Management</h3>
-                <form method="POST" class="form-grid">
-                    <input type="hidden" name="role" value="Coach">
-                    <input type="text" name="username" placeholder="Coach Name" required>
-                    <input type="email" name="email" placeholder="Email" required>
-                    <select name="spec" required>
-                        <option value="" disabled selected>Select Coaching Specialty</option>
-                        <option value="Singles Coaching">Singles Coaching</option>
-                        <option value="Doubles Coaching">Doubles Coaching</option>
-                        <option value="Fitness & Conditioning">Fitness &amp; Conditioning</option>
-                        <option value="Junior Development">Junior Development</option>
-                        <option value="Tournament Preparation">Tournament Preparation</option>
-                    </select>
-                    <input type="number" name="coach_price_per_hour" placeholder="Coach Price Per Hour (RM)" step="0.01" min="0" required>
-                    <select name="gender_add">
-                        <option value="">-- Gender (Optional) --</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                    </select>
-                    <input type="number" name="age_add" placeholder="Age (Optional)" min="18" max="80">
-                    <button type="submit" name="add_account" class="btn-create">Create Account</button>
+            <!-- Collapsible Filter Panel -->
+            <div class="filter-panel <?php echo $has_filter ? 'open' : ''; ?>" id="filterPanel">
+                <form method="GET" class="filter-grid">
+                    <div class="filter-field">
+                        <label>Search</label>
+                        <input type="text" name="search" placeholder="Username or email..." value="<?php echo htmlspecialchars($filter_search); ?>">
+                    </div>
+                    <div class="filter-field">
+                        <label>Role</label>
+                        <select name="filter">
+                            <option value="All"        <?php echo ($filter_role === 'All'        ? 'selected' : ''); ?>>All Staff</option>
+                            <option value="Superadmin" <?php echo ($filter_role === 'Superadmin' ? 'selected' : ''); ?>>Superadmin</option>
+                            <option value="Admin"      <?php echo ($filter_role === 'Admin'      ? 'selected' : ''); ?>>Admin</option>
+                        </select>
+                    </div>
+                    <div class="filter-field">
+                        <label>Status</label>
+                        <select name="status">
+                            <option value=""          <?php echo ($filter_status === ''          ? 'selected' : ''); ?>>All Status</option>
+                            <option value="Active"    <?php echo ($filter_status === 'Active'    ? 'selected' : ''); ?>>Active</option>
+                            <option value="Inactive"  <?php echo ($filter_status === 'Inactive'  ? 'selected' : ''); ?>>Inactive</option>
+                            <option value="Suspended" <?php echo ($filter_status === 'Suspended' ? 'selected' : ''); ?>>Suspended</option>
+                        </select>
+                    </div>
+                    <div class="filter-actions">
+                        <button type="submit" class="btn-filter-apply"><i class="fas fa-search"></i> Apply</button>
+                        <a href="AdminManagement.php" class="btn-filter-clear">Clear</a>
+                    </div>
                 </form>
-            </div>
-
-            <div class="filter-bar">
-                <i class="fas fa-filter"></i>
-                <span>Filter By Role:</span>
-                <select id="statusFilter" style="width: 200px;" onchange="location.href='AdminManagement.php?filter=' + this.value">
-                    <option value="All" <?php echo ($current_filter == 'All' ? 'selected' : ''); ?>>All Staff</option>
-                    <option value="Superadmin" <?php echo ($current_filter == 'Superadmin' ? 'selected' : ''); ?>>Superadmins Only</option>
-                    <option value="Admin" <?php echo ($current_filter == 'Admin' ? 'selected' : ''); ?>>Admins Only</option>
-                    <option value="Coach" <?php echo ($current_filter == 'Coach' ? 'selected' : ''); ?>>Coach Only</option>
-                </select>
             </div>
 
             <table class="data-table">
@@ -327,88 +234,37 @@ $result = mysqli_query($conn, $query);
                         <th>ID</th>
                         <th>Staff Info</th>
                         <th style="text-align:center;">Role</th>
-                        <th style="text-align:center;">Availability</th>
+                        <th style="text-align:center;">Created</th>
                         <th style="text-align:center;">Account Status</th>
                         <th style="text-align:center;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php while($row = mysqli_fetch_assoc($result)): ?>
-
-                    <?php
-                        // Fetch coach data if role is Coach
-                        $coach_row2 = null;
-                        if($row['role'] === 'Coach') {
-                            $coach_q2   = mysqli_query($conn, "SELECT id, name, specialty, phone, gender, age, price_per_hour, profile_img, availability_status FROM coaches WHERE admin_id = {$row['id']} LIMIT 1");
-                            $coach_row2 = mysqli_fetch_assoc($coach_q2);
-                        }
-                    ?>
-
-                    <tr <?php if($row['role'] === 'Coach'): ?>
-                        class="main-row"
-                        onclick="openCoachEditModal(
-                            <?php echo $coach_row2['id']; ?>,
-                            '<?php echo addslashes($coach_row2['name'] ?? ''); ?>',
-                            '<?php echo addslashes($coach_row2['specialty'] ?? ''); ?>',
-                            '<?php echo addslashes($coach_row2['phone'] ?? ''); ?>',
-                            '<?php echo addslashes($coach_row2['gender'] ?? ''); ?>',
-                            '<?php echo $coach_row2['age'] ?? ''; ?>',
-                            '<?php echo $coach_row2['price_per_hour'] ?? ''; ?>',
-                            '<?php echo $coach_row2['profile_img'] ?? ''; ?>'
-                        )"
-                        style="cursor:pointer;"
-                    <?php endif; ?>>
-
+                    <tr>
                         <td>#<?php echo $row['id']; ?></td>
                         <td>
                             <strong><?php echo htmlspecialchars($row['username']); ?></strong><br>
                             <small style="color:#999;"><?php echo htmlspecialchars($row['email']); ?></small>
-                            <?php if ($row['role'] === 'Coach' && !empty($row['specialisation'])): ?>
-                                <br><small style="color:#64748b;"><?php echo htmlspecialchars($row['specialisation']); ?> | RM <?php echo number_format((float)$row['coach_price_per_hour'], 2); ?>/hour</small>
-                            <?php endif; ?>
                         </td>
 
-                        <!-- Role: centered -->
                         <td style="text-align:center;">
                             <span class="role-label"><?php echo $row['role']; ?></span>
                         </td>
 
-                        <!-- Availability: only for Coach, dash for others -->
-                        <td style="text-align:center;" onclick="event.stopPropagation()">
-                            <?php if($row['role'] === 'Coach' && $coach_row2): ?>
-                                <?php
-                                    $avail = $coach_row2['availability_status'] ?? 'Available';
-                                    $avail_class = match($avail) {
-                                        'Available' => 'status-active',
-                                        'On Leave'  => 'status-inactive',
-                                        'Sick'      => 'status-suspended',
-                                        'Off Day'   => 'status-inactive',
-                                        default     => 'status-inactive'
-                                    };
-                                ?>
-                                <select class="status-select <?php echo $avail_class; ?>"
-                                    onclick="event.stopPropagation()"
-                                    onchange="location.href='AdminManagement.php?avail_id=<?php echo $coach_row2['id']; ?>&avail_status=' + this.value">
-                                    <option value="Available" <?php echo $avail === 'Available' ? 'selected' : ''; ?>>Available</option>
-                                    <option value="On Leave"  <?php echo $avail === 'On Leave'  ? 'selected' : ''; ?>>On Leave</option>
-                                    <option value="Sick"      <?php echo $avail === 'Sick'      ? 'selected' : ''; ?>>Sick</option>
-                                    <option value="Off Day"   <?php echo $avail === 'Off Day'   ? 'selected' : ''; ?>>Off Day</option>
-                                </select>
-                            <?php else: ?>
-                                <span style="color:#cbd5e1;">—</span>
-                            <?php endif; ?>
+                        <td style="text-align:center; font-size:12px; color:var(--text-muted);">
+                            <?php echo date('d M Y', strtotime($row['created_at'])); ?>
                         </td>
 
-                        <!-- Account Status: centered -->
                         <td style="text-align:center;" onclick="event.stopPropagation()">
                             <?php if ($row['role'] !== 'Superadmin'): ?>
-                            <select class="status-select <?php 
-                                if($row['status'] == 'Active') echo 'status-active';
+                            <select class="status-select <?php
+                                if($row['status'] == 'Active')       echo 'status-active';
                                 elseif($row['status'] == 'Inactive') echo 'status-inactive';
-                                else echo 'status-suspended';
-                            ?>" onclick="event.stopPropagation()" onchange="location.href='AdminManagement.php?update_id=<?php echo $row['id']; ?>&new_status=' + this.value">
-                                <option value="Active" <?php echo ($row['status'] == 'Active' ? 'selected' : ''); ?>>Active</option>
-                                <option value="Inactive" <?php echo ($row['status'] == 'Inactive' ? 'selected' : ''); ?>>Inactive</option>
+                                else                                  echo 'status-suspended';
+                            ?>" onchange="location.href='AdminManagement.php?update_id=<?php echo $row['id']; ?>&new_status=' + this.value">
+                                <option value="Active"    <?php echo ($row['status'] == 'Active'    ? 'selected' : ''); ?>>Active</option>
+                                <option value="Inactive"  <?php echo ($row['status'] == 'Inactive'  ? 'selected' : ''); ?>>Inactive</option>
                                 <option value="Suspended" <?php echo ($row['status'] == 'Suspended' ? 'selected' : ''); ?>>Suspended</option>
                             </select>
                             <?php else: ?>
@@ -416,11 +272,10 @@ $result = mysqli_query($conn, $query);
                             <?php endif; ?>
                         </td>
 
-                        <!-- Actions: centered, stopPropagation on td -->
-                        <td style="text-align:center;" onclick="event.stopPropagation()">
+                        <td style="text-align:center;">
                             <?php if ($row['role'] !== 'Superadmin'): ?>
-                            <a href="?delete_id=<?php echo $row['id']; ?>" 
-                                onclick="event.stopPropagation(); return confirm('Delete permanently?')">
+                            <a href="?delete_id=<?php echo $row['id']; ?>"
+                                onclick="return confirm('Delete permanently?')">
                                 <i class="fas fa-trash-alt delete-icon"></i>
                             </a>
                             <?php else: ?>
@@ -435,182 +290,17 @@ $result = mysqli_query($conn, $query);
         </div>
     </main>
 
-    <!-- Edit Coach Modal -->
-    <div class="modal-overlay" id="coachEditModal">
-        <div class="modal-card">
-
-            <div class="modal-header">
-                <h2><i class="fas fa-pen"></i> Edit Coach Profile</h2>
-                <button class="modal-close" onclick="closeCoachEditModal()">✕</button>
-            </div>
-
-            <form action="AdminManagement.php" method="POST">
-                <input type="hidden" name="coach_id" id="coach-modal-id">
-                <input type="hidden" name="cropped_img_data" id="cropped-img-data">
-
-                <div class="modal-grid">
-
-                    <!-- Profile Image -->
-                    <div class="modal-field full-width" style="display:flex; flex-direction:column; align-items:center;">
-                        <img id="coach-modal-img-preview"
-                            src="Pictures/coaches/default.png"
-                            style="width:80px; height:80px; border-radius:50%; object-fit:cover; margin-bottom:8px; border:3px solid #f59e0b;">
-                        <label class="btn-create" style="cursor:pointer; padding:8px 16px; font-size:13px;">
-                            <i class="fas fa-camera"></i> Change Photo
-                            <input type="file" id="coach-img-input" accept="image/*" style="display:none;">
-                        </label>
-                    </div>
-
-                    <!-- Crop Area (hidden until image selected) -->
-                    <div class="modal-field full-width" id="crop-area" style="display:none;">
-                        <img id="crop-img" style="max-width:100%;">
-                        <div style="margin-top:10px; display:flex; gap:10px; justify-content:center;">
-                            <button type="button" class="btn-modal-save" onclick="applyCrop()">Crop & Use</button>
-                            <button type="button" class="btn-modal-cancel" onclick="cancelCrop()">Cancel</button>
-                        </div>
-                    </div>
-
-                    <!-- Name -->
-                    <div class="modal-field full-width">
-                        <label>Name</label>
-                        <input type="text" name="coach_name" id="coach-modal-name" required>
-                    </div>
-
-                    <!-- Specialty -->
-                    <div class="modal-field full-width">
-                        <label>Specialty</label>
-                        <select name="specialty" id="coach-modal-specialty">
-                            <option value="">-- Select --</option>
-                            <option value="Singles Coaching">Singles Coaching</option>
-                            <option value="Doubles Coaching">Doubles Coaching</option>
-                            <option value="Fitness & Conditioning">Fitness &amp; Conditioning</option>
-                            <option value="Junior Development">Junior Development</option>
-                            <option value="Tournament Preparation">Tournament Preparation</option>
-                        </select>
-                    </div>
-
-                    <!-- Phone -->
-                    <div class="modal-field">
-                        <label>Phone</label>
-                        <input type="text" name="phone" id="coach-modal-phone">
-                    </div>
-
-                    <!-- Price -->
-                    <div class="modal-field">
-                        <label>Price Per Hour (RM)</label>
-                        <input type="number" name="price_per_hour" id="coach-modal-price" step="0.01" min="0" required>
-                    </div>
-
-                    <!-- Gender -->
-                    <div class="modal-field">
-                        <label>Gender</label>
-                        <select name="gender" id="coach-modal-gender">
-                            <option value="">-- Select --</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                        </select>
-                    </div>
-
-                    <!-- Age -->
-                    <div class="modal-field">
-                        <label>Age</label>
-                        <input type="number" name="age" id="coach-modal-age" min="18" max="80">
-                    </div>
-
-                </div>
-
-                <div class="modal-actions">
-                    <button type="button" class="btn-modal-cancel" onclick="closeCoachEditModal()">Cancel</button>
-                    <button type="submit" name="update_coach" class="btn-modal-save">Save Changes</button>
-                </div>
-            </form>
-
-        </div>
-    </div>
-
-    <!-- Cropper.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
-    <script src="AdminManagement.js"></script>
     <script src="SuperAdminDashboard.js"></script>
 
     <script>
-        let cropperInstance = null;
-
-        function openCoachEditModal(id, name, specialty, phone, gender, age, price, img) {
-            document.getElementById('coach-modal-id').value        = id;
-            document.getElementById('coach-modal-name').value      = name;
-            document.getElementById('coach-modal-specialty').value = specialty;
-            document.getElementById('coach-modal-phone').value     = phone;
-            document.getElementById('coach-modal-gender').value    = gender;
-            document.getElementById('coach-modal-age').value       = age;
-            document.getElementById('coach-modal-price').value     = price;
-            document.getElementById('cropped-img-data').value      = '';
-
-            const preview = document.getElementById('coach-modal-img-preview');
-            preview.src = img ? 'Pictures/coaches/' + img : 'Pictures/coaches/default.png';
-
-            document.getElementById('crop-area').style.display = 'none';
-            document.getElementById('coachEditModal').style.display = 'flex';
+        function toggleForm(id) {
+            document.getElementById('adminForm').classList.remove('active');
+            document.getElementById(id).classList.add('active');
         }
 
-        function closeCoachEditModal() {
-            if(cropperInstance) {
-                cropperInstance.destroy();
-                cropperInstance = null;
-            }
-            document.getElementById('crop-area').style.display = 'none';
-            document.getElementById('coachEditModal').style.display = 'none';
-        }
-
-        document.getElementById('coachEditModal').addEventListener('click', function(e) {
-            if(e.target === this) closeCoachEditModal();
-        });
-
-        document.getElementById('coach-img-input').addEventListener('change', function() {
-            const file = this.files[0];
-            if(!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const cropImg = document.getElementById('crop-img');
-                cropImg.src = e.target.result;
-
-                document.getElementById('crop-area').style.display = 'block';
-
-                if(cropperInstance) {
-                    cropperInstance.destroy();
-                }
-
-                cropperInstance = new Cropper(cropImg, {
-                    aspectRatio: 1,
-                    viewMode: 1,
-                    autoCropArea: 0.8
-                });
-            };
-            reader.readAsDataURL(file);
-        });
-
-        function applyCrop() {
-            if(!cropperInstance) return;
-
-            const canvas = cropperInstance.getCroppedCanvas({ width: 300, height: 300 });
-            const dataUrl = canvas.toDataURL('image/png');
-
-            document.getElementById('coach-modal-img-preview').src = dataUrl;
-            document.getElementById('cropped-img-data').value = dataUrl;
-
-            cropperInstance.destroy();
-            cropperInstance = null;
-            document.getElementById('crop-area').style.display = 'none';
-        }
-
-        function cancelCrop() {
-            if(cropperInstance) {
-                cropperInstance.destroy();
-                cropperInstance = null;
-            }
-            document.getElementById('crop-area').style.display = 'none';
-            document.getElementById('coach-img-input').value = '';
+        function toggleFilter() {
+            const panel = document.getElementById('filterPanel');
+            panel.classList.toggle('open');
         }
     </script>
 

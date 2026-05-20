@@ -50,7 +50,6 @@
     box-shadow: 0 6px 20px rgba(245,158,11,0.45);
 }
 
-/* Form card */
 .form-card {
     display: none;
     background: #ffffff;
@@ -115,22 +114,6 @@
     box-shadow: 0 5px 16px rgba(245,158,11,0.4);
 }
 
-/* Filter bar */
-.filter-bar {
-    background: #fff;
-    padding: 14px 22px;
-    border-radius: 14px;
-    margin-bottom: 22px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    border: 1px solid var(--border);
-    font-weight: 600;
-    font-size: 14px;
-}
-
-/* Table */
 .data-table {
     width: 100%;
     border-collapse: collapse;
@@ -159,10 +142,14 @@
     font-size: 14px;
 }
 
-.data-table tr:last-child td { border-bottom: none; }
-.data-table tr:hover td { background: #fffbf0; }
+.data-table tr:last-child td { 
+    border-bottom: none; 
+}
 
-/* Status dropdowns */
+.data-table tr:hover td { 
+    background: #fffbf0; 
+}
+
 .status-select {
     padding: 5px 12px;
     border-radius: 50px;
@@ -177,9 +164,20 @@
     font-family: 'Outfit', sans-serif;
 }
 
-.status-active   { background: #f0fdf4; color: #16a34a; }
-.status-inactive { background: #fffbeb; color: #d97706; }
-.status-suspended { background: #fef2f2; color: #dc2626; }
+.status-active    { 
+    background: #f0fdf4; 
+    color: #16a34a; 
+}
+
+.status-inactive  { 
+    background: #fffbeb; 
+    color: #d97706; 
+}
+
+.status-suspended { 
+    background: #fef2f2; 
+    color: #dc2626; 
+}
 
 .status-master {
     display: inline-flex;
@@ -214,4 +212,148 @@
 .delete-icon:hover {
     color: #dc2626;
     transform: scale(1.15);
+}
+
+/* Modal */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.modal-card {
+    background: #fff;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 560px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 28px 0;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-dark);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--text-muted);
+    line-height: 1;
+}
+
+.modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding: 24px 28px;
+}
+
+.modal-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.modal-field input,
+.modal-field select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'Outfit', sans-serif;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.modal-field input:focus,
+.modal-field select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(245,158,11,0.12);
+}
+
+.full-width { grid-column: 1 / -1; }
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 0 28px 24px;
+}
+
+.btn-modal-save {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: var(--navy);
+    border: none;
+    padding: 11px 24px;
+    border-radius: 10px;
+    font-weight: 800;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.25s;
+}
+
+.btn-modal-save:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 16px rgba(245,158,11,0.4);
+}
+
+.btn-modal-cancel {
+    background: #f1f5f9;
+    color: var(--text-dark);
+    border: none;
+    padding: 11px 24px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+.btn-modal-cancel:hover { 
+    background: #e2e8f0; 
+}
+
+#crop-area {
+    padding: 0 28px;
+}
+
+#crop-area img {
+    max-height: 260px;
+    width: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+#crop-area > div {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    padding-bottom: 8px;
 }
