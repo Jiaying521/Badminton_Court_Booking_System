@@ -136,12 +136,15 @@ function getProductImage($product) {
         .btn-continue:hover { background:#1f5a2a; transform:translateY(-2px); }
         .btn-skip { background:#e0e0e0; color:#333; border:none; padding:0.8rem; border-radius:50px; width:100%; margin-top:0.5rem; cursor:pointer; }
         
+        /* 🟢 BACK STEP LINK HOVER STYLING */
+        .btn-back-link { display: block; text-align: center; color: #666; text-decoration: none; font-size: 0.85rem; font-weight: 600; margin-top: 15px; transition: 0.2s; }
+        .btn-back-link:hover { color: #ff4d4d; text-decoration: underline; }
+
         @media (max-width:768px) { .row-2cols { grid-template-columns:1fr; } body { padding:1rem; } }
     </style>
 </head>
 <body>
 <div class="container">
-    <!-- Progress Bar -->
     <div class="progress-bar">
         <div class="progress-step completed"><div class="step-number">1</div><div class="step-label">Court</div></div>
         <div class="progress-step completed"><div class="step-number">2</div><div class="step-label">Time</div></div>
@@ -160,9 +163,7 @@ function getProductImage($product) {
     </div>
     
     <div class="row-2cols">
-        <!-- Left: Products -->
         <div>
-            <!-- Rackets Section -->
             <div class="product-section">
                 <div class="section-title"><i class="fas fa-table-tennis"></i> 🏸 Badminton Rackets</div>
                 <div class="products-grid">
@@ -191,7 +192,6 @@ function getProductImage($product) {
                 </div>
             </div>
             
-            <!-- Shuttlecocks Section -->
             <div class="product-section">
                 <div class="section-title"><i class="fas fa-shuttlecock"></i> 🏸 Shuttlecocks</div>
                 <div class="products-grid">
@@ -220,7 +220,6 @@ function getProductImage($product) {
                 </div>
             </div>
             
-            <!-- Strings Section -->
             <div class="product-section">
                 <div class="section-title"><i class="fas fa-thread"></i> 🧵 Badminton Strings</div>
                 <div class="products-grid">
@@ -249,7 +248,6 @@ function getProductImage($product) {
                 </div>
             </div>
             
-            <!-- Grips Section -->
             <div class="product-section">
                 <div class="section-title"><i class="fas fa-hand-peace"></i> 🎾 Grips / Overgrips</div>
                 <div class="products-grid">
@@ -278,7 +276,6 @@ function getProductImage($product) {
                 </div>
             </div>
             
-            <!-- Snacks Section -->
             <div class="product-section">
                 <div class="section-title"><i class="fas fa-cookie-bite"></i> 🍪 Snacks</div>
                 <div class="products-grid">
@@ -307,7 +304,6 @@ function getProductImage($product) {
                 </div>
             </div>
             
-            <!-- Drinks Section -->
             <div class="product-section">
                 <div class="section-title"><i class="fas fa-tint"></i> 🥤 Drinks</div>
                 <div class="products-grid">
@@ -337,7 +333,6 @@ function getProductImage($product) {
             </div>
         </div>
         
-        <!-- Right: Cart Summary -->
         <div>
             <div class="cart-summary">
                 <h3><i class="fas fa-shopping-cart"></i> Your Cart</h3>
@@ -349,11 +344,16 @@ function getProductImage($product) {
                     <input type="hidden" name="cart_data" id="cartData" value="">
                     <button type="submit" class="btn-continue"><i class="fas fa-arrow-right"></i> Continue to Payment</button>
                 </form>
+                
                 <form action="../Payment_Module/checkout.php" method="GET" id="skipForm">
                     <input type="hidden" name="booking_id" value="<?php echo $booking_id; ?>">
                     <input type="hidden" name="amount" value="<?php echo $booking['total_price']; ?>">
                     <button type="submit" class="btn-skip"><i class="fas fa-forward"></i> Skip Add-ons</button>
                 </form>
+
+                <a href="book_court.php?court_id=<?php echo $booking['court_id']; ?>" class="btn-back-link">
+                    <i class="fas fa-chevron-left"></i> Change Court / Time Selection
+                </a>
             </div>
         </div>
     </div>
@@ -411,7 +411,6 @@ function getProductImage($product) {
         document.getElementById('cartData').value = JSON.stringify(cart);
     });
     
-    // 监听所有数量输入框的变化
     document.querySelectorAll('.qty-input').forEach(input => {
         input.addEventListener('change', function() {
             updateCart();

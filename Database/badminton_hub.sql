@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 20, 2026 at 06:52 AM
+-- Generation Time: May 20, 2026 at 02:23 PM
 -- Server version: 10.4.32-MariaDB
--- PHP Version: 8.0.30
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -142,7 +142,18 @@ INSERT INTO `bookings` (`id`, `user_id`, `court_id`, `booking_date`, `start_time
 (31, 11, 2, '2026-05-14', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-07 05:33:03'),
 (32, 11, 2, '2026-05-23', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-07 05:37:58'),
 (33, 1, 5, '2026-05-18', '16:00:00', '17:00:00', 1, 0, 0, 0.00, 'Casual Play', 15.00, 'Pending', 0.00, '', '2026-05-18 07:36:21'),
-(34, 1, 8, '2026-05-18', '16:00:00', '17:00:00', 1, 4, 1, 10.00, 'Casual Play', 224.00, 'Confirmed', 0.00, '', '2026-05-18 07:59:13');
+(34, 1, 8, '2026-05-18', '16:00:00', '17:00:00', 1, 4, 1, 10.00, 'Casual Play', 224.00, 'Confirmed', 0.00, '', '2026-05-18 07:59:13'),
+(35, 1, 1, '2026-05-21', '09:00:00', '11:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 10.00, '', '2026-05-20 10:42:20'),
+(36, 1, 1, '2026-05-22', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 10.00, '', '2026-05-20 11:02:24'),
+(37, 1, 1, '2026-05-21', '14:00:00', '15:00:00', 1, 0, 0, 0.00, 'Casual Play', 15.00, 'Cancelled', 10.00, '', '2026-05-20 11:11:59'),
+(38, 1, 1, '2026-05-21', '15:00:00', '16:00:00', 1, 0, 0, 0.00, 'Casual Play', 15.00, 'Cancelled', 10.00, '', '2026-05-20 11:16:04'),
+(39, 1, 2, '2026-05-21', '12:00:00', '14:00:00', 2, 0, 0, 0.00, 'Casual Play', 319.00, 'Confirmed', 0.00, '', '2026-05-20 11:28:04'),
+(40, 1, 3, '2026-05-21', '09:00:00', '11:00:00', 2, 0, 0, 0.00, 'Casual Play', 219.00, 'Cancelled', 10.00, '', '2026-05-20 11:28:53'),
+(41, 1, 3, '2026-05-21', '11:00:00', '13:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 10.00, '', '2026-05-20 11:31:45'),
+(42, 1, 3, '2026-05-21', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Confirmed', 0.00, '', '2026-05-20 11:35:21'),
+(43, 1, 1, '2026-05-21', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Pending', 0.00, '', '2026-05-20 11:40:50'),
+(44, 1, 1, '2026-05-29', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Confirmed', 0.00, '', '2026-05-20 11:49:45'),
+(45, 1, 1, '2026-05-21', '13:00:00', '15:00:00', 2, 0, 0, 0.00, 'Casual Play', 25.00, 'Pending', 0.00, '', '2026-05-20 12:21:58');
 
 -- --------------------------------------------------------
 
@@ -163,7 +174,9 @@ CREATE TABLE `booking_addons` (
 --
 
 INSERT INTO `booking_addons` (`id`, `booking_id`, `product_id`, `quantity`, `price`) VALUES
-(1, 34, 7, 1, 199.00);
+(1, 34, 7, 1, 199.00),
+(2, 39, 6, 1, 299.00),
+(3, 40, 7, 1, 199.00);
 
 -- --------------------------------------------------------
 
@@ -257,16 +270,16 @@ CREATE TABLE `courts` (
 --
 
 INSERT INTO `courts` (`id`, `court_name`, `court_type`, `location`, `facilities`, `price_off_peak`, `price_peak`, `court_image`, `is_active`, `created_at`) VALUES
-(1, 'Court A', 'Standard', 'Main Hall 1', 'Shower, Locker', 10.00, 15.00, NULL, 1, '2026-04-30 16:17:09'),
-(2, 'Court B', 'Standard', 'Main Hall 1', 'Shower, Locker', 10.00, 15.00, NULL, 1, '2026-04-30 16:17:09'),
-(3, 'Court C', 'Standard', 'Main Hall 2', 'Shower, Locker', 10.00, 15.00, NULL, 1, '2026-04-30 16:17:09'),
-(4, 'Court D', 'Standard', 'Main Hall 2', 'Shower, Locker', 10.00, 15.00, NULL, 1, '2026-04-30 16:17:09'),
-(5, 'Court E', 'Standard', 'Main Hall 3', 'Shower, Locker', 10.00, 15.00, NULL, 1, '2026-04-30 16:17:09'),
-(6, 'Court F', 'Standard', 'Main Hall 3', 'Shower, Locker', 10.00, 15.00, NULL, 1, '2026-04-30 16:17:09'),
-(7, 'Court G', 'Standard', 'Main Hall 4', 'Shower, Locker', 10.00, 15.00, NULL, 1, '2026-04-30 16:17:09'),
-(8, 'Court H', 'Training', 'Training Hall', 'Coaching area, Video analysis, Shower', 10.00, 15.00, NULL, 1, '2026-04-30 16:17:09'),
-(9, 'Court I', 'Training', 'Training Hall', 'Coaching area, Video analysis, Shower', 10.00, 15.00, NULL, 1, '2026-04-30 16:17:09'),
-(10, 'Court J', 'Training', 'Training Hall', 'Coaching area, Video analysis, Shower', 10.00, 15.00, NULL, 1, '2026-04-30 16:17:09');
+(1, 'Court A', 'Standard', 'Main Hall 1', 'Shower, Locker', 10.00, 15.00, 'court_a.png', 1, '2026-04-30 16:17:09'),
+(2, 'Court B', 'Standard', 'Main Hall 1', 'Shower, Locker', 10.00, 15.00, 'court_b.png', 1, '2026-04-30 16:17:09'),
+(3, 'Court C', 'Standard', 'Main Hall 2', 'Shower, Locker', 10.00, 15.00, 'court_c.png', 1, '2026-04-30 16:17:09'),
+(4, 'Court D', 'Standard', 'Main Hall 2', 'Shower, Locker', 10.00, 15.00, 'court_d.png', 1, '2026-04-30 16:17:09'),
+(5, 'Court E', 'Standard', 'Main Hall 3', 'Shower, Locker', 10.00, 15.00, 'court_e.png', 1, '2026-04-30 16:17:09'),
+(6, 'Court F', 'Standard', 'Main Hall 3', 'Shower, Locker', 10.00, 15.00, 'court_f.png', 1, '2026-04-30 16:17:09'),
+(7, 'Court G', 'Standard', 'Main Hall 4', 'Shower, Locker', 10.00, 15.00, 'court_g.png', 1, '2026-04-30 16:17:09'),
+(8, 'Court H', 'Training', 'Training Hall', 'Coaching area, Video analysis, Shower', 10.00, 15.00, 'court_h.png', 1, '2026-04-30 16:17:09'),
+(9, 'Court I', 'Training', 'Training Hall', 'Coaching area, Video analysis, Shower', 10.00, 15.00, 'court_i.png', 1, '2026-04-30 16:17:09'),
+(10, 'Court J', 'Training', 'Training Hall', 'Coaching area, Video analysis, Shower', 10.00, 15.00, 'court_j.png', 1, '2026-04-30 16:17:09');
 
 -- --------------------------------------------------------
 
@@ -399,7 +412,23 @@ CREATE TABLE `payments` (
 INSERT INTO `payments` (`payment_id`, `booking_id`, `amount`, `discount_applied`, `final_amount`, `payment_method`, `payment_status`, `transaction_id`, `payment_date`) VALUES
 (5, 26, 160.00, 0.00, 160.00, 'Center App Wallet', 'success', NULL, '2026-05-07 04:14:24'),
 (6, 28, 10.00, 0.00, 10.00, 'App Wallet', 'success', NULL, '2026-05-07 04:39:33'),
-(8, 34, 224.00, 0.00, 224.00, 'TNG', 'success', NULL, '2026-05-18 08:00:12');
+(8, 34, 224.00, 0.00, 224.00, 'TNG', 'success', NULL, '2026-05-18 08:00:12'),
+(9, 35, 20.00, 0.00, 20.00, 'Online Payment', 'success', NULL, '2026-05-20 11:01:33'),
+(10, 36, 10.00, 0.00, 10.00, 'Refund', 'success', 'REF_1779275497_36', '2026-05-20 11:11:37'),
+(11, 38, 15.00, 0.00, 15.00, 'Online Payment', 'success', NULL, '2026-05-20 11:19:48'),
+(12, 38, 15.00, 0.00, 15.00, 'Online Payment', 'success', NULL, '2026-05-20 11:21:26'),
+(13, 38, 15.00, 0.00, 15.00, 'Online Payment', 'success', NULL, '2026-05-20 11:26:07'),
+(14, 38, 15.00, 0.00, 15.00, 'Online Payment', 'success', NULL, '2026-05-20 11:26:15'),
+(15, 37, 10.00, 0.00, 5.00, 'Refund', 'success', 'REF_1779276471_37', '2026-05-20 11:27:51'),
+(16, 38, 10.00, 0.00, 5.00, 'Refund', 'success', 'REF_1779276474_38', '2026-05-20 11:27:54'),
+(17, 39, 319.00, 0.00, 319.00, 'Online Payment', 'success', NULL, '2026-05-20 11:28:24'),
+(18, 40, 219.00, 0.00, 219.00, 'Online Payment', 'success', NULL, '2026-05-20 11:29:26'),
+(19, 41, 20.00, 0.00, 20.00, 'Online Payment', 'success', NULL, '2026-05-20 11:34:52'),
+(20, 40, 10.00, 0.00, 209.00, 'Refund', 'success', 'REF_1779276899_40', '2026-05-20 11:34:59'),
+(21, 35, 10.00, 0.00, 10.00, 'Refund', 'success', 'REF_1779276903_35', '2026-05-20 11:35:03'),
+(22, 41, 10.00, 0.00, 10.00, 'Refund', 'success', 'REF_1779276906_41', '2026-05-20 11:35:06'),
+(23, 42, 20.00, 0.00, 20.00, 'Online Payment', 'success', NULL, '2026-05-20 11:39:50'),
+(24, 44, 10.00, 0.00, 10.00, 'App Wallet', 'success', NULL, '2026-05-20 11:49:57');
 
 -- --------------------------------------------------------
 
@@ -423,44 +452,44 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `category`, `name`, `description`, `price`, `image_url`, `stock`, `is_active`) VALUES
-(1, 'racket', 'Yonex Astrox 100ZZ', 'Professional grade, head heavy balance', 899.00, NULL, 0, 1),
-(2, 'racket', 'Yonex Nanflare 800', 'Ultra light, head light balance', 799.00, NULL, 0, 1),
-(3, 'racket', 'Li-Ning Axforce 80', 'Powerful smash, stiff shaft', 699.00, NULL, 0, 1),
-(4, 'racket', 'Victor Thruster F', 'Enhanced power, box frame', 649.00, NULL, 0, 1),
-(5, 'racket', 'Yonex Arcsaber 11', 'All-round performance', 599.00, NULL, 0, 1),
-(6, 'racket', 'Apacs Z-Ziggler', 'High speed, affordable', 299.00, NULL, 0, 1),
-(7, 'racket', 'Protech Classic', 'Entry level, good for beginners', 199.00, NULL, 0, 1),
-(8, 'racket', 'Yonex Astrox 99', 'Extreme power for advanced', 899.00, NULL, 0, 1),
-(9, 'racket', 'Victor Auraspeed 90S', 'Fast swing, aerodynamic frame', 749.00, NULL, 0, 1),
-(10, 'racket', 'Li-Ning 3D Calibar 900', '3D frame design, powerful', 799.00, NULL, 0, 1),
-(11, 'string', 'Yonex BG-65', 'Durable, all-round performance', 35.00, NULL, 0, 1),
-(12, 'string', 'Yonex BG-66 Ultimax', 'Repulsive power, thin gauge', 40.00, NULL, 0, 1),
-(13, 'string', 'Yonex BG-80 Power', 'Rough surface for spin', 45.00, NULL, 0, 1),
-(14, 'string', 'Li-Ning No.1', 'High repulsion, durable', 42.00, NULL, 0, 1),
-(15, 'string', 'Victor VBS-66N', 'Excellent control', 38.00, NULL, 0, 1),
-(16, 'string', 'Apacs L66', 'Affordable performance', 28.00, NULL, 0, 1),
-(17, 'shuttlecock', 'Aeroplane EG1130 (Speed 77)', 'Tournament grade, goose feather', 85.00, NULL, 0, 1),
-(18, 'shuttlecock', 'Protech Masterpiece', 'High durability, consistent flight', 75.00, NULL, 0, 1),
-(19, 'shuttlecock', 'Yonex Aerosensa 30', 'Official tournament shuttle', 95.00, NULL, 0, 1),
-(20, 'shuttlecock', 'RSL Classic Tourney', 'Premium quality, good speed', 78.00, NULL, 0, 1),
-(21, 'shuttlecock', 'Apacs 900 Feather Shuttlecock', 'Good for training', 55.00, NULL, 0, 1),
-(22, 'grip', 'Yonex Super Grap (Red)', 'Tacky feel, absorbs sweat', 12.00, NULL, 0, 1),
-(23, 'grip', 'Yonex Super Grap (Yellow)', 'Tacky feel, absorbs sweat', 12.00, NULL, 0, 1),
-(24, 'grip', 'Yonex Super Grap (Black)', 'Tacky feel, absorbs sweat', 12.00, NULL, 0, 1),
-(25, 'grip', 'Li-Ning GP1000', 'Cushioning, anti-slip', 15.00, NULL, 0, 1),
-(26, 'grip', 'Victor GR233', 'Excellent absorption', 14.00, NULL, 0, 1),
-(27, 'grip', 'Apacs Cushion Grip', 'Affordable, comfortable', 8.00, NULL, 0, 1),
-(28, 'snack', 'KitKat Chocolate', 'Crispy wafer chocolate bar', 4.50, NULL, 0, 1),
-(29, 'snack', 'Oreo Biscuits', 'Original flavor', 3.50, NULL, 0, 1),
-(30, 'snack', 'Pringles Original', 'Potato chips', 6.50, NULL, 0, 1),
-(31, 'snack', 'Mister Potato', 'Crispy potato snack', 4.00, NULL, 0, 1),
-(32, 'snack', 'Cadbury Dairy Milk', 'Milk chocolate bar', 5.00, NULL, 0, 1),
-(33, 'drink', '100 Plus Isotonic', 'Replenish energy, 500ml', 3.50, NULL, 0, 1),
-(34, 'drink', 'Mineral Water', '500ml', 1.50, NULL, 0, 1),
-(35, 'drink', 'Coca Cola', '330ml can', 2.50, NULL, 0, 1),
-(36, 'drink', 'Sprite', '330ml can', 2.50, NULL, 0, 1),
-(37, 'drink', 'Revive Isotonic', 'Sports drink, 500ml', 3.00, NULL, 0, 1),
-(38, 'drink', 'Milo', 'Chocolate malt drink', 3.00, NULL, 0, 1);
+(1, 'racket', 'Yonex Astrox 100ZZ', 'Professional grade, head heavy balance', 899.00, 'rackets/yonex_astrox_100zz.jpg', 0, 1),
+(2, 'racket', 'Yonex Nanflare 800', 'Ultra light, head light balance', 799.00, 'rackets/yonex_nanoflare_800.jpg', 0, 1),
+(3, 'racket', 'Li-Ning Axforce 80', 'Powerful smash, stiff shaft', 699.00, 'rackets/li-ning_axforce_80.jpg', 0, 1),
+(4, 'racket', 'Victor Thruster F', 'Enhanced power, box frame', 649.00, 'rackets/victor_thruster_f.jpg', 0, 1),
+(5, 'racket', 'Yonex Arcsaber 11', 'All-round performance', 599.00, 'rackets/yonex_arcsaber_11.jpg', 0, 1),
+(6, 'racket', 'Apacs Z-Ziggler', 'High speed, affordable', 299.00, 'rackets/apacs_z_ziggler.jpg', 0, 1),
+(7, 'racket', 'Protech Classic', 'Entry level, good for beginners', 199.00, 'rackets/protech_classic.jpg', 0, 1),
+(8, 'racket', 'Yonex Astrox 99', 'Extreme power for advanced', 899.00, 'rackets/yonex_astrox_99.jpg', 0, 1),
+(9, 'racket', 'Victor Auraspeed 90S', 'Fast swing, aerodynamic frame', 749.00, 'rackets/victor_auraspeed_90s.jpg', 0, 1),
+(10, 'racket', 'Li-Ning 3D Calibar 900', '3D frame design, powerful', 799.00, 'rackets/li-ning_3d_calibar_900.jpg', 0, 1),
+(11, 'string', 'Yonex BG-65', 'Durable, all-round performance', 35.00, 'strings/yonex_bg-65.png', 0, 1),
+(12, 'string', 'Yonex BG-66 Ultimax', 'Repulsive power, thin gauge', 40.00, 'strings/yonex_bg-66_ultimax.png', 0, 1),
+(13, 'string', 'Yonex BG-80 Power', 'Rough surface for spin', 45.00, 'strings/yonex_bg-80_power.png', 0, 1),
+(14, 'string', 'Li-Ning No.1', 'High repulsion, durable', 42.00, 'strings/li-ning_no.1.png', 0, 1),
+(15, 'string', 'Victor VBS-66N', 'Excellent control', 38.00, 'strings/victor_vbs-66n.png', 0, 1),
+(16, 'string', 'Apacs L66', 'Affordable performance', 28.00, 'strings/apacs_l66.png', 0, 1),
+(17, 'shuttlecock', 'Aeroplane EG1130 (Speed 77)', 'Tournament grade, goose feather', 85.00, 'shuttlecocks/aeroplane_eg1130_(speed_77).jpg', 0, 1),
+(18, 'shuttlecock', 'Protech Masterpiece', 'High durability, consistent flight', 75.00, 'shuttlecocks/protech_masterpiece.jpg', 0, 1),
+(19, 'shuttlecock', 'Yonex Aerosensa 30', 'Official tournament shuttle', 95.00, 'shuttlecocks/yonex_aerosensa_30.jpg', 0, 1),
+(20, 'shuttlecock', 'RSL Classic Tourney', 'Premium quality, good speed', 78.00, 'shuttlecocks/rsl_classic_tourney.jpg', 0, 1),
+(21, 'shuttlecock', 'Apacs 900 Feather Shuttlecock', 'Good for training', 55.00, 'shuttlecocks/apacs_900_feather_shuttlecock.jpg', 0, 1),
+(22, 'grip', 'Yonex Super Grap (Red)', 'Tacky feel, absorbs sweat', 12.00, 'grips/yonex_super_grap_(red).jpg', 0, 1),
+(23, 'grip', 'Yonex Super Grap (Yellow)', 'Tacky feel, absorbs sweat', 12.00, 'grips/yonex_super_grap_(yellow).jpg', 0, 1),
+(24, 'grip', 'Yonex Super Grap (Black)', 'Tacky feel, absorbs sweat', 12.00, 'grips/yonex_super_grap_(black).jpg', 0, 1),
+(25, 'grip', 'Li-Ning GP1000', 'Cushioning, anti-slip', 15.00, 'grips/li_ning_gp1000.jpg', 0, 1),
+(26, 'grip', 'Victor GR233', 'Excellent absorption', 14.00, 'grips/victor_gr233.jpg', 0, 1),
+(27, 'grip', 'Apacs Cushion Grip', 'Affordable, comfortable', 8.00, 'grips/apacs_cushion_grip.jpg', 0, 1),
+(28, 'snack', 'KitKat Chocolate', 'Crispy wafer chocolate bar', 4.50, 'snacks/kitkat_chocolate.jpg', 0, 1),
+(29, 'snack', 'Oreo Biscuits', 'Original flavor', 3.50, 'snacks/oreo_biscuits.jpg', 0, 1),
+(30, 'snack', 'Pringles Original', 'Potato chips', 6.50, 'snacks/pringles_original.jpg', 0, 1),
+(31, 'snack', 'Mister Potato', 'Crispy potato snack', 4.00, 'snacks/mister_potato.jpg', 0, 1),
+(32, 'snack', 'Cadbury Dairy Milk', 'Milk chocolate bar', 5.00, 'snacks/cadbury_dairy_milk.jpg', 0, 1),
+(33, 'drink', '100 Plus Isotonic', 'Replenish energy, 500ml', 3.50, 'drinks/100_plus_isotonic.jpg', 0, 1),
+(34, 'drink', 'Mineral Water', '500ml', 1.50, 'drinks/mineral_water.jpg', 0, 1),
+(35, 'drink', 'Coca Cola', '330ml can', 2.50, 'drinks/coca_cola.jpg', 0, 1),
+(36, 'drink', 'Sprite', '330ml can', 2.50, 'drinks/sprite.jpg', 0, 1),
+(37, 'drink', 'Revive Isotonic', 'Sports drink, 500ml', 3.00, 'drinks/revive_isotonic.jpg', 0, 1),
+(38, 'drink', 'Milo', 'Chocolate malt drink', 3.00, 'drinks/milo.jpg', 0, 1);
 
 -- --------------------------------------------------------
 
@@ -540,7 +569,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `created_at`, `wallet_balance`, `profile_picture`) VALUES
-(1, 'John Doe', 'john@example.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', '+60123456789', '2026-04-30 16:17:09', 50.00, NULL),
+(1, 'John Doe', 'john@example.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', '+60123456789', '2026-04-30 16:17:09', 299.00, NULL),
 (2, 'Alice Tan', 'alice@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60111222333', '2026-04-30 16:34:47', 0.00, NULL),
 (3, 'Michael Lee', 'michael@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60199888777', '2026-04-30 16:34:47', 0.00, NULL),
 (4, 'Siti Aminah', 'siti@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60122334455', '2026-04-30 16:34:47', 0.00, NULL),
@@ -675,13 +704,13 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 
 --
 -- AUTO_INCREMENT for table `booking_addons`
 --
 ALTER TABLE `booking_addons`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `closed_days`
@@ -723,7 +752,7 @@ ALTER TABLE `otp_codes`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `products`
@@ -790,69 +819,6 @@ ALTER TABLE `court_availability`
 --
 ALTER TABLE `payments`
   ADD CONSTRAINT `fk_payments_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE;
-
--- 更新场地照片为 .png 格式
-UPDATE `courts` SET `court_image` = 'court_a.png' WHERE `id` = 1;
-UPDATE `courts` SET `court_image` = 'court_b.png' WHERE `id` = 2;
-UPDATE `courts` SET `court_image` = 'court_c.png' WHERE `id` = 3;
-UPDATE `courts` SET `court_image` = 'court_d.png' WHERE `id` = 4;
-UPDATE `courts` SET `court_image` = 'court_e.png' WHERE `id` = 5;
-UPDATE `courts` SET `court_image` = 'court_f.png' WHERE `id` = 6;
-UPDATE `courts` SET `court_image` = 'court_g.png' WHERE `id` = 7;
-UPDATE `courts` SET `court_image` = 'court_h.png' WHERE `id` = 8;
-UPDATE `courts` SET `court_image` = 'court_i.png' WHERE `id` = 9;
-UPDATE `courts` SET `court_image` = 'court_j.png' WHERE `id` = 10;
-
--- 球拍 (rackets)
-UPDATE `products` SET `image_url` = 'rackets/yonex_astrox_100zz.jpg' WHERE `name` = 'Yonex Astrox 100ZZ';
-UPDATE `products` SET `image_url` = 'rackets/yonex_nanoflare_800.jpg' WHERE `name` = 'Yonex Nanflare 800';
-UPDATE `products` SET `image_url` = 'rackets/li-ning_axforce_80.jpg' WHERE `name` = 'Li-Ning Axforce 80';
-UPDATE `products` SET `image_url` = 'rackets/victor_thruster_f.jpg' WHERE `name` = 'Victor Thruster F';
-UPDATE `products` SET `image_url` = 'rackets/yonex_arcsaber_11.jpg' WHERE `name` = 'Yonex Arcsaber 11';
-UPDATE `products` SET `image_url` = 'rackets/apacs_z_ziggler.jpg' WHERE `name` = 'Apacs Z-Ziggler';
-UPDATE `products` SET `image_url` = 'rackets/protech_classic.jpg' WHERE `name` = 'Protech Classic';
-UPDATE `products` SET `image_url` = 'rackets/yonex_astrox_99.jpg' WHERE `name` = 'Yonex Astrox 99';
-UPDATE `products` SET `image_url` = 'rackets/victor_auraspeed_90s.jpg' WHERE `name` = 'Victor Auraspeed 90S';
-UPDATE `products` SET `image_url` = 'rackets/li-ning_3d_calibar_900.jpg' WHERE `name` = 'Li-Ning 3D Calibar 900';
-
--- 羽毛球 (shuttlecocks)
-UPDATE `products` SET `image_url` = 'shuttlecocks/aeroplane_eg1130_(speed_77).jpg' WHERE `name` = 'Aeroplane EG1130 (Speed 77)';
-UPDATE `products` SET `image_url` = 'shuttlecocks/protech_masterpiece.jpg' WHERE `name` = 'Protech Masterpiece';
-UPDATE `products` SET `image_url` = 'shuttlecocks/yonex_aerosensa_30.jpg' WHERE `name` = 'Yonex Aerosensa 30';
-UPDATE `products` SET `image_url` = 'shuttlecocks/rsl_classic_tourney.jpg' WHERE `name` = 'RSL Classic Tourney';
-UPDATE `products` SET `image_url` = 'shuttlecocks/apacs_900_feather_shuttlecock.jpg' WHERE `name` = 'Apacs 900 Feather Shuttlecock';
-
--- 手胶 (grips)
-UPDATE `products` SET `image_url` = 'grips/yonex_super_grap_(red).jpg' WHERE `name` = 'Yonex Super Grap (Red)';
-UPDATE `products` SET `image_url` = 'grips/yonex_super_grap_(yellow).jpg' WHERE `name` = 'Yonex Super Grap (Yellow)';
-UPDATE `products` SET `image_url` = 'grips/yonex_super_grap_(black).jpg' WHERE `name` = 'Yonex Super Grap (Black)';
-UPDATE `products` SET `image_url` = 'grips/li_ning_gp1000.jpg' WHERE `name` = 'Li-Ning GP1000';
-UPDATE `products` SET `image_url` = 'grips/victor_gr233.jpg' WHERE `name` = 'Victor GR233';
-UPDATE `products` SET `image_url` = 'grips/apacs_cushion_grip.jpg' WHERE `name` = 'Apacs Cushion Grip';
-
--- 零食 (snacks)
-UPDATE `products` SET `image_url` = 'snacks/kitkat_chocolate.jpg' WHERE `name` = 'KitKat Chocolate';
-UPDATE `products` SET `image_url` = 'snacks/oreo_biscuits.jpg' WHERE `name` = 'Oreo Biscuits';
-UPDATE `products` SET `image_url` = 'snacks/pringles_original.jpg' WHERE `name` = 'Pringles Original';
-UPDATE `products` SET `image_url` = 'snacks/mister_potato.jpg' WHERE `name` = 'Mister Potato';
-UPDATE `products` SET `image_url` = 'snacks/cadbury_dairy_milk.jpg' WHERE `name` = 'Cadbury Dairy Milk';
-
--- 饮料 (drinks)
-UPDATE `products` SET `image_url` = 'drinks/100_plus_isotonic.jpg' WHERE `name` = '100 Plus Isotonic';
-UPDATE `products` SET `image_url` = 'drinks/mineral_water.jpg' WHERE `name` = 'Mineral Water';
-UPDATE `products` SET `image_url` = 'drinks/coca_cola.jpg' WHERE `name` = 'Coca Cola';
-UPDATE `products` SET `image_url` = 'drinks/sprite.jpg' WHERE `name` = 'Sprite';
-UPDATE `products` SET `image_url` = 'drinks/revive_isotonic.jpg' WHERE `name` = 'Revive Isotonic';
-UPDATE `products` SET `image_url` = 'drinks/milo.jpg' WHERE `name` = 'Milo';
-
--- 线 (strings)
-UPDATE `products` SET `image_url` = 'strings/yonex_bg-65.png' WHERE `name` = 'Yonex BG-65';
-UPDATE `products` SET `image_url` = 'strings/yonex_bg-66_ultimax.png' WHERE `name` = 'Yonex BG-66 Ultimax';
-UPDATE `products` SET `image_url` = 'strings/yonex_bg-80_power.png' WHERE `name` = 'Yonex BG-80 Power';
-UPDATE `products` SET `image_url` = 'strings/li-ning_no.1.png' WHERE `name` = 'Li-Ning No.1';
-UPDATE `products` SET `image_url` = 'strings/victor_vbs-66n.png' WHERE `name` = 'Victor VBS-66N';
-UPDATE `products` SET `image_url` = 'strings/apacs_l66.png' WHERE `name` = 'Apacs L66';
-
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
