@@ -49,8 +49,8 @@
 
         <?php elseif ($role === 'Coach'): ?>
             <li><a href="ManageBookings.php">My Bookings</a></li>
-            <li><a href="#">My Schedule</a></li>
             <li><a href="#">My Profile</a></li>
+            <li><a href="#">Notifications</a></li>
         <?php endif; ?>
 
         <li>

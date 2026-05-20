@@ -38,10 +38,18 @@
     $users_list   = [];
     while($u = mysqli_fetch_assoc($users_result)) $users_list[] = $u;
 
+    // Get current coach ID if role is Coach
+    $my_coach_id = 0;
+    if($role === 'Coach'){
+        $coach_id_query = mysqli_query($conn, "SELECT id FROM coaches WHERE admin_id = " . (int)$_SESSION['id']);
+        $coach_row      = mysqli_fetch_assoc($coach_id_query);
+        $my_coach_id    = $coach_row ? (int)$coach_row['id'] : 0;
+    }
+
     // Filter values from GET
-    $filter_status  = isset($_GET['status'])   ? $_GET['status']   : '';
-    $filter_court   = isset($_GET['court'])    ? intval($_GET['court'])   : 0;
-    $filter_coach   = isset($_GET['coach'])    ? intval($_GET['coach'])   : 0;
+    $filter_status    = isset($_GET['status'])    ? $_GET['status']                                      : '';
+    $filter_court     = isset($_GET['court'])     ? intval($_GET['court'])                               : 0;
+    $filter_coach     = isset($_GET['coach'])     ? intval($_GET['coach'])                               : 0;
     $filter_date_from = isset($_GET['date_from']) ? mysqli_real_escape_string($conn, $_GET['date_from']) : '';
     $filter_date_to   = isset($_GET['date_to'])   ? mysqli_real_escape_string($conn, $_GET['date_to'])   : '';
     $filter_search    = isset($_GET['search'])    ? mysqli_real_escape_string($conn, $_GET['search'])    : '';
@@ -51,19 +59,18 @@
 
     // Build WHERE clause
     $where_parts = [];
-    if($filter_status !== '')    $where_parts[] = "bookings.status = '$filter_status'";
-    if($filter_court > 0)        $where_parts[] = "bookings.court_id = $filter_court";
-    if($filter_coach > 0)        $where_parts[] = "bookings.coach_id = $filter_coach";
-    if($filter_date_from !== '')  $where_parts[] = "bookings.booking_date >= '$filter_date_from'";
-    if($filter_date_to !== '')    $where_parts[] = "bookings.booking_date <= '$filter_date_to'";
-    if($filter_search !== '')     $where_parts[] = "(users.name LIKE '%$filter_search%' OR courts.court_name LIKE '%$filter_search%')";
+    if($filter_status !== '')   $where_parts[] = "bookings.status = '$filter_status'";
+    if($filter_court > 0)       $where_parts[] = "bookings.court_id = $filter_court";
+    if($filter_date_from !== '') $where_parts[] = "bookings.booking_date >= '$filter_date_from'";
+    if($filter_date_to !== '')   $where_parts[] = "bookings.booking_date <= '$filter_date_to'";
+    if($filter_search !== '')    $where_parts[] = "(users.name LIKE '%$filter_search%' OR courts.court_name LIKE '%$filter_search%')";
 
-    // Coach only sees bookings assigned to them
+    // Coach: force filter to own bookings only, ignore coach filter from GET
     if($role === 'Coach'){
-        $coach_id_query = mysqli_query($conn, "SELECT id FROM coaches WHERE admin_id = " . (int)$_SESSION['id']);
-        $coach_row      = mysqli_fetch_assoc($coach_id_query);
-        $my_coach_id    = $coach_row ? (int)$coach_row['id'] : 0;
-        $where_parts[]  = "bookings.coach_id = $my_coach_id";
+        $where_parts[] = "bookings.coach_id = $my_coach_id";
+    } else {
+        // Admin/Superadmin: allow coach filter
+        if($filter_coach > 0) $where_parts[] = "bookings.coach_id = $filter_coach";
     }
 
     $where_sql = count($where_parts) > 0 ? "WHERE " . implode(" AND ", $where_parts) : "";
@@ -128,7 +135,7 @@
             <header class="management-header">
                 <div>
                     <h1><?php echo ($role === 'Coach') ? 'My Bookings' : 'Bookings Management'; ?></h1>
-                    <p><?php echo ($role === 'Coach') ? 'View your assigned court sessions.' : 'Manage all court bookings, view details, and update booking statuses.'; ?></p>
+                    <p><?php echo ($role === 'Coach') ? 'View and respond to your assigned court sessions.' : 'Manage all court bookings, view details, and update booking statuses.'; ?></p>
                 </div>
                 <div class="btn-add-group">
                     <button class="btn-filter-toggle" onclick="toggleBookingFilter()">
@@ -173,6 +180,7 @@
                             <?php endforeach; ?>
                         </select>
                     </div>
+                    <?php if($role !== 'Coach'): ?>
                     <div class="filter-field">
                         <label>Coach</label>
                         <select name="coach">
@@ -184,6 +192,7 @@
                             <?php endforeach; ?>
                         </select>
                     </div>
+                    <?php endif; ?>
                     <div class="filter-field">
                         <label>Date From</label>
                         <input type="date" name="date_from" value="<?php echo htmlspecialchars($filter_date_from); ?>">
@@ -253,14 +262,21 @@
                         <td><?php echo date("h:i A", strtotime($row['end_time'])); ?></td>
                         <td>RM <?php echo number_format($row['total_price'], 2); ?></td>
                         <td onclick="event.stopPropagation()">
-                            <!-- Status Dropdown — stopPropagation prevents row click when using dropdown -->
                             <?php if($role === 'Coach'): ?>
-                                <span class="status-select <?php 
-                                    if($row['status'] == 'Confirmed') echo 'status-active';
-                                    elseif($row['status'] == 'Pending') echo 'status-inactive';
-                                    elseif($row['status'] == 'Cancelled') echo 'status-suspended';
-                                    else echo 'status-active';
-                                ?>"><?php echo $row['status']; ?></span>
+                                <!-- Coach: only show dropdown if Pending, else show static badge -->
+                                <?php if($row['status'] === 'Pending'): ?>
+                                    <select class="status-select status-inactive" onchange="location.href='UpdateBookingsStatus.php?id=<?php echo $row['id']; ?>&status=' + this.value">
+                                        <option value="Pending"   selected>Pending</option>
+                                        <option value="Confirmed">Accept</option>
+                                        <option value="Cancelled">Decline</option>
+                                    </select>
+                                <?php else: ?>
+                                    <span class="status-select <?php 
+                                        if($row['status'] == 'Confirmed') echo 'status-active';
+                                        elseif($row['status'] == 'Cancelled') echo 'status-suspended';
+                                        else echo 'status-active'; // Completed
+                                    ?>"><?php echo $row['status']; ?></span>
+                                <?php endif; ?>
                             <?php else: ?>
                                 <select class="status-select <?php 
                                     if($row['status'] == 'Confirmed') echo 'status-active';
@@ -284,16 +300,28 @@
                             <div class="details-inner status-<?php echo $row['status']; ?>">
                                 <div class="details-grid">
                                     <div class="details-item">
-                                        <label>Coach</label>
-                                        <span><?php echo htmlspecialchars($row['coach_name']); ?></span>
+                                        <label>Player Name</label>
+                                        <span><?php echo htmlspecialchars($row['name']); ?></span>
+                                    </div>
+                                    <div class="details-item">
+                                        <label>Court</label>
+                                        <span><?php echo htmlspecialchars($row['court_name']); ?></span>
+                                    </div>
+                                    <div class="details-item">
+                                        <label>Booking Date</label>
+                                        <span><?php echo date("d-m-Y", strtotime($row['booking_date'])); ?></span>
+                                    </div>
+                                    <div class="details-item">
+                                        <label>Time Range</label>
+                                        <span><?php echo date("h:i A", strtotime($row['start_time'])) . ' – ' . date("h:i A", strtotime($row['end_time'])); ?></span>
                                     </div>
                                     <div class="details-item">
                                         <label>Session Type</label>
                                         <span><?php echo htmlspecialchars($row['session_type'] ?: '—'); ?></span>
                                     </div>
                                     <div class="details-item">
-                                        <label>Time Range</label>
-                                        <span><?php echo date("h:i A", strtotime($row['start_time'])) . ' – ' . date("h:i A", strtotime($row['end_time'])); ?></span>
+                                        <label>Total Price</label>
+                                        <span>RM <?php echo number_format($row['total_price'], 2); ?></span>
                                     </div>
                                     <div class="details-item notes-item">
                                         <label>Notes</label>
@@ -316,6 +344,29 @@
                                     <i class="fas fa-pen"></i> Edit
                                 </button>
                                 <?php endif; ?>
+
+                                <!-- Coach action buttons -->
+                                <?php if($role === 'Coach'): ?>
+
+                                    <?php if($row['status'] === 'Confirmed'): ?>
+                                    <!-- Mark as Completed (only for Confirmed) -->
+                                    <a href="UpdateBookingsStatus.php?id=<?php echo $row['id']; ?>&status=Completed"
+                                       class="btn-edit-booking"
+                                       onclick="event.stopPropagation(); return confirm('Mark this session as Completed?');"
+                                       style="background:#10b981; color:#fff; border:none; text-decoration:none; display:inline-block;">
+                                        <i class="fas fa-check"></i> Mark as Completed
+                                    </a>
+                                    <!-- Decline a Confirmed booking -->
+                                    <a href="UpdateBookingsStatus.php?id=<?php echo $row['id']; ?>&status=Cancelled"
+                                       class="btn-edit-booking"
+                                       onclick="event.stopPropagation(); return confirm('Are you sure you want to decline this session?');"
+                                       style="background:#ef4444; color:#fff; border:none; text-decoration:none; display:inline-block; margin-top:8px;">
+                                        <i class="fas fa-times"></i> Decline Session
+                                    </a>
+                                    <?php endif; ?>
+
+                                <?php endif; ?>
+
                             </div>
                         </td>
                     </tr>
