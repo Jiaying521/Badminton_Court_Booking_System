@@ -790,6 +790,69 @@ ALTER TABLE `court_availability`
 --
 ALTER TABLE `payments`
   ADD CONSTRAINT `fk_payments_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE;
+
+-- 更新场地照片为 .png 格式
+UPDATE `courts` SET `court_image` = 'court_a.png' WHERE `id` = 1;
+UPDATE `courts` SET `court_image` = 'court_b.png' WHERE `id` = 2;
+UPDATE `courts` SET `court_image` = 'court_c.png' WHERE `id` = 3;
+UPDATE `courts` SET `court_image` = 'court_d.png' WHERE `id` = 4;
+UPDATE `courts` SET `court_image` = 'court_e.png' WHERE `id` = 5;
+UPDATE `courts` SET `court_image` = 'court_f.png' WHERE `id` = 6;
+UPDATE `courts` SET `court_image` = 'court_g.png' WHERE `id` = 7;
+UPDATE `courts` SET `court_image` = 'court_h.png' WHERE `id` = 8;
+UPDATE `courts` SET `court_image` = 'court_i.png' WHERE `id` = 9;
+UPDATE `courts` SET `court_image` = 'court_j.png' WHERE `id` = 10;
+
+-- 球拍 (rackets)
+UPDATE `products` SET `image_url` = 'rackets/yonex_astrox_100zz.jpg' WHERE `name` = 'Yonex Astrox 100ZZ';
+UPDATE `products` SET `image_url` = 'rackets/yonex_nanoflare_800.jpg' WHERE `name` = 'Yonex Nanflare 800';
+UPDATE `products` SET `image_url` = 'rackets/li-ning_axforce_80.jpg' WHERE `name` = 'Li-Ning Axforce 80';
+UPDATE `products` SET `image_url` = 'rackets/victor_thruster_f.jpg' WHERE `name` = 'Victor Thruster F';
+UPDATE `products` SET `image_url` = 'rackets/yonex_arcsaber_11.jpg' WHERE `name` = 'Yonex Arcsaber 11';
+UPDATE `products` SET `image_url` = 'rackets/apacs_z_ziggler.jpg' WHERE `name` = 'Apacs Z-Ziggler';
+UPDATE `products` SET `image_url` = 'rackets/protech_classic.jpg' WHERE `name` = 'Protech Classic';
+UPDATE `products` SET `image_url` = 'rackets/yonex_astrox_99.jpg' WHERE `name` = 'Yonex Astrox 99';
+UPDATE `products` SET `image_url` = 'rackets/victor_auraspeed_90s.jpg' WHERE `name` = 'Victor Auraspeed 90S';
+UPDATE `products` SET `image_url` = 'rackets/li-ning_3d_calibar_900.jpg' WHERE `name` = 'Li-Ning 3D Calibar 900';
+
+-- 羽毛球 (shuttlecocks)
+UPDATE `products` SET `image_url` = 'shuttlecocks/aeroplane_eg1130_(speed_77).jpg' WHERE `name` = 'Aeroplane EG1130 (Speed 77)';
+UPDATE `products` SET `image_url` = 'shuttlecocks/protech_masterpiece.jpg' WHERE `name` = 'Protech Masterpiece';
+UPDATE `products` SET `image_url` = 'shuttlecocks/yonex_aerosensa_30.jpg' WHERE `name` = 'Yonex Aerosensa 30';
+UPDATE `products` SET `image_url` = 'shuttlecocks/rsl_classic_tourney.jpg' WHERE `name` = 'RSL Classic Tourney';
+UPDATE `products` SET `image_url` = 'shuttlecocks/apacs_900_feather_shuttlecock.jpg' WHERE `name` = 'Apacs 900 Feather Shuttlecock';
+
+-- 手胶 (grips)
+UPDATE `products` SET `image_url` = 'grips/yonex_super_grap_(red).jpg' WHERE `name` = 'Yonex Super Grap (Red)';
+UPDATE `products` SET `image_url` = 'grips/yonex_super_grap_(yellow).jpg' WHERE `name` = 'Yonex Super Grap (Yellow)';
+UPDATE `products` SET `image_url` = 'grips/yonex_super_grap_(black).jpg' WHERE `name` = 'Yonex Super Grap (Black)';
+UPDATE `products` SET `image_url` = 'grips/li_ning_gp1000.jpg' WHERE `name` = 'Li-Ning GP1000';
+UPDATE `products` SET `image_url` = 'grips/victor_gr233.jpg' WHERE `name` = 'Victor GR233';
+UPDATE `products` SET `image_url` = 'grips/apacs_cushion_grip.jpg' WHERE `name` = 'Apacs Cushion Grip';
+
+-- 零食 (snacks)
+UPDATE `products` SET `image_url` = 'snacks/kitkat_chocolate.jpg' WHERE `name` = 'KitKat Chocolate';
+UPDATE `products` SET `image_url` = 'snacks/oreo_biscuits.jpg' WHERE `name` = 'Oreo Biscuits';
+UPDATE `products` SET `image_url` = 'snacks/pringles_original.jpg' WHERE `name` = 'Pringles Original';
+UPDATE `products` SET `image_url` = 'snacks/mister_potato.jpg' WHERE `name` = 'Mister Potato';
+UPDATE `products` SET `image_url` = 'snacks/cadbury_dairy_milk.jpg' WHERE `name` = 'Cadbury Dairy Milk';
+
+-- 饮料 (drinks)
+UPDATE `products` SET `image_url` = 'drinks/100_plus_isotonic.jpg' WHERE `name` = '100 Plus Isotonic';
+UPDATE `products` SET `image_url` = 'drinks/mineral_water.jpg' WHERE `name` = 'Mineral Water';
+UPDATE `products` SET `image_url` = 'drinks/coca_cola.jpg' WHERE `name` = 'Coca Cola';
+UPDATE `products` SET `image_url` = 'drinks/sprite.jpg' WHERE `name` = 'Sprite';
+UPDATE `products` SET `image_url` = 'drinks/revive_isotonic.jpg' WHERE `name` = 'Revive Isotonic';
+UPDATE `products` SET `image_url` = 'drinks/milo.jpg' WHERE `name` = 'Milo';
+
+-- 线 (strings)
+UPDATE `products` SET `image_url` = 'strings/yonex_bg-65.png' WHERE `name` = 'Yonex BG-65';
+UPDATE `products` SET `image_url` = 'strings/yonex_bg-66_ultimax.png' WHERE `name` = 'Yonex BG-66 Ultimax';
+UPDATE `products` SET `image_url` = 'strings/yonex_bg-80_power.png' WHERE `name` = 'Yonex BG-80 Power';
+UPDATE `products` SET `image_url` = 'strings/li-ning_no.1.png' WHERE `name` = 'Li-Ning No.1';
+UPDATE `products` SET `image_url` = 'strings/victor_vbs-66n.png' WHERE `name` = 'Victor VBS-66N';
+UPDATE `products` SET `image_url` = 'strings/apacs_l66.png' WHERE `name` = 'Apacs L66';
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

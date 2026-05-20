@@ -95,10 +95,10 @@ $stmt = $pdo->prepare("
 $stmt->execute([$user_id]);
 $recentBookings = $stmt->fetchAll();
 
-// 获取场地图片路径 - 匹配您的数据库字段名 'non-court_imagename'，支持 PNG 格式
+// 获取场地图片路径 - 使用正确的字段名 'court_image'
 function getCourtImage($court) {
-    // 检查数据库中的图片字段（字段名是 'non-court_imagename'）
-    $imageField = isset($court['non-court_imagename']) ? $court['non-court_imagename'] : null;
+    // 检查数据库中的图片字段 'court_image'
+    $imageField = isset($court['court_image']) ? $court['court_image'] : null;
     
     if (!empty($imageField)) {
         $imagePath = $imageField;
