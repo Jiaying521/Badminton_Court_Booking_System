@@ -95,13 +95,56 @@ $stmt = $pdo->prepare("
 $stmt->execute([$user_id]);
 $recentBookings = $stmt->fetchAll();
 
-// 获取场地图片路径
-function getCourtImage($courtName) {
-    $fileName = strtolower(str_replace(' ', '_', $courtName)) . '.png';
-    $imagePath = 'images/court/' . $fileName;
-    if (file_exists(__DIR__ . '/' . $imagePath)) {
-        return $imagePath;
+// 获取场地图片路径 - 匹配您的数据库字段名 'non-court_imagename'，支持 PNG 格式
+function getCourtImage($court) {
+    // 检查数据库中的图片字段（字段名是 'non-court_imagename'）
+    $imageField = isset($court['non-court_imagename']) ? $court['non-court_imagename'] : null;
+    
+    if (!empty($imageField)) {
+        $imagePath = $imageField;
+        
+        // 尝试多种路径格式
+        $possiblePaths = [
+            '../Admin_Module/Pictures/courts/' . $imagePath,
+            '../images/court/' . $imagePath,
+            $imagePath,
+        ];
+        
+        foreach ($possiblePaths as $path) {
+            if (file_exists(__DIR__ . '/' . $path)) {
+                return $path;
+            }
+        }
+        
+        // 如果文件不存在，返回路径让浏览器尝试加载
+        return '../Admin_Module/Pictures/courts/' . $imagePath;
     }
+    
+    // 尝试按场地名称匹配图片 (fallback) - 支持 PNG 和 JPG
+    $courtName = $court['court_name'];
+    $possibleImageNames = [
+        strtolower(str_replace(' ', '_', $courtName)) . '.png',
+        strtolower(str_replace(' ', '_', $courtName)) . '.jpg',
+        strtolower(str_replace(' ', '_', $courtName)) . '.jpeg',
+        'court_' . strtolower(str_replace(' ', '_', $courtName)) . '.png',
+        'court_' . strtolower(str_replace(' ', '_', $courtName)) . '.jpg',
+    ];
+    
+    $imagePaths = [
+        '../Admin_Module/Pictures/courts/',
+        '../images/court/',
+    ];
+    
+    foreach ($imagePaths as $basePath) {
+        foreach ($possibleImageNames as $imgName) {
+            $fullPath = $basePath . $imgName;
+            if (file_exists(__DIR__ . '/' . $fullPath)) {
+                return $fullPath;
+            }
+        }
+    }
+    
+    // 返回 null，使用默认占位符
     return null;
 }
 ?>
@@ -184,9 +227,9 @@ function getCourtImage($courtName) {
         .court-image img { width:100%; height:100%; object-fit:cover; transition:transform 0.4s; }
         .court-card:hover .court-image img { transform:scale(1.05); }
         .court-image .placeholder { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; }
-        .court-image .court-icon { font-size: 4rem; color: white; margin-bottom: 0.5rem; }
-        .court-image .court-name-big { font-size: 1.3rem; font-weight: 700; color: white; }
-        .court-image .court-location { font-size: 0.7rem; color: #aaffaa; margin-top: 0.3rem; }
+        .court-image .placeholder .court-icon { font-size: 4rem; color: white; margin-bottom: 0.5rem; }
+        .court-image .placeholder .court-name-big { font-size: 1.3rem; font-weight: 700; color: white; }
+        .court-image .placeholder .court-location { font-size: 0.7rem; color: #aaffaa; margin-top: 0.3rem; }
         .court-type-badge { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); color: white; padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.7rem; font-weight: 600; z-index: 2; }
         
         .court-info { padding: 1.2rem; }
@@ -315,11 +358,11 @@ function getCourtImage($courtName) {
     <div class="courts-grid">
         <?php if (count($courts) > 0): ?>
             <?php foreach ($courts as $c): 
-                $imagePath = getCourtImage($c['court_name']);
+                $imagePath = getCourtImage($c);
             ?>
                 <div class="court-card">
                     <div class="court-image">
-                        <?php if ($imagePath): ?>
+                        <?php if ($imagePath && file_exists(__DIR__ . '/' . $imagePath)): ?>
                             <img src="<?php echo $imagePath; ?>" alt="<?php echo htmlspecialchars($c['court_name']); ?>">
                         <?php else: ?>
                             <div class="placeholder">
