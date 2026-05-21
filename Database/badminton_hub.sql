@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 21, 2026 at 07:04 AM
+-- Generation Time: May 21, 2026 at 05:55 PM
 -- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+-- PHP Version: 8.0.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -48,7 +48,7 @@ CREATE TABLE `admins` (
 
 INSERT INTO `admins` (`id`, `username`, `email`, `password`, `role`, `status`, `specialisation`, `is_coach`, `coach_price_per_hour`, `reset_token`, `token_expiry`, `created_at`) VALUES
 (1, 'superadmin', 'chinzx1814@gmail.com', '$2y$10$x5NsQGVwkkp5f4oivtMd..D9tsrJLMICxeSDnSe0peEwVN77QeFGu', 'Superadmin', 'Active', NULL, 0, 0.00, '6f7215969454a243bffe4f847c58375ca1a0e4dc2157e02a1757c75020bfa0c7', '2026-04-30 18:48:36', '2026-04-30 16:17:09'),
-(2, 'Coach Lim', 'coach.lim@smasharena.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Singles Coaching', 1, 25.00, NULL, NULL, '2026-04-30 16:17:09'),
+(2, 'Coach Lim', 'coach.lim@smasharena.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Singles Coaching', 1, 50.00, NULL, NULL, '2026-04-30 16:17:09'),
 (3, 'Coach Wong', 'coach.wong@smasharena.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Doubles Coaching', 1, 20.00, NULL, NULL, '2026-04-30 16:17:09'),
 (4, 'Coach Tan', 'coach.tan@smasharena.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Junior Development', 1, 30.00, NULL, NULL, '2026-04-30 16:17:09'),
 (5, 'admin', '', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Admin', 'Active', NULL, 0, 0.00, NULL, NULL, '2026-04-30 16:37:03');
@@ -154,7 +154,11 @@ INSERT INTO `bookings` (`id`, `user_id`, `court_id`, `booking_date`, `start_time
 (43, 1, 1, '2026-05-21', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Confirmed', 0.00, '', '2026-05-20 11:40:50'),
 (44, 1, 1, '2026-05-29', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Confirmed', 0.00, '', '2026-05-20 11:49:45'),
 (45, 1, 1, '2026-05-21', '13:00:00', '15:00:00', 2, 0, 0, 0.00, 'Casual Play', 25.00, 'Confirmed', 0.00, '', '2026-05-20 12:21:58'),
-(46, 1, 1, '2026-05-22', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Confirmed', 0.00, '', '2026-05-21 04:36:43');
+(46, 1, 1, '2026-05-22', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Confirmed', 0.00, '', '2026-05-21 04:36:43'),
+(47, 1, 2, '2026-05-28', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-21 06:43:16'),
+(48, 1, 8, '2026-05-21', '15:00:00', '16:00:00', 1, 1, 1, 25.00, 'Casual Play', 40.00, 'Pending', 0.00, '', '2026-05-21 06:43:43'),
+(49, 1, 8, '2026-05-21', '16:00:00', '17:00:00', 1, 1, 1, 25.00, 'Casual Play', 40.00, 'Confirmed', 0.00, '', '2026-05-21 06:44:20'),
+(50, 1, 2, '2026-05-29', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-21 15:28:45');
 
 -- --------------------------------------------------------
 
@@ -226,9 +230,9 @@ CREATE TABLE `coaches` (
 --
 
 INSERT INTO `coaches` (`id`, `admin_id`, `name`, `specialty`, `phone`, `price_per_hour`, `is_active`, `gender`, `age`, `profile_img`, `availability_status`) VALUES
-(1, 2, 'Coach Lim', 'Singles Coaching', '', 25.00, 1, '', 0, NULL, 'Available'),
+(1, 2, 'Coach Lim', 'Singles Coaching', '', 50.00, 1, '', 40, '1779345778_coach.png', 'Available'),
 (2, 3, 'Coach Wong', 'Doubles Coaching', '', 20.00, 1, '', 0, NULL, 'Available'),
-(3, 4, 'Coach Tan', 'Junior Development', '', 30.00, 1, '', 0, NULL, 'Available');
+(3, 4, 'Coach Tan', 'Junior Development', '', 30.00, 1, 'Male', NULL, NULL, 'Available');
 
 -- --------------------------------------------------------
 
@@ -433,7 +437,8 @@ INSERT INTO `payments` (`payment_id`, `booking_id`, `amount`, `discount_applied`
 (25, 45, 25.00, 0.00, 25.00, 'Online Payment', 'success', NULL, '2026-05-21 03:34:56'),
 (26, 33, 15.00, 0.00, 15.00, 'App Wallet', 'success', NULL, '2026-05-21 03:35:12'),
 (27, 46, 20.00, 5.00, 15.00, 'App Wallet', 'success', NULL, '2026-05-21 04:49:31'),
-(28, 43, 20.00, 0.00, 20.00, 'App Wallet', 'success', NULL, '2026-05-21 04:50:23');
+(28, 43, 20.00, 0.00, 20.00, 'App Wallet', 'success', NULL, '2026-05-21 04:50:23'),
+(29, 49, 40.00, 0.00, 40.00, 'App Wallet', 'success', NULL, '2026-05-21 06:45:34');
 
 -- --------------------------------------------------------
 
@@ -574,7 +579,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `created_at`, `wallet_balance`, `profile_picture`) VALUES
-(1, 'John Doe', 'john@example.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', '+60123456789', '2026-04-30 16:17:09', 249.00, NULL),
+(1, 'John Doe', 'john@example.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', '+60123456789', '2026-04-30 16:17:09', 209.00, NULL),
 (2, 'Alice Tan', 'alice@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60111222333', '2026-04-30 16:34:47', 0.00, NULL),
 (3, 'Michael Lee', 'michael@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60199888777', '2026-04-30 16:34:47', 0.00, NULL),
 (4, 'Siti Aminah', 'siti@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60122334455', '2026-04-30 16:34:47', 0.00, NULL),
@@ -765,7 +770,7 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=51;
 
 --
 -- AUTO_INCREMENT for table `booking_addons`
@@ -813,7 +818,7 @@ ALTER TABLE `otp_codes`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT for table `products`

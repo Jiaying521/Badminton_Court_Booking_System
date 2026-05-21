@@ -329,3 +329,12 @@
 .btn-modal-save:hover {
     opacity: 0.85;
 }
+
+/* Edit Modal */
+#courtModal.modal-overlay {
+    padding: 10px; 
+}
+
+#courtModal .modal-card {
+    max-width: 500px; 
+}

@@ -71,6 +71,27 @@
         exit();
     }
 
+    function courtSortLink($label, $col, $current_sort, $current_dir, $next_dir, $filter_type, $filter_status, $filter_search) {
+    $is_active = ($current_sort === $col);
+    $dir = $is_active ? $next_dir : 'desc';
+    $arrow = '';
+    if ($is_active) {
+        $arrow = $current_dir === 'ASC'
+            ? ' <i class="fas fa-arrow-up sort-arrow active-arrow"></i>'
+            : ' <i class="fas fa-arrow-down sort-arrow active-arrow"></i>';
+    } else {
+        $arrow = ' <i class="fas fa-sort sort-arrow"></i>';
+    }
+    $params = http_build_query([
+        'sort'   => $col,
+        'dir'    => $dir,
+        'type'   => $filter_type,
+        'status' => $filter_status,
+        'search' => $filter_search,
+    ]);
+        return "<a href='ManageCourts.php?$params' class='sort-link'>$label$arrow</a>";
+    }
+
     // Filter values from GET
     $filter_type   = isset($_GET['type'])   ? $_GET['type']   : '';
     $filter_status = isset($_GET['status']) ? $_GET['status'] : '';
@@ -84,8 +105,14 @@
 
     $where_sql = count($where_parts) > 0 ? "WHERE " . implode(" AND ", $where_parts) : "";
 
+    // Sort handling
+    $allowed_sorts = ['id', 'court_name', 'court_type', 'is_active'];
+    $sort_col = isset($_GET['sort']) && in_array($_GET['sort'], $allowed_sorts) ? $_GET['sort'] : 'id';
+    $sort_dir = isset($_GET['dir']) && $_GET['dir'] === 'asc' ? 'ASC' : 'DESC';
+    $next_dir = ($sort_dir === 'ASC') ? 'desc' : 'asc';
+
     // Fetch court data from database
-    $result = mysqli_query($conn, "SELECT * FROM courts $where_sql ORDER BY id DESC");
+    $result = mysqli_query($conn, "SELECT * FROM courts $where_sql ORDER BY $sort_col $sort_dir");
 
 ?>
 
@@ -189,11 +216,11 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Court Info</th>
-                        <th>Type</th>
+                        <th><?php echo courtSortLink('ID', 'id', $sort_col, $sort_dir, $next_dir, $filter_type, $filter_status, $filter_search); ?></th>
+                        <th><?php echo courtSortLink('Court Info', 'court_name', $sort_col, $sort_dir, $next_dir, $filter_type, $filter_status, $filter_search); ?></th>
+                        <th><?php echo courtSortLink('Type', 'court_type', $sort_col, $sort_dir, $next_dir, $filter_type, $filter_status, $filter_search); ?></th>
                         <th>Pricing</th>
-                        <th>Status</th>
+                        <th><?php echo courtSortLink('Status', 'is_active', $sort_col, $sort_dir, $next_dir, $filter_type, $filter_status, $filter_search); ?></th>
                     </tr>
                 </thead>
                 <tbody>

@@ -136,7 +136,7 @@
         $specialty      = mysqli_real_escape_string($conn, $_POST['specialty']);
         $phone          = mysqli_real_escape_string($conn, $_POST['phone']);
         $gender         = mysqli_real_escape_string($conn, $_POST['gender']);
-        $age            = intval($_POST['age']);
+        $age = ($_POST['age'] !== '' && $_POST['age'] > 0) ? intval($_POST['age']) : 'NULL';
         $price_per_hour = floatval($_POST['price_per_hour']);
 
         //Handle cropped image (base64)
@@ -201,6 +201,29 @@
         exit();
     }
 
+    function coachSortLink($label, $col, $current_sort, $current_dir, $next_dir, $filter_gender, $filter_specialty, $filter_search, $filter_age_min, $filter_age_max) {
+    $is_active = ($current_sort === $col);
+    $dir = $is_active ? $next_dir : 'desc';
+    $arrow = '';
+    if ($is_active) {
+        $arrow = $current_dir === 'ASC'
+            ? ' <i class="fas fa-arrow-up sort-arrow active-arrow"></i>'
+            : ' <i class="fas fa-arrow-down sort-arrow active-arrow"></i>';
+    } else {
+        $arrow = ' <i class="fas fa-sort sort-arrow"></i>';
+    }
+    $params = http_build_query([
+        'sort'      => $col,
+        'dir'       => $dir,
+        'gender'    => $filter_gender,
+        'specialty' => $filter_specialty,
+        'search'    => $filter_search,
+        'age_min'   => $filter_age_min,
+        'age_max'   => $filter_age_max,
+    ]);
+        return "<a href='ManageCoaches.php?$params' class='sort-link'>$label$arrow</a>";
+    }
+
     // Filter values from GET
     $filter_gender    = isset($_GET['gender'])    ? $_GET['gender']    : '';
     $filter_specialty = isset($_GET['specialty']) ? $_GET['specialty'] : '';
@@ -210,15 +233,21 @@
 
     $has_filter = ($filter_gender || $filter_specialty || $filter_search || $filter_age_min || $filter_age_max);
 
+    // Sort handling
+    $allowed_sorts = ['id', 'name', 'specialty', 'price_per_hour', 'availability_status', 'is_active'];
+    $sort_col = isset($_GET['sort']) && in_array($_GET['sort'], $allowed_sorts) ? $_GET['sort'] : 'id';
+    $sort_dir = isset($_GET['dir']) && $_GET['dir'] === 'asc' ? 'ASC' : 'DESC';
+    $next_dir = ($sort_dir === 'ASC') ? 'desc' : 'asc';
+
     //Get coach data from database
     $result = mysqli_query($conn, "
         SELECT coaches.id, coaches.name, coaches.specialty,
-               coaches.phone, coaches.price_per_hour, coaches.is_active,
-               coaches.availability_status, coaches.gender, coaches.age,
-               coaches.profile_img, admins.email
+            coaches.phone, coaches.price_per_hour, coaches.is_active,
+            coaches.availability_status, coaches.gender, coaches.age,
+            coaches.profile_img, admins.email
         FROM coaches
         JOIN admins ON coaches.admin_id = admins.id
-        ORDER BY coaches.id ASC
+        ORDER BY coaches.$sort_col $sort_dir
     ");
 ?>
 
@@ -340,12 +369,12 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Coach Info</th>
-                        <th>Specialty</th>
-                        <th>Price/Hour</th>
-                        <th>Status</th>
-                        <th>Account</th>
+                        <th><?php echo coachSortLink('ID', 'id', $sort_col, $sort_dir, $next_dir, $filter_gender, $filter_specialty, $filter_search, $filter_age_min, $filter_age_max); ?></th>
+                        <th><?php echo coachSortLink('Coach Info', 'name', $sort_col, $sort_dir, $next_dir, $filter_gender, $filter_specialty, $filter_search, $filter_age_min, $filter_age_max); ?></th>
+                        <th><?php echo coachSortLink('Specialty', 'specialty', $sort_col, $sort_dir, $next_dir, $filter_gender, $filter_specialty, $filter_search, $filter_age_min, $filter_age_max); ?></th>
+                        <th><?php echo coachSortLink('Price/Hour', 'price_per_hour', $sort_col, $sort_dir, $next_dir, $filter_gender, $filter_specialty, $filter_search, $filter_age_min, $filter_age_max); ?></th>
+                        <th><?php echo coachSortLink('Status', 'availability_status', $sort_col, $sort_dir, $next_dir, $filter_gender, $filter_specialty, $filter_search, $filter_age_min, $filter_age_max); ?></th>
+                        <th><?php echo coachSortLink('Account', 'is_active', $sort_col, $sort_dir, $next_dir, $filter_gender, $filter_specialty, $filter_search, $filter_age_min, $filter_age_max); ?></th>
                     </tr>
                 </thead>
 

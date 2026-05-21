@@ -50,19 +50,44 @@
     $filter_status    = isset($_GET['status'])    ? $_GET['status']                                      : '';
     $filter_court     = isset($_GET['court'])     ? intval($_GET['court'])                               : 0;
     $filter_coach     = isset($_GET['coach'])     ? intval($_GET['coach'])                               : 0;
-    $filter_date_from = isset($_GET['date_from']) ? mysqli_real_escape_string($conn, $_GET['date_from']) : '';
-    $filter_date_to   = isset($_GET['date_to'])   ? mysqli_real_escape_string($conn, $_GET['date_to'])   : '';
+    $filter_booking_date = isset($_GET['booking_date']) ? mysqli_real_escape_string($conn, $_GET['booking_date']) : '';
     $filter_search    = isset($_GET['search'])    ? mysqli_real_escape_string($conn, $_GET['search'])    : '';
 
+    // Sort handling
+    $allowed_sorts = ['id', 'name', 'court_name', 'booking_date', 'start_time', 'end_time', 'total_price', 'status'];
+    $sort_col = isset($_GET['sort']) && in_array($_GET['sort'], $allowed_sorts) ? $_GET['sort'] : 'booking_date';
+    $sort_dir = isset($_GET['dir']) && $_GET['dir'] === 'asc' ? 'ASC' : 'DESC';
+    $next_dir = ($sort_dir === 'ASC') ? 'desc' : 'asc';
+    $order_col = match($sort_col) {
+                    'name'       => 'users.name',
+                    'court_name' => 'courts.court_name',
+                    default      => "bookings.$sort_col"
+                };
+
+    function bookingSortLink($label, $col, $current_sort, $current_dir, $next_dir, $params_extra = []) {
+        $is_active = ($current_sort === $col);
+        $dir = $is_active ? $next_dir : 'desc';
+        $arrow = '';
+        if ($is_active) {
+            $arrow = $current_dir === 'ASC'
+                ? ' <i class="fas fa-arrow-up sort-arrow active-arrow"></i>'
+                : ' <i class="fas fa-arrow-down sort-arrow active-arrow"></i>';
+        } else {
+            $arrow = ' <i class="fas fa-sort sort-arrow"></i>';
+        }
+        $params = array_merge($params_extra, ['sort' => $col, 'dir' => $dir]);
+        $qs = http_build_query($params);
+        return "<a href='ManageBookings.php?$qs' class='sort-link'>$label$arrow</a>";
+    }
+    
     // Check if any filter is active
-    $has_filter = $filter_status || $filter_court || $filter_coach || $filter_date_from || $filter_date_to || $filter_search;
+    $has_filter = $filter_status || $filter_court || $filter_coach || $filter_booking_date || $filter_search;
 
     // Build WHERE clause
     $where_parts = [];
     if($filter_status !== '')   $where_parts[] = "bookings.status = '$filter_status'";
     if($filter_court > 0)       $where_parts[] = "bookings.court_id = $filter_court";
-    if($filter_date_from !== '') $where_parts[] = "bookings.booking_date >= '$filter_date_from'";
-    if($filter_date_to !== '')   $where_parts[] = "bookings.booking_date <= '$filter_date_to'";
+    if($filter_booking_date !== '') $where_parts[] = "bookings.booking_date = '$filter_booking_date'";
     if($filter_search !== '')    $where_parts[] = "(users.name LIKE '%$filter_search%' OR courts.court_name LIKE '%$filter_search%')";
 
     // Coach: force filter to own bookings only, ignore coach filter from GET
@@ -90,17 +115,23 @@
             bookings.total_price,
             bookings.session_type,
             bookings.notes,
-            COALESCE(coaches.name, 'No Coach') AS coach_name
+            bookings.cancellation_fee,
+            COALESCE(coaches.name, 'No Coach') AS coach_name,
+            payments.payment_method,
+            payments.payment_status,
+            payments.payment_date,
+            payments.transaction_id
 
         FROM bookings
 
         JOIN users   ON bookings.user_id  = users.id
         JOIN courts  ON bookings.court_id = courts.id
-        LEFT JOIN coaches ON bookings.coach_id = coaches.id
+        LEFT JOIN coaches  ON bookings.coach_id = coaches.id
+        LEFT JOIN payments ON payments.booking_id = bookings.id
 
         $where_sql
 
-        ORDER BY bookings.booking_date DESC
+        ORDER BY $order_col $sort_dir
     ");
 
 ?>
@@ -194,12 +225,8 @@
                     </div>
                     <?php endif; ?>
                     <div class="filter-field">
-                        <label>Date From</label>
-                        <input type="date" name="date_from" value="<?php echo htmlspecialchars($filter_date_from); ?>">
-                    </div>
-                    <div class="filter-field">
-                        <label>Date To</label>
-                        <input type="date" name="date_to" value="<?php echo htmlspecialchars($filter_date_to); ?>">
+                        <label>Booking Date</label>
+                        <input type="date" name="booking_date" value="<?php echo htmlspecialchars($filter_booking_date); ?>">
                     </div>
                     <div class="filter-actions">
                         <button type="submit" class="btn-filter-apply"><i class="fas fa-search"></i> Apply</button>
@@ -238,15 +265,24 @@
 
             <table class="data-table">
                 <thead>
+                    <?php
+                    $extra = [
+                        'status'       => $filter_status,
+                        'court'        => $filter_court,
+                        'coach'        => $filter_coach,
+                        'booking_date' => $filter_booking_date,
+                        'search'       => $filter_search,
+                    ];
+                    ?>
                     <tr>
-                        <th>ID</th>
-                        <th>Player Name</th>
-                        <th>Court Name</th>
-                        <th>Booking Date</th>
-                        <th>Start Time</th>
-                        <th>End Time</th>
-                        <th>Total Price</th>
-                        <th>Status</th>
+                        <th><?php echo bookingSortLink('ID',           'id',           $sort_col, $sort_dir, $next_dir, $extra); ?></th>
+                        <th><?php echo bookingSortLink('Player Name',  'name',         $sort_col, $sort_dir, $next_dir, $extra); ?></th>
+                        <th><?php echo bookingSortLink('Court Name',   'court_name',   $sort_col, $sort_dir, $next_dir, $extra); ?></th>
+                        <th><?php echo bookingSortLink('Booking Date', 'booking_date', $sort_col, $sort_dir, $next_dir, $extra); ?></th>
+                        <th><?php echo bookingSortLink('Start Time',   'start_time',   $sort_col, $sort_dir, $next_dir, $extra); ?></th>
+                        <th><?php echo bookingSortLink('End Time',     'end_time',     $sort_col, $sort_dir, $next_dir, $extra); ?></th>
+                        <th><?php echo bookingSortLink('Total Price',  'total_price',  $sort_col, $sort_dir, $next_dir, $extra); ?></th>
+                        <th><?php echo bookingSortLink('Status',       'status',       $sort_col, $sort_dir, $next_dir, $extra); ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -299,35 +335,59 @@
                             <!-- Coloured left border based on booking status -->
                             <div class="details-inner status-<?php echo $row['status']; ?>">
                                 <div class="details-grid">
-                                    <div class="details-item">
-                                        <label>Player Name</label>
-                                        <span><?php echo htmlspecialchars($row['name']); ?></span>
-                                    </div>
-                                    <div class="details-item">
-                                        <label>Court</label>
-                                        <span><?php echo htmlspecialchars($row['court_name']); ?></span>
-                                    </div>
-                                    <div class="details-item">
-                                        <label>Booking Date</label>
-                                        <span><?php echo date("d-m-Y", strtotime($row['booking_date'])); ?></span>
-                                    </div>
-                                    <div class="details-item">
-                                        <label>Time Range</label>
-                                        <span><?php echo date("h:i A", strtotime($row['start_time'])) . ' – ' . date("h:i A", strtotime($row['end_time'])); ?></span>
-                                    </div>
-                                    <div class="details-item">
-                                        <label>Session Type</label>
-                                        <span><?php echo htmlspecialchars($row['session_type'] ?: '—'); ?></span>
-                                    </div>
-                                    <div class="details-item">
-                                        <label>Total Price</label>
-                                        <span>RM <?php echo number_format($row['total_price'], 2); ?></span>
-                                    </div>
-                                    <div class="details-item notes-item">
-                                        <label>Notes</label>
-                                        <span><?php echo htmlspecialchars($row['notes'] ?: '—'); ?></span>
-                                    </div>
-                                </div>
+                            <div class="details-item">
+                                <label>Player Name</label>
+                                <span><?php echo htmlspecialchars($row['name']); ?></span>
+                            </div>
+                            <div class="details-item">
+                                <label>Court</label>
+                                <span><?php echo htmlspecialchars($row['court_name']); ?></span>
+                            </div>
+                            <div class="details-item">
+                                <label>Booking Date</label>
+                                <span><?php echo date("d-m-Y", strtotime($row['booking_date'])); ?></span>
+                            </div>
+                            <div class="details-item">
+                                <label>Time Range</label>
+                                <span><?php echo date("h:i A", strtotime($row['start_time'])) . ' – ' . date("h:i A", strtotime($row['end_time'])); ?></span>
+                            </div>
+                            <div class="details-item">
+                                <label>Coach</label>
+                                <span><?php echo htmlspecialchars($row['coach_name']); ?></span>
+                            </div>
+                            <div class="details-item">
+                                <label>Session Type</label>
+                                <span><?php echo htmlspecialchars($row['session_type'] ?: '—'); ?></span>
+                            </div>
+                            <div class="details-item">
+                                <label>Total Price</label>
+                                <span>RM <?php echo number_format($row['total_price'], 2); ?></span>
+                            </div>
+                            <div class="details-item">
+                                <label>Cancellation Fee</label>
+                                <span>RM <?php echo number_format($row['cancellation_fee'] ?? 0, 2); ?></span>
+                            </div>
+                            <div class="details-item">
+                                <label>Payment Method</label>
+                                <span><?php echo htmlspecialchars($row['payment_method'] ?: '—'); ?></span>
+                            </div>
+                            <div class="details-item">
+                                <label>Payment Status</label>
+                                <span><?php echo htmlspecialchars($row['payment_status'] ?: '—'); ?></span>
+                            </div>
+                            <div class="details-item">
+                                <label>Payment Date</label>
+                                <span><?php echo $row['payment_date'] ? date("d-m-Y h:i A", strtotime($row['payment_date'])) : '—'; ?></span>
+                            </div>
+                            <div class="details-item">
+                                <label>Transaction ID</label>
+                                <span><?php echo htmlspecialchars($row['transaction_id'] ?: '—'); ?></span>
+                            </div>
+                            <div class="details-item notes-item">
+                                <label>Notes</label>
+                                <span><?php echo htmlspecialchars($row['notes'] ?: '—'); ?></span>
+                            </div>
+                        </div>
 
                                 <!-- Edit button — stopPropagation so clicking it doesn't collapse the row -->
                                 <?php if($role !== 'Coach'): ?>

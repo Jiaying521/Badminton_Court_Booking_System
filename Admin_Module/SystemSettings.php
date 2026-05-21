@@ -24,6 +24,11 @@ header("Expires: 0");
 // ---------- 4. Connect to Database ----------
 $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
 
+// FIX 1: Check if database connection succeeded
+if (!$conn) {
+    die("Database connection failed: " . mysqli_connect_error());
+}
+
 // ---------- 5. Get Logged-in User Info from Session ----------
 $username     = $_SESSION['username'];
 $role         = $_SESSION['role'];
@@ -163,6 +168,30 @@ if (isset($_GET['delete_promo'])) {
     exit();
 }
 
+// ----------------------------------------------------------
+//  Action G: Add Voucher
+// ----------------------------------------------------------
+if (isset($_POST['add_voucher'])) {
+    $title           = mysqli_real_escape_string($conn, trim($_POST['voucher_title']));
+    $discount_amount = floatval($_POST['discount_amount']);
+    $points_required = intval($_POST['points_required']);
+    $description     = mysqli_real_escape_string($conn, trim($_POST['description']));
+
+    mysqli_query($conn, "INSERT INTO voucher (title, discount_amount, points_required, description) 
+        VALUES ('$title', $discount_amount, $points_required, '$description')");
+    $message = "<div class='badge success' style='width:100%;padding:15px;margin-bottom:20px;'>Voucher created!</div>";
+}
+
+// ----------------------------------------------------------
+//  Action H: Delete Voucher
+// ----------------------------------------------------------
+if (isset($_GET['delete_voucher'])) {
+    $vid = intval($_GET['delete_voucher']);
+    mysqli_query($conn, "DELETE FROM voucher WHERE id = $vid");
+    header("Location: SystemSettings.php?deleted=1");
+    exit();
+}
+
 
 // ============================================================
 //  Read Data from Database (for displaying on the page)
@@ -180,8 +209,10 @@ $closed_days = mysqli_query($conn, "SELECT * FROM closed_days ORDER BY closed_da
 
 // Load all promo codes, newest first.
 $promo_codes = mysqli_query($conn, "SELECT * FROM promo_codes ORDER BY created_at DESC");
-?>
 
+// Load all vouchers
+$vouchers = mysqli_query($conn, "SELECT * FROM voucher ORDER BY points_required ASC");
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -460,7 +491,81 @@ $promo_codes = mysqli_query($conn, "SELECT * FROM promo_codes ORDER BY created_a
                 </table>
             </div>
 
-        </div>
+
+            <!-- ======================================================
+                 Section 4: Voucher Management
+                 ====================================================== -->
+            <!-- FIX 2: Moved Section 4 inside manage-container, before </div></main> -->
+            <div class="settings-card">
+                <h3><i class="fas fa-ticket-alt"></i> Voucher Management</h3>
+                <p class="settings-desc">Create vouchers that players can redeem using their loyalty points.</p>
+
+                <!-- Form to add voucher -->
+                <form method="POST" action="" style="margin-bottom:20px;">
+                    <div class="settings-grid">
+
+                        <div class="settings-field">
+                            <label>Voucher Title</label>
+                            <input type="text" name="voucher_title" class="form-control"
+                                placeholder="e.g. RM 5.00 Court Discount" required>
+                        </div>
+
+                        <div class="settings-field">
+                            <label>Discount Amount (RM)</label>
+                            <input type="number" name="discount_amount" class="form-control"
+                                placeholder="e.g. 5.00" step="0.01" min="0" required>
+                        </div>
+
+                        <div class="settings-field">
+                            <label>Points Required</label>
+                            <input type="number" name="points_required" class="form-control"
+                                placeholder="e.g. 50" min="1" required>
+                        </div>
+
+                        <div class="settings-field">
+                            <label>Description</label>
+                            <input type="text" name="description" class="form-control"
+                                placeholder="e.g. Redeem with 50 points">
+                        </div>
+
+                    </div>
+
+                    <button type="submit" name="add_voucher" class="btn-add-account" style="margin-top:15px;">
+                        <i class="fas fa-plus"></i> Create Voucher
+                    </button>
+                </form>
+
+                <!-- Voucher table -->
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Discount</th>
+                            <th>Points Required</th>
+                            <th>Description</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php while ($v = mysqli_fetch_assoc($vouchers)): ?>
+                        <tr>
+                            <td><strong><?php echo htmlspecialchars($v['title']); ?></strong></td>
+                            <td>RM <?php echo number_format($v['discount_amount'], 2); ?></td>
+                            <td><?php echo $v['points_required']; ?> pts</td>
+                            <td><?php echo htmlspecialchars($v['description']); ?></td>
+                            <td>
+                                <a href="SystemSettings.php?delete_voucher=<?php echo $v['id']; ?>"
+                                onclick="return confirm('Delete this voucher?');">
+                                    <i class="fas fa-trash-alt" style="color:#ef4444; font-size:16px;"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+            </div>
+
+        </div> <!-- end manage-container -->
     </main>
 
     <!-- JavaScript file -->

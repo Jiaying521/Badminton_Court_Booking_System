@@ -210,10 +210,6 @@
     font-weight: 500;
 }
 
-.details-item.notes-item {
-    grid-column: 1 / -1;
-}
-
 .expand-icon {
     font-size: 11px;
     color: #9ca3af;
@@ -258,6 +254,8 @@
     z-index: 1000;
     align-items: center;
     justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
 }
 
 .modal-overlay.active {
@@ -267,10 +265,20 @@
 .modal-card {
     background: #fff;
     border-radius: 12px;
-    padding: 28px;
+    padding: 10px;
     width: 100%;
     max-width: 520px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-card form {
+    overflow-y: auto;
+    padding: 4px 10px 10px;
+    scrollbar-width: thin;
 }
 
 .modal-header {
