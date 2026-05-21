@@ -119,6 +119,11 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         .action-btns { display:flex; gap:0.5rem; }
         .btn-view { background:#e8f0e5; color:#2c4a2e; border:none; padding:0.3rem 0.9rem; border-radius:50px; cursor:pointer; font-size:0.75rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.3rem; transition:0.2s; }
         .btn-view:hover { background:#2b7e3a; color:white; }
+        
+        /* PAY NOW BUTTON EXCLUSIVE STYLE SET */
+        .btn-pay-now { background:#2b7e3a; color:white; border:none; padding:0.3rem 0.9rem; border-radius:50px; cursor:pointer; font-size:0.75rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.3rem; font-weight:700; transition:0.2s; }
+        .btn-pay-now:hover { background:#1f5a2a; transform: translateY(-1px); }
+
         .btn-cancel { background:#fee2e2; color:#e67e22; border:none; padding:0.3rem 0.9rem; border-radius:50px; cursor:pointer; font-size:0.75rem; display:inline-flex; align-items:center; gap:0.3rem; transition:0.2s; }
         .btn-cancel:hover { background:#e67e22; color:white; }
         .btn-cancel-disabled { background:#e0e0e0; color:#888; border:none; padding:0.3rem 0.9rem; border-radius:50px; cursor:not-allowed; font-size:0.75rem; display:inline-flex; align-items:center; gap:0.3rem; }
@@ -170,7 +175,6 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
 </head>
 <body>
 <div class="container">
-    <!-- Navbar -->
     <div class="navbar">
         <a href="dashboard.php" class="logo-area">
             <img src="../Admin_Module/Pictures/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
@@ -186,27 +190,27 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         </div>
     </div>
     
-    <!-- Page Header -->
     <div class="page-header">
         <h1><i class="fas fa-bookmark"></i> My Bookings</h1>
         <a href="dashboard.php" class="btn-book"><i class="fas fa-plus"></i> Book New Court</a>
     </div>
     
-    <!-- Wallet Balance Card -->
     <div class="wallet-card">
         <i class="fas fa-wallet"></i>
         <span>Wallet Balance: <span class="amount">RM <?php echo number_format($real_balance, 2); ?></span></span>
         <a href="../Payment_Module/wallet.php">Top Up</a>
     </div>
     
-    <!-- Stats Cards -->
     <?php 
     $total_spent = 0;
     $completed_count = 0;
     $upcoming_count = 0;
     $today = date('Y-m-d');
     foreach($bookings as $b) {
-        $total_spent += $b['total_price'];
+        // 🟢 FIXED: Only count money toward total spent if the booking is Confirmed or Completed!
+        if($b['status'] == 'Confirmed' || $b['status'] == 'Completed') {
+            $total_spent += $b['total_price'];
+        }
         if($b['status'] == 'Completed') $completed_count++;
         if($b['booking_date'] >= $today && $b['status'] == 'Confirmed') $upcoming_count++;
     }
@@ -218,7 +222,6 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         <div class="stat-card"><div class="stat-number">RM <?php echo number_format($total_spent, 2); ?></div><div class="stat-label">Total Spent</div></div>
     </div>
     
-    <!-- Filter Tabs -->
     <div class="filter-tabs">
         <button class="filter-btn active" data-filter="all">All</button>
         <button class="filter-btn" data-filter="Confirmed">Confirmed</button>
@@ -227,7 +230,6 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         <button class="filter-btn" data-filter="Cancelled">Cancelled</button>
     </div>
     
-    <!-- Bookings Table -->
     <?php if(count($bookings) > 0): ?>
     <div class="bookings-table">
         <table id="bookingsTable">
@@ -255,7 +257,14 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
                     <td>RM <?php echo number_format($b['total_price'], 2); ?></td>
                     <td><span class="status status-<?php echo $b['status']; ?>"><?php echo $b['status']; ?></span></td>
                     <td class="action-btns">
-                        <button class="btn-view" onclick="viewReceipt(<?php echo $b['id']; ?>)"><i class="fas fa-receipt"></i> Receipt</button>
+                        <?php if($b['status'] === 'Pending'): ?>
+                            <a href="../Payment_Module/checkout.php?booking_id=<?php echo $b['id']; ?>&amount=<?php echo $b['total_price']; ?>" class="btn-pay-now">
+                                <i class="fas fa-credit-card"></i> Pay Now
+                            </a>
+                        <?php else: ?>
+                            <button class="btn-view" onclick="viewReceipt(<?php echo $b['id']; ?>)"><i class="fas fa-receipt"></i> Receipt</button>
+                        <?php endif; ?>
+
                         <?php if($b['status'] == 'Pending' || $b['status'] == 'Confirmed'): ?>
                             <?php if($can_cancel): ?>
                                 <button class="btn-cancel" onclick="cancelBooking(<?php echo $b['id']; ?>)"><i class="fas fa-times"></i> Cancel</button>
@@ -281,7 +290,6 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
     <?php endif; ?>
 </div>
 
-<!-- Receipt Modal -->
 <div id="receiptModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -292,7 +300,6 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
     </div>
 </div>
 
-<!-- Footer -->
 <footer class="footer">
     <div class="footer-container">
         <div class="footer-col">

@@ -5,10 +5,11 @@ include 'db_connect.php';
 
 // 1. Catch ALL the data from gateway.php
 $booking_id = $_POST['booking_id'] ?? 0;
-$amount = $_POST['amount'] ?? 0;
+$amount = $_POST['amount'] ?? 0; // Base court price amount
 $method = $_POST['payment_method'] ?? 'Not Specified';
 $promo = $_POST['promo_code'] ?? ''; 
 $user_id = $_SESSION['user_id'] ?? 0;
+$user_voucher_id = $_POST['user_voucher_id'] ?? ''; // 🟢 CATCH THE APPLIED VOUCHER DATA ROW ID
 
 $discount_applied = 0.00;
 
@@ -20,6 +21,24 @@ if (!empty($promo)) {
         // Redirect back with an invalid promo status flag if needed
         header("Location: checkout.php?booking_id=$booking_id&amount=$amount&error=invalid_promo");
         exit();
+    }
+}
+
+// 🎫 🟢 VOUCHER DEDUCTION LOOKUP VALIDATION ENGINE
+if (!empty($user_voucher_id) && $user_id > 0) {
+    $v_check = $conn->prepare("
+        SELECT v.discount_amount 
+        FROM user_vouchers uv
+        JOIN voucher v ON uv.voucher_id = v.id
+        WHERE uv.id = ? AND uv.user_id = ? AND uv.is_used = 0
+    ");
+    $v_check->bind_param("ii", $user_voucher_id, $user_id);
+    $v_check->execute();
+    $v_result = $v_check->get_result()->fetch_assoc();
+    
+    if ($v_result) {
+        // Add the voucher discount amount value onto your global running discount variable!
+        $discount_applied += $v_result['discount_amount'];
     }
 }
 
@@ -49,8 +68,7 @@ if ($method === 'App Wallet') {
     $status = ($simulation_result <= 90) ? "Success" : "Failed";
 }
 
-// 5. Save to Payments Database
-// 🟢 FIXED: Changed back to MySQLi ($conn) prepared statements to prevent fatal crashes
+// 5. Save to Payments Database Log History Row
 $sql = "INSERT INTO payments (booking_id, amount, discount_applied, final_amount, payment_method, payment_status) 
         VALUES (?, ?, ?, ?, ?, ?)";
 $stmt_pay = $conn->prepare($sql);
@@ -70,9 +88,17 @@ if ($stmt_pay->execute()) {
         // 🟢 CONFIRM THE BOOKING STATUS
         if ($booking_id) {
             $update_sql = "UPDATE bookings SET status = 'Confirmed' WHERE id = ?";
-            $stmt_update = $conn->prepare($update_sql);
-            $stmt_update->bind_param("i", $booking_id);
-            $stmt_update->execute();
+            $update_stmt = $conn->prepare($update_sql);
+            $update_stmt->bind_param("i", $booking_id);
+            $update_stmt->execute();
+        }
+
+        // 🎫 🟢 CONSUME THE VOUCHER LOGIC: Mark it as used so they can't reuse it!
+        if (!empty($user_voucher_id) && $user_id > 0) {
+            $burn_sql = "UPDATE user_vouchers SET is_used = 1 WHERE id = ?";
+            $burn_stmt = $conn->prepare($burn_sql);
+            $burn_stmt->bind_param("i", $user_voucher_id);
+            $burn_stmt->execute();
         }
 
         // 🟢 REDIRECT TO GATEWAY STEP 3 SUCCESS PAGE

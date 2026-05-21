@@ -8,6 +8,7 @@ $amount = $_POST['amount'] ?? $_GET['amount'] ?? 0;
 $method = $_POST['payment_method'] ?? $_GET['payment_method'] ?? 'Unknown';
 $promo  = $_POST['promo_code'] ?? $_GET['promo_code'] ?? '';
 $sub_method = $_POST['sub_method'] ?? $_GET['sub_method'] ?? ''; 
+$user_voucher_id = $_POST['user_voucher_id'] ?? $_GET['user_voucher_id'] ?? ''; // 🟢 1. CATCH VOUCHER ID FROM CHECKOUT
 
 // Track current step from BOTH POST and GET requests safely
 $step = $_POST['step'] ?? $_GET['step'] ?? 1;
@@ -24,6 +25,28 @@ if ($user_id > 0) {
     if ($row_bal = $res_bal->fetch_assoc()) {
         $real_balance = $row_bal['wallet_balance'];
     }
+}
+
+// 🟢 ONLY ADDED: LOOKUP VOUCHER WORTH AND CALCULATE ADJUSTED DISPLAY PRICE
+$gateway_discount = 0.00;
+if (!empty($user_voucher_id) && $user_id > 0) {
+    $v_stmt = $conn->prepare("
+        SELECT v.discount_amount 
+        FROM user_vouchers uv
+        JOIN voucher v ON uv.voucher_id = v.id
+        WHERE uv.id = ? AND uv.user_id = ?
+    ");
+    $v_stmt->bind_param("ii", $user_voucher_id, $user_id);
+    $v_stmt->execute();
+    $v_res = $v_stmt->get_result()->fetch_assoc();
+    if ($v_res) {
+        $gateway_discount = $v_res['discount_amount'];
+    }
+}
+
+$display_amount = $amount - $gateway_discount;
+if ($display_amount < 0) {
+    $display_amount = 0;
 }
 ?>
 <!DOCTYPE html>
@@ -70,7 +93,6 @@ if ($user_id > 0) {
         .bank-badge-header { border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; }
         .secure-notice { font-size: 11px; color: #666; display: flex; align-items: center; gap: 5px; margin-top: 10px; background: #f9f9f9; padding: 8px 12px; border-radius: 6px; }
 
-        /* 🟢 NEW TNG SIMULATOR STYLES */
         .tng-btn { background: #005eb8; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; transition: 0.2s; font-size: 13px; }
         .tng-btn:hover { background: #004487; }
         .countdown-text { font-size: 12px; color: #ffeb3b; font-weight: bold; margin-top: 5px; display: block; letter-spacing: 0.5px; }
@@ -95,6 +117,7 @@ if ($user_id > 0) {
                 <input type="hidden" name="promo_code" value="<?php echo htmlspecialchars($promo); ?>">
                 <input type="hidden" name="payment_method" value="<?php echo htmlspecialchars($method); ?>">
                 <input type="hidden" name="sub_method" value="<?php echo htmlspecialchars($sub_method); ?>">
+                <input type="hidden" name="user_voucher_id" value="<?php echo htmlspecialchars($user_voucher_id); ?>">
 
                 <?php if ($step == 1): ?>
                     <input type="hidden" name="step" id="formStepField" value="2"> 
@@ -105,9 +128,9 @@ if ($user_id > 0) {
                             <p style="margin: 0; opacity: 0.9; font-size:14px;">Available Balance</p>
                             <h1 style="margin: 5px 0; font-size:2.2rem; font-weight:800;">RM <?php echo number_format($real_balance, 2); ?></h1>
                         </div>
-                        <p style="font-size:15px; color:#555;">Paying: <strong style="color: #2b7e3a;">RM <?php echo number_format($amount, 2); ?></strong></p>
+                        <p style="font-size:15px; color:#555;">Paying: <strong style="color: #2b7e3a;">RM <?php echo number_format($display_amount, 2); ?></strong></p>
                         
-                        <?php if ($real_balance < $amount): ?>
+                        <?php if ($real_balance < $display_amount): ?>
                             <p style="color: #ff4d4d; font-weight: bold; margin-top:15px;">⚠️ Insufficient balance! Please go back and top up.</p>
                         <?php else: ?>
                             <button type="submit" class="btn-green">Proceed to Confirmation</button>
@@ -199,25 +222,29 @@ if ($user_id > 0) {
                             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Touch_%27n_Go_eWallet_logo.svg/1200px-Touch_%27n_Go_eWallet_logo.svg.png" width="80" style="background: white; border-radius: 5px; padding: 5px;">
                             
                             <div id="tngScanningView">
-                                <h3 style="margin-top:12px; font-weight:600;"><i class="fas fa-qrcode"></i> Scan Merchant QR</h3>
-                                <span class="countdown-text" id="tngTimer">Waiting for scan... (05:00)</span>
+                                <h3 style="margin-top:12px; font-weight:600;"><i class="fas fa-qrcode"></i> Scan with your Mobile Phone</h3>
+                                <span class="countdown-text" id="tngTimer">Waiting for live scan... (05:00)</span>
                                 
-                                <div style="background: white; padding: 10px; display: inline-block; border-radius: 12px; margin: 15px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=SMASH-ARENA-PAYMENT-ID-<?php echo $booking_id; ?>" alt="QR Code">
+                                <div style="background: white; padding: 12px; display: inline-block; border-radius: 12px; margin: 15px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                                    <?php
+                                        $laptop_ip = gethostbyname(gethostname()); 
+                                        $mobile_url = "http://$laptop_ip/fyp/Payment_Module/tng_mobile.php?booking_id=$booking_id&amount=$amount&user_voucher_id=$user_voucher_id";
+                                        $qr_api_link = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=" . urlencode($mobile_url);
+                                    ?>
+                                    <img src="<?php echo $qr_api_link; ?>" alt="Live Smart QR Channel" style="display: block;">
                                 </div>
-                                <p style="font-weight:700; font-size:18px; letter-spacing:0.5px;">TOTAL DUE: RM <?php echo number_format($amount, 2); ?></p>
+                                <p style="font-weight:700; font-size:18px; letter-spacing:0.5px;">TOTAL DUE: RM <?php echo number_format($display_amount, 2); ?></p>
                                 
                                 <hr style="border:0; border-top:1px solid rgba(255,255,255,0.2); margin:15px 0;">
-                                <p style="font-size:12px; opacity:0.8;">Or log in using mobile number below:</p>
-                                <input type="text" id="tngMobileNo" placeholder="Mobile Number (e.g. 60123456789)" class="gateway-input" style="margin-top:10px; background:rgba(255,255,255,0.1); color:white; border:1px solid rgba(255,255,255,0.3);" oninput="this.value = this.value.replace(/[^\d]/g, '');">
+                                <p style="font-size:13px; font-weight:500;"><i class="fas fa-sync fa-spin"></i> Device Link Active. Waiting for phone approval...</p>
                                 
-                                <button type="button" class="tng-btn" onclick="simulateTngScan()"><i class="fas fa-mobile-alt"></i> Simulate App Scan & Pay</button>
+                                <button type="button" class="tng-btn" style="background: rgba(255,255,255,0.15); margin-top: 15px; font-size: 11px;" onclick="simulateTngScan()">Manual Laptop Simulation Override</button>
                             </div>
 
                             <div id="tngLoadingView" style="display:none; padding: 40px 0;">
                                 <i class="fas fa-circle-notch fa-spin" style="font-size: 3.5rem; margin-bottom: 15px;"></i>
-                                <h3>Authenticating Transaction...</h3>
-                                <p style="font-size:13px; opacity:0.8; margin-top:5px;">Connecting securely to Touch 'n Go servers</p>
+                                <h3>Verifying Mobile Authentication...</h3>
+                                <p style="font-size:13px; opacity:0.8; margin-top:5px;">Your mobile authorization was received. Refreshing dashboard status...</p>
                             </div>
                         </div>
                     <?php endif; ?>
@@ -237,7 +264,7 @@ if ($user_id > 0) {
                         <p style="margin: 10px 0; display:flex; justify-content:space-between;"><strong>Account Type:</strong> <span style="color:#666;">Savings Account / Default</span></p>
                         <p style="margin: 10px 0; display:flex; justify-content:space-between;"><strong>Booking Target ID:</strong> <span style="color:#666;">#<?php echo htmlspecialchars($booking_id); ?></span></p>
                         <hr style="border:0; border-top:1px solid #eee; margin:12px 0;">
-                        <p style="margin: 8px 0; display:flex; justify-content:space-between; font-size:1.2rem;"><strong>Amount to Deduct:</strong> <span style="color:#2b7e3a; font-weight:bold;">RM <?php echo number_format($amount, 2); ?></span></p>
+                        <p style="margin: 8px 0; display:flex; justify-content:space-between; font-size:1.2rem;"><strong>Amount to Deduct:</strong> <span style="color:#2b7e3a; font-weight:bold;">RM <?php echo number_format($display_amount, 2); ?></span></p>
                     </div>
                     
                     <button type="submit" class="btn-green">Confirm Payment</button>
@@ -288,7 +315,6 @@ function togglePasswordVisibility(inputId, iconElement) {
     }
 }
 
-// 🟢 REALISTIC COUNTDOWN TIMER ENGINE FOR TNG
 <?php if ($sub_method === 'TNG' && $step == 1): ?>
 let duration = 300; 
 const timerElement = document.getElementById('tngTimer');
@@ -298,25 +324,42 @@ const interval = setInterval(function() {
     minutes = minutes < 10 ? "0" + minutes : minutes;
     seconds = seconds < 10 ? "0" + seconds : seconds;
     
-    timerElement.textContent = "Waiting for scan... (" + minutes + ":" + seconds + ")";
+    timerElement.textContent = "Waiting for live scan... (" + minutes + ":" + seconds + ")";
     if (--duration < 0) {
         clearInterval(interval);
         timerElement.textContent = "QR Expired. Please reload.";
     }
 }, 1000);
 
-// 🟢 HIGH-FIDELITY TNG PRESENTATION ANIMATION TRIGGER
+const liveDatabaseCheck = setInterval(function() {
+    fetch('../Customer_Module/get_booking_details.php?id=<?php echo $booking_id; ?>')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.booking.status === 'Confirmed') {
+                clearInterval(interval);
+                clearInterval(liveDatabaseCheck);
+                
+                document.getElementById('tngScanningView').style.display = 'none';
+                document.getElementById('cancelReturnLink').style.display = 'none';
+                document.getElementById('tngLoadingView').style.display = 'block';
+                document.getElementById('tngMainContainer').style.background = '#2b7e3a'; 
+                
+                setTimeout(function() {
+                    window.location.href = 'gateway.php?step=3&status=success&booking_id=<?php echo $booking_id; ?>&amount=<?php echo $amount; ?>';
+                }, 1800);
+            }
+        })
+        .catch(err => console.log('Polling server link ping...'));
+}, 2000);
+
 function simulateTngScan() {
-    // If they typed a phone number, validate it, otherwise assume they scanned the QR code
-    const phoneInput = document.getElementById('tngMobileNo').value;
-    
-    clearInterval(interval); // stop timer
+    clearInterval(interval);
+    clearInterval(liveDatabaseCheck);
     document.getElementById('tngScanningView').style.display = 'none';
     document.getElementById('cancelReturnLink').style.display = 'none';
     document.getElementById('tngLoadingView').style.display = 'block';
     document.getElementById('tngMainContainer').style.background = '#004487';
 
-    // Hold the loading animation for 2 seconds to make lecturers think it's checking api servers live!
     setTimeout(function() {
         document.getElementById('gatewayForm').submit();
     }, 2200);

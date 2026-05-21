@@ -33,6 +33,19 @@ $stmt = $pdo->prepare("SELECT SUM(total_price) FROM bookings WHERE user_id = ? A
 $stmt->execute([$user_id]);
 $totalSpent = $stmt->fetchColumn() ?? 0;
 
+// 🟢 ONLY ADDED: 计算用户已经消耗用掉的积分并计算剩余可用余额数
+$stmt_used = $pdo->prepare("
+    SELECT SUM(v.points_required) 
+    FROM user_vouchers uv 
+    JOIN voucher v ON uv.voucher_id = v.id 
+    WHERE uv.user_id = ?
+");
+$stmt_used->execute([$user_id]);
+$pointsUsed = $stmt_used->fetchColumn() ?? 0;
+
+$lifetimePoints = floor($totalSpent * 1); // RM1 = 1point
+$currentPointsBalance = $lifetimePoints - $pointsUsed;
+
 // 获取所有场地类型
 $types = [];
 $typeResult = $pdo->query("SELECT DISTINCT court_type FROM courts WHERE is_active = 1");
@@ -285,7 +298,6 @@ function getCourtImage($court) {
 </head>
 <body>
 <div class="container">
-    <!-- Navbar -->
     <div class="navbar">
         <a href="dashboard.php" class="logo-area">
             <img src="../Admin_Module/Pictures/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
@@ -301,7 +313,6 @@ function getCourtImage($court) {
         </div>
     </div>
     
-    <!-- Welcome Banner -->
     <div class="welcome-banner">
         <div>
             <h1>Ready to play, <?php echo htmlspecialchars($user['name'] ?? 'Player'); ?>! 🏸</h1>
@@ -314,15 +325,20 @@ function getCourtImage($court) {
         <a href="my_bookings.php" class="btn-my-bookings"><i class="fas fa-bookmark"></i> My Bookings</a>
     </div>
     
-    <!-- Stats Cards -->
     <div class="stats-grid">
         <div class="stat-card"><div class="stat-icon"><i class="fas fa-calendar-check"></i></div><div class="stat-info"><h3><?php echo $upcomingCount; ?></h3><p>Upcoming Bookings</p></div></div>
         <div class="stat-card"><div class="stat-icon"><i class="fas fa-history"></i></div><div class="stat-info"><h3><?php echo $totalBookings; ?></h3><p>Total Bookings</p></div></div>
         <div class="stat-card"><div class="stat-icon"><i class="fas fa-coins"></i></div><div class="stat-info"><h3>RM <?php echo number_format($totalSpent, 2); ?></h3><p>Total Spent</p></div></div>
-        <div class="stat-card"><div class="stat-icon"><i class="fas fa-star"></i></div><div class="stat-info"><h3><?php echo floor($totalSpent * 0.1); ?></h3><p>Reward Points</p></div></div>
+        
+        <div class="stat-card" onclick="window.location.href='../Payment_Module/redeem_voucher.php';" style="cursor: pointer;">
+            <div class="stat-icon"><i class="fas fa-star"></i></div>
+            <div class="stat-info">
+                <h3><?php echo $currentPointsBalance; ?></h3>
+                <p>Reward Points</p>
+            </div>
+        </div>
     </div>
     
-    <!-- Filter Form -->
     <div class="filter-form">
         <form method="GET" style="display:contents;">
             <div class="filter-group">
@@ -354,7 +370,6 @@ function getCourtImage($court) {
         </form>
     </div>
     
-    <!-- Courts Grid -->
     <div class="courts-grid">
         <?php if (count($courts) > 0): ?>
             <?php foreach ($courts as $c): 
@@ -390,7 +405,6 @@ function getCourtImage($court) {
         <?php endif; ?>
     </div>
     
-    <!-- Recent Bookings -->
     <?php if(count($recentBookings) > 0): ?>
     <div class="recent-section">
         <div class="section-header">
@@ -420,7 +434,6 @@ function getCourtImage($court) {
     </div>
     <?php endif; ?>
     
-    <!-- Quick Actions -->
     <div class="quick-actions">
         <a href="dashboard.php" class="action-btn"><i class="fas fa-plus"></i> Book a Court</a>
         <a href="my_bookings.php" class="action-btn"><i class="fas fa-list"></i> My Bookings</a>
@@ -430,7 +443,6 @@ function getCourtImage($court) {
     </div>
 </div>
 
-<!-- Footer -->
 <footer class="footer">
     <div class="footer-container">
         <div class="footer-col">

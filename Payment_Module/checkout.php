@@ -2,7 +2,7 @@
 session_start();
 include 'db_connect.php';
 
-// 🟢 1. FETCH REAL BALANCE FROM DATABASE
+// 1. FETCH REAL BALANCE FROM DATABASE
 $user_id = $_SESSION['user_id'] ?? 0;
 $real_balance = 0.00;
 
@@ -38,6 +38,21 @@ if($booking_id) {
     $booking_date = $booking_data['booking_date']; 
     $time_slot = $booking_data['start_time'] . ' to ' . $booking_data['end_time'];
 
+    // 🟢 FETCH AVAILABLE UNUSED VOUCHERS REDEEMED BY PLAYER
+    $available_vouchers = [];
+    $v_sql = "
+        SELECT uv.id AS user_voucher_id, v.title, v.discount_amount 
+        FROM user_vouchers uv
+        JOIN voucher v ON uv.voucher_id = v.id
+        WHERE uv.user_id = '$user_id' AND uv.is_used = 0
+    ";
+    $v_result = $conn->query($v_sql);
+    if($v_result) {
+        while($v_row = $v_result->fetch_assoc()) {
+            $available_vouchers[] = $v_row;
+        }
+    }
+
 } else {
     die("Error: Missing booking ID.");
 }
@@ -55,7 +70,7 @@ if($booking_id) {
         body { font-family:'Inter',sans-serif; background:#f5f9f0; padding:2rem; }
         .container { max-width:1400px; margin:0 auto; }
         
-        /* 🟢 EXACT MATCH TO FRIEND'S STEP HEADER BAR STYLE */
+        /* EXACT MATCH TO FRIEND'S STEP HEADER BAR STYLE */
         .progress-bar { display:flex; justify-content:space-between; margin-bottom:2rem; background:white; padding:1rem 2rem; border-radius:60px; }
         .progress-step { text-align:center; flex:1; }
         .progress-step .step-number { width:32px; height:32px; background:#e0e0e0; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:0.3rem; color: #333; }
@@ -64,7 +79,7 @@ if($booking_id) {
         .progress-step .step-label { font-size:0.75rem; color:#888; }
         .progress-step.active .step-label { color:#2b7e3a; font-weight:600; }
         
-        /* 🟢 SPECIFIC SPLIT CONTENT COLUMN SCHEME */
+        /* SPECIFIC SPLIT CONTENT COLUMN SCHEME */
         .row-2cols { display:grid; grid-template-columns:2fr 1fr; gap:1.5rem; }
         
         .payment-section { background:white; border-radius:24px; padding:1.5rem; margin-bottom:1.5rem; text-align: left; }
@@ -83,6 +98,13 @@ if($booking_id) {
         .btn-skip { background:#e0e0e0; color:#333; border:none; padding:0.8rem; border-radius:50px; width:100%; margin-top:0.5rem; cursor:pointer; text-align: center; text-decoration: none; display: block; font-size: 0.9rem; }
         
         #online-choices { margin: 5px 0 15px 35px; padding: 15px; background: #fafdf7; border-left: 4px solid #2b7e3a; border-radius: 8px; border: 1px solid #eee; }
+        
+        /* Voucher Selection Styles */
+        .voucher-select-box { margin-top: 15px; padding: 12px; background: #fcfcfc; border: 1px dashed #2b7e3a; border-radius: 14px; }
+        .voucher-select-box label { font-size: 0.8rem; font-weight: 700; color: #2b7e3a; display: block; margin-bottom: 5px; text-transform: uppercase; }
+        .voucher-dropdown { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; background: white; font-family: inherit; font-size: 0.85rem; color: #333; outline: none; }
+        .voucher-dropdown:focus { border-color: #2b7e3a; }
+
         @media (max-width:768px) { .row-2cols { grid-template-columns:1fr; } body { padding:1rem; } }
     </style>
 </head>
@@ -98,7 +120,7 @@ if($booking_id) {
     
     <form action="gateway.php" method="POST">
         <input type="hidden" name="booking_id" value="<?php echo $booking_id; ?>">
-        <input type="hidden" name="amount" value="<?php echo $amount; ?>">
+        <input type="hidden" name="amount" id="baseAmountField" value="<?php echo $amount; ?>">
 
         <div class="row-2cols">
             
@@ -151,10 +173,27 @@ if($booking_id) {
                         <div class="summary-item"><strong>Reserved Date:</strong> <span><?php echo date('M j, Y', strtotime($booking_date)); ?></span></div>
                         <div class="summary-item"><strong>Time Windows:</strong> <span><?php echo htmlspecialchars($time_slot); ?></span></div>
                     </div>
+
+                    <div class="voucher-select-box">
+                        <label><i class="fas fa-ticket-alt"></i> Apply Saved Voucher</label>
+                        <select name="user_voucher_id" id="voucherSelector" class="voucher-dropdown" onchange="applyLiveVoucherDiscount()">
+                            <option value="" data-discount="0">-- No Voucher Selected --</option>
+                            <?php foreach ($available_vouchers as $v): ?>
+                                <option value="<?php echo $v['user_voucher_id']; ?>" data-discount="<?php echo $v['discount_amount']; ?>">
+                                    <?php echo htmlspecialchars($v['title']); ?> (-RM <?php echo number_format($v['discount_amount'], 2); ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
                     
+                    <div class="summary-item" id="discountItemRow" style="display: none; color: #e67e22; font-weight: 600;">
+                        <span>Voucher Discount:</span>
+                        <span id="discountValueDisplay">-RM 0.00</span>
+                    </div>
+
                     <div class="cart-total">
                         <span>Total Due:</span>
-                        <span>MYR <?php echo number_format($amount, 2); ?></span>
+                        <span id="finalAmountPriceDisplay">MYR <?php echo number_format($amount, 2); ?></span>
                     </div>
                     
                     <button type="submit" class="btn-continue"><i class="fas fa-check-circle"></i> Continue to Payment</button>
@@ -165,5 +204,34 @@ if($booking_id) {
         </div>
     </form>
 </div>
+
+<script>
+function applyLiveVoucherDiscount() {
+    const baseAmount = parseFloat(<?php echo $amount; ?>);
+    const selector = document.getElementById('voucherSelector');
+    const selectedOption = selector.options[selector.selectedIndex];
+    
+    // Extends value properties directly from custom dataset attribute
+    const discountAmount = parseFloat(selectedOption.getAttribute('data-discount')) || 0;
+    
+    let netFinalPayable = baseAmount - discountAmount;
+    if (netFinalPayable < 0) netFinalPayable = 0;
+    
+    // Toggle discount info element visibility live
+    const discountRow = document.getElementById('discountItemRow');
+    const discountDisplay = document.getElementById('discountValueDisplay');
+    
+    if (discountAmount > 0) {
+        discountRow.style.display = 'flex';
+        discountDisplay.textContent = '-RM ' + discountAmount.toFixed(2);
+    } else {
+        discountRow.style.display = 'none';
+    }
+    
+    // Update main container total span text
+    document.getElementById('finalAmountPriceDisplay').textContent = 'MYR ' + netFinalPayable.toFixed(2);
+}
+</script>
+
 </body>
 </html>

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 20, 2026 at 02:23 PM
+-- Generation Time: May 21, 2026 at 07:04 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -141,7 +141,7 @@ INSERT INTO `bookings` (`id`, `user_id`, `court_id`, `booking_date`, `start_time
 (30, 11, 2, '2026-05-28', '08:00:00', '09:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-07 05:24:25'),
 (31, 11, 2, '2026-05-14', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-07 05:33:03'),
 (32, 11, 2, '2026-05-23', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-07 05:37:58'),
-(33, 1, 5, '2026-05-18', '16:00:00', '17:00:00', 1, 0, 0, 0.00, 'Casual Play', 15.00, 'Pending', 0.00, '', '2026-05-18 07:36:21'),
+(33, 1, 5, '2026-05-18', '16:00:00', '17:00:00', 1, 0, 0, 0.00, 'Casual Play', 15.00, 'Confirmed', 0.00, '', '2026-05-18 07:36:21'),
 (34, 1, 8, '2026-05-18', '16:00:00', '17:00:00', 1, 4, 1, 10.00, 'Casual Play', 224.00, 'Confirmed', 0.00, '', '2026-05-18 07:59:13'),
 (35, 1, 1, '2026-05-21', '09:00:00', '11:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 10.00, '', '2026-05-20 10:42:20'),
 (36, 1, 1, '2026-05-22', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 10.00, '', '2026-05-20 11:02:24'),
@@ -151,9 +151,10 @@ INSERT INTO `bookings` (`id`, `user_id`, `court_id`, `booking_date`, `start_time
 (40, 1, 3, '2026-05-21', '09:00:00', '11:00:00', 2, 0, 0, 0.00, 'Casual Play', 219.00, 'Cancelled', 10.00, '', '2026-05-20 11:28:53'),
 (41, 1, 3, '2026-05-21', '11:00:00', '13:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 10.00, '', '2026-05-20 11:31:45'),
 (42, 1, 3, '2026-05-21', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Confirmed', 0.00, '', '2026-05-20 11:35:21'),
-(43, 1, 1, '2026-05-21', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Pending', 0.00, '', '2026-05-20 11:40:50'),
+(43, 1, 1, '2026-05-21', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Confirmed', 0.00, '', '2026-05-20 11:40:50'),
 (44, 1, 1, '2026-05-29', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Confirmed', 0.00, '', '2026-05-20 11:49:45'),
-(45, 1, 1, '2026-05-21', '13:00:00', '15:00:00', 2, 0, 0, 0.00, 'Casual Play', 25.00, 'Pending', 0.00, '', '2026-05-20 12:21:58');
+(45, 1, 1, '2026-05-21', '13:00:00', '15:00:00', 2, 0, 0, 0.00, 'Casual Play', 25.00, 'Confirmed', 0.00, '', '2026-05-20 12:21:58'),
+(46, 1, 1, '2026-05-22', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Confirmed', 0.00, '', '2026-05-21 04:36:43');
 
 -- --------------------------------------------------------
 
@@ -428,7 +429,11 @@ INSERT INTO `payments` (`payment_id`, `booking_id`, `amount`, `discount_applied`
 (21, 35, 10.00, 0.00, 10.00, 'Refund', 'success', 'REF_1779276903_35', '2026-05-20 11:35:03'),
 (22, 41, 10.00, 0.00, 10.00, 'Refund', 'success', 'REF_1779276906_41', '2026-05-20 11:35:06'),
 (23, 42, 20.00, 0.00, 20.00, 'Online Payment', 'success', NULL, '2026-05-20 11:39:50'),
-(24, 44, 10.00, 0.00, 10.00, 'App Wallet', 'success', NULL, '2026-05-20 11:49:57');
+(24, 44, 10.00, 0.00, 10.00, 'App Wallet', 'success', NULL, '2026-05-20 11:49:57'),
+(25, 45, 25.00, 0.00, 25.00, 'Online Payment', 'success', NULL, '2026-05-21 03:34:56'),
+(26, 33, 15.00, 0.00, 15.00, 'App Wallet', 'success', NULL, '2026-05-21 03:35:12'),
+(27, 46, 20.00, 5.00, 15.00, 'App Wallet', 'success', NULL, '2026-05-21 04:49:31'),
+(28, 43, 20.00, 0.00, 20.00, 'App Wallet', 'success', NULL, '2026-05-21 04:50:23');
 
 -- --------------------------------------------------------
 
@@ -569,7 +574,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `created_at`, `wallet_balance`, `profile_picture`) VALUES
-(1, 'John Doe', 'john@example.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', '+60123456789', '2026-04-30 16:17:09', 299.00, NULL),
+(1, 'John Doe', 'john@example.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', '+60123456789', '2026-04-30 16:17:09', 249.00, NULL),
 (2, 'Alice Tan', 'alice@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60111222333', '2026-04-30 16:34:47', 0.00, NULL),
 (3, 'Michael Lee', 'michael@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60199888777', '2026-04-30 16:34:47', 0.00, NULL),
 (4, 'Siti Aminah', 'siti@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60122334455', '2026-04-30 16:34:47', 0.00, NULL),
@@ -580,6 +585,50 @@ INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `created_at`, `
 (9, 'Jason Teh', 'jason@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60199001122', '2026-04-30 16:34:47', 0.00, NULL),
 (10, 'Nurul Huda', 'nurul@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60110101010', '2026-04-30 16:34:47', 0.00, NULL),
 (11, 'wz', 'zhefurry@gmail.com', '$2y$10$ti8t5iVME5.hWJhMY0cE5ukBX67z0z4xPn8HL0pskzUS9Kn0PL9iS', '+60123456789', '2026-05-07 03:28:20', 70.00, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user_vouchers`
+--
+
+CREATE TABLE `user_vouchers` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `voucher_id` int(11) NOT NULL,
+  `is_used` int(11) DEFAULT 0,
+  `redeemed_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `user_vouchers`
+--
+
+INSERT INTO `user_vouchers` (`id`, `user_id`, `voucher_id`, `is_used`, `redeemed_at`) VALUES
+(1, 1, 1, 1, '2026-05-21 04:42:19');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `voucher`
+--
+
+CREATE TABLE `voucher` (
+  `id` int(11) NOT NULL,
+  `title` varchar(100) NOT NULL,
+  `discount_amount` decimal(10,2) NOT NULL,
+  `points_required` int(11) NOT NULL,
+  `description` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `voucher`
+--
+
+INSERT INTO `voucher` (`id`, `title`, `discount_amount`, `points_required`, `description`) VALUES
+(1, 'RM 5.00 Court Discount', 5.00, 50, 'Redeem with 50 points'),
+(2, 'RM 10.00 Court Discount', 10.00, 100, 'Redeem with 100 points'),
+(3, 'RM 20.00 Mega Saver', 20.00, 180, 'Redeem with 180 points');
 
 --
 -- Indexes for dumped tables
@@ -691,6 +740,18 @@ ALTER TABLE `users`
   ADD UNIQUE KEY `name` (`name`);
 
 --
+-- Indexes for table `user_vouchers`
+--
+ALTER TABLE `user_vouchers`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `voucher`
+--
+ALTER TABLE `voucher`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -704,7 +765,7 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
 
 --
 -- AUTO_INCREMENT for table `booking_addons`
@@ -752,7 +813,7 @@ ALTER TABLE `otp_codes`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT for table `products`
@@ -783,6 +844,18 @@ ALTER TABLE `tasks`
 --
 ALTER TABLE `users`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+
+--
+-- AUTO_INCREMENT for table `user_vouchers`
+--
+ALTER TABLE `user_vouchers`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `voucher`
+--
+ALTER TABLE `voucher`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Constraints for dumped tables
