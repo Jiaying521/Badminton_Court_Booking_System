@@ -27,7 +27,7 @@
                 <ul class="submenu">
                     <li><a href="ManageCoaches.php">Manage Coach</a></li>
                     <li><a href="ManageBookings.php">Manage Bookings</a></li> 
-                    <li><a href="#">Customer Management</a></li>                   
+                    <li><a href="ManageCustomers.php">Customer Management</a></li>                   
                     <li><a href="#">Reports & Analytics</a></li>
                     <li><a href="#">Notifications</a></li>
                 </ul>
@@ -42,7 +42,7 @@
                 <a href="#" class="drop-btn">More Options ▼</a>
                 <ul class="submenu">
                     <li><a href="ManageCoaches.php">Manage Coach</a></li>
-                    <li><a href="#">Customer Management</a></li>
+                    <li><a href="ManageCustomers.php">Customer Management</a></li> 
                     <li><a href="#">Reports & Analytics</a></li>
                     <li><a href="#">Notifications</a></li>
                 </ul>

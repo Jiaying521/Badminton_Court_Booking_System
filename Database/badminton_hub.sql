@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 21, 2026 at 05:55 PM
+-- Generation Time: May 25, 2026 at 02:58 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -569,8 +569,10 @@ CREATE TABLE `users` (
   `email` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
   `phone` varchar(20) NOT NULL,
+  `gender` enum('Male','Female') DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `wallet_balance` decimal(10,2) DEFAULT 0.00,
+  `loyalty_points` int(11) NOT NULL DEFAULT 0,
   `profile_picture` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -578,18 +580,18 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `created_at`, `wallet_balance`, `profile_picture`) VALUES
-(1, 'John Doe', 'john@example.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', '+60123456789', '2026-04-30 16:17:09', 209.00, NULL),
-(2, 'Alice Tan', 'alice@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60111222333', '2026-04-30 16:34:47', 0.00, NULL),
-(3, 'Michael Lee', 'michael@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60199888777', '2026-04-30 16:34:47', 0.00, NULL),
-(4, 'Siti Aminah', 'siti@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60122334455', '2026-04-30 16:34:47', 0.00, NULL),
-(5, 'Ahmad Firdaus', 'ahmad@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60155667788', '2026-04-30 16:34:47', 0.00, NULL),
-(6, 'Rachel Lim', 'rachel@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60166778899', '2026-04-30 16:34:47', 0.00, NULL),
-(7, 'Daniel Wong', 'daniel@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60177889900', '2026-04-30 16:34:47', 0.00, NULL),
-(8, 'Priya Kumar', 'priya@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60188990011', '2026-04-30 16:34:47', 0.00, NULL),
-(9, 'Jason Teh', 'jason@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60199001122', '2026-04-30 16:34:47', 0.00, NULL),
-(10, 'Nurul Huda', 'nurul@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60110101010', '2026-04-30 16:34:47', 0.00, NULL),
-(11, 'wz', 'zhefurry@gmail.com', '$2y$10$ti8t5iVME5.hWJhMY0cE5ukBX67z0z4xPn8HL0pskzUS9Kn0PL9iS', '+60123456789', '2026-05-07 03:28:20', 70.00, NULL);
+INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `gender`, `created_at`, `wallet_balance`, `loyalty_points`, `profile_picture`) VALUES
+(1, 'John Doe', 'john@example.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', '+60123456789', NULL, '2026-04-30 16:17:09', 209.00, 0, NULL),
+(2, 'Alice Tan', 'alice@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60111222333', NULL, '2026-04-30 16:34:47', 0.00, 0, NULL),
+(3, 'Michael Lee', 'michael@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60199888777', NULL, '2026-04-30 16:34:47', 0.00, 0, NULL),
+(4, 'Siti Aminah', 'siti@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60122334455', NULL, '2026-04-30 16:34:47', 0.00, 0, NULL),
+(5, 'Ahmad Firdaus', 'ahmad@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60155667788', NULL, '2026-04-30 16:34:47', 0.00, 0, NULL),
+(6, 'Rachel Lim', 'rachel@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60166778899', NULL, '2026-04-30 16:34:47', 0.00, 0, NULL),
+(7, 'Daniel Wong', 'daniel@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60177889900', NULL, '2026-04-30 16:34:47', 0.00, 0, NULL),
+(8, 'Priya Kumar', 'priya@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60188990011', NULL, '2026-04-30 16:34:47', 0.00, 0, NULL),
+(9, 'Jason Teh', 'jason@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60199001122', NULL, '2026-04-30 16:34:47', 0.00, 0, NULL),
+(10, 'Nurul Huda', 'nurul@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60110101010', NULL, '2026-04-30 16:34:47', 0.00, 0, NULL),
+(11, 'wz', 'zhefurry@gmail.com', '$2y$10$ti8t5iVME5.hWJhMY0cE5ukBX67z0z4xPn8HL0pskzUS9Kn0PL9iS', '+60123456789', NULL, '2026-05-07 03:28:20', 70.00, 0, '');
 
 -- --------------------------------------------------------
 
