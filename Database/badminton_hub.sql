@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 25, 2026 at 02:58 PM
+-- Generation Time: May 26, 2026 at 05:26 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -140,7 +140,7 @@ INSERT INTO `bookings` (`id`, `user_id`, `court_id`, `booking_date`, `start_time
 (29, 11, 2, '2026-05-08', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Pending', 0.00, '', '2026-05-07 04:40:34'),
 (30, 11, 2, '2026-05-28', '08:00:00', '09:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-07 05:24:25'),
 (31, 11, 2, '2026-05-14', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-07 05:33:03'),
-(32, 11, 2, '2026-05-23', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-07 05:37:58'),
+(32, 11, 2, '2026-05-23', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Confirmed', 0.00, '', '2026-05-07 05:37:58'),
 (33, 1, 5, '2026-05-18', '16:00:00', '17:00:00', 1, 0, 0, 0.00, 'Casual Play', 15.00, 'Confirmed', 0.00, '', '2026-05-18 07:36:21'),
 (34, 1, 8, '2026-05-18', '16:00:00', '17:00:00', 1, 4, 1, 10.00, 'Casual Play', 224.00, 'Confirmed', 0.00, '', '2026-05-18 07:59:13'),
 (35, 1, 1, '2026-05-21', '09:00:00', '11:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 10.00, '', '2026-05-20 10:42:20'),
@@ -152,7 +152,7 @@ INSERT INTO `bookings` (`id`, `user_id`, `court_id`, `booking_date`, `start_time
 (41, 1, 3, '2026-05-21', '11:00:00', '13:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 10.00, '', '2026-05-20 11:31:45'),
 (42, 1, 3, '2026-05-21', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Confirmed', 0.00, '', '2026-05-20 11:35:21'),
 (43, 1, 1, '2026-05-21', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Confirmed', 0.00, '', '2026-05-20 11:40:50'),
-(44, 1, 1, '2026-05-29', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Confirmed', 0.00, '', '2026-05-20 11:49:45'),
+(44, 1, 1, '2026-05-29', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-20 11:49:45'),
 (45, 1, 1, '2026-05-21', '13:00:00', '15:00:00', 2, 0, 0, 0.00, 'Casual Play', 25.00, 'Confirmed', 0.00, '', '2026-05-20 12:21:58'),
 (46, 1, 1, '2026-05-22', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Confirmed', 0.00, '', '2026-05-21 04:36:43'),
 (47, 1, 2, '2026-05-28', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-21 06:43:16'),
@@ -376,6 +376,35 @@ INSERT INTO `court_availability` (`id`, `court_id`, `day_of_week`, `start_time`,
 (68, 8, 7, '08:00:00', '20:00:00', 60),
 (69, 9, 7, '08:00:00', '20:00:00', 60),
 (70, 10, 7, '08:00:00', '20:00:00', 60);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `notifications`
+--
+
+CREATE TABLE `notifications` (
+  `id` int(11) NOT NULL,
+  `recipient_role` enum('Superadmin','Admin','Coach','All') NOT NULL,
+  `recipient_id` int(11) DEFAULT NULL,
+  `type` varchar(50) NOT NULL,
+  `title` varchar(100) NOT NULL,
+  `message` text NOT NULL,
+  `reference_id` int(11) DEFAULT NULL,
+  `reference_type` varchar(30) DEFAULT NULL,
+  `is_read` tinyint(1) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `notifications`
+--
+
+INSERT INTO `notifications` (`id`, `recipient_role`, `recipient_id`, `type`, `title`, `message`, `reference_id`, `reference_type`, `is_read`, `created_at`) VALUES
+(1, 'Admin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #32 for wz at Court B on 23 May 2026 09:00 AM has been confirmed.', 32, 'booking', 0, '2026-05-26 14:55:05'),
+(2, 'Superadmin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #32 for wz at Court B on 23 May 2026 09:00 AM has been confirmed.', 32, 'booking', 0, '2026-05-26 14:55:05'),
+(3, 'Admin', NULL, 'new_booking', 'New Booking Pending', 'Booking #44 from John Doe for Court A on 29 May 2026 is waiting for confirmation.', 44, 'booking', 0, '2026-05-26 14:55:08'),
+(4, 'Superadmin', NULL, 'new_booking', 'New Booking Pending', 'Booking #44 from John Doe for Court A on 29 May 2026 is waiting for confirmation.', 44, 'booking', 0, '2026-05-26 14:55:08');
 
 -- --------------------------------------------------------
 
@@ -699,6 +728,12 @@ ALTER TABLE `court_availability`
   ADD KEY `fk_availability_court` (`court_id`);
 
 --
+-- Indexes for table `notifications`
+--
+ALTER TABLE `notifications`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `otp_codes`
 --
 ALTER TABLE `otp_codes`
@@ -809,6 +844,12 @@ ALTER TABLE `courts`
 --
 ALTER TABLE `court_availability`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=71;
+
+--
+-- AUTO_INCREMENT for table `notifications`
+--
+ALTER TABLE `notifications`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `otp_codes`
