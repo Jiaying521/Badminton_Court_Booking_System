@@ -26,10 +26,9 @@
                 <a href="#" class="drop-btn">More Options ▼</a>
                 <ul class="submenu">
                     <li><a href="ManageCoaches.php">Manage Coach</a></li>
-                    <li><a href="ManageBookings.php">Manage Bookings</a></li> 
-                    <li><a href="ManageCustomers.php">Customer Management</a></li>                   
+                    <li><a href="ManageBookings.php">Manage Bookings</a></li>
+                    <li><a href="ManageCustomers.php">Customer Management</a></li>
                     <li><a href="#">Reports & Analytics</a></li>
-                    <li><a href="#">Notifications</a></li>
                 </ul>
             </li>
 
@@ -42,37 +41,71 @@
                 <a href="#" class="drop-btn">More Options ▼</a>
                 <ul class="submenu">
                     <li><a href="ManageCoaches.php">Manage Coach</a></li>
-                    <li><a href="ManageCustomers.php">Customer Management</a></li> 
+                    <li><a href="ManageCustomers.php">Customer Management</a></li>
                     <li><a href="#">Reports & Analytics</a></li>
-                    <li><a href="#">Notifications</a></li>
                 </ul>
             </li>
 
         <?php elseif ($role === 'Coach'): ?>
             <li><a href="ManageBookings.php">My Bookings</a></li>
-            <li><a href="#">My Profile</a></li>
-            <li><a href="#">Notifications</a></li>
+            <li><a href="CoachProfile.php">My Profile</a></li>
         <?php endif; ?>
 
         <li>
             <button id="logout-btn" class="logout-btn">
                 Logout
             </button>
-        </li>   
+        </li>
     </ul>
 
-    <div class="user-info">
-        <span id="welcome-text">
-            Hello, <?php echo htmlspecialchars($display_name); ?>!
-        </span>
+    <div class="nav-right">
+        <!-- Notification Bell -->
+        <div class="notif-wrapper">
+            <button id="notif-btn" class="notif-btn" title="Notifications">
+                <i class="fas fa-bell"></i>
+                <span id="notif-badge" class="notif-badge" style="display:none">0</span>
+            </button>
+            <div id="notif-dropdown" class="notif-dropdown">
+                <div class="notif-header">
+                    <span class="notif-header-title"><i class="fas fa-bell"></i> Notifications</span>
+                    <button id="mark-all-read" class="mark-all-btn">Mark all read</button>
+                </div>
+                <div id="notif-list" class="notif-list">
+                    <div class="notif-empty">No notifications</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="user-info">
+            <span id="welcome-text">
+                Hello, <?php echo htmlspecialchars($display_name); ?>!
+            </span>
+        </div>
     </div>
 </nav>
 
 <div id="overlay" class="overlay"></div>
 
 <script>
-
+    // Mobile menu toggle
     {
+        const toggle  = document.getElementById('menu-toggle');
+        const navMenu = document.getElementById('nav-menu');
+        const overlay = document.getElementById('overlay');
+
+        if (toggle && navMenu) {
+            toggle.addEventListener('click', function () {
+                navMenu.classList.toggle('active');
+                if (overlay) overlay.classList.toggle('active');
+            });
+            if (overlay) {
+                overlay.addEventListener('click', function () {
+                    navMenu.classList.remove('active');
+                    overlay.classList.remove('active');
+                });
+            }
+        }
+
         const logoutBtn = document.getElementById("logout-btn");
         if (logoutBtn) {
             logoutBtn.addEventListener("click", function() {
@@ -83,4 +116,116 @@
         }
     }
 
+    // Notification system
+    (function () {
+        const btn       = document.getElementById('notif-btn');
+        const dropdown  = document.getElementById('notif-dropdown');
+        const badge     = document.getElementById('notif-badge');
+        const list      = document.getElementById('notif-list');
+        const markAllBtn = document.getElementById('mark-all-read');
+        let isOpen      = false;
+
+        function timeAgo(dateStr) {
+            const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+            if (diff < 60)    return 'just now';
+            if (diff < 3600)  return Math.floor(diff / 60) + 'm ago';
+            if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+            return Math.floor(diff / 86400) + 'd ago';
+        }
+
+        function typeIcon(type) {
+            const map = {
+                confirmed:   { fa: 'fa-check',         bg: '#dcfce7', color: '#16a34a' },
+                cancelled:   { fa: 'fa-xmark',         bg: '#fee2e2', color: '#dc2626' },
+                new_booking: { fa: 'fa-calendar-plus', bg: '#dbeafe', color: '#2563eb' },
+                reminder:    { fa: 'fa-clock',         bg: '#fef3c7', color: '#d97706' }
+            };
+            const t = map[type] || { fa: 'fa-bell', bg: '#f1f5f9', color: '#64748b' };
+            return `<span class="notif-type-icon" style="background:${t.bg};color:${t.color}"><i class="fas ${t.fa}"></i></span>`;
+        }
+
+        function render(notifications, unreadCount) {
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+
+            if (!notifications.length) {
+                list.innerHTML = `
+                    <div class="notif-empty">
+                        <i class="fas fa-bell-slash" style="font-size:28px;color:#cbd5e1;margin-bottom:10px;display:block;"></i>
+                        No notifications yet
+                    </div>`;
+                return;
+            }
+
+            list.innerHTML = notifications.map(n => `
+                <div class="notif-item${n.is_read == 0 ? ' unread' : ''}" data-id="${n.id}">
+                    ${typeIcon(n.type)}
+                    <div class="notif-body">
+                        <div class="notif-title">${n.title}</div>
+                        <div class="notif-msg">${n.message}</div>
+                        <div class="notif-time"><i class="fas fa-clock" style="font-size:10px;margin-right:3px;"></i>${timeAgo(n.created_at)}</div>
+                    </div>
+                    ${n.is_read == 0 ? '<span class="notif-dot"></span>' : ''}
+                </div>
+            `).join('');
+
+            list.querySelectorAll('.notif-item').forEach(item => {
+                item.addEventListener('click', function () {
+                    markRead(parseInt(this.dataset.id), this);
+                });
+            });
+        }
+
+        function fetchNotifications() {
+            fetch('api/get_notifications.php')
+                .then(r => r.json())
+                .then(data => { if (data.success) render(data.notifications, data.unread_count); })
+                .catch(() => {});
+        }
+
+        function markRead(id, element) {
+            fetch('api/mark_read.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id })
+            }).then(() => {
+                if (element) {
+                    element.classList.remove('unread');
+                    const dot = element.querySelector('.notif-dot');
+                    if (dot) dot.remove();
+                }
+                fetchNotifications();
+            }).catch(() => {});
+        }
+
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            isOpen = !isOpen;
+            dropdown.classList.toggle('active', isOpen);
+            if (isOpen) fetchNotifications();
+        });
+
+        document.addEventListener('click', function (e) {
+            if (isOpen && !dropdown.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+                isOpen = false;
+                dropdown.classList.remove('active');
+            }
+        });
+
+        markAllBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            fetch('api/mark_read.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: 0 })
+            }).then(() => fetchNotifications()).catch(() => {});
+        });
+
+        fetchNotifications();
+        setInterval(fetchNotifications, 60000);
+    })();
 </script>

@@ -1,0 +1,279 @@
+/* =============================================
+   Coach Profile Page – CoachProfile.css
+   ============================================= */
+
+/* Alert banners */
+.cp-alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    border-radius: 14px;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 24px;
+}
+
+.cp-alert.success {
+    background: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+}
+
+.cp-alert.error {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+/* ---- Hero Card ---- */
+.cp-hero {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+    border-radius: 24px;
+    padding: 36px 40px;
+    display: flex;
+    align-items: center;
+    gap: 36px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-md);
+    position: relative;
+    overflow: hidden;
+}
+
+.cp-hero::before {
+    content: '';
+    position: absolute;
+    right: -60px;
+    top: -60px;
+    width: 280px;
+    height: 280px;
+    background: rgba(245, 158, 11, 0.06);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+/* Avatar */
+.cp-hero-avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.cp-hero-avatar {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--primary);
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.2);
+    display: block;
+}
+
+.cp-avatar-edit-btn {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 32px;
+    height: 32px;
+    background: var(--primary);
+    color: var(--navy);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    transition: transform 0.2s;
+}
+
+.cp-avatar-edit-btn:hover { transform: scale(1.12); }
+
+/* Hero text */
+.cp-hero-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.cp-hero-name {
+    font-size: 26px;
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+}
+
+.cp-hero-role {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--primary);
+    margin-bottom: 14px;
+}
+
+.cp-hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin-bottom: 16px;
+}
+
+.cp-hero-meta span {
+    font-size: 13px;
+    color: rgba(255,255,255,0.65);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cp-hero-meta i { color: var(--primary); font-size: 12px; }
+
+.cp-avail-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+/* ---- Edit Form Card ---- */
+.cp-form-card {
+    background: var(--white);
+    border-radius: 24px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    overflow: hidden;
+}
+
+.cp-form-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 22px 32px;
+    border-bottom: 1px solid var(--border);
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text-dark);
+    background: var(--bg-light);
+}
+
+.cp-form-header i { color: var(--primary); }
+
+.cp-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    padding: 28px 32px;
+}
+
+.cp-field { display: flex; flex-direction: column; gap: 7px; }
+
+.cp-field.full-width { grid-column: 1 / -1; }
+
+.cp-field label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cp-field label i { color: var(--primary); font-size: 11px; }
+
+.cp-field input,
+.cp-field select {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    font-size: 14px;
+    font-family: 'Outfit', sans-serif;
+    color: var(--text-dark);
+    background: #fff;
+    outline: none;
+    transition: border-color 0.25s, box-shadow 0.25s;
+    box-sizing: border-box;
+}
+
+.cp-field input:focus,
+.cp-field select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.12);
+}
+
+.cp-readonly {
+    background: var(--bg-light) !important;
+    color: var(--text-muted) !important;
+    cursor: not-allowed !important;
+}
+
+.cp-readonly-tag {
+    background: #f1f5f9;
+    color: #94a3b8;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 50px;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-left: 4px;
+}
+
+.cp-form-actions {
+    padding: 0 32px 28px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.cp-btn-save {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: var(--navy);
+    border: none;
+    padding: 13px 32px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 800;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+    transition: all 0.25s;
+}
+
+.cp-btn-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 22px rgba(245, 158, 11, 0.5);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+    .cp-hero {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 28px 24px;
+        gap: 20px;
+    }
+
+    .cp-hero-name { font-size: 20px; }
+
+    .cp-form-grid {
+        grid-template-columns: 1fr;
+        padding: 20px 20px;
+    }
+
+    .cp-field.full-width { grid-column: 1; }
+
+    .cp-form-header { padding: 18px 20px; }
+    .cp-form-actions { padding: 0 20px 20px; }
+    .cp-btn-save { width: 100%; justify-content: center; }
+}

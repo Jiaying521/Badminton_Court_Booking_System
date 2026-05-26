@@ -307,6 +307,7 @@ function getCourtImage($court) {
             <a href="dashboard.php" class="active"><i class="fas fa-home"></i> Courts</a>
             <a href="my_bookings.php"><i class="fas fa-bookmark"></i> My Bookings</a>
             <a href="../Payment_Module/wallet.php"><i class="fas fa-wallet"></i> Wallet</a>
+            <a href="coaches.php"><i class="fas fa-user-tie"></i> Coaches</a>
             <span class="user-greeting">🏸 <?php echo htmlspecialchars($user['name'] ?? 'Player'); ?></span>
             <a href="edit_profile.php" class="action-btn" style="padding:0.3rem 1rem; background:#eaf5e6;"><i class="fas fa-user-edit"></i> Profile</a>
             <a href="logout.php" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</a>

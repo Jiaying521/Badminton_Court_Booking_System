@@ -15,7 +15,7 @@
     $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
 
     // Notification helper
-    require_once 'notification_helper.php';
+    require_once 'api/notification_helper.php';
 
     // Handle status change from dropdown
     if(isset($_GET['id']) && isset($_GET['status'])){
