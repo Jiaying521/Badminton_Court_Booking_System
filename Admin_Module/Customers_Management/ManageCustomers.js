@@ -36,15 +36,20 @@ function openDetailsModal(userId) {
             };
 
             let bookingsHtml = data.recent.length
-                ? data.recent.map(b => `
-                    <div class="detail-booking-row">
-                        <span>${b.court_name}</span>
-                        <span>${b.booking_date} &nbsp;${b.start_time}–${b.end_time}</span>
-                        <span class="wallet-badge"
-                              style="background:${statusColor[b.status]}20;color:${statusColor[b.status]}">
-                            ${b.status}
-                        </span>
-                    </div>`).join('')
+                ? `<div style="max-height:180px;overflow-y:auto;padding-right:4px;margin-bottom:16px;">` +
+                  data.recent.map(b => `
+                    <a href="../Bookings_Management/ManageBookings.php?highlight=${b.id}"
+                       style="text-decoration:none;color:inherit;display:block;">
+                        <div class="detail-booking-row" style="cursor:pointer;">
+                            <span>${b.court_name}</span>
+                            <span>${b.booking_date} &nbsp;${b.start_time}–${b.end_time}</span>
+                            <span class="wallet-badge"
+                                  style="background:${statusColor[b.status]}20;color:${statusColor[b.status]}">
+                                ${b.status}
+                            </span>
+                        </div>
+                    </a>`).join('') +
+                  `</div>`
                 : '<p style="color:#94a3b8;font-size:13px;">No bookings yet.</p>';
 
             const avatarSrc = data.user.profile_picture

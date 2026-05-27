@@ -42,11 +42,11 @@
         "));
 
         $recentRes = mysqli_query($conn, "
-            SELECT b.booking_date, b.start_time, b.end_time, b.status, c.court_name
+            SELECT b.id, b.booking_date, b.start_time, b.end_time, b.status, c.court_name
             FROM bookings b
             LEFT JOIN courts c ON b.court_id = c.id
             WHERE b.user_id = $id
-            ORDER BY b.booking_date DESC LIMIT 5
+            ORDER BY b.booking_date DESC LIMIT 10
         ");
         $recent = [];
         while($r = mysqli_fetch_assoc($recentRes)) $recent[] = $r;

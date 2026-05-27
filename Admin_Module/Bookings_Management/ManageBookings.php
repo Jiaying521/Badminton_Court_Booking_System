@@ -158,9 +158,9 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap">
 
     <!-- Connect previous CSS -->
-    <link rel="stylesheet" href="ManageBookings.css">
     <link rel="stylesheet" href="../Dashboard/Dashboard.css">
     <link rel="stylesheet" href="../Superadmin/AdminManagement.css">
+    <link rel="stylesheet" href="ManageBookings.css">
 </head>
 
 <body>
