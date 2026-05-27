@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 <?php
+=======
+﻿<?php
+>>>>>>> 4f7d89e2ab6fd34035a3f9f62eab69b85313d81e
 // Shared top navigation bar for all admin / superadmin / coach pages.
 // Pages that include this file must set $base_path before include:
 //   - all pages now live one level deep, so always use $ase_path = '../';
@@ -27,35 +31,61 @@ if (!isset($base_path)) {
 
         <?php if ($role === 'Superadmin'): ?>
             <li><a href="<?php echo $base_path; ?>Superadmin/AdminManagement.php">Admin Management</a></li>
+<<<<<<< HEAD
             <li><a href="<?php echo $base_path; ?>Courts_Management/ManageCourts.php">Court Management</a></li>
             <li><a href="<?php echo $base_path; ?>System_Settings/SystemSettings.php">System Settings</a></li>
+=======
+            <li><a href="<?php echo $base_path; ?>ManageCourts.php">Court Management</a></li>
+            <li><a href="<?php echo $base_path; ?>SystemSettings.php">System Settings</a></li>
+>>>>>>> 4f7d89e2ab6fd34035a3f9f62eab69b85313d81e
 
             <li class="dropdown">
                 <a href="#" class="drop-btn">More Options ▼</a>
                 <ul class="submenu">
+<<<<<<< HEAD
                     <li><a href="<?php echo $base_path; ?>Coaches_Management/ManageCoaches.php">Manage Coach</a></li>
                     <li><a href="<?php echo $base_path; ?>Bookings_Management/ManageBookings.php">Manage Bookings</a></li>
                     <li><a href="<?php echo $base_path; ?>Customers_Management/ManageCustomers.php">Customer Management</a></li>
+=======
+                    <li><a href="<?php echo $base_path; ?>ManageCoaches.php">Manage Coach</a></li>
+                    <li><a href="<?php echo $base_path; ?>ManageBookings.php">Manage Bookings</a></li>
+                    <li><a href="<?php echo $base_path; ?>ManageCustomers.php">Customer Management</a></li>
+>>>>>>> 4f7d89e2ab6fd34035a3f9f62eab69b85313d81e
                     <li><a href="#">Reports & Analytics</a></li>
                 </ul>
             </li>
 
         <?php elseif ($role === 'Admin'): ?>
+<<<<<<< HEAD
             <li><a href="<?php echo $base_path; ?>Courts_Management/ManageCourts.php">Court Management</a></li>
             <li><a href="<?php echo $base_path; ?>Bookings_Management/ManageBookings.php">Manage Bookings</a></li>
             <li><a href="<?php echo $base_path; ?>System_Settings/SystemSettings.php">System Settings</a></li>
+=======
+            <li><a href="<?php echo $base_path; ?>ManageCourts.php">Court Management</a></li>
+            <li><a href="<?php echo $base_path; ?>ManageBookings.php">Manage Bookings</a></li>
+            <li><a href="<?php echo $base_path; ?>SystemSettings.php">System Settings</a></li>
+>>>>>>> 4f7d89e2ab6fd34035a3f9f62eab69b85313d81e
 
             <li class="dropdown">
                 <a href="#" class="drop-btn">More Options ▼</a>
                 <ul class="submenu">
+<<<<<<< HEAD
                     <li><a href="<?php echo $base_path; ?>Coaches_Management/ManageCoaches.php">Manage Coach</a></li>
                     <li><a href="<?php echo $base_path; ?>Customers_Management/ManageCustomers.php">Customer Management</a></li>
+=======
+                    <li><a href="<?php echo $base_path; ?>ManageCoaches.php">Manage Coach</a></li>
+                    <li><a href="<?php echo $base_path; ?>ManageCustomers.php">Customer Management</a></li>
+>>>>>>> 4f7d89e2ab6fd34035a3f9f62eab69b85313d81e
                     <li><a href="#">Reports & Analytics</a></li>
                 </ul>
             </li>
 
         <?php elseif ($role === 'Coach'): ?>
+<<<<<<< HEAD
             <li><a href="<?php echo $base_path; ?>Bookings_Management/ManageBookings.php">My Bookings</a></li>
+=======
+            <li><a href="<?php echo $base_path; ?>ManageBookings.php">My Bookings</a></li>
+>>>>>>> 4f7d89e2ab6fd34035a3f9f62eab69b85313d81e
             <li><a href="<?php echo $base_path; ?>Coach/CoachProfile.php">My Profile</a></li>
         <?php endif; ?>
 
