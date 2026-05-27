@@ -36,7 +36,6 @@ if (!isset($base_path)) {
                     <li><a href="<?php echo $base_path; ?>Coaches_Management/ManageCoaches.php">Manage Coach</a></li>
                     <li><a href="<?php echo $base_path; ?>Bookings_Management/ManageBookings.php">Manage Bookings</a></li>
                     <li><a href="<?php echo $base_path; ?>Customers_Management/ManageCustomers.php">Customer Management</a></li>
-                    <li><a href="#">Reports & Analytics</a></li>
                 </ul>
             </li>
 
@@ -50,7 +49,6 @@ if (!isset($base_path)) {
                 <ul class="submenu">
                     <li><a href="<?php echo $base_path; ?>Coaches_Management/ManageCoaches.php">Manage Coach</a></li>
                     <li><a href="<?php echo $base_path; ?>Customers_Management/ManageCustomers.php">Customer Management</a></li>
-                    <li><a href="#">Reports & Analytics</a></li>
                 </ul>
             </li>
 
