@@ -1,3 +1,9 @@
+<!--
+    LoginPage.php
+    Entry point for Superadmin / Admin / Coach.
+    The form does NOT submit normally — LoginPage.js intercepts it and
+    sends the credentials to LoginLogic.php as JSON via fetch().
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 // ============================================================
 //  SystemSettings.php
 //  Purpose: Allows Superadmin to manage business hours,
@@ -11,7 +11,7 @@ session_start();
 // ---------- 2. Access Control ----------
 // Anyone else gets redirected to the login page.
 if (!isset($_SESSION['username']) || !in_array($_SESSION['role'], ['Superadmin', 'Admin'])) {
-    header("Location: LoginPage.php");
+    header("Location: ../LoginPage.php");
     exit();
 }
 
@@ -33,6 +33,9 @@ if (!$conn) {
 $username     = $_SESSION['username'];
 $role         = $_SESSION['role'];
 $display_name = $username;
+
+// This page sits at Admin_Module root, so navbar links don't need a prefix.
+$base_path = '../';
 
 // ---------- 6. Message Variable ----------
 // Used to show a success or error notice after an action.
@@ -229,14 +232,14 @@ $vouchers = mysqli_query($conn, "SELECT * FROM voucher ORDER BY points_required 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap">
 
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="SuperAdminDashboard.css">
-    <link rel="stylesheet" href="AdminManagement.css">
+    <link rel="stylesheet" href="../Dashboard/Dashboard.css">
+    <link rel="stylesheet" href="../Superadmin/AdminManagement.css">
     <link rel="stylesheet" href="SystemSettings.css">
 </head>
 <body>
 
     <!-- Navigation bar (loaded from a shared file) -->
-    <?php include 'navbar.php'; ?>
+    <?php include '../navbar.php'; ?>
 
     <main class="content">
         <div class="manage-container">
@@ -569,7 +572,7 @@ $vouchers = mysqli_query($conn, "SELECT * FROM voucher ORDER BY points_required 
     </main>
 
     <!-- JavaScript file -->
-    <script src="SuperAdminDashboard.js"></script>
+    <script src="../Dashboard/Dashboard.js"></script>
 
 </body>
 </html>

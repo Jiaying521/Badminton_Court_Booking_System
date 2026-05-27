@@ -1,11 +1,18 @@
-<?php
+﻿<?php
+// Coach Profile page — ONLY accessible to a logged-in Coach.
+// Lives at Admin_Module/Coach/CoachProfile.php
+// The coach can update their own name, specialty, phone, photo,
+// availability status, gender and age. Price-per-hour and email
+// are read-only here (only admins can change those).
+
 session_start();
 if (!isset($_SESSION['username'])) {
-    header("Location: LoginPage.php");
+    header("Location: ../LoginPage.php");
     exit();
 }
+// Anyone who isn't a Coach gets bounced back to the dashboard.
 if ($_SESSION['role'] !== 'Coach') {
-    header("Location: SuperAdminDashboard.php");
+    header("Location: ../Dashboard/Dashboard.php");
     exit();
 }
 
@@ -19,6 +26,9 @@ $username     = $_SESSION['username'];
 $role         = $_SESSION['role'];
 $display_name = $username;
 
+// This page lives inside Admin_Module/Coach/, so navbar links need to step up one level.
+$base_path = '../';
+
 // Fetch coach record
 $coach = mysqli_fetch_assoc(mysqli_query($conn, "
     SELECT c.*, a.email, a.username
@@ -29,7 +39,7 @@ $coach = mysqli_fetch_assoc(mysqli_query($conn, "
 "));
 
 if (!$coach) {
-    header("Location: SuperAdminDashboard.php");
+    header("Location: ../Dashboard/Dashboard.php");
     exit();
 }
 
@@ -51,7 +61,8 @@ if (isset($_POST['update_profile'])) {
         $img_data    = str_replace(' ', '+', $img_data);
         $img_decoded = base64_decode($img_data);
         $img_name    = time() . '_coach.png';
-        $upload_path = 'Pictures/coaches/' . $img_name;
+        // Pictures/ is at project root, so step two folders up from Coach/.
+        $upload_path = '../../Pictures/Admin_Module/coaches/' . $img_name;
 
         if (file_put_contents($upload_path, $img_decoded)) {
             $img_sql = ", profile_img = '$img_name'";
@@ -89,8 +100,8 @@ if (isset($_POST['update_profile'])) {
 
 $avail       = $coach['availability_status'] ?? 'Available';
 $profile_img = !empty($coach['profile_img'])
-                ? 'Pictures/coaches/' . htmlspecialchars($coach['profile_img'])
-                : 'Pictures/coaches/default.png';
+                ? '../../Pictures/Admin_Module/coaches/' . htmlspecialchars($coach['profile_img'])
+                : '../../Pictures/Admin_Module/coaches/default.png';
 
 $avail_colors = [
     'Available' => ['bg' => '#dcfce7', 'color' => '#16a34a', 'icon' => 'fa-circle-check'],
@@ -111,13 +122,13 @@ $ac = $avail_colors[$avail] ?? $avail_colors['Available'];
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 
-    <link rel="stylesheet" href="SuperAdminDashboard.css">
-    <link rel="stylesheet" href="ManageCoaches.css">
+    <link rel="stylesheet" href="../Dashboard/Dashboard.css">
+    <link rel="stylesheet" href="../Coaches_Management/ManageCoaches.css">
     <link rel="stylesheet" href="CoachProfile.css">
 </head>
 <body>
 
-<?php include 'navbar.php'; ?>
+<?php include '../navbar.php'; ?>
 
 <main class="content">
 
@@ -132,7 +143,7 @@ $ac = $avail_colors[$avail] ?? $avail_colors['Available'];
     <div class="cp-hero">
         <div class="cp-hero-avatar-wrap">
             <img id="hero-avatar" src="<?php echo $profile_img; ?>" alt="Profile Photo" class="cp-hero-avatar"
-                 onerror="this.onerror=null;this.src='Pictures/coaches/default.png'">
+                 onerror="this.onerror=null;this.src='../../Pictures/Admin_Module/coaches/default.png'">
             <label class="cp-avatar-edit-btn" title="Change photo">
                 <i class="fas fa-camera"></i>
                 <input type="file" id="photo-input" accept="image/*" style="display:none;">
@@ -264,54 +275,10 @@ $ac = $avail_colors[$avail] ?? $avail_colors['Available'];
     </div>
 </div>
 
+<!-- Cropper library (loads first so CoachProfile.js can use the Cropper class) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
-<script>
-    let cropperInstance = null;
-
-    document.getElementById('photo-input').addEventListener('change', function () {
-        const file = this.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            const cropImg = document.getElementById('crop-img');
-            cropImg.src   = e.target.result;
-
-            document.getElementById('cropModal').style.display = 'flex';
-
-            if (cropperInstance) cropperInstance.destroy();
-            cropperInstance = new Cropper(cropImg, {
-                aspectRatio: 1,
-                viewMode: 1,
-                autoCropArea: 0.8
-            });
-        };
-        reader.readAsDataURL(file);
-    });
-
-    function applyCrop() {
-        if (!cropperInstance) return;
-        const canvas = cropperInstance.getCroppedCanvas({ width: 300, height: 300 });
-        const dataUrl = canvas.toDataURL('image/png');
-
-        document.getElementById('hero-avatar').src      = dataUrl;
-        document.getElementById('cropped-img-data').value = dataUrl;
-
-        cropperInstance.destroy();
-        cropperInstance = null;
-        document.getElementById('cropModal').style.display = 'none';
-    }
-
-    function cancelCrop() {
-        if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
-        document.getElementById('photo-input').value     = '';
-        document.getElementById('cropModal').style.display = 'none';
-    }
-
-    document.getElementById('cropModal').addEventListener('click', function (e) {
-        if (e.target === this) cancelCrop();
-    });
-</script>
+<!-- All page-specific JS lives in CoachProfile.js -->
+<script src="CoachProfile.js"></script>
 
 </body>
 </html>

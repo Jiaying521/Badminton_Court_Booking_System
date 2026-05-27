@@ -1,14 +1,14 @@
-<?php 
+﻿<?php 
     //LOGIN Check
     session_start();
     if(!isset($_SESSION['username'])){
-        header("Location: LoginPage.php");
+        header("Location: ../LoginPage.php");
         exit();
     }
 
     //Role check
     if(!in_array($_SESSION['role'], ['Superadmin', 'Admin'])){
-        header("Location: LoginPage.php");
+        header("Location: ../LoginPage.php");
         exit();
     }
 
@@ -30,6 +30,9 @@
     $username     = $_SESSION['username'];
     $role         = $_SESSION['role'];
     $display_name = $username;
+
+    // This page sits at Admin_Module root, so navbar links don't need a prefix.
+    $base_path = '../';
 
     function sendTemporaryPassword($to_email, $username, $temp_pass) {
         $mail = new PHPMailer(true);
@@ -147,7 +150,7 @@
             $img_data    = str_replace(' ', '+', $img_data);
             $img_decoded = base64_decode($img_data);
             $img_name    = time() . '_coach.png';
-            $upload_path = 'Pictures/coaches/' . $img_name;
+            $upload_path = '../../Pictures/Admin_Module/coaches/' . $img_name;
 
             if(file_put_contents($upload_path, $img_decoded)){
                 $img_sql = ", profile_img = '$img_name'";
@@ -263,14 +266,14 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 
-    <link rel="stylesheet" href="SuperAdminDashboard.css">
-    <link rel="stylesheet" href="AdminManagement.css">
+    <link rel="stylesheet" href="../Dashboard/Dashboard.css">
+    <link rel="stylesheet" href="../Superadmin/AdminManagement.css">
     <link rel="stylesheet" href="ManageCoaches.css">
 </head>
 
 <body>
 
-    <?php include 'navbar.php'; ?>
+    <?php include '../navbar.php'; ?>
 
     <main class="content">
         <div class="manage-container">
@@ -470,7 +473,7 @@
                     <!-- Profile Image -->
                     <div class="modal-field full-width" style="display:flex; flex-direction:column; align-items:center;">
                         <img id="coach-modal-img-preview"
-                            src="Pictures/coaches/default.png"
+                            src="../../Pictures/Admin_Module/coaches/default.png"
                             style="width:80px; height:80px; border-radius:50%; object-fit:cover; margin-bottom:8px; border:3px solid #f59e0b;">
                         <label class="btn-create" style="cursor:pointer; padding:8px 16px; font-size:13px;">
                             <i class="fas fa-camera"></i> Change Photo
@@ -555,107 +558,12 @@
 
     </div>
 
-    <script src="SuperAdminDashboard.js"></script>
+    <!-- Shared dashboard JS (mobile menu, etc.) -->
+    <script src="../Dashboard/Dashboard.js"></script>
+    <!-- Cropper library, loaded BEFORE ManageCoaches.js so it can use Cropper -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
-
-    <script>
-        function toggleCoachForm() {
-            const form = document.getElementById('coachForm');
-            form.classList.toggle('active');
-        }
-
-        function toggleFilter() {
-            const panel = document.getElementById('filterPanel');
-            panel.classList.toggle('open');
-        }
-
-        function openCoachEditModal(id, name, specialty, phone, gender, age, price, img) {
-            document.getElementById('coach-modal-id').value        = id;
-            document.getElementById('coach-modal-name').value      = name;
-            document.getElementById('coach-modal-specialty').value = specialty;
-            document.getElementById('coach-modal-phone').value     = phone;
-            document.getElementById('coach-modal-gender').value    = gender;
-            document.getElementById('coach-modal-age').value       = age;
-            document.getElementById('coach-modal-price').value     = price;
-            document.getElementById('cropped-img-data').value      = '';
-
-            const preview = document.getElementById('coach-modal-img-preview');
-            preview.src   = img ? 'Pictures/coaches/' + img : 'Pictures/coaches/default.png';
-
-            document.getElementById('editPanel').style.display = 'block';
-            document.getElementById('cropPanel').style.display = 'none';
-            document.getElementById('coachEditModal').style.display = 'flex';
-        }
-
-        function closeCoachEditModal() {
-            if(cropperInstance){
-                cropperInstance.destroy();
-                cropperInstance = null;
-            }
-            document.getElementById('coachEditModal').style.display = 'none';
-        }
-
-        let cropperInstance = null;
-
-        function applyCrop() {
-            if(!cropperInstance) return;
-
-            const canvas = cropperInstance.getCroppedCanvas({ width: 300, height: 300 });
-            const dataUrl = canvas.toDataURL('image/png');
-
-            document.getElementById('coach-modal-img-preview').src = dataUrl;
-            document.getElementById('cropped-img-data').value      = dataUrl;
-
-            cropperInstance.destroy();
-            cropperInstance = null;
-
-            document.getElementById('cropPanel').style.display = 'none';
-            document.getElementById('editPanel').style.display = 'block';
-        }
-
-        function cancelCrop() {
-            if(cropperInstance){
-                cropperInstance.destroy();
-                cropperInstance = null;
-            }
-            document.getElementById('coach-img-input').value = '';
-            document.getElementById('cropPanel').style.display = 'none';
-            document.getElementById('editPanel').style.display = 'block';
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-
-            document.getElementById('coach-img-input').addEventListener('change', function() {
-                const file = this.files[0];
-                if(!file) return;
-
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const cropImg = document.getElementById('crop-img');
-                    cropImg.src   = e.target.result;
-
-                    document.getElementById('editPanel').style.display = 'none';
-                    document.getElementById('cropPanel').style.display = 'block';
-
-                    if(cropperInstance){
-                        cropperInstance.destroy();
-                    }
-
-                    cropperInstance = new Cropper(cropImg, {
-                        aspectRatio: 1,
-                        viewMode: 1,
-                        autoCropArea: 0.8
-                    });
-                };
-                reader.readAsDataURL(file);
-            });
-
-            document.getElementById('coachEditModal').addEventListener('click', function(e) {
-                if(e.target === this) closeCoachEditModal();
-            });
-
-        });
-    </script>
+    <!-- All page-specific UI logic lives in ManageCoaches.js -->
+    <script src="ManageCoaches.js"></script>
 
 </body>
 </html>

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once __DIR__ . '/../config.php';
 
 $coach_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
@@ -22,8 +22,8 @@ if (!$coach) {
 }
 
 $profile_img = !empty($coach['profile_img'])
-    ? '../Admin_Module/Pictures/coaches/' . htmlspecialchars($coach['profile_img'])
-    : '../Admin_Module/Pictures/coaches/default.png';
+    ? '../Pictures/Admin_Module/coaches/' . htmlspecialchars($coach['profile_img'])
+    : '../Pictures/Admin_Module/coaches/default.png';
 
 $avail       = $coach['availability_status'] ?? 'Available';
 $avail_map   = [
@@ -239,7 +239,7 @@ $back = $_SERVER['HTTP_REFERER'] ?? 'dashboard.php';
         <!-- Hero -->
         <div class="coach-hero">
             <img src="<?php echo $profile_img; ?>" alt="<?php echo htmlspecialchars($coach['name']); ?>" class="coach-avatar"
-                 onerror="this.src='../Admin_Module/Pictures/coaches/default.png'">
+                 onerror="this.src='../Pictures/Admin_Module/coaches/default.png'">
             <div class="coach-name"><?php echo htmlspecialchars($coach['name']); ?></div>
             <div class="coach-role-tag"><i class="fas fa-whistle"></i> Coach</div>
         </div>

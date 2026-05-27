@@ -1,4 +1,4 @@
-// 1. SELECT DOM ELEMENTS
+﻿// 1. SELECT DOM ELEMENTS
 const menuToggle = document.getElementById('menu-toggle');
 const navMenu = document.getElementById('nav-menu');
 const welcomeText = document.getElementById('welcome-text');
@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         listDiv.innerHTML = '<p style="text-align:center; font-size:13px; color:#666; padding:10px;">Searching...</p>';
 
-        fetch(`SuperAdminDashboard.php?ajax_fetch=${dateStr}`)
+        fetch(`Dashboard.php?ajax_fetch=${dateStr}`)
             .then(response => {
                 if (!response.ok) throw new Error('Network response was not ok');
                 return response.json();
@@ -136,23 +136,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (Array.isArray(data) && data.length > 0) {
                     data.forEach((app, index) => {
                         const cardClass = (index % 2 === 0) ? 'appt-card' : 'appt-card alt';
-
                         const coachLine = app.coach_name && app.coach_name !== 'No coach' ? ` | Coach: ${app.coach_name}` : '';
+                        // Each booking links directly to that row in ManageBookings
+                        const link = `../Bookings_Management/ManageBookings.php?highlight=${app.booking_id}`;
                         listDiv.innerHTML += `
-                            <div class="${cardClass}">
-                                <div class="appt-content">
+                            <a href="${link}" class="${cardClass}" style="text-decoration:none; display:flex; color:inherit;">
+                                <div class="appt-content" style="flex:1;">
                                     <h4>${app.court_name || 'Court'} - ${app.player_name}</h4>
                                     <div class="appt-details">
-                                        <i class="far fa-calendar-check"></i> 
+                                        <i class="far fa-calendar-check"></i>
                                         ${dateStr}, ${app.booking_time} - ${app.end_time}${coachLine}
                                     </div>
                                 </div>
                                 <div class="appt-arrow">
-                                    <i class="fas fa-chevron-right" style="color: #ccc;"></i>
+                                    <i class="fas fa-chevron-right" style="color:#ccc; align-self:center;"></i>
                                 </div>
-                            </div>
+                            </a>
                         `;
                     });
+                    // "View All" shows all bookings for this date
+                    viewAllBtn.href = `../Bookings_Management/ManageBookings.php?date=${dateStr}`;
                     viewAllBtn.style.display = 'block';
                 } else {
                     listDiv.innerHTML = '<p style="text-align:center; color:#999; padding:20px; font-size:13px;">No records found for this date.</p>';

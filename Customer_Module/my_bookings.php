@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/functions.php';
 if(!isLoggedIn()) redirect('homepage.php');
@@ -177,7 +177,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
 <div class="container">
     <div class="navbar">
         <a href="dashboard.php" class="logo-area">
-            <img src="../Admin_Module/Pictures/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
+            <img src="../Pictures/Admin_Module/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
             <div class="logo-text">Smash <span>Arena</span></div>
         </a>
         <div class="nav-links">
@@ -373,7 +373,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
                 const modalBody = document.getElementById('receiptBody');
                 modalBody.innerHTML = `
                     <div style="text-align:center; margin-bottom:1rem;">
-                        <img src="../Admin_Module/Pictures/logo.png" alt="Smash Arena" style="height: 40px; margin-bottom:0.5rem;" onerror="this.style.display='none'">
+                        <img src="../Pictures/Admin_Module/logo.png" alt="Smash Arena" style="height: 40px; margin-bottom:0.5rem;" onerror="this.style.display='none'">
                         <h2 style="color:#2b7e3a;">Smash Arena</h2>
                         <p style="color:#888;">Official Booking Receipt</p>
                     </div>

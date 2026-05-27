@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once __DIR__ . '/../config.php';
 $isLoggedIn = isset($_SESSION['user_id']);
 $back_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
@@ -87,7 +87,7 @@ $back_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
 <body>
 <nav class="navbar">
     <a href="<?php echo $back_link; ?>" class="logo-area">
-        <img src="../Admin_Module/Pictures/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
+        <img src="../Pictures/Admin_Module/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
         <div class="logo-text">Smash <span>Arena</span></div>
     </a>
     <div class="nav-links">

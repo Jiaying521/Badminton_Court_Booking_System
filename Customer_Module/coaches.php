@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once __DIR__ . '/../config.php';
 if (!isLoggedIn()) redirect('homepage.php');
 
@@ -236,7 +236,7 @@ $avail_map = [
     <!-- Navbar -->
     <div class="navbar">
         <a href="dashboard.php" class="logo-area">
-            <img src="../Admin_Module/Pictures/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
+            <img src="../Pictures/Admin_Module/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
             <div class="logo-text">Smash <span>Arena</span></div>
         </a>
         <div class="nav-links">
@@ -268,15 +268,15 @@ $avail_map = [
                 $avail  = $c['availability_status'] ?? 'Available';
                 $ac     = $avail_map[$avail] ?? $avail_map['Available'];
                 $img    = !empty($c['profile_img'])
-                            ? '../Admin_Module/Pictures/coaches/' . htmlspecialchars($c['profile_img'])
-                            : '../Admin_Module/Pictures/coaches/default.png';
+                            ? '../Pictures/Admin_Module/coaches/' . htmlspecialchars($c['profile_img'])
+                            : '../Pictures/Admin_Module/coaches/default.png';
             ?>
             <div class="coach-card">
                 <div class="card-hero">
                     <img src="<?php echo $img; ?>"
                          alt="<?php echo htmlspecialchars($c['name']); ?>"
                          class="coach-avatar"
-                         onerror="this.src='../Admin_Module/Pictures/coaches/default.png'">
+                         onerror="this.src='../Pictures/Admin_Module/coaches/default.png'">
                     <div class="coach-name"><?php echo htmlspecialchars($c['name']); ?></div>
                     <span class="avail-pill" style="background:<?php echo $ac['bg']; ?>;color:<?php echo $ac['color']; ?>;">
                         ● <?php echo htmlspecialchars($avail); ?>

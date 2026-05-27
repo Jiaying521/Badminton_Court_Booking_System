@@ -1,13 +1,13 @@
-<?php
+﻿<?php
     session_start();
     if(!isset($_SESSION['username'])){
-        header("Location: LoginPage.php");
+        header("Location: ../LoginPage.php");
         exit();
     }
 
     //Check role only Superadmin and Admin can access
     if(!in_array($_SESSION['role'],['Superadmin','Admin'])){
-        header("Location: LoginPage.php");
+        header("Location: ../LoginPage.php");
         exit();
     }
 

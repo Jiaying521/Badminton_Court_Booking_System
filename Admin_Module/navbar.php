@@ -1,12 +1,20 @@
-<?php
-// navbar.php
+﻿<?php
+// Shared top navigation bar for all admin / superadmin / coach pages.
+// Pages that include this file must set $base_path before include:
+//   - all pages now live one level deep, so always use $ase_path = '../';
+
+
+// This way the links keep working no matter which folder the page sits in.
+if (!isset($base_path)) {
+    $base_path = '';
+}
 ?>
 
 <nav class="nav-bar">
     <div class="nav-left">
         <button id="menu-toggle" class="menu-toggle">☰</button>
-        <a href="SuperAdminDashboard.php" style="display:flex; align-items:center; gap:8px; text-decoration:none;">
-            <img src="Pictures/logo.png" alt="logo" class="logo">
+        <a href="<?php echo $base_path; ?>Dashboard/Dashboard.php" style="display:flex; align-items:center; gap:8px; text-decoration:none;">
+            <img src="<?php echo $base_path; ?>../Pictures/Admin_Module/logo.png" alt="logo" class="logo">
             <span class="brand-name">
                 <span class="text-primary">Smash</span>
                 <span class="text-dark">Arena</span>
@@ -15,40 +23,40 @@
     </div>
 
     <ul id="nav-menu" class="nav-links">
-        <li><a href="SuperAdminDashboard.php">Dashboard</a></li>
+        <li><a href="<?php echo $base_path; ?>Dashboard/Dashboard.php">Dashboard</a></li>
 
         <?php if ($role === 'Superadmin'): ?>
-            <li><a href="AdminManagement.php">Admin Management</a></li>
-            <li><a href="ManageCourts.php">Court Management</a></li>
-            <li><a href="SystemSettings.php">System Settings</a></li>
+            <li><a href="<?php echo $base_path; ?>Superadmin/AdminManagement.php">Admin Management</a></li>
+            <li><a href="<?php echo $base_path; ?>ManageCourts.php">Court Management</a></li>
+            <li><a href="<?php echo $base_path; ?>SystemSettings.php">System Settings</a></li>
 
             <li class="dropdown">
                 <a href="#" class="drop-btn">More Options ▼</a>
                 <ul class="submenu">
-                    <li><a href="ManageCoaches.php">Manage Coach</a></li>
-                    <li><a href="ManageBookings.php">Manage Bookings</a></li>
-                    <li><a href="ManageCustomers.php">Customer Management</a></li>
+                    <li><a href="<?php echo $base_path; ?>ManageCoaches.php">Manage Coach</a></li>
+                    <li><a href="<?php echo $base_path; ?>ManageBookings.php">Manage Bookings</a></li>
+                    <li><a href="<?php echo $base_path; ?>ManageCustomers.php">Customer Management</a></li>
                     <li><a href="#">Reports & Analytics</a></li>
                 </ul>
             </li>
 
         <?php elseif ($role === 'Admin'): ?>
-            <li><a href="ManageCourts.php">Court Management</a></li>
-            <li><a href="ManageBookings.php">Manage Bookings</a></li>
-            <li><a href="SystemSettings.php">System Settings</a></li>
+            <li><a href="<?php echo $base_path; ?>ManageCourts.php">Court Management</a></li>
+            <li><a href="<?php echo $base_path; ?>ManageBookings.php">Manage Bookings</a></li>
+            <li><a href="<?php echo $base_path; ?>SystemSettings.php">System Settings</a></li>
 
             <li class="dropdown">
                 <a href="#" class="drop-btn">More Options ▼</a>
                 <ul class="submenu">
-                    <li><a href="ManageCoaches.php">Manage Coach</a></li>
-                    <li><a href="ManageCustomers.php">Customer Management</a></li>
+                    <li><a href="<?php echo $base_path; ?>ManageCoaches.php">Manage Coach</a></li>
+                    <li><a href="<?php echo $base_path; ?>ManageCustomers.php">Customer Management</a></li>
                     <li><a href="#">Reports & Analytics</a></li>
                 </ul>
             </li>
 
         <?php elseif ($role === 'Coach'): ?>
-            <li><a href="ManageBookings.php">My Bookings</a></li>
-            <li><a href="CoachProfile.php">My Profile</a></li>
+            <li><a href="<?php echo $base_path; ?>ManageBookings.php">My Bookings</a></li>
+            <li><a href="<?php echo $base_path; ?>Coach/CoachProfile.php">My Profile</a></li>
         <?php endif; ?>
 
         <li>
@@ -87,6 +95,12 @@
 <div id="overlay" class="overlay"></div>
 
 <script>
+    // Tell the JS code where the project root is so fetch() URLs work
+    // from pages inside subfolders (Superadmin/, Coach/) too.
+    const NAV_BASE = "<?php echo $base_path; ?>";
+</script>
+
+<script>
     // Mobile menu toggle
     {
         const toggle  = document.getElementById('menu-toggle');
@@ -110,7 +124,7 @@
         if (logoutBtn) {
             logoutBtn.addEventListener("click", function() {
                 if (confirm("Are you sure you want to logout?")) {
-                    window.location.href = "SuperAdminDashboard.php?action=logout";
+                    window.location.href = NAV_BASE + "Dashboard/Dashboard.php?action=logout";
                 }
             });
         }
@@ -181,14 +195,14 @@
         }
 
         function fetchNotifications() {
-            fetch('api/get_notifications.php')
+            fetch(NAV_BASE + 'api/get_notifications.php')
                 .then(r => r.json())
                 .then(data => { if (data.success) render(data.notifications, data.unread_count); })
                 .catch(() => {});
         }
 
         function markRead(id, element) {
-            fetch('api/mark_read.php', {
+            fetch(NAV_BASE + 'api/mark_read.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id: id })
@@ -218,7 +232,7 @@
 
         markAllBtn.addEventListener('click', function (e) {
             e.stopPropagation();
-            fetch('api/mark_read.php', {
+            fetch(NAV_BASE + 'api/mark_read.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id: 0 })

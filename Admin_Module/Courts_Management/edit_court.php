@@ -1,7 +1,7 @@
-<?php
+﻿<?php
 session_start();
 if (!isset($_SESSION['username']) || !in_array($_SESSION['role'], ['Superadmin', 'Admin'])) {
-    header("Location: LoginPage.php");
+    header("Location: ../LoginPage.php");
     exit();
 }
 
@@ -13,6 +13,10 @@ $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
 $username = $_SESSION['username'];
 $role = $_SESSION['role'];
 $display_name = $username;
+
+// This page sits at Admin_Module root, so navbar links don't need a prefix.
+$base_path = '../';
+
 $error = "";
 
 $court_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
@@ -70,12 +74,12 @@ if (!$court) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap">
-    <link rel="stylesheet" href="SuperAdminDashboard.css">
-    <link rel="stylesheet" href="AdminManagement.css">
+    <link rel="stylesheet" href="../Dashboard/Dashboard.css">
+    <link rel="stylesheet" href="../Superadmin/AdminManagement.css">
     <link rel="stylesheet" href="AddCourt.css">
 </head>
 <body>
-    <?php include 'navbar.php'; ?>
+    <?php include '../navbar.php'; ?>
 
     <main class="content">
         <div class="manage-container">
@@ -147,6 +151,6 @@ if (!$court) {
         </div>
     </main>
 
-    <script src="SuperAdminDashboard.js"></script>
+    <script src="../Dashboard/Dashboard.js"></script>
 </body>
 </html>

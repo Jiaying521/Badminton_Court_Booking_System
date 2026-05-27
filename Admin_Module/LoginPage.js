@@ -24,7 +24,7 @@ document.querySelector("form").addEventListener("submit", async function(e){
             localStorage.setItem("userRole", result.role);
             
             // Redirect to the unified dashboard page
-            window.location.href = "SuperAdminDashboard.php"; 
+            window.location.href = "Dashboard/Dashboard.php";
         } else {
             // Display error message from server
             alert(result.message);

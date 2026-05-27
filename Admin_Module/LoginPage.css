@@ -5,7 +5,7 @@
 body {
     margin: 0;
     font-family: 'Outfit', sans-serif;
-    background-image: url('./Pictures/background.png');
+    background-image: url('../Pictures/Admin_Module/background.png');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;

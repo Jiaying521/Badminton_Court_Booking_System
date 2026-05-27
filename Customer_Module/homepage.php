@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/functions.php';
 // 注释掉自动跳转，让用户每次都要手动登录
@@ -140,7 +140,7 @@ require_once __DIR__ . '/functions.php';
 <body>
 <nav class="navbar">
     <a href="homepage.php" class="logo-area">
-        <img src="../Admin_Module/Pictures/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
+        <img src="../Pictures/Admin_Module/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
         <div class="logo-text">Smash <span>Arena</span></div>
     </a>
     <div class="nav-links">

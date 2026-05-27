@@ -1,15 +1,15 @@
-<?php
+﻿<?php
     
     // Login Status Check
     session_start();
     if(!isset($_SESSION['username'])){
-        header("Location: LoginPage.php");
+        header("Location: ../LoginPage.php");
         exit();
     }
 
     // Check role - only Superadmin and Admin can access
     if(!in_array($_SESSION['role'], ['Superadmin', 'Admin'])){
-        header("Location: LoginPage.php");
+        header("Location: ../LoginPage.php");
         exit();
     }
 
@@ -25,6 +25,9 @@
     $username     = $_SESSION['username'];
     $role         = $_SESSION['role'];
     $display_name = $username;
+
+    // This page sits at Admin_Module root, so navbar links don't need a prefix.
+    $base_path = '../';
 
     // Handle delete from modal
     if(isset($_POST['delete_court'])){
@@ -131,14 +134,14 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap">
 
     <!-- Connect previous CSS -->
-    <link rel="stylesheet" href="SuperAdminDashboard.css">
-    <link rel="stylesheet" href="AdminManagement.css">
+    <link rel="stylesheet" href="../Dashboard/Dashboard.css">
+    <link rel="stylesheet" href="../Superadmin/AdminManagement.css">
     <link rel="stylesheet" href="ManageCourts.css">
 </head>
 <body>
     
     <!-- Nav Bar -->
-    <?php include 'navbar.php'; ?>
+    <?php include '../navbar.php'; ?>
     
     <!-- Main Content -->
     <main class="content">
@@ -339,6 +342,6 @@
     </div>
 
     <script src="ManageCourts.js"></script>
-    <script src="SuperAdminDashboard.js"></script>
+    <script src="../Dashboard/Dashboard.js"></script>
 </body>
 </html>

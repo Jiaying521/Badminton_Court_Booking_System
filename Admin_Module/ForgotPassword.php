@@ -1,3 +1,9 @@
+<!--
+    ForgotPassword.php
+    Step 1 of password reset: ask the user for their email.
+    The actual sending logic lives in Email_System/SendResetLogic.php,
+    which is called from ForgotPassword.js (no normal form submit).
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
