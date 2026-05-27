@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once __DIR__ . '/../config.php';
 if (!isLoggedIn()) redirect('homepage.php');
 
@@ -80,7 +80,7 @@ if (!file_exists($defaultAvatarFullPath)) {
         imagedestroy($img);
     } else {
         // 如果 GD 库不可用，复制一个默认图片
-        $sourcePath = __DIR__ . '/../Admin_Module/Pictures/coaches/default.png';
+        $sourcePath = __DIR__ . '/../Pictures/Admin_Module/coaches/default.png';
         if (file_exists($sourcePath)) {
             copy($sourcePath, $defaultAvatarFullPath);
         }
@@ -102,7 +102,7 @@ if ($verified && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])
         } elseif ($_FILES['profile_picture']['size'] > 2 * 1024 * 1024) {
             $avatar_error = 'File size must be less than 2MB';
         } else {
-            $upload_dir = __DIR__ . '/../Admin_Module/Pictures/users/';
+            $upload_dir = __DIR__ . '/../Pictures/Admin_Module/users/';
             if (!file_exists($upload_dir)) {
                 mkdir($upload_dir, 0777, true);
             }
@@ -118,7 +118,7 @@ if ($verified && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])
                     }
                 }
                 
-                $db_path = 'Admin_Module/Pictures/users/' . $new_filename;
+                $db_path = 'Pictures/Admin_Module/users/' . $new_filename;
                 $stmt = $pdo->prepare("UPDATE users SET profile_picture = ? WHERE id = ?");
                 if ($stmt->execute([$db_path, $user_id])) {
                     $avatar_message = 'Profile picture updated successfully!';
@@ -328,7 +328,7 @@ if ($verified) {
 <div class="container">
     <div class="navbar">
         <div class="logo">
-            <img src="../Admin_Module/Pictures/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
+            <img src="../Pictures/Admin_Module/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
         </div>
         <div class="nav-links">
             <a href="dashboard.php"><i class="fas fa-home"></i> Courts</a>

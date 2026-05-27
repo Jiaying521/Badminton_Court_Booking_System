@@ -1,3 +1,10 @@
+<!--
+    PasswordReset.php
+    Step 2 of password reset. The user lands here through the link in
+    their email, which carries ?token=... in the URL.
+    PasswordReset.js reads the token, validates the new password and
+    posts to UpdatePasswordLogic.php.
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,21 +13,7 @@
     <title>Password Reset - Badminton Hub</title>
     <link rel="stylesheet" href="LoginPage.css">
     <link rel="stylesheet" href="ForgotPassword.css">
-
-    <style>
-        /* Control spacing between password input fields */
-        #NewPasswordForm input[type="password"] {
-            display: block;
-            width: 80%;             
-            margin: 0 auto 25px;  
-        }
-
-        /* Optional: reduce extra spacing from <br><br> if still used */
-        #NewPasswordForm br {
-            display: none;
-        }
-    </style>
-    
+    <link rel="stylesheet" href="PasswordReset.css">
 </head>
 <body>
     <h1>Password Reset</h1>

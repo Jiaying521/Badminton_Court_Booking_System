@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once __DIR__ . '/../config.php';
 if (!isLoggedIn()) redirect('homepage.php');
 
@@ -64,7 +64,7 @@ function getProductImage($product) {
         $imagePath = $product['image_url'];
         
         // 构建完整路径
-        $fullPath = '../Admin_Module/Pictures/products/' . $imagePath;
+        $fullPath = '../Pictures/Admin_Module/products/' . $imagePath;
         
         // 检查文件是否存在
         if (file_exists(__DIR__ . '/' . $fullPath)) {

@@ -1,22 +1,31 @@
-<?php
+﻿<?php
+// Admin Management page — ONLY accessible to Superadmin.
+// Lives at Admin_Module/Superadmin/AdminManagement.php
+// Lets the Superadmin create / suspend / delete other admin accounts
+// and emails the temporary password to the new admin.
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-require 'Email_System/phpmailer/src/Exception.php';
-require 'Email_System/phpmailer/src/PHPMailer.php';
-require 'Email_System/phpmailer/src/SMTP.php';
+// PHPMailer lives in Admin_Module/Email_System (one folder up from here).
+require '../Email_System/phpmailer/src/Exception.php';
+require '../Email_System/phpmailer/src/PHPMailer.php';
+require '../Email_System/phpmailer/src/SMTP.php';
 
 session_start();
 
 // Security check - If no session, redirect immediately
 if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'Superadmin') {
-    header("Location: LoginPage.php");
+    header("Location: ../LoginPage.php");
     exit();
 }
 
 $username     = $_SESSION['username'];
 $role         = $_SESSION['role'];
 $display_name = $username;
+
+// This page lives inside Admin_Module/Superadmin/, so navbar links need to step up one level.
+$base_path = '../';
 
 // Prevent browser caching
 header("Cache-Control: no-cache, no-store, must-revalidate");
@@ -183,13 +192,13 @@ $result = mysqli_query($conn, $query);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap">
-    <link rel="stylesheet" href="SuperAdminDashboard.css">
+    <link rel="stylesheet" href="../Dashboard/Dashboard.css">
     <link rel="stylesheet" href="AdminManagement.css">
-    <link rel="stylesheet" href="ManageCourts.css">
+    <link rel="stylesheet" href="../Courts_Management/ManageCourts.css">
 </head>
 <body>
 
-    <?php include 'navbar.php'; ?>
+    <?php include '../navbar.php'; ?>
 
     <main class="content">
         <div class="manage-container">
@@ -318,19 +327,8 @@ $result = mysqli_query($conn, $query);
         </div>
     </main>
 
-    <script src="SuperAdminDashboard.js"></script>
-
-    <script>
-        function toggleForm(id) {
-            document.getElementById('adminForm').classList.remove('active');
-            document.getElementById(id).classList.add('active');
-        }
-
-        function toggleFilter() {
-            const panel = document.getElementById('filterPanel');
-            panel.classList.toggle('open');
-        }
-    </script>
+    <script src="../Dashboard/Dashboard.js"></script>
+    <script src="AdminManagement.js"></script>
 
 </body>
 </html>

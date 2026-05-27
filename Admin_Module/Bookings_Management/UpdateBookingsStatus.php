@@ -1,13 +1,13 @@
-<?php
+﻿<?php
     session_start();
     if(!isset($_SESSION['username'])){
-        header("Location: LoginPage.php");
+        header("Location: ../LoginPage.php");
         exit();
     }
 
     //Check role only Superadmin and Admin can access
     if(!in_array($_SESSION['role'],['Superadmin','Admin'])){
-        header("Location: LoginPage.php");
+        header("Location: ../LoginPage.php");
         exit();
     }
 
@@ -15,7 +15,7 @@
     $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
 
     // Notification helper
-    require_once 'api/notification_helper.php';
+    require_once '../api/notification_helper.php';
 
     // Handle status change from dropdown
     if(isset($_GET['id']) && isset($_GET['status'])){

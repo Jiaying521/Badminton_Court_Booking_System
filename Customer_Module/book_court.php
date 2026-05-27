@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/functions.php';
 if(!isLoggedIn()) redirect('homepage.php');
@@ -20,7 +20,7 @@ if($court['court_type'] == 'Training') {
 // 获取教练头像函数 - 从数据库读取管理员上传的照片
 function getCoachImage($coach) {
     // 基础路径 - 教练照片存储位置
-    $basePath = '../Admin_Module/Pictures/coaches/';
+    $basePath = '../Pictures/Admin_Module/coaches/';
     
     // 检查数据库中是否有照片记录
     if (!empty($coach['profile_img'])) {
@@ -45,7 +45,7 @@ function getCoachImage($coach) {
     }
     
     // 如果没有上传照片，使用默认图片
-    return '../Admin_Module/Pictures/coaches/default.png';
+    return '../Pictures/Admin_Module/coaches/default.png';
 }
 ?>
 <!DOCTYPE html>
@@ -184,7 +184,7 @@ function getCoachImage($coach) {
                 <!-- No coach option -->
                 <div class="coach-option" data-coach-id="0" data-coach-price="0" data-coach-name="No coach">
                     <div class="coach-avatar">
-                        <img src="../Admin_Module/Pictures/coaches/default.png" alt="No coach">
+                        <img src="../Pictures/Admin_Module/coaches/default.png" alt="No coach">
                     </div>
                     <div class="coach-info">
                         <div class="coach-name">📝 No coach (self-training)</div>
@@ -204,7 +204,7 @@ function getCoachImage($coach) {
                     <div class="coach-avatar">
                         <img src="<?=htmlspecialchars(getCoachImage($coach))?>" 
                              alt="<?=htmlspecialchars($coach['name'])?>"
-                             onerror="this.onerror=null; this.src='../Admin_Module/Pictures/coaches/default.png'">
+                             onerror="this.onerror=null; this.src='../Pictures/Admin_Module/coaches/default.png'">
                     </div>
                     <div class="coach-info">
                         <div class="coach-name"><?=htmlspecialchars($coach['name'])?></div>

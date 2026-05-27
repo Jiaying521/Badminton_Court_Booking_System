@@ -1,13 +1,13 @@
-<?php
+﻿<?php
     session_start();
     if(!isset($_SESSION['username'])){
-        header("Location: LoginPage.php");
+        header("Location: ../LoginPage.php");
         exit();
     }
 
     // Check role - only Superadmin, Admin and Coach can access
     if(!in_array($_SESSION['role'], ['Superadmin', 'Admin', 'Coach'])){
-        header("Location: LoginPage.php");
+        header("Location: ../LoginPage.php");
         exit();
     }
 
@@ -22,6 +22,9 @@
     $username     = $_SESSION['username'];
     $role         = $_SESSION['role'];
     $display_name = $username;
+
+    // This page sits at Admin_Module root, so navbar links don't need a prefix.
+    $base_path = '../';
 
     // Fetch all courts for edit modal dropdown
     $courts_result = mysqli_query($conn, "SELECT id, court_name FROM courts WHERE is_active = 1 ORDER BY court_name ASC");
@@ -46,11 +49,16 @@
         $my_coach_id    = $coach_row ? (int)$coach_row['id'] : 0;
     }
 
+    // From dashboard calendar: highlight a specific row by booking ID
+    $highlight_id = isset($_GET['highlight']) ? intval($_GET['highlight']) : 0;
+
     // Filter values from GET
     $filter_status    = isset($_GET['status'])    ? $_GET['status']                                      : '';
     $filter_court     = isset($_GET['court'])     ? intval($_GET['court'])                               : 0;
     $filter_coach     = isset($_GET['coach'])     ? intval($_GET['coach'])                               : 0;
-    $filter_booking_date = isset($_GET['booking_date']) ? mysqli_real_escape_string($conn, $_GET['booking_date']) : '';
+    // ?date= comes from "View All Bookings" calendar link; ?booking_date= from the filter form
+    $filter_booking_date = isset($_GET['booking_date']) ? mysqli_real_escape_string($conn, $_GET['booking_date'])
+                         : (isset($_GET['date'])         ? mysqli_real_escape_string($conn, $_GET['date']) : '');
     $filter_search    = isset($_GET['search'])    ? mysqli_real_escape_string($conn, $_GET['search'])    : '';
 
     // Sort handling
@@ -151,13 +159,13 @@
 
     <!-- Connect previous CSS -->
     <link rel="stylesheet" href="ManageBookings.css">
-    <link rel="stylesheet" href="SuperAdminDashboard.css">
-    <link rel="stylesheet" href="AdminManagement.css">
+    <link rel="stylesheet" href="../Dashboard/Dashboard.css">
+    <link rel="stylesheet" href="../Superadmin/AdminManagement.css">
 </head>
 
 <body>
     <!-- Nav Bar -->
-    <?php include 'navbar.php';?>
+    <?php include '../navbar.php';?>
 
     <!-- Main Content -->
     <main class="content">
@@ -171,9 +179,6 @@
                 <div class="btn-add-group">
                     <button class="btn-filter-toggle" onclick="toggleBookingFilter()">
                         <i class="fas fa-filter"></i> Filter
-                        <?php if($has_filter): ?>
-                            <span class="filter-dot"></span>
-                        <?php endif; ?>
                     </button>
                     <?php if($role !== 'Coach'): ?>
                     <a href="#" class="btn-add-account" onclick="openAddModal(); return false;" style="text-decoration:none;">
@@ -289,7 +294,9 @@
                     <?php while($row = mysqli_fetch_assoc($result)): ?>
 
                     <!-- Main row — click to expand details -->
-                    <tr class="main-row" onclick="toggleDetails(<?php echo $row['id']; ?>, this)">
+                    <tr id="booking-row-<?php echo $row['id']; ?>"
+                        class="main-row<?php echo ($highlight_id === (int)$row['id']) ? ' booking-highlight' : ''; ?>"
+                        onclick="toggleDetails(<?php echo $row['id']; ?>, this)">
                         <td><?php echo $row['id']; ?> <span class="expand-icon">▼</span></td>
                         <td><?php echo htmlspecialchars($row['name']); ?></td>
                         <td><?php echo htmlspecialchars($row['court_name']); ?></td>
@@ -608,6 +615,20 @@
     </div>
 
     <script src="ManageBookings.js"></script>
-    <script src="SuperAdminDashboard.js"></script>
+    <script src="../Dashboard/Dashboard.js"></script>
+
+    <?php if ($highlight_id): ?>
+    <script>
+        // Scroll to the highlighted booking row from the dashboard calendar
+        document.addEventListener('DOMContentLoaded', function () {
+            const row = document.getElementById('booking-row-<?php echo $highlight_id; ?>');
+            if (row) {
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Auto-expand the details panel for that row
+                toggleDetails(<?php echo $highlight_id; ?>, row);
+            }
+        });
+    </script>
+    <?php endif; ?>
 </body>
 </html>

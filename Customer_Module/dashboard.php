@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/functions.php';
 if (!isLoggedIn()) redirect('homepage.php');
@@ -118,8 +118,8 @@ function getCourtImage($court) {
         
         // 尝试多种路径格式
         $possiblePaths = [
-            '../Admin_Module/Pictures/courts/' . $imagePath,
-            '../images/court/' . $imagePath,
+            '../Pictures/Admin_Module/courts/' . $imagePath,
+            '../Pictures/Customer_Module/court/' . $imagePath,
             $imagePath,
         ];
         
@@ -130,7 +130,7 @@ function getCourtImage($court) {
         }
         
         // 如果文件不存在，返回路径让浏览器尝试加载
-        return '../Admin_Module/Pictures/courts/' . $imagePath;
+        return '../Pictures/Admin_Module/courts/' . $imagePath;
     }
     
     // 尝试按场地名称匹配图片 (fallback) - 支持 PNG 和 JPG
@@ -144,8 +144,8 @@ function getCourtImage($court) {
     ];
     
     $imagePaths = [
-        '../Admin_Module/Pictures/courts/',
-        '../images/court/',
+        '../Pictures/Admin_Module/courts/',
+        '../Pictures/Customer_Module/court/',
     ];
     
     foreach ($imagePaths as $basePath) {
@@ -300,7 +300,7 @@ function getCourtImage($court) {
 <div class="container">
     <div class="navbar">
         <a href="dashboard.php" class="logo-area">
-            <img src="../Admin_Module/Pictures/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
+            <img src="../Pictures/Admin_Module/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
             <div class="logo-text">Smash <span>Arena</span></div>
         </a>
         <div class="nav-links">

@@ -1,14 +1,14 @@
-<?php 
+﻿<?php 
     //LOGIN Check
     session_start();
     if(!isset($_SESSION['username'])){
-        header("Location: LoginPage.php");
+        header("Location: ../LoginPage.php");
         exit();
     }
 
     //Role check
     if(!in_array($_SESSION['role'], ['Superadmin', 'Admin'])){
-        header("Location: LoginPage.php");
+        header("Location: ../LoginPage.php");
         exit();
     }
 
@@ -23,6 +23,9 @@
     $username     = $_SESSION['username'];
     $role         = $_SESSION['role'];
     $display_name = $username;
+
+    // This page sits at Admin_Module root, so navbar links don't need a prefix.
+    $base_path = '../';
 
     $message = "";
 
@@ -70,7 +73,7 @@
             $img_data    = str_replace(' ', '+', $img_data);
             $img_decoded = base64_decode($img_data);
             $img_name    = time() . '_user.png';
-            $upload_path = 'Pictures/users/' . $img_name;
+            $upload_path = '../../Pictures/Admin_Module/users/' . $img_name;
             if(file_put_contents($upload_path, $img_decoded)){
                 $img_sql = ", profile_picture = '$img_name'";
             }
@@ -221,8 +224,8 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 
-    <link rel="stylesheet" href="SuperAdminDashboard.css">
-    <link rel="stylesheet" href="AdminManagement.css">
+    <link rel="stylesheet" href="../Dashboard/Dashboard.css">
+    <link rel="stylesheet" href="../Superadmin/AdminManagement.css">
     <link rel="stylesheet" href="ManageCustomers.css">
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -230,7 +233,7 @@
 
 <body>
 
-    <?php include 'navbar.php'; ?>
+    <?php include '../navbar.php'; ?>
 
     <main class="content">
         <div class="manage-container">
@@ -392,8 +395,8 @@
                     while($row = mysqli_fetch_assoc($result)):
                         $row_count++;
                         $avatar = $row['profile_picture']
-                            ? 'Pictures/users/' . htmlspecialchars($row['profile_picture'])
-                            : 'Pictures/users/default_avatar.png';
+                            ? '../../Pictures/Admin_Module/users/' . htmlspecialchars($row['profile_picture'])
+                            : '../../Pictures/Admin_Module/users/default_avatar.png';
                         $initials    = strtoupper(substr($row['name'], 0, 1));
                         $joined      = date('d M Y', strtotime($row['created_at']));
                         $wallet      = number_format($row['wallet_balance'], 2);
@@ -502,7 +505,7 @@
                     <!-- Profile Image -->
                     <div class="modal-field full-width" style="display:flex; flex-direction:column; align-items:center;">
                         <img id="cust-modal-img-preview"
-                            src="Pictures/users/default_avatar.png"
+                            src="../../Pictures/Admin_Module/users/default_avatar.png"
                             style="width:80px; height:80px; border-radius:50%; object-fit:cover; margin-bottom:8px; border:3px solid var(--primary);">
                         <label class="btn-create" style="cursor:pointer; padding:8px 16px; font-size:13px;">
                             <i class="fas fa-camera"></i> Change Photo
@@ -630,7 +633,7 @@
         </div>
     </div>
 
-    <script src="SuperAdminDashboard.js"></script>
+    <script src="../Dashboard/Dashboard.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 
     <!-- Pass PHP chart data to JS -->

@@ -1,3 +1,10 @@
+/* Highlighted row — jumped to from the dashboard calendar */
+.booking-highlight {
+    background-color: #fff8e1 !important;
+    outline: 2px solid #f59e0b;
+    outline-offset: -2px;
+}
+
 /* Filter Toggle Button — same style as btn-add-account */
 .btn-filter-toggle {
     position: relative;

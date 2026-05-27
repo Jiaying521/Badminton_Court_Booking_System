@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 26, 2026 at 05:26 PM
+-- Generation Time: May 27, 2026 at 05:53 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -158,7 +158,8 @@ INSERT INTO `bookings` (`id`, `user_id`, `court_id`, `booking_date`, `start_time
 (47, 1, 2, '2026-05-28', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-21 06:43:16'),
 (48, 1, 8, '2026-05-21', '15:00:00', '16:00:00', 1, 1, 1, 25.00, 'Casual Play', 40.00, 'Pending', 0.00, '', '2026-05-21 06:43:43'),
 (49, 1, 8, '2026-05-21', '16:00:00', '17:00:00', 1, 1, 1, 25.00, 'Casual Play', 40.00, 'Confirmed', 0.00, '', '2026-05-21 06:44:20'),
-(50, 1, 2, '2026-05-29', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-21 15:28:45');
+(50, 1, 2, '2026-05-29', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-21 15:28:45'),
+(51, 1, 2, '2026-05-27', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-26 17:05:37');
 
 -- --------------------------------------------------------
 
@@ -401,10 +402,10 @@ CREATE TABLE `notifications` (
 --
 
 INSERT INTO `notifications` (`id`, `recipient_role`, `recipient_id`, `type`, `title`, `message`, `reference_id`, `reference_type`, `is_read`, `created_at`) VALUES
-(1, 'Admin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #32 for wz at Court B on 23 May 2026 09:00 AM has been confirmed.', 32, 'booking', 0, '2026-05-26 14:55:05'),
-(2, 'Superadmin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #32 for wz at Court B on 23 May 2026 09:00 AM has been confirmed.', 32, 'booking', 0, '2026-05-26 14:55:05'),
-(3, 'Admin', NULL, 'new_booking', 'New Booking Pending', 'Booking #44 from John Doe for Court A on 29 May 2026 is waiting for confirmation.', 44, 'booking', 0, '2026-05-26 14:55:08'),
-(4, 'Superadmin', NULL, 'new_booking', 'New Booking Pending', 'Booking #44 from John Doe for Court A on 29 May 2026 is waiting for confirmation.', 44, 'booking', 0, '2026-05-26 14:55:08');
+(1, 'Admin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #32 for wz at Court B on 23 May 2026 09:00 AM has been confirmed.', 32, 'booking', 1, '2026-05-26 14:55:05'),
+(2, 'Superadmin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #32 for wz at Court B on 23 May 2026 09:00 AM has been confirmed.', 32, 'booking', 1, '2026-05-26 14:55:05'),
+(3, 'Admin', NULL, 'new_booking', 'New Booking Pending', 'Booking #44 from John Doe for Court A on 29 May 2026 is waiting for confirmation.', 44, 'booking', 1, '2026-05-26 14:55:08'),
+(4, 'Superadmin', NULL, 'new_booking', 'New Booking Pending', 'Booking #44 from John Doe for Court A on 29 May 2026 is waiting for confirmation.', 44, 'booking', 1, '2026-05-26 14:55:08');
 
 -- --------------------------------------------------------
 
@@ -807,7 +808,7 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=51;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
 
 --
 -- AUTO_INCREMENT for table `booking_addons`

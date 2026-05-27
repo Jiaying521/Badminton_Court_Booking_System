@@ -1,13 +1,13 @@
-<?php
+﻿<?php
     session_start();
     if(!isset($_SESSION['username'])){
-        header("Location: LoginPage.php");
+        header("Location: ../LoginPage.php");
         exit();
     }
 
     // Only Superadmin and Admin can add bookings
     if(!in_array($_SESSION['role'], ['Superadmin', 'Admin'])){
-        header("Location: LoginPage.php");
+        header("Location: ../LoginPage.php");
         exit();
     }
 
