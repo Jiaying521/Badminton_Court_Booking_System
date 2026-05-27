@@ -235,12 +235,6 @@ if ($stats_result) {
 <body>
     <!-- Top Navigation Bar -->
     <?php include '../navbar.php'; ?>
-<<<<<<< HEAD
-=======
-
-    <!-- Sidebar Overlay -->
-    <div id="overlay" class="overlay"></div>
->>>>>>> 4f7d89e2ab6fd34035a3f9f62eab69b85313d81e
 
     <!-- Main Content Area -->
     <main class="content">
