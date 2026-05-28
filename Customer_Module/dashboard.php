@@ -33,7 +33,7 @@ $stmt = $pdo->prepare("SELECT SUM(total_price) FROM bookings WHERE user_id = ? A
 $stmt->execute([$user_id]);
 $totalSpent = $stmt->fetchColumn() ?? 0;
 
-// 🟢 ONLY ADDED: 计算用户已经消耗用掉的积分并计算剩余可用余额数
+// 计算积分
 $stmt_used = $pdo->prepare("
     SELECT SUM(v.points_required) 
     FROM user_vouchers uv 
@@ -43,7 +43,7 @@ $stmt_used = $pdo->prepare("
 $stmt_used->execute([$user_id]);
 $pointsUsed = $stmt_used->fetchColumn() ?? 0;
 
-$lifetimePoints = floor($totalSpent * 1); // RM1 = 1point
+$lifetimePoints = floor($totalSpent * 1);
 $currentPointsBalance = $lifetimePoints - $pointsUsed;
 
 // 获取所有场地类型
@@ -108,15 +108,12 @@ $stmt = $pdo->prepare("
 $stmt->execute([$user_id]);
 $recentBookings = $stmt->fetchAll();
 
-// 获取场地图片路径 - 使用正确的字段名 'court_image'
+// 获取场地图片路径
 function getCourtImage($court) {
-    // 检查数据库中的图片字段 'court_image'
     $imageField = isset($court['court_image']) ? $court['court_image'] : null;
     
     if (!empty($imageField)) {
         $imagePath = $imageField;
-        
-        // 尝试多种路径格式
         $possiblePaths = [
             '../Pictures/Admin_Module/courts/' . $imagePath,
             '../Pictures/Customer_Module/court/' . $imagePath,
@@ -128,19 +125,14 @@ function getCourtImage($court) {
                 return $path;
             }
         }
-        
-        // 如果文件不存在，返回路径让浏览器尝试加载
         return '../Pictures/Admin_Module/courts/' . $imagePath;
     }
     
-    // 尝试按场地名称匹配图片 (fallback) - 支持 PNG 和 JPG
     $courtName = $court['court_name'];
     $possibleImageNames = [
         strtolower(str_replace(' ', '_', $courtName)) . '.png',
         strtolower(str_replace(' ', '_', $courtName)) . '.jpg',
-        strtolower(str_replace(' ', '_', $courtName)) . '.jpeg',
         'court_' . strtolower(str_replace(' ', '_', $courtName)) . '.png',
-        'court_' . strtolower(str_replace(' ', '_', $courtName)) . '.jpg',
     ];
     
     $imagePaths = [
@@ -157,7 +149,6 @@ function getCourtImage($court) {
         }
     }
     
-    // 返回 null，使用默认占位符
     return null;
 }
 ?>
@@ -167,137 +158,748 @@ function getCourtImage($court) {
     <title>Smash Arena | Dashboard</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- 时尚字体导入 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         
-        body { font-family:'Inter',sans-serif; background:linear-gradient(145deg,#f5f9f0 0%,#e8efe2 100%); color:#1e2a2e; padding:2rem; }
-        .container { max-width:1400px; margin:0 auto; }
+        body { 
+            font-family: 'Inter', 'Poppins', 'Montserrat', sans-serif; 
+            background: radial-gradient(circle at 10% 20%, rgba(240,245,236,1) 0%, rgba(226,236,217,1) 100%);
+            color: #1e2a2e; 
+            padding: 2rem;
+            min-height: 100vh;
+            position: relative;
+        }
         
-        /* Navbar */
-        .navbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; padding-bottom:1rem; border-bottom:1px solid rgba(43,126,58,0.15); }
-        .logo-area { display:flex; align-items:center; gap:0.8rem; text-decoration:none; cursor:pointer; }
-        .logo-area:hover .logo-text { transform:scale(1.02); }
-        .logo-area img { height: 50px; width: auto; transition:transform 0.3s; }
-        .logo-area:hover img { transform:scale(1.02); }
+        /* 动态粒子背景效果 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(rgba(43,126,58,0.08) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #e0e8dc; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #2b7e3a; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #1f5a2a; }
+        
+        /* 玻璃态导航栏 */
+        .navbar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 2rem; 
+            flex-wrap: wrap; 
+            gap: 1rem; 
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(15px);
+            padding: 0.8rem 1.8rem;
+            border-radius: 80px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+            border: 1px solid rgba(255,255,255,0.3);
+            animation: fadeInDown 0.6s ease-out;
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .logo-area { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.8rem; 
+            text-decoration: none; 
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .logo-area::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #2b7e3a, #e67e22);
+            transition: width 0.4s ease;
+        }
+        
+        .logo-area:hover::after {
+            width: 100%;
+        }
+        
+        .logo-area:hover .logo-text { transform: scale(1.02); }
+        .logo-area img { 
+            height: 45px; 
+            width: auto; 
+            transition: transform 0.3s ease;
+        }
+        .logo-area:hover img { transform: scale(1.02) rotate(5deg); }
         .logo-text { 
-            font-size:1.3rem; 
-            font-weight:700; 
-            background:linear-gradient(135deg,#2b7e3a,#1b5e2a,#0f3d1a); 
-            -webkit-background-clip:text; 
-            background-clip:text; 
-            color:transparent;
-            letter-spacing:-0.3px;
-            transition:transform 0.3s;
+            font-family: 'Montserrat', 'Inter', sans-serif;
+            font-size: 1.5rem; 
+            font-weight: 800; 
+            background: linear-gradient(135deg, #2b7e3a 0%, #e67e22 80%);
+            -webkit-background-clip: text; 
+            background-clip: text; 
+            color: transparent;
+            letter-spacing: -1px;
+            transition: transform 0.3s ease;
+            text-transform: uppercase;
         }
         .logo-text span { 
-            background:linear-gradient(135deg,#e67e22,#f39c12); 
-            -webkit-background-clip:text; 
-            background-clip:text; 
-            color:transparent;
+            background: linear-gradient(135deg, #e67e22 0%, #f39c12 100%); 
+            -webkit-background-clip: text; 
+            background-clip: text; 
+            color: transparent;
         }
-        .nav-links { display:flex; align-items:center; gap:1rem; flex-wrap:wrap; }
-        .nav-links a { color:#2c4a2e; text-decoration:none; font-weight:500; transition:0.2s; }
-        .nav-links a:hover, .nav-links a.active { color:#2b7e3a; }
-        .user-greeting { color:#2b7e3a; font-weight:500; }
-        .btn-logout { background:#fee2e2; color:#e67e22; padding:0.3rem 1rem; border-radius:50px; text-decoration:none; font-size:0.8rem; transition:0.2s; }
-        .btn-logout:hover { background:#e67e22; color:white; }
         
-        /* Welcome Banner */
-        .welcome-banner { background:linear-gradient(135deg,#2b7e3a,#1b5e2a); color:white; padding:2rem; border-radius:32px; margin-bottom:2rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; }
-        .welcome-banner h1 { font-size:1.8rem; margin-bottom:0.3rem; }
-        .welcome-banner p { opacity:0.9; }
-        .wallet-info { background:rgba(255,255,255,0.2); padding:0.5rem 1rem; border-radius:50px; display:inline-flex; align-items:center; gap:0.5rem; margin-top:0.5rem; }
-        .wallet-info i { font-size:0.9rem; }
-        .btn-wallet { color:#aaffaa; text-decoration:underline; font-size:0.8rem; margin-left:0.5rem; }
-        .btn-my-bookings { background:white; color:#2b7e3a; border:none; padding:0.6rem 1.2rem; border-radius:50px; cursor:pointer; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:0.5rem; transition:0.2s; }
-        .btn-my-bookings:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(0,0,0,0.15); }
+        .nav-links { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.5rem; 
+            flex-wrap: wrap; 
+        }
+        .nav-links a { 
+            font-family: 'Montserrat', 'Inter', sans-serif;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            color: #2c4a2e; 
+            text-decoration: none; 
+            transition: all 0.3s ease;
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            position: relative;
+            overflow: hidden;
+        }
         
-        /* Stats Grid */
-        .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; margin-bottom:2rem; }
-        .stat-card { background:white; border-radius:24px; padding:1.2rem; display:flex; align-items:center; gap:1rem; box-shadow:0 4px 15px rgba(0,0,0,0.03); transition:0.3s; }
-        .stat-card:hover { transform:translateY(-3px); box-shadow:0 8px 25px rgba(43,126,58,0.1); }
-        .stat-icon { width:50px; height:50px; background:#eaf5e6; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.5rem; color:#2b7e3a; }
-        .stat-info h3 { font-size:1.6rem; font-weight:800; color:#1e3a2a; }
-        .stat-info p { color:#5a6e5c; font-size:0.8rem; }
+        .nav-links a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s ease;
+        }
         
-        /* Filter Form */
-        .filter-form { background:white; padding:1.5rem; border-radius:28px; margin-bottom:2rem; display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; align-items:end; border:1px solid rgba(43,126,58,0.1); }
-        .filter-group label { font-weight:600; color:#2c4a2e; display:block; margin-bottom:0.3rem; font-size:0.85rem; }
-        .filter-group select, .filter-group input { width:100%; padding:0.6rem 1rem; border:1.5px solid #e0e8dc; border-radius:50px; background:#fefdf8; font-family:'Inter',sans-serif; }
-        .filter-group select:focus, .filter-group input:focus { outline:none; border-color:#2b7e3a; }
-        .search-btn, .reset-btn { background:#2b7e3a; color:white; border:none; padding:0.6rem 1.2rem; border-radius:50px; cursor:pointer; font-weight:600; transition:0.2s; }
-        .reset-btn { background:#cbd5c0; color:#2c4a2e; }
-        .search-btn:hover, .reset-btn:hover { transform:translateY(-2px); }
+        .nav-links a:hover::before {
+            left: 100%;
+        }
         
-        /* Courts Grid */
-        .courts-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(360px,1fr)); gap:1.5rem; margin-top:1rem; }
-        .court-card { background:white; border-radius:28px; overflow:hidden; box-shadow:0 8px 20px rgba(0,0,0,0.05); transition:0.3s; border-bottom:4px solid #2b7e3a; }
-        .court-card:hover { transform:translateY(-5px); box-shadow:0 16px 32px rgba(43,126,58,0.12); }
+        .nav-links a:hover, .nav-links a.active { 
+            background: #2b7e3a;
+            color: white; 
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(43,126,58,0.3);
+        }
         
-        .court-image { height: 200px; overflow:hidden; background: linear-gradient(135deg, #2b7e3a, #1a5c2a); position: relative; }
-        .court-image img { width:100%; height:100%; object-fit:cover; transition:transform 0.4s; }
-        .court-card:hover .court-image img { transform:scale(1.05); }
-        .court-image .placeholder { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; }
-        .court-image .placeholder .court-icon { font-size: 4rem; color: white; margin-bottom: 0.5rem; }
-        .court-image .placeholder .court-name-big { font-size: 1.3rem; font-weight: 700; color: white; }
-        .court-image .placeholder .court-location { font-size: 0.7rem; color: #aaffaa; margin-top: 0.3rem; }
-        .court-type-badge { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); color: white; padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.7rem; font-weight: 600; z-index: 2; }
+        .user-greeting { 
+            font-family: 'Montserrat', 'Inter', sans-serif;
+            font-weight: 600;
+            color: #2b7e3a; 
+            background: #eaf5e6;
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+        }
+        .btn-logout { 
+            background: #fee2e2; 
+            color: #e67e22; 
+            padding: 0.5rem 1.2rem; 
+            border-radius: 50px; 
+            text-decoration: none; 
+            font-size: 0.85rem; 
+            font-family: 'Montserrat', 'Inter', sans-serif;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-logout:hover { 
+            background: #e67e22; 
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(230,126,34,0.3);
+        }
         
-        .court-info { padding: 1.2rem; }
-        .court-name { font-size: 1.3rem; font-weight: 800; color:#2b7e3a; margin-bottom:0.3rem; }
-        .court-details { color:#5a6e5c; font-size:0.85rem; margin-bottom:0.3rem; display:flex; align-items:center; gap:0.5rem; }
-        .court-price { background:#f8faf5; padding:0.8rem; border-radius:16px; margin:0.8rem 0; }
-        .price-row { display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:0.3rem; }
-        .price-offpeak { color:#2b7e3a; font-weight:500; }
-        .price-peak { color:#e67e22; font-weight:500; }
-        .btn-book { background:#2b7e3a; color:white; border:none; padding:0.7rem 1rem; border-radius:50px; width:100%; cursor:pointer; font-weight:600; margin-top:0.5rem; display:inline-flex; align-items:center; justify-content:center; gap:0.5rem; text-decoration:none; transition:0.2s; }
-        .btn-book:hover { background:#1f5a2a; transform:translateY(-2px); }
+        /* 欢迎横幅 - 玻璃态 + 动态光效 */
+        .welcome-banner { 
+            background: linear-gradient(135deg, #2b7e3a, #1b5e2a);
+            color: white; 
+            padding: 2rem 2rem; 
+            border-radius: 32px; 
+            margin-bottom: 2rem; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            flex-wrap: wrap; 
+            gap: 1rem;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out 0.1s both;
+        }
         
-        /* Recent Bookings Table */
-        .recent-section { margin-top:2rem; }
-        .section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
-        .section-header h2 { color:#1e3a2a; font-size:1.5rem; }
-        .recent-table { background:white; border-radius:24px; overflow-x:auto; }
-        table { width:100%; border-collapse:collapse; }
-        th { background:#2b7e3a; color:white; padding:1rem; text-align:left; font-weight:600; }
-        td { padding:1rem; border-bottom:1px solid #e0e0e0; }
-        .status { display:inline-block; padding:0.25rem 0.8rem; border-radius:50px; font-size:0.75rem; font-weight:600; }
-        .status-Confirmed { background:#d4edda; color:#155724; }
-        .status-Pending { background:#fff3cd; color:#856404; }
-        .status-Completed { background:#cce5ff; color:#004085; }
-        .status-Cancelled { background:#f8d7da; color:#721c24; }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
         
-        .quick-actions { display:flex; gap:1rem; flex-wrap:wrap; margin-top:1.5rem; }
-        .action-btn { background:white; border:1px solid #2b7e3a; padding:0.6rem 1.2rem; border-radius:50px; color:#2b7e3a; text-decoration:none; font-weight:500; transition:0.2s; display:inline-flex; align-items:center; gap:0.5rem; }
-        .action-btn:hover { background:#2b7e3a; color:white; transform:translateY(-2px); }
+        .welcome-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+            pointer-events: none;
+        }
         
-        /* Footer */
-        .footer { background:#0f1f12; color:#cbd5c0; padding:3rem 5% 1.5rem; margin-top:4rem; }
-        .footer-container { max-width:1400px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:2rem; margin-bottom:2rem; }
-        .footer-col h3, .footer-col h4 { color:#2b7e3a; margin-bottom:1rem; }
-        .footer-col p { margin-bottom:0.5rem; display:flex; align-items:center; gap:0.6rem; font-size:0.9rem; }
-        .footer-col a { color:#cbd5c0; text-decoration:none; display:block; margin-bottom:0.6rem; transition:0.2s; font-size:0.9rem; }
-        .footer-col a:hover { color:#2b7e3a; padding-left:5px; }
-        .social-icons { display:flex; gap:1rem; margin-top:1rem; }
-        .social-icons a { background:#2c4a2e; width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:0.2s; color:#cbd5c0; text-decoration:none; }
-        .social-icons a:hover { background:#2b7e3a; transform:translateY(-3px); }
-        .footer-bottom { text-align:center; border-top:1px solid #2c4a2e; padding-top:1.5rem; font-size:0.8rem; }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        
+        .welcome-banner h1 { 
+            font-family: 'Montserrat', 'Poppins', sans-serif;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            font-size: 1.8rem; 
+            margin-bottom: 0.3rem; 
+        }
+        .welcome-banner p { opacity: 0.9; }
+        .wallet-info { 
+            background: rgba(255,255,255,0.15); 
+            padding: 0.5rem 1.2rem; 
+            border-radius: 50px; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 0.5rem; 
+            margin-top: 0.5rem;
+            backdrop-filter: blur(4px);
+        }
+        .btn-wallet { 
+            color: #aaffaa; 
+            text-decoration: underline; 
+            font-size: 0.8rem; 
+            margin-left: 0.5rem;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        .btn-wallet:hover { color: #ffffff; }
+        
+        .btn-my-bookings { 
+            background: white; 
+            color: #2b7e3a; 
+            border: none; 
+            padding: 0.8rem 1.8rem; 
+            border-radius: 50px; 
+            cursor: pointer; 
+            font-family: 'Montserrat', 'Inter', sans-serif;
+            font-weight: 700; 
+            text-decoration: none; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 0.5rem; 
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .btn-my-bookings:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+        }
+        
+        /* 统计卡片 - 3D悬浮效果 */
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 1.2rem; 
+            margin-bottom: 2rem; 
+        }
+        .stat-card { 
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 28px; 
+            padding: 1.3rem; 
+            display: flex; 
+            align-items: center; 
+            gap: 1rem; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.04); 
+            transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            cursor: pointer;
+            animation: fadeInScale 0.5s ease-out both;
+        }
+        
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; }
+        .stat-card:nth-child(4) { animation-delay: 0.4s; }
+        
+        .stat-card:hover { 
+            transform: translateY(-8px) scale(1.02); 
+            box-shadow: 0 20px 40px rgba(43,126,58,0.2);
+            border-color: rgba(43,126,58,0.3);
+            background: white;
+        }
+        .stat-icon { 
+            width: 55px; 
+            height: 55px; 
+            background: linear-gradient(145deg, #eaf5e6, #d4e8cd);
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 1.6rem; 
+            color: #2b7e3a;
+            transition: transform 0.3s;
+        }
+        .stat-card:hover .stat-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+        .stat-info h3 { 
+            font-family: 'Montserrat', 'Inter', sans-serif;
+            font-weight: 900;
+            font-size: 1.8rem; 
+            color: #1e3a2a; 
+        }
+        .stat-info p { 
+            color: #5a6e5c; 
+            font-size: 0.85rem; 
+            font-weight: 500;
+        }
+        
+        /* 筛选表单 */
+        .filter-form { 
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem; 
+            border-radius: 28px; 
+            margin-bottom: 2rem; 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 1rem; 
+            align-items: end; 
+            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            animation: fadeInUp 0.5s ease-out 0.2s both;
+        }
+        .filter-group label { 
+            font-family: 'Montserrat', 'Inter', sans-serif;
+            font-weight: 600; 
+            color: #2c4a2e; 
+            display: block; 
+            margin-bottom: 0.3rem; 
+            font-size: 0.8rem;
+        }
+        .filter-group select, .filter-group input { 
+            width: 100%; 
+            padding: 0.7rem 1rem; 
+            border: 2px solid rgba(224,232,220,0.8); 
+            border-radius: 60px; 
+            background: rgba(254,253,248,0.9); 
+            font-family: 'Inter', sans-serif; 
+            transition: all 0.3s;
+        }
+        .filter-group select:focus, .filter-group input:focus { 
+            outline: none; 
+            border-color: #2b7e3a; 
+            box-shadow: 0 0 0 3px rgba(43,126,58,0.1);
+        }
+        .search-btn, .reset-btn { 
+            background: linear-gradient(135deg, #2b7e3a, #1f5a2a);
+            color: white; 
+            border: none; 
+            padding: 0.7rem 1.2rem; 
+            border-radius: 60px; 
+            cursor: pointer; 
+            font-family: 'Montserrat', 'Inter', sans-serif;
+            font-weight: 600; 
+            transition: all 0.3s ease;
+        }
+        .reset-btn { 
+            background: #cbd5c0; 
+            color: #2c4a2e; 
+        }
+        .search-btn:hover, .reset-btn:hover { 
+            transform: translateY(-3px);
+            filter: brightness(1.02);
+            box-shadow: 0 6px 14px rgba(43,126,58,0.3);
+        }
+        
+        /* 场地网格 */
+        .courts-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); 
+            gap: 1.8rem; 
+            margin-top: 1rem; 
+        }
+        .court-card { 
+            background: white; 
+            border-radius: 28px; 
+            overflow: hidden; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+            transition: all 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1); 
+            border-bottom: 4px solid #2b7e3a;
+            animation: fadeInScale 0.5s ease-out both;
+        }
+        .court-card:nth-child(1) { animation-delay: 0.05s; }
+        .court-card:nth-child(2) { animation-delay: 0.1s; }
+        .court-card:nth-child(3) { animation-delay: 0.15s; }
+        .court-card:nth-child(4) { animation-delay: 0.2s; }
+        .court-card:nth-child(5) { animation-delay: 0.25s; }
+        .court-card:nth-child(6) { animation-delay: 0.3s; }
+        
+        .court-card:hover { 
+            transform: translateY(-12px) scale(1.01); 
+            box-shadow: 0 30px 50px rgba(43,126,58,0.2);
+        }
+        
+        .court-image { 
+            height: 200px; 
+            overflow: hidden; 
+            background: linear-gradient(135deg, #2b7e3a, #1a5c2a); 
+            position: relative; 
+        }
+        .court-image img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            transition: transform 0.7s cubic-bezier(0.2, 0.9, 0.4, 1.1); 
+        }
+        .court-card:hover .court-image img { 
+            transform: scale(1.1); 
+        }
+        .court-image .placeholder { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100%; 
+        }
+        .court-image .placeholder .court-icon { 
+            font-size: 4rem; 
+            color: white; 
+            margin-bottom: 0.5rem;
+            animation: bounce 2s ease-in-out infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .court-image .placeholder .court-name-big { 
+            font-size: 1.3rem; 
+            font-weight: 700; 
+            color: white; 
+        }
+        .court-type-badge { 
+            position: absolute; 
+            top: 15px; 
+            right: 15px; 
+            background: rgba(0,0,0,0.6); 
+            backdrop-filter: blur(4px); 
+            color: white; 
+            padding: 0.3rem 0.8rem; 
+            border-radius: 50px; 
+            font-size: 0.7rem; 
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600; 
+            z-index: 2;
+        }
+        
+        .court-info { 
+            padding: 1.3rem; 
+        }
+        .court-name { 
+            font-family: 'Montserrat', 'Poppins', sans-serif;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            font-size: 1.3rem; 
+            color: #2b7e3a; 
+            margin-bottom: 0.3rem;
+        }
+        .court-details { 
+            color: #5a6e5c; 
+            font-size: 0.85rem; 
+            margin-bottom: 0.3rem; 
+            display: flex; 
+            align-items: center; 
+            gap: 0.5rem; 
+        }
+        .court-price { 
+            background: #f8faf5; 
+            padding: 0.8rem; 
+            border-radius: 20px; 
+            margin: 0.8rem 0; 
+        }
+        .price-row { 
+            display: flex; 
+            justify-content: space-between; 
+            font-size: 0.85rem; 
+            margin-bottom: 0.3rem; 
+        }
+        .price-offpeak { 
+            font-family: 'DM Sans', 'Inter', sans-serif;
+            font-weight: 700;
+            color: #2b7e3a; 
+        }
+        .price-peak { 
+            font-family: 'DM Sans', 'Inter', sans-serif;
+            font-weight: 700;
+            color: #e67e22; 
+        }
+        .btn-book { 
+            background: linear-gradient(135deg, #2b7e3a, #1f5a2a);
+            color: white; 
+            border: none; 
+            padding: 0.8rem; 
+            border-radius: 60px; 
+            width: 100%; 
+            cursor: pointer; 
+            font-family: 'Montserrat', 'Inter', sans-serif;
+            font-weight: 700; 
+            margin-top: 0.5rem; 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 0.5rem; 
+            text-decoration: none; 
+            transition: all 0.4s ease;
+            box-shadow: 0 4px 12px rgba(43,126,58,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-book::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s ease;
+        }
+        .btn-book:hover::before {
+            left: 100%;
+        }
+        .btn-book:hover { 
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(43,126,58,0.4);
+        }
+        
+        /* 最近预订表格 */
+        .recent-section { margin-top: 2.5rem; }
+        .section-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 1rem; 
+        }
+        .section-header h2 { 
+            font-family: 'Montserrat', 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem; 
+            color: #1e3a2a;
+        }
+        .recent-table { 
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 28px; 
+            overflow-x: auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th { 
+            background: #2b7e3a; 
+            color: white; 
+            padding: 1rem; 
+            text-align: left; 
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+        }
+        td { 
+            padding: 1rem; 
+            border-bottom: 1px solid rgba(224,224,224,0.5); 
+        }
+        tr { transition: background 0.3s; }
+        tr:hover { background: rgba(43,126,58,0.05); }
+        .status { 
+            display: inline-block; 
+            padding: 0.25rem 0.8rem; 
+            border-radius: 50px; 
+            font-size: 0.75rem; 
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+        }
+        .status-Confirmed { background: #d4edda; color: #155724; }
+        .status-Pending { background: #fff3cd; color: #856404; }
+        .status-Completed { background: #cce5ff; color: #004085; }
+        .status-Cancelled { background: #f8d7da; color: #721c24; }
+        
+        /* 快捷操作 */
+        .quick-actions { 
+            display: flex; 
+            gap: 1rem; 
+            flex-wrap: wrap; 
+            margin-top: 2rem; 
+        }
+        .action-btn { 
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(5px);
+            border: 1.5px solid rgba(43,126,58,0.3); 
+            padding: 0.7rem 1.5rem; 
+            border-radius: 60px; 
+            color: #2b7e3a; 
+            text-decoration: none; 
+            font-family: 'Montserrat', 'Inter', sans-serif;
+            font-weight: 600; 
+            transition: all 0.3s ease; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 0.5rem;
+        }
+        .action-btn:hover { 
+            background: #2b7e3a; 
+            color: white; 
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 25px rgba(43,126,58,0.3);
+            border-color: transparent;
+        }
+        
+        /* 页脚 */
+        .footer { 
+            background: #0f1f12; 
+            color: #cbd5c0; 
+            padding: 3rem 5% 1.5rem; 
+            margin-top: 4rem;
+            border-radius: 32px 32px 0 0;
+        }
+        .footer-container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 2rem; 
+            margin-bottom: 2rem; 
+        }
+        .footer-col h3, .footer-col h4 { 
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: #2b7e3a; 
+            margin-bottom: 1rem;
+        }
+        .footer-col p { 
+            margin-bottom: 0.5rem; 
+            display: flex; 
+            align-items: center; 
+            gap: 0.6rem; 
+            font-size: 0.9rem; 
+        }
+        .footer-col a { 
+            color: #cbd5c0; 
+            text-decoration: none; 
+            display: block; 
+            margin-bottom: 0.6rem; 
+            transition: 0.2s; 
+            font-size: 0.9rem; 
+        }
+        .footer-col a:hover { 
+            color: #2b7e3a; 
+            padding-left: 5px; 
+            transform: translateX(3px);
+        }
+        .social-icons { 
+            display: flex; 
+            gap: 1rem; 
+            margin-top: 1rem; 
+        }
+        .social-icons a { 
+            background: #2c4a2e; 
+            width: 36px; 
+            height: 36px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-radius: 50%; 
+            transition: all 0.3s ease; 
+            color: #cbd5c0; 
+            text-decoration: none;
+        }
+        .social-icons a:hover { 
+            background: #2b7e3a; 
+            transform: translateY(-5px) rotate(360deg);
+        }
+        .footer-bottom { 
+            text-align: center; 
+            border-top: 1px solid #2c4a2e; 
+            padding-top: 1.5rem; 
+            font-size: 0.8rem; 
+        }
 
-        @media (max-width:768px) { 
-            body { padding:1rem; } 
-            .filter-form { grid-template-columns:1fr; } 
-            .courts-grid { grid-template-columns:1fr; } 
-            .navbar { flex-direction:column; }
-            .footer-container { text-align:center; }
-            .footer-col p { justify-content:center; }
-            .social-icons { justify-content:center; }
+        @media (max-width: 768px) { 
+            body { padding: 1rem; } 
+            .filter-form { grid-template-columns: 1fr; } 
+            .courts-grid { grid-template-columns: 1fr; } 
+            .navbar { flex-direction: column; border-radius: 28px; }
+            .footer-container { text-align: center; }
+            .footer-col p { justify-content: center; }
+            .social-icons { justify-content: center; }
+            .stat-card { padding: 1rem; }
+            .stat-icon { width: 45px; height: 45px; font-size: 1.3rem; }
+            .stat-info h3 { font-size: 1.3rem; }
         }
     </style>
 </head>
 <body>
 <div class="container">
+    <!-- Navbar -->
     <div class="navbar">
         <a href="dashboard.php" class="logo-area">
             <img src="../Pictures/Admin_Module/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
@@ -314,6 +916,7 @@ function getCourtImage($court) {
         </div>
     </div>
     
+    <!-- Welcome Banner -->
     <div class="welcome-banner">
         <div>
             <h1>Ready to play, <?php echo htmlspecialchars($user['name'] ?? 'Player'); ?>! 🏸</h1>
@@ -326,11 +929,11 @@ function getCourtImage($court) {
         <a href="my_bookings.php" class="btn-my-bookings"><i class="fas fa-bookmark"></i> My Bookings</a>
     </div>
     
+    <!-- Stats Cards -->
     <div class="stats-grid">
         <div class="stat-card"><div class="stat-icon"><i class="fas fa-calendar-check"></i></div><div class="stat-info"><h3><?php echo $upcomingCount; ?></h3><p>Upcoming Bookings</p></div></div>
         <div class="stat-card"><div class="stat-icon"><i class="fas fa-history"></i></div><div class="stat-info"><h3><?php echo $totalBookings; ?></h3><p>Total Bookings</p></div></div>
         <div class="stat-card"><div class="stat-icon"><i class="fas fa-coins"></i></div><div class="stat-info"><h3>RM <?php echo number_format($totalSpent, 2); ?></h3><p>Total Spent</p></div></div>
-        
         <div class="stat-card" onclick="window.location.href='../Payment_Module/redeem_voucher.php';" style="cursor: pointer;">
             <div class="stat-icon"><i class="fas fa-star"></i></div>
             <div class="stat-info">
@@ -340,6 +943,7 @@ function getCourtImage($court) {
         </div>
     </div>
     
+    <!-- Filter Form -->
     <div class="filter-form">
         <form method="GET" style="display:contents;">
             <div class="filter-group">
@@ -371,6 +975,7 @@ function getCourtImage($court) {
         </form>
     </div>
     
+    <!-- Courts Grid -->
     <div class="courts-grid">
         <?php if (count($courts) > 0): ?>
             <?php foreach ($courts as $c): 
@@ -406,11 +1011,12 @@ function getCourtImage($court) {
         <?php endif; ?>
     </div>
     
+    <!-- Recent Bookings -->
     <?php if(count($recentBookings) > 0): ?>
     <div class="recent-section">
         <div class="section-header">
             <h2><i class="fas fa-clock"></i> Recent Bookings</h2>
-            <a href="my_bookings.php" style="color:#2b7e3a;">View All →</a>
+            <a href="my_bookings.php" style="color:#2b7e3a; font-weight:600;">View All →</a>
         </div>
         <div class="recent-table">
             <table>
@@ -435,6 +1041,7 @@ function getCourtImage($court) {
     </div>
     <?php endif; ?>
     
+    <!-- Quick Actions -->
     <div class="quick-actions">
         <a href="dashboard.php" class="action-btn"><i class="fas fa-plus"></i> Book a Court</a>
         <a href="my_bookings.php" class="action-btn"><i class="fas fa-list"></i> My Bookings</a>
@@ -444,6 +1051,7 @@ function getCourtImage($court) {
     </div>
 </div>
 
+<!-- Footer -->
 <footer class="footer">
     <div class="footer-container">
         <div class="footer-col">

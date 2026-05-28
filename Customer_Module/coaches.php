@@ -29,210 +29,507 @@ $avail_map = [
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Our Coaches – Smash Arena</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(145deg, #f5f9f0 0%, #e8efe2 100%);
+        * { margin:0; padding:0; box-sizing:border-box; }
+        
+        body { 
+            font-family: 'Inter', 'Poppins', 'Montserrat', sans-serif; 
+            background: radial-gradient(circle at 10% 20%, rgba(240,245,236,1) 0%, rgba(226,236,217,1) 100%);
+            color: #1e2a2e; 
+            padding: 2rem;
             min-height: 100vh;
-            color: #1e2a2e;
+            position: relative;
         }
-
-        .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
-
-        /* Navbar */
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(rgba(43,126,58,0.08) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            position: relative;
+            z-index: 1;
+        }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #e0e8dc; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #2b7e3a; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #1f5a2a; }
+        
+        /* Glassmorphism Navbar */
         .navbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2.5rem;
+            margin-bottom: 2rem;
             flex-wrap: wrap;
             gap: 1rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid rgba(43,126,58,0.15);
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(15px);
+            padding: 0.8rem 1.8rem;
+            border-radius: 80px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+            border: 1px solid rgba(255,255,255,0.3);
+            animation: fadeInDown 0.6s ease-out;
         }
-
-        .logo-area { display: flex; align-items: center; gap: 0.8rem; text-decoration: none; }
-        .logo-area img { height: 44px; }
-        .logo-text { font-size: 1.3rem; font-weight: 800; color: #1e2a2e; }
-        .logo-text span { color: #2b7e3a; }
-
-        .nav-links { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
-        .nav-links a { color: #2c4a2e; text-decoration: none; font-weight: 500; font-size: 0.9rem; transition: color 0.2s; }
-        .nav-links a:hover, .nav-links a.active { color: #2b7e3a; }
-        .nav-links a.active { font-weight: 700; }
-        .user-greeting { color: #2b7e3a; font-weight: 500; font-size: 0.9rem; }
-        .btn-logout { background: #fee2e2; color: #e67e22; padding: 0.3rem 1rem; border-radius: 50px; font-size: 0.8rem; }
-        .btn-logout:hover { background: #e67e22; color: white; }
-
-        /* Page header */
+        
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .logo-area { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.8rem; 
+            text-decoration: none; 
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .logo-area::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #2b7e3a, #e67e22);
+            transition: width 0.4s ease;
+        }
+        
+        .logo-area:hover::after { width: 100%; }
+        .logo-area:hover .logo-text { transform: scale(1.02); }
+        .logo-area img { 
+            height: 45px; 
+            width: auto; 
+            transition: transform 0.3s ease;
+        }
+        .logo-area:hover img { transform: scale(1.02) rotate(5deg); }
+        .logo-text { 
+            font-family: 'Montserrat', 'Inter', sans-serif;
+            font-size: 1.5rem; 
+            font-weight: 800; 
+            background: linear-gradient(135deg, #2b7e3a 0%, #e67e22 80%);
+            -webkit-background-clip: text; 
+            background-clip: text; 
+            color: transparent;
+            letter-spacing: -1px;
+            transition: transform 0.3s ease;
+            text-transform: uppercase;
+        }
+        .logo-text span { 
+            background: linear-gradient(135deg, #e67e22 0%, #f39c12 100%); 
+            -webkit-background-clip: text; 
+            background-clip: text; 
+            color: transparent;
+        }
+        
+        .nav-links { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.5rem; 
+            flex-wrap: wrap; 
+        }
+        .nav-links a { 
+            font-family: 'Montserrat', 'Inter', sans-serif;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            color: #2c4a2e; 
+            text-decoration: none; 
+            transition: all 0.3s ease;
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-links a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .nav-links a:hover::before { left: 100%; }
+        .nav-links a:hover, .nav-links a.active { 
+            background: #2b7e3a;
+            color: white; 
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(43,126,58,0.3);
+        }
+        
+        .user-greeting { 
+            font-family: 'Montserrat', 'Inter', sans-serif;
+            font-weight: 600;
+            color: #2b7e3a; 
+            background: #eaf5e6;
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+        }
+        .btn-logout { 
+            background: #fee2e2; 
+            color: #e67e22; 
+            padding: 0.5rem 1.2rem; 
+            border-radius: 50px; 
+            text-decoration: none; 
+            font-size: 0.85rem; 
+            font-family: 'Montserrat', 'Inter', sans-serif;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-logout:hover { 
+            background: #e67e22; 
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(230,126,34,0.3);
+        }
+        
+        /* Page Header */
         .page-header {
             text-align: center;
-            margin-bottom: 2.5rem;
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.6s ease-out 0.1s both;
         }
-
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
         .page-header h1 {
-            font-size: 2rem;
+            font-family: 'Montserrat', 'Poppins', sans-serif;
             font-weight: 800;
-            color: #1e2a2e;
+            font-size: 2rem;
+            color: #1e3a2a;
             margin-bottom: 0.5rem;
         }
-
+        
         .page-header p {
+            font-family: 'DM Sans', sans-serif;
             color: #64748b;
             font-size: 1rem;
         }
-
-        /* Coaches grid */
+        
+        /* Coaches Grid */
         .coaches-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 24px;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.8rem;
+            margin-top: 1rem;
         }
-
-        /* Coach card */
+        
+        /* Coach Card - 3D悬浮效果 */
         .coach-card {
-            background: #fff;
-            border-radius: 24px;
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 28px;
             overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
-            border: 1px solid #e8f0e5;
-            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            transition: all 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            border-bottom: 4px solid #2b7e3a;
+            border: 1px solid rgba(255,255,255,0.3);
+            animation: fadeInScale 0.5s ease-out both;
         }
-
+        
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .coach-card:nth-child(1) { animation-delay: 0.05s; }
+        .coach-card:nth-child(2) { animation-delay: 0.1s; }
+        .coach-card:nth-child(3) { animation-delay: 0.15s; }
+        
         .coach-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 32px rgba(0,0,0,0.12);
+            transform: translateY(-12px) scale(1.01);
+            box-shadow: 0 30px 50px rgba(43,126,58,0.2);
+            background: white;
         }
-
+        
         .card-hero {
-            background: linear-gradient(135deg, #0f172a, #1e293b);
+            background: linear-gradient(135deg, #1a3a2a, #0f2a1a);
             padding: 28px 24px 20px;
             text-align: center;
             position: relative;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
         }
-
+        
+        .card-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        
         .coach-avatar {
-            width: 80px;
-            height: 80px;
+            width: 90px;
+            height: 90px;
             border-radius: 50%;
             object-fit: cover;
             border: 3px solid #f59e0b;
             box-shadow: 0 0 0 3px rgba(245,158,11,0.2);
             margin-bottom: 12px;
+            transition: transform 0.3s;
         }
-
+        
+        .coach-card:hover .coach-avatar {
+            transform: scale(1.05);
+        }
+        
         .coach-name {
-            font-size: 1.1rem;
+            font-family: 'Montserrat', 'Poppins', sans-serif;
             font-weight: 800;
+            font-size: 1.2rem;
             color: #fff;
-            margin-bottom: 4px;
+            margin-bottom: 8px;
         }
-
+        
         .avail-pill {
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            padding: 3px 12px;
+            padding: 4px 14px;
             border-radius: 50px;
-            font-size: 0.72rem;
+            font-size: 0.7rem;
+            font-family: 'Montserrat', sans-serif;
             font-weight: 700;
         }
-
+        
         .card-body {
-            padding: 18px 22px 22px;
+            padding: 1.3rem;
         }
-
+        
         .coach-meta {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            margin-bottom: 18px;
+            gap: 10px;
+            margin-bottom: 20px;
         }
-
+        
         .meta-row {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             font-size: 0.85rem;
             color: #475569;
+            font-family: 'DM Sans', sans-serif;
         }
-
-        .meta-row i { color: #2b7e3a; width: 14px; text-align: center; font-size: 0.8rem; }
-        .meta-row strong { color: #1e2a2e; }
-
+        
+        .meta-row i { 
+            color: #2b7e3a; 
+            width: 18px; 
+            text-align: center; 
+            font-size: 0.85rem;
+        }
+        .meta-row strong { 
+            color: #1e2a2e;
+            font-weight: 700;
+        }
+        
         .card-actions {
             display: flex;
-            gap: 10px;
+            gap: 12px;
         }
-
+        
         .btn-view {
             flex: 1;
             padding: 10px;
-            border-radius: 12px;
+            border-radius: 60px;
             border: 1.5px solid #2b7e3a;
-            background: #fff;
+            background: rgba(255,255,255,0.9);
             color: #2b7e3a;
             font-size: 0.85rem;
+            font-family: 'Montserrat', 'Inter', sans-serif;
             font-weight: 700;
             cursor: pointer;
             text-decoration: none;
             text-align: center;
-            transition: all 0.2s;
-            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
-
+        
+        .btn-view::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(43,126,58,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .btn-view:hover::before { left: 100%; }
         .btn-view:hover {
-            background: #eaf5e6;
+            background: #2b7e3a;
+            color: white;
+            transform: translateY(-2px);
         }
-
+        
         .btn-book {
             flex: 1;
             padding: 10px;
-            border-radius: 12px;
+            border-radius: 60px;
             border: none;
-            background: linear-gradient(135deg, #2b7e3a, #1b5e2a);
+            background: linear-gradient(135deg, #2b7e3a, #1f5a2a);
             color: #fff;
             font-size: 0.85rem;
+            font-family: 'Montserrat', 'Inter', sans-serif;
             font-weight: 700;
             cursor: pointer;
             text-decoration: none;
             text-align: center;
-            transition: all 0.2s;
-            font-family: 'Inter', sans-serif;
+            transition: all 0.4s ease;
+            box-shadow: 0 4px 12px rgba(43,126,58,0.2);
+            position: relative;
+            overflow: hidden;
         }
-
-        .btn-book:hover { opacity: 0.88; }
-
+        
+        .btn-book::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .btn-book:hover::before { left: 100%; }
+        .btn-book:hover { 
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(43,126,58,0.4);
+        }
+        
         .btn-book.disabled {
             background: #e2e8f0;
             color: #94a3b8;
             cursor: not-allowed;
             pointer-events: none;
+            box-shadow: none;
         }
-
-        /* Empty state */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #94a3b8;
+        
+        /* Footer */
+        .footer { 
+            background: #0f1f12; 
+            color: #cbd5c0; 
+            padding: 3rem 5% 1.5rem; 
+            margin-top: 4rem;
+            border-radius: 32px 32px 0 0;
         }
-
-        .empty-state i { font-size: 3rem; margin-bottom: 16px; display: block; }
-
-        @media (max-width: 600px) {
+        .footer-container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 2rem; 
+            margin-bottom: 2rem; 
+        }
+        .footer-col h3, .footer-col h4 { 
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: #2b7e3a; 
+            margin-bottom: 1rem;
+        }
+        .footer-col p { 
+            margin-bottom: 0.5rem; 
+            display: flex; 
+            align-items: center; 
+            gap: 0.6rem; 
+            font-size: 0.9rem; 
+        }
+        .footer-col a { 
+            color: #cbd5c0; 
+            text-decoration: none; 
+            display: block; 
+            margin-bottom: 0.6rem; 
+            transition: 0.2s; 
+            font-size: 0.9rem; 
+        }
+        .footer-col a:hover { 
+            color: #2b7e3a; 
+            padding-left: 5px; 
+            transform: translateX(3px);
+        }
+        .social-icons { 
+            display: flex; 
+            gap: 1rem; 
+            margin-top: 1rem; 
+        }
+        .social-icons a { 
+            background: #2c4a2e; 
+            width: 36px; 
+            height: 36px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-radius: 50%; 
+            transition: all 0.3s ease; 
+            color: #cbd5c0; 
+            text-decoration: none;
+        }
+        .social-icons a:hover { 
+            background: #2b7e3a; 
+            transform: translateY(-5px) rotate(360deg);
+        }
+        .footer-bottom { 
+            text-align: center; 
+            border-top: 1px solid #2c4a2e; 
+            padding-top: 1.5rem; 
+            font-size: 0.8rem; 
+        }
+        
+        @media (max-width: 768px) {
+            body { padding: 1rem; }
             .coaches-grid { grid-template-columns: 1fr; }
             .page-header h1 { font-size: 1.5rem; }
-            .navbar { flex-direction: column; align-items: flex-start; }
+            .navbar { flex-direction: column; border-radius: 28px; }
+            .footer-container { text-align: center; }
+            .footer-col p { justify-content: center; }
+            .social-icons { justify-content: center; }
         }
     </style>
 </head>
 <body>
 <div class="container">
-
     <!-- Navbar -->
     <div class="navbar">
         <a href="dashboard.php" class="logo-area">
@@ -245,21 +542,21 @@ $avail_map = [
             <a href="../Payment_Module/wallet.php"><i class="fas fa-wallet"></i> Wallet</a>
             <a href="coaches.php" class="active"><i class="fas fa-user-tie"></i> Coaches</a>
             <span class="user-greeting">🏸 <?php echo htmlspecialchars($user['name'] ?? 'Player'); ?></span>
-            <a href="edit_profile.php" style="color:#2b7e3a;font-size:0.85rem;"><i class="fas fa-user-edit"></i> Profile</a>
+            <a href="edit_profile.php" style="color:#2b7e3a;font-size:0.85rem; background:#eaf5e6; padding:0.4rem 1rem; border-radius:50px;"><i class="fas fa-user-edit"></i> Profile</a>
             <a href="logout.php" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
     </div>
-
+    
     <!-- Header -->
     <div class="page-header">
         <h1><i class="fas fa-user-tie" style="color:#2b7e3a;"></i> Our Coaches</h1>
         <p>Browse our professional coaches and book a training session</p>
     </div>
-
+    
     <!-- Grid -->
     <?php if (empty($coaches)): ?>
-        <div class="empty-state">
-            <i class="fas fa-user-slash"></i>
+        <div class="empty-state" style="text-align:center; padding:60px; background:rgba(255,255,255,0.7); backdrop-filter:blur(10px); border-radius:28px;">
+            <i class="fas fa-user-slash" style="font-size:3rem; color:#cbd5c0; margin-bottom:1rem; display:block;"></i>
             No coaches available at the moment.
         </div>
     <?php else: ?>
@@ -282,7 +579,6 @@ $avail_map = [
                         ● <?php echo htmlspecialchars($avail); ?>
                     </span>
                 </div>
-
                 <div class="card-body">
                     <div class="coach-meta">
                         <?php if ($c['specialty']): ?>
@@ -306,7 +602,6 @@ $avail_map = [
                         </div>
                         <?php endif; ?>
                     </div>
-
                     <div class="card-actions">
                         <a href="view_coach.php?id=<?php echo $c['id']; ?>" class="btn-view">
                             <i class="fas fa-user"></i> View Profile
@@ -326,7 +621,26 @@ $avail_map = [
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
-
 </div>
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-col"><h3>Smash Arena</h3>
+            <p><i class="fas fa-map-marker-alt"></i> 123 Jalan Badminton, Kuala Lumpur</p>
+            <p><i class="fas fa-phone-alt"></i> +603-1234 5678</p>
+            <p><i class="fas fa-envelope"></i> smasharenabadminton@gmail.com</p>
+            <div class="social-icons">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-whatsapp"></i></a>
+            </div>
+        </div>
+        <div class="footer-col"><h4>Quick Links</h4><a href="dashboard.php">Find a Court</a><a href="my_bookings.php">My Bookings</a><a href="../Payment_Module/wallet.php">Wallet</a></div>
+        <div class="footer-col"><h4>Support</h4><a href="faq.php">FAQs</a><a href="cancellation_policy.php">Cancellation Policy</a><a href="privacy_policy.php">Privacy Policy</a><a href="terms_of_use.php">Terms of Use</a><a href="contact_us.php">Contact Us</a></div>
+        <div class="footer-col"><h4>Operating Hours</h4><p><i class="fas fa-clock"></i> Monday - Sunday: <?php echo getOperatingHours(); ?></p><p><i class="fas fa-tag"></i> 8am - <?php echo date('h:i A', strtotime(getSetting('peak_start', '15:00'))); ?>: RM <?php echo getSetting('off_peak_price', '10'); ?>/hour</p><p><i class="fas fa-tag"></i> <?php echo date('h:i A', strtotime(getSetting('peak_start', '15:00'))); ?> - <?php echo date('h:i A', strtotime(getSetting('close_time', '01:00'))); ?>: RM <?php echo getSetting('peak_price', '15'); ?>/hour</p><p><i class="fas fa-calendar-alt"></i> Open daily including public holidays</p></div>
+    </div>
+    <div class="footer-bottom"><p>&copy; 2025 Smash Arena – Your Game, Our Court. All rights reserved.</p></div>
+</footer>
 </body>
 </html>
