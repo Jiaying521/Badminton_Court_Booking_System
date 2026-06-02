@@ -1,0 +1,99 @@
+/* ── Filter Form ── */
+.filter-form {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    background: var(--white);
+    padding: 16px 20px;
+    border-radius: 20px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    margin-bottom: 28px;
+}
+
+.filter-form label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-form input[type="date"] {
+    padding: 8px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'Outfit', sans-serif;
+    color: var(--text-dark);
+    background: var(--bg-light);
+    outline: none;
+    transition: border-color 0.25s;
+}
+
+.filter-form input[type="date"]:focus {
+    border-color: var(--primary);
+    background: var(--white);
+    box-shadow: 0 0 0 3px rgba(245,158,11,0.12);
+}
+
+.filter-form button {
+    padding: 9px 22px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: var(--navy);
+    border: none;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+    transition: all 0.25s;
+    box-shadow: 0 4px 12px rgba(245,158,11,0.3);
+}
+
+.filter-form button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(245,158,11,0.45);
+}
+
+.btn-export {
+    padding: 9px 22px;
+    background: var(--white);
+    color: #16a34a;
+    border: 1.5px solid #16a34a;
+    border-radius: 50px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+    transition: all 0.25s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-export:hover {
+    background: #16a34a;
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(22,163,74,0.3);
+}
+
+/* ── Empty State Row ── */
+.data-table .empty-row td {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--text-muted);
+    font-size: 14px;
+    font-style: italic;
+    background: var(--bg-light);
+}
+
+.data-table .empty-row td i {
+    display: block;
+    font-size: 28px;
+    color: var(--border);
+    margin-bottom: 8px;
+}
