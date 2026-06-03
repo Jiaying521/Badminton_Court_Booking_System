@@ -158,10 +158,57 @@ while($r = mysqli_fetch_assoc($q_by_status)) $status_rows[] = $r;
         <label>From: <input type="date" name="start_date" value="<?php echo $start_date; ?>" required></label>
         <label>To: <input type="date" name="end_date" value="<?php echo $end_date; ?>" required></label>
         <button type="submit"><i class="fas fa-search"></i> Generate</button>
-        <a href="export_report.php?start_date=<?php echo $start_date; ?>&end_date=<?php echo $end_date; ?>" class="btn-export">
+        <button type="button" class="btn-export" onclick="openExportModal()">
             <i class="fas fa-file-pdf"></i> Export PDF
-        </a>
+        </button>
     </form>
+
+    <!-- Export PDF Modal -->
+    <div id="exportModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.45); z-index:2000; align-items:center; justify-content:center; padding:20px;">
+        <div style="background:#fff; border-radius:12px; padding:10px; width:100%; max-width:460px; box-shadow:0 20px 60px rgba(0,0,0,0.15);">
+
+            <div class="modal-header">
+                <h2><i class="fas fa-file-pdf"></i> Export Report</h2>
+                <button type="button" class="modal-close" onclick="closeExportModal()">&times;</button>
+            </div>
+
+            <div style="padding: 0 10px 10px;">
+
+                <p class="export-section-label">1. Select Report Period</p>
+                <div class="export-radio-group">
+                    <label class="export-radio">
+                        <input type="radio" name="exportScope" value="current" checked onchange="toggleCustomDate(false)">
+                        Current Month (<?php echo date('M Y'); ?>)
+                    </label>
+                    <label class="export-radio">
+                        <input type="radio" name="exportScope" value="custom" onchange="toggleCustomDate(true)">
+                        Custom Date Range
+                    </label>
+                </div>
+
+                <div id="customDateBox" class="export-custom-dates" style="display:none;">
+                    <label>From
+                        <input type="date" id="exportStart" value="<?php echo $start_date; ?>">
+                    </label>
+                    <label>To
+                        <input type="date" id="exportEnd" value="<?php echo $end_date; ?>">
+                    </label>
+                </div>
+
+                <p class="export-section-label">2. Choose Action</p>
+                <div class="modal-actions">
+                    <button type="button" class="btn-modal-cancel" onclick="closeExportModal()">Cancel</button>
+                    <button type="button" class="btn-modal-print" onclick="runExport('print')">
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                    <button type="button" class="btn-modal-save" onclick="runExport('save')">
+                        <i class="fas fa-download"></i> Save PDF
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
 
     <!-- Daily Revenue Chart -->
     <div class="data-section" style="margin-bottom: 22px;">
@@ -275,40 +322,12 @@ while($r = mysqli_fetch_assoc($q_by_status)) $status_rows[] = $r;
 
 </main>
 
+<!-- Pass PHP data to JS -->
 <script>
-new Chart(document.getElementById('dailyChart'), {
-    type: 'line',
-    data: {
-        labels: <?php echo json_encode($chart_labels); ?>,
-        datasets: [{
-            label: 'Daily Revenue (RM)',
-            data: <?php echo json_encode($chart_values); ?>,
-            borderColor: '#f59e0b',
-            backgroundColor: 'rgba(245,158,11,0.08)',
-            borderWidth: 2,
-            pointBackgroundColor: '#f59e0b',
-            pointRadius: 4,
-            tension: 0.3,
-            fill: true
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { display: false }
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    callback: val => 'RM ' + val.toFixed(2)
-                }
-            }
-        }
-    }
-});
+    const chartLabels = <?php echo json_encode($chart_labels); ?>;
+    const chartValues = <?php echo json_encode($chart_values); ?>;
 </script>
+<script src="RevenueReport.js"></script>
 
 </body>
 </html>

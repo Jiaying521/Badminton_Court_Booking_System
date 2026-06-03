@@ -14,6 +14,9 @@
     // Database Connection
     $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
 
+    // Include notification helper
+    require_once __DIR__ . '/../api/notification_helper.php';
+
     // Get POST data
     $user_id      = (int)$_POST['user_id'];
     $court_id     = (int)$_POST['court_id'];
@@ -74,6 +77,37 @@
             '$session_type', $total_price, 'Confirmed', '$notes'
         )
     ");
+
+    // Get the newly inserted booking ID
+    $new_booking_id = mysqli_insert_id($conn);
+
+    // If a coach was assigned, send notification + email
+    if ($coach_id > 0) {
+
+        // Fetch coach's admin_id and name (notifications use admin id as recipient)
+        $coach_query = mysqli_query($conn, "SELECT admin_id, name FROM coaches WHERE id = $coach_id");
+        $coach_data  = mysqli_fetch_assoc($coach_query);
+
+        if ($coach_data) {
+            $coach_admin_id = (int)$coach_data['admin_id'];
+            $coach_name     = $coach_data['name'];
+
+            // In-app notification
+            createNotification(
+                $conn,
+                'Coach',
+                'New Session Assigned',
+                "You have a new coaching session on $booking_date at $start_time.",
+                'booking',
+                $new_booking_id,
+                'booking',
+                $coach_admin_id
+            );
+
+            // Email notification
+            sendCoachBookingEmail($conn, $new_booking_id);
+        }
+    }
 
     header("Location: ManageBookings.php?added=1");
     exit();

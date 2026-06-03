@@ -16,6 +16,47 @@
     header("Pragma: no-cache");
     header("Expires: 0");
 
+    // Handle bulk action
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['ids'])) {
+        $ids    = array_filter(array_map('intval', explode(',', $_POST['ids'])));
+        $action = $_POST['action'];
+
+        if (!empty($ids)) {
+            $conn_bulk = mysqli_connect("localhost", "root", "", "badminton_hub");
+            $ids_str   = implode(',', $ids);
+            $role_bulk = $_SESSION['role'];
+
+            if ($role_bulk === 'Coach') {
+                // Coach: can only mark complete or decline their own bookings
+                $my_coach_q   = mysqli_query($conn_bulk, "SELECT id FROM coaches WHERE admin_id = " . (int)$_SESSION['id']);
+                $my_coach_row = mysqli_fetch_assoc($my_coach_q);
+                $my_cid       = $my_coach_row ? (int)$my_coach_row['id'] : 0;
+
+                if ($action === 'confirm') {
+                    mysqli_query($conn_bulk, "UPDATE bookings SET status='Completed' WHERE id IN ($ids_str) AND coach_id = $my_cid");
+                } elseif ($action === 'cancel') {
+                    mysqli_query($conn_bulk, "UPDATE bookings SET status='Cancelled' WHERE id IN ($ids_str) AND coach_id = $my_cid");
+                }
+
+            } elseif (in_array($role_bulk, ['Superadmin', 'Admin'])) {
+                if ($action === 'confirm') {
+                    mysqli_query($conn_bulk, "UPDATE bookings SET status='Confirmed' WHERE id IN ($ids_str)");
+                } elseif ($action === 'cancel') {
+                    mysqli_query($conn_bulk, "UPDATE bookings SET status='Cancelled' WHERE id IN ($ids_str)");
+                } elseif ($action === 'complete') {
+                    mysqli_query($conn_bulk, "UPDATE bookings SET status='Completed' WHERE id IN ($ids_str)");
+                } elseif ($action === 'delete') {
+                    mysqli_query($conn_bulk, "DELETE FROM bookings WHERE id IN ($ids_str)");
+                }
+            }
+
+            mysqli_close($conn_bulk);
+        }
+
+        header("Location: ManageBookings.php?updated=1");
+        exit();
+    }
+
     // Database Connection
     $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
 
@@ -180,6 +221,9 @@
                     <button class="btn-filter-toggle" onclick="toggleBookingFilter()">
                         <i class="fas fa-filter"></i> Filter
                     </button>
+                    <button class="btn-bulk-toggle" id="bulkToggleBtn" onclick="toggleBulkMode()">
+                        <i class="fas fa-check-square"></i> <span id="bulkToggleText">Select</span>
+                    </button>
                     <?php if($role !== 'Coach'): ?>
                     <a href="#" class="btn-add-account" onclick="openAddModal(); return false;" style="text-decoration:none;">
                         <i class="fas fa-plus"></i> Add Booking
@@ -267,6 +311,26 @@
                     This time slot is already booked. Please choose another time.
                 </div>
             <?php endif; ?>
+            
+            <!-- Bulk Action Bar -->
+            <div class="bulk-action-bar" id="bulkActionBar">
+                <span id="bulkCount">0 selected</span>
+                <div class="bulk-action-btns <?php echo $role === 'Coach' ? 'bulk-btns-coach' : ''; ?>">
+                    <?php if($role === 'Coach'): ?>
+                        <button class="bulk-btn bulk-confirm" onclick="submitBulk('confirm')"><i class="fas fa-check"></i> Mark as Complete</button>
+                        <button class="bulk-btn bulk-delete"  onclick="submitBulk('cancel')"><i class="fas fa-times"></i> Decline</button>
+                    <?php else: ?>
+                        <button class="bulk-btn bulk-confirm"  onclick="submitBulk('confirm')"><i class="fas fa-check"></i> Confirm</button>
+                        <button class="bulk-btn bulk-cancel"   onclick="submitBulk('cancel')"><i class="fas fa-times"></i> Cancel</button>
+                        <button class="bulk-btn bulk-complete" onclick="submitBulk('complete')"><i class="fas fa-flag-checkered"></i> Complete</button>
+                        <button class="bulk-btn bulk-delete"   onclick="submitBulk('delete')"><i class="fas fa-trash"></i> Delete</button>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <form id="bulkForm" method="POST" action="ManageBookings.php" style="display:none;">
+                <input type="hidden" name="action" id="bulkAction">
+                <input type="hidden" name="ids"    id="bulkIds">
+            </form>
 
             <table class="data-table">
                 <thead>
@@ -280,7 +344,7 @@
                     ];
                     ?>
                     <tr>
-                        <th><?php echo bookingSortLink('ID',           'id',           $sort_col, $sort_dir, $next_dir, $extra); ?></th>
+                        <th class="bulk-col"></th>
                         <th><?php echo bookingSortLink('Player Name',  'name',         $sort_col, $sort_dir, $next_dir, $extra); ?></th>
                         <th><?php echo bookingSortLink('Court Name',   'court_name',   $sort_col, $sort_dir, $next_dir, $extra); ?></th>
                         <th><?php echo bookingSortLink('Booking Date', 'booking_date', $sort_col, $sort_dir, $next_dir, $extra); ?></th>
@@ -295,9 +359,10 @@
 
                     <!-- Main row — click to expand details -->
                     <tr id="booking-row-<?php echo $row['id']; ?>"
-                        class="main-row<?php echo ($highlight_id === (int)$row['id']) ? ' booking-highlight' : ''; ?>"
-                        onclick="toggleDetails(<?php echo $row['id']; ?>, this)">
-                        <td><?php echo $row['id']; ?> <span class="expand-icon">▼</span></td>
+                        class="main-row<?php echo ($highlight_id === (int)$row['id']) ? ' booking-highlight' : ''; ?>">
+                        <td class="bulk-col" onclick="event.stopPropagation()">
+                            <input type="checkbox" class="row-check" value="<?php echo $row['id']; ?>" onchange="updateBulkCount()">
+                        </td>
                         <td><?php echo htmlspecialchars($row['name']); ?></td>
                         <td><?php echo htmlspecialchars($row['court_name']); ?></td>
                         <td><?php echo date("d-m-Y", strtotime($row['booking_date'])); ?></td>
@@ -416,20 +481,20 @@
                                 <?php if($role === 'Coach'): ?>
 
                                     <?php if($row['status'] === 'Confirmed'): ?>
-                                    <!-- Mark as Completed (only for Confirmed) -->
-                                    <a href="UpdateBookingsStatus.php?id=<?php echo $row['id']; ?>&status=Completed"
-                                       class="btn-edit-booking"
-                                       onclick="event.stopPropagation(); return confirm('Mark this session as Completed?');"
-                                       style="background:#10b981; color:#fff; border:none; text-decoration:none; display:inline-block;">
-                                        <i class="fas fa-check"></i> Mark as Completed
-                                    </a>
-                                    <!-- Decline a Confirmed booking -->
-                                    <a href="UpdateBookingsStatus.php?id=<?php echo $row['id']; ?>&status=Cancelled"
-                                       class="btn-edit-booking"
-                                       onclick="event.stopPropagation(); return confirm('Are you sure you want to decline this session?');"
-                                       style="background:#ef4444; color:#fff; border:none; text-decoration:none; display:inline-block; margin-top:8px;">
-                                        <i class="fas fa-times"></i> Decline Session
-                                    </a>
+                                    <div style="display:flex; flex-direction:column; gap:8px; flex-shrink:0;">
+                                        <!-- Mark as Completed -->
+                                        <a href="UpdateBookingsStatus.php?id=<?php echo $row['id']; ?>&status=Completed"
+                                           class="btn-coach-action btn-coach-complete"
+                                           onclick="event.stopPropagation(); return confirm('Mark this session as Completed?');">
+                                            <i class="fas fa-check"></i> Mark as Completed
+                                        </a>
+                                        <!-- Decline -->
+                                        <a href="UpdateBookingsStatus.php?id=<?php echo $row['id']; ?>&status=Cancelled"
+                                           class="btn-coach-action btn-coach-decline"
+                                           onclick="event.stopPropagation(); return confirm('Decline this session?');">
+                                            <i class="fas fa-times"></i> Decline Session
+                                        </a>
+                                    </div>
                                     <?php endif; ?>
 
                                 <?php endif; ?>
@@ -443,6 +508,10 @@
                 </tbody>
             </table>
         </div>
+
+        <button id="scrollTopBtn" onclick="window.scrollTo({top:0, behavior:'smooth'})">
+            <i class="fas fa-chevron-up"></i>
+        </button>
     </main>
 
     <!-- Edit Booking Modal -->

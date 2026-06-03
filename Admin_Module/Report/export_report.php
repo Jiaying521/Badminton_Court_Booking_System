@@ -93,5 +93,8 @@ while($r = mysqli_fetch_assoc($res)) {
     $pdf->Ln();
 }
 
-$pdf->Output('D', 'revenue_report_'.$s.'_to_'.$e.'.pdf');
+// Mode: 'print' = open in browser tab (for printing)
+//       'save'  = download as PDF file (default)
+$mode = isset($_GET['mode']) && $_GET['mode'] === 'print' ? 'I' : 'D'; // I = Show in browser, D = Download
+$pdf->Output($mode, 'revenue_report_'.$s.'_to_'.$e.'.pdf');
 ?>
