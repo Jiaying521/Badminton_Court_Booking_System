@@ -501,7 +501,60 @@ body {
     grid-template-columns: 1fr 340px;
     gap: 22px;
     margin-top: 8px;
-    align-items: start;
+    align-items: stretch;
+}
+
+.charts-row {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 22px;
+    margin-top: 22px;
+    align-items: stretch;
+}
+
+.peak-row {
+    margin-top: 22px;
+}
+
+/* Chart sections use flexbox so chart fills remaining height */
+.data-section-chart {
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-fill {
+    flex: 1;
+    min-height: 300px;
+    position: relative;
+}
+
+.chart-fill-sm {
+    min-height: 260px;
+}
+
+.chart-year {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-left: 6px;
+}
+
+/* Calendar dot — position absolute close to the date number */
+.flatpickr-day {
+    position: relative !important;
+}
+
+.booking-dot {
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 5px;
+    height: 5px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: block;
+    pointer-events: none;
 }
 
 .data-section, .calendar-section {
@@ -601,7 +654,31 @@ body {
 }
 
 /* --- Appointment Cards --- */
-#mini-appt-list { margin-top: 10px; }
+#mini-appt-list {
+    height: 160px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+    margin-top: 10px;
+}
+
+.appt-empty {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-style: italic;
+    gap: 6px;
+}
+
+.appt-empty i {
+    font-size: 26px;
+    color: var(--border);
+}
 
 .appt-card {
     background: #fafafa;

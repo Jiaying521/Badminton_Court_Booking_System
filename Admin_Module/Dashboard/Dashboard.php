@@ -124,13 +124,9 @@ if (isset($_POST['update_initial_password'])) {
 
 /* --- Dashboard Statistics --- */
 
-/* Count total superadmins */
-$query_super = mysqli_query($db, "SELECT COUNT(*) AS total FROM admins WHERE role = 'Superadmin'");
-$total_superadmins = mysqli_fetch_assoc($query_super)['total'];
-
-/* Count Total Admins */
-$query_admin = mysqli_query($db, "SELECT COUNT(*) AS total FROM admins WHERE role = 'Admin'");
-$total_admins = mysqli_fetch_assoc($query_admin)['total'];
+/* Count Total Customers */
+$query_customers = mysqli_query($db, "SELECT COUNT(*) AS total FROM users");
+$total_customers = mysqli_fetch_assoc($query_customers)['total'];
 
 /* Count Total Coaches */
 $query_coaches = mysqli_query($db, "SELECT COUNT(*) AS total FROM admins WHERE role = 'Coach'");
@@ -208,6 +204,131 @@ if ($stats_result) {
         }
     }
 }
+
+/* --- Monthly Revenue (Admin/Superadmin only) --- */
+$revenue_data = array_fill(0, 12, 0);
+
+$q_revenue = mysqli_query($db, "
+    SELECT MONTH(b.booking_date) AS month_num,
+           COALESCE(SUM(p.final_amount), 0) AS revenue
+    FROM bookings b
+    LEFT JOIN payments p ON p.booking_id = b.id AND p.payment_status = 'success'
+    WHERE YEAR(b.booking_date) = '$current_year'
+    GROUP BY month_num
+");
+
+if ($q_revenue) {
+    while ($row = mysqli_fetch_assoc($q_revenue)) {
+        $revenue_data[(int)$row['month_num'] - 1] = (float)$row['revenue'];
+    }
+}
+
+/* --- Court Revenue Breakdown (Admin/Superadmin only) --- */
+$court_labels = [];
+$court_revenues = [];
+
+$q_court_rev = mysqli_query($db, "
+    SELECT c.court_name,
+           COALESCE(SUM(p.final_amount), 0) AS revenue
+    FROM bookings b
+    JOIN courts c ON b.court_id = c.id
+    LEFT JOIN payments p ON p.booking_id = b.id AND p.payment_status = 'success'
+    WHERE YEAR(b.booking_date) = '$current_year'
+    GROUP BY c.id, c.court_name
+    HAVING revenue > 0
+    ORDER BY revenue DESC
+");
+
+if ($q_court_rev) {
+    while ($row = mysqli_fetch_assoc($q_court_rev)) {
+        $court_labels[]   = $row['court_name'];
+        $court_revenues[] = (float)$row['revenue'];
+    }
+}
+
+/* --- Business Hours from Settings --- */
+$open_hour  = 8;
+$close_hour = 20;
+
+$q_biz = mysqli_query($db, "SELECT setting_key, setting_value FROM settings WHERE setting_key IN ('open_time','close_time')");
+if ($q_biz) {
+    while ($row = mysqli_fetch_assoc($q_biz)) {
+        if ($row['setting_key'] === 'open_time')  $open_hour  = (int)date('G', strtotime($row['setting_value']));
+        if ($row['setting_key'] === 'close_time') $close_hour = (int)date('G', strtotime($row['setting_value']));
+    }
+}
+
+$biz_hours = $close_hour - $open_hour; // number of slots
+$peak_hours = array_fill(0, $biz_hours, 0);
+$peak_labels = [];
+for ($h = $open_hour; $h < $close_hour; $h++) {
+    $peak_labels[] = date('g A', mktime($h, 0, 0));
+}
+
+/* --- Peak Booking Hours (last 30 days, business hours only) --- */
+$q_peak = mysqli_query($db, "
+    SELECT HOUR(start_time) AS hr, COUNT(*) AS total
+    FROM bookings
+    WHERE booking_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+      AND status != 'Cancelled'
+      AND HOUR(start_time) >= $open_hour
+      AND HOUR(start_time) < $close_hour
+    GROUP BY hr
+    ORDER BY hr
+");
+
+if ($q_peak) {
+    while ($row = mysqli_fetch_assoc($q_peak)) {
+        $idx = (int)$row['hr'] - $open_hour;
+        if ($idx >= 0 && $idx < $biz_hours) $peak_hours[$idx] = (int)$row['total'];
+    }
+}
+
+/* --- Session Type Distribution (last 30 days) --- */
+$session_labels   = [];
+$session_counts   = [];
+
+$q_session = mysqli_query($db, "
+    SELECT
+        CASE
+            WHEN session_type IS NULL OR TRIM(session_type) = '' THEN 'Unknown Booking'
+            ELSE session_type
+        END AS session_type,
+        COUNT(*) AS total
+    FROM bookings
+    WHERE booking_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+      AND status != 'Cancelled'
+    GROUP BY session_type
+    ORDER BY total DESC
+");
+
+if ($q_session) {
+    while ($row = mysqli_fetch_assoc($q_session)) {
+        $session_labels[] = $row['session_type'];
+        $session_counts[] = (int)$row['total'];
+    }
+}
+
+/* --- Booking Dates for Calendar Dots --- */
+$booking_dates = [];
+
+$dot_join   = $coach_join;
+$dot_filter = $coach_filter;
+
+$q_dates = mysqli_query($db, "
+    SELECT DISTINCT b.booking_date
+    FROM bookings b
+    $dot_join
+    WHERE b.booking_date BETWEEN DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+                             AND DATE_ADD(CURDATE(), INTERVAL 6 MONTH)
+    $dot_filter
+");
+
+if ($q_dates) {
+    while ($row = mysqli_fetch_assoc($q_dates)) {
+        $booking_dates[] = $row['booking_date'];
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -254,11 +375,11 @@ if ($stats_result) {
 
         <!-- Statistics Cards Grid -->
         <section class="stats-grid">
-            <?php if ($role === 'Superadmin'): ?>
-                <a href="../Superadmin/AdminManagement.php" class="stat-link">
+            <?php if ($role === 'Superadmin' || $role === 'Admin'): ?>
+                <a href="../Customers_Management/ManageCustomers.php" class="stat-link">
                     <div class="stat-box">
-                        <div class="stat-icon blue"><i class="fas fa-user-shield"></i></div>
-                        <div class="stat-info"><h3>Total Admins</h3><p><?php echo $total_admins; ?></p></div>
+                        <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+                        <div class="stat-info"><h3>Total Customers</h3><p><?php echo $total_customers; ?></p></div>
                     </div>
                 </a>
             <?php endif; ?>
@@ -285,12 +406,12 @@ if ($stats_result) {
 
         <!-- Data Visualization and Shortcuts Layout -->
         <div class="dashboard-layout">
-            
+
             <!-- Left: Booking Statistics -->
-            <div class="data-section">
+            <div class="data-section data-section-chart">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h2>Booking Statistics</h2>
-                    <select id="statusFilter" onchange="filterStats()" style="padding: 5px; border-radius: 5px;">
+                    <select id="statusFilter" onchange="filterStats()">
                         <option value="All">Show All</option>
                         <option value="Pending">Pending</option>
                         <option value="Confirmed">Confirmed</option>
@@ -298,7 +419,7 @@ if ($stats_result) {
                         <option value="Cancelled">Cancelled</option>
                     </select>
                 </div>
-                <div style="height: 300px; width: 100%;">
+                <div class="chart-fill">
                     <canvas id="myChart"></canvas>
                 </div>
             </div>
@@ -312,16 +433,62 @@ if ($stats_result) {
                 <!-- Show calendar-->
                 <div id="inline-calendar"></div>
 
-                <div id="appointment-list" style="padding:15px;">
-                    <!-- Scroll wrapper: only this area scrolls when there are many bookings -->
-                    <div id="mini-appt-list" style="max-height:260px; overflow-y:auto; padding-right:4px;">
-                        <p style="text-align:center; color:#999; font-size:13px;">Select a date to view bookings</p>
+                <div id="appointment-list" style="padding: 10px 15px 15px;">
+                    <div id="mini-appt-list">
+                        <div class="appt-empty">
+                            <i class="fas fa-calendar-xmark"></i>
+                            Select a date to view bookings
+                        </div>
                     </div>
 
                     <a href="../Bookings_Management/ManageBookings.php" id="view-all-btn" class="view-all-btn" style="display:none;">View All Bookings</a>
                 </div>
-                
+
             </div>
+
+        </div>
+
+        <!-- Second Row: Revenue + Court Revenue (Admin & Superadmin only) -->
+        <?php if ($role === 'Superadmin' || $role === 'Admin'): ?>
+        <div class="charts-row">
+
+            <div class="data-section data-section-chart">
+                <h2>Monthly Revenue <span class="chart-year"><?php echo $current_year; ?></span></h2>
+                <div class="chart-fill">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+
+            <div class="data-section data-section-chart">
+                <h2>Revenue by Court <span class="chart-year"><?php echo $current_year; ?></span></h2>
+                <div class="chart-fill chart-fill-sm">
+                    <canvas id="courtRevenueChart"></canvas>
+                </div>
+            </div>
+
+        </div>
+        <?php endif; ?>
+
+        <!-- Row 3: Peak Booking Hours + Session Type (Admin & Superadmin only) -->
+        <?php if ($role === 'Superadmin' || $role === 'Admin'): ?>
+        <div class="charts-row">
+
+            <div class="data-section data-section-chart">
+                <h2>Peak Booking Hours <span class="chart-year">Last 30 Days</span></h2>
+                <div class="chart-fill chart-fill-sm">
+                    <canvas id="peakChart"></canvas>
+                </div>
+            </div>
+
+            <div class="data-section data-section-chart">
+                <h2>Session Types <span class="chart-year">Last 30 Days</span></h2>
+                <div class="chart-fill chart-fill-sm">
+                    <canvas id="sessionChart"></canvas>
+                </div>
+            </div>
+
+        </div>
+        <?php endif; ?>
 
     </main>
 
@@ -357,11 +524,26 @@ if ($stats_result) {
     <!-- Passing PHP arrays to JavaScript -->
     <script>
         const chartData = {
-            pending: <?php echo json_encode($pending_data); ?>,
+            pending:   <?php echo json_encode($pending_data); ?>,
             confirmed: <?php echo json_encode($confirmed_data); ?>,
             completed: <?php echo json_encode($completed_data); ?>,
             cancelled: <?php echo json_encode($cancelled_data); ?>
         };
+
+        const extraChartData = {
+            revenue:       <?php echo json_encode($revenue_data); ?>,
+            courtLabels:   <?php echo json_encode($court_labels); ?>,
+            courtRevenues: <?php echo json_encode($court_revenues); ?>
+        };
+
+        const bookingDates = <?php echo json_encode($booking_dates); ?>;
+
+        const peakHours  = <?php echo json_encode($peak_hours); ?>;
+        const peakLabels = <?php echo json_encode($peak_labels); ?>;
+        const peakOpen   = <?php echo $open_hour; ?>;
+
+        const sessionLabels = <?php echo json_encode($session_labels); ?>;
+        const sessionCounts = <?php echo json_encode($session_counts); ?>;
     </script>
 
     <!-- Dashboard Scripts -->
