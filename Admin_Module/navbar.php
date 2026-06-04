@@ -10,6 +10,8 @@ if (!isset($base_path)) {
 }
 ?>
 
+<link rel="stylesheet" href="<?php echo $base_path; ?>navbar.css">
+
 <nav class="nav-bar">
     <div class="nav-left">
         <button id="menu-toggle" class="menu-toggle">☰</button>

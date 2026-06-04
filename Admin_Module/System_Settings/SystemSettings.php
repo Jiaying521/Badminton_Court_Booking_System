@@ -357,7 +357,7 @@ $vouchers = mysqli_query($conn, "SELECT * FROM voucher ORDER BY points_required 
                         </div>
 
                         <div class="settings-field">
-                            <label>Cancellation Notice<br><span class="label-hint">(hours before booking)</span></label>
+                            <label>Cancellation Notice<br>(hours before booking)</label>
                             <input type="number" min="0" name="cancellation_hours" class="form-control"
                                    value="<?php echo htmlspecialchars($settings['cancellation_hours'] ?? '2'); ?>" required>
                         </div>
