@@ -1,53 +1,42 @@
 ﻿<?php
-// ============================================================
-//  SystemSettings.php
-//  Purpose: Allows Superadmin to manage business hours,
-//           closed days, and promo codes.
-// ============================================================
+/* SystemSettings.php — Superadmin/Admin manages business hours, closed days, promo codes, vouchers, pricing & contact info. */
 
-// ---------- 1. Start Session (must be at the very top) ----------
+/* Start session (must be at the very top) */
 session_start();
 
-// ---------- 2. Access Control ----------
+/* Access control */
 if (!isset($_SESSION['username']) || !in_array($_SESSION['role'], ['Superadmin', 'Admin'])) {
     header("Location: ../LoginPage.php");
     exit();
 }
 
-// ---------- 3. Disable Browser Caching ----------
+/* Disable browser caching so settings always show fresh values */
 header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Pragma: no-cache");
 header("Expires: 0");
 
-// ---------- 4. Connect to Database ----------
+/* Connect to database */
 $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
-
-
 if (!$conn) {
     die("Database connection failed: " . mysqli_connect_error());
 }
 
-// ---------- 5. Get Logged-in User Info from Session ----------
+/* Logged-in user info from session */
 $username     = $_SESSION['username'];
 $role         = $_SESSION['role'];
 $display_name = $username;
 
-// This page sits at Admin_Module root, so navbar links don't need a prefix.
+/* This page sits at Admin_Module root, so navbar links don't need a prefix. */
 $base_path = '../';
 
-// ---------- 6. Message Variable ----------
-// Used to show a success or error notice after an action.
-$message = "";
+/* Toast queue — every entry is shown as a floating notification at the bottom-left.
+   Each entry is ['text' => string, 'type' => 'success' | 'pending' | 'error']. */
+$toasts = [];
 
 
-// ============================================================
-//  Handle Form Submissions (POST and GET actions)
-// ============================================================
+/* === Handle Form Submissions (POST and GET actions) === */
 
-// ----------------------------------------------------------
-//  Action A: Save Business Hours & Peak Hours
-//  Triggered by: clicking the "Save Hours" button
-// ----------------------------------------------------------
+/* Action A: Save Business Hours & Peak Hours (triggered by "Save Hours" button) */
 if (isset($_POST['save_hours'])) {
 
     // Get the time values from the form. trim() removes extra spaces.
@@ -69,14 +58,11 @@ if (isset($_POST['save_hours'])) {
         end_time   = '" . mysqli_real_escape_string($conn, $close_time) . ":00'
     ");
 
-    $message = "<div class='badge success' style='width:100%;padding:15px;margin-bottom:20px;'>Hours updated successfully!</div>";
+    $toasts[] = ['text' => 'Hours updated successfully!', 'type' => 'success'];
 }
 
 
-// ----------------------------------------------------------
-//  Action B: Add a Closed Day
-//  Triggered by: clicking the "Add" button
-// ----------------------------------------------------------
+/* Action B: Add a Closed Day (triggered by "Add" button) */
 if (isset($_POST['add_closed_day'])) {
 
     $closed_date = mysqli_real_escape_string($conn, $_POST['closed_date']);
@@ -87,19 +73,16 @@ if (isset($_POST['add_closed_day'])) {
 
     if (mysqli_num_rows($check) > 0) {
         // Date already exists — show a warning.
-        $message = "<div class='badge pending' style='width:100%;padding:15px;margin-bottom:20px;'>This date is already marked as closed.</div>";
+        $toasts[] = ['text' => 'This date is already marked as closed.', 'type' => 'pending'];
     } else {
         // Date does not exist — insert a new record.
         mysqli_query($conn, "INSERT INTO closed_days (closed_date, reason) VALUES ('$closed_date', '$reason')");
-        $message = "<div class='badge success' style='width:100%;padding:15px;margin-bottom:20px;'>Closed day added!</div>";
+        $toasts[] = ['text' => 'Closed day added!', 'type' => 'success'];
     }
 }
 
 
-// ----------------------------------------------------------
-//  Action C: Delete a Closed Day
-//  Triggered by: clicking the trash icon (URL has ?delete_closed=ID)
-// ----------------------------------------------------------
+/* Action C: Delete a Closed Day (trash icon, URL has ?delete_closed=ID) */
 if (isset($_GET['delete_closed'])) {
 
     // intval() makes sure the ID is a plain integer — protects against SQL injection.
@@ -112,10 +95,7 @@ if (isset($_GET['delete_closed'])) {
 }
 
 
-// ----------------------------------------------------------
-//  Action D: Add a Promo Code
-//  Triggered by: clicking the "Create Promo Code" button
-// ----------------------------------------------------------
+/* Action D: Add a Promo Code (triggered by "Create Promo Code" button) */
 if (isset($_POST['add_promo'])) {
 
     // strtoupper() converts all letters to uppercase, e.g. save20 becomes SAVE20
@@ -130,20 +110,17 @@ if (isset($_POST['add_promo'])) {
 
     if (mysqli_num_rows($check) > 0) {
         // Already exists — show a warning.
-        $message = "<div class='badge pending' style='width:100%;padding:15px;margin-bottom:20px;'>Promo code already exists!</div>";
+        $toasts[] = ['text' => 'Promo code already exists!', 'type' => 'pending'];
     } else {
         // Does not exist — insert a new record.
         mysqli_query($conn, "INSERT INTO promo_codes (code, discount_type, discount_value, valid_from, valid_until) 
             VALUES ('" . mysqli_real_escape_string($conn, $code) . "', '$discount_type', $discount_value, '$valid_from', '$valid_until')");
-        $message = "<div class='badge success' style='width:100%;padding:15px;margin-bottom:20px;'>Promo code created!</div>";
+        $toasts[] = ['text' => 'Promo code created!', 'type' => 'success'];
     }
 }
 
 
-// ----------------------------------------------------------
-//  Action E: Toggle Promo Code Active / Inactive
-//  Triggered by: clicking the toggle icon (URL has ?toggle_promo=ID&active=0or1)
-// ----------------------------------------------------------
+/* Action E: Toggle Promo Code Active/Inactive (URL has ?toggle_promo=ID&active=0or1) */
 if (isset($_GET['toggle_promo'])) {
 
     $pid        = intval($_GET['toggle_promo']);
@@ -156,10 +133,7 @@ if (isset($_GET['toggle_promo'])) {
 }
 
 
-// ----------------------------------------------------------
-//  Action F: Delete a Promo Code
-//  Triggered by: clicking the trash icon (URL has ?delete_promo=ID)
-// ----------------------------------------------------------
+/* Action F: Delete a Promo Code (trash icon, URL has ?delete_promo=ID) */
 if (isset($_GET['delete_promo'])) {
 
     $pid = intval($_GET['delete_promo']);
@@ -169,9 +143,7 @@ if (isset($_GET['delete_promo'])) {
     exit();
 }
 
-// ----------------------------------------------------------
-//  Action G: Add Voucher
-// ----------------------------------------------------------
+/* Action G: Add Voucher */
 if (isset($_POST['add_voucher'])) {
     $title           = mysqli_real_escape_string($conn, trim($_POST['voucher_title']));
     $discount_amount = floatval($_POST['discount_amount']);
@@ -180,12 +152,10 @@ if (isset($_POST['add_voucher'])) {
 
     mysqli_query($conn, "INSERT INTO voucher (title, discount_amount, points_required, description) 
         VALUES ('$title', $discount_amount, $points_required, '$description')");
-    $message = "<div class='badge success' style='width:100%;padding:15px;margin-bottom:20px;'>Voucher created!</div>";
+    $toasts[] = ['text' => 'Voucher created!', 'type' => 'success'];
 }
 
-// ----------------------------------------------------------
-//  Action H: Delete Voucher
-// ----------------------------------------------------------
+/* Action H: Delete Voucher (blocks delete if any customer has already claimed it) */
 if (isset($_GET['delete_voucher'])) {
     $vid = intval($_GET['delete_voucher']);
 
@@ -205,9 +175,57 @@ if (isset($_GET['delete_voucher'])) {
 }
 
 
-// ============================================================
-//  Read Data from Database (for displaying on the page)
-// ============================================================
+/* Action I: Save Pricing & Cancellation Policy (off_peak_price, peak_price, cancellation_hours, cancellation_fee) */
+if (isset($_POST['save_pricing'])) {
+
+    /* floatval/intval lock the values to numbers so nobody can sneak SQL in */
+    $off_peak_price     = floatval($_POST['off_peak_price']);
+    $peak_price         = floatval($_POST['peak_price']);
+    $cancellation_hours = intval($_POST['cancellation_hours']);
+    $cancellation_fee   = floatval($_POST['cancellation_fee']);
+
+    /* Update each pricing/cancellation row in the settings table */
+    mysqli_query($conn, "UPDATE settings SET setting_value = '$off_peak_price'     WHERE setting_key = 'off_peak_price'");
+    mysqli_query($conn, "UPDATE settings SET setting_value = '$peak_price'         WHERE setting_key = 'peak_price'");
+    mysqli_query($conn, "UPDATE settings SET setting_value = '$cancellation_hours' WHERE setting_key = 'cancellation_hours'");
+    mysqli_query($conn, "UPDATE settings SET setting_value = '$cancellation_fee'   WHERE setting_key = 'cancellation_fee'");
+
+    $toasts[] = ['text' => 'Pricing & cancellation settings updated!', 'type' => 'success'];
+}
+
+
+/* Action J: Save Contact Information (contact_phone, contact_email, contact_whatsapp, address) */
+if (isset($_POST['save_contact'])) {
+
+    /* mysqli_real_escape_string protects against SQL injection on text fields */
+    $contact_phone    = mysqli_real_escape_string($conn, trim($_POST['contact_phone']));
+    $contact_email    = mysqli_real_escape_string($conn, trim($_POST['contact_email']));
+    $contact_whatsapp = mysqli_real_escape_string($conn, trim($_POST['contact_whatsapp']));
+    $address          = mysqli_real_escape_string($conn, trim($_POST['address']));
+
+    mysqli_query($conn, "UPDATE settings SET setting_value = '$contact_phone'    WHERE setting_key = 'contact_phone'");
+    mysqli_query($conn, "UPDATE settings SET setting_value = '$contact_email'    WHERE setting_key = 'contact_email'");
+    mysqli_query($conn, "UPDATE settings SET setting_value = '$contact_whatsapp' WHERE setting_key = 'contact_whatsapp'");
+    mysqli_query($conn, "UPDATE settings SET setting_value = '$address'          WHERE setting_key = 'address'");
+
+    $toasts[] = ['text' => 'Contact information updated!', 'type' => 'success'];
+}
+
+
+/* Pick up redirect-based toasts (after delete/toggle operations) */
+if (isset($_GET['deleted'])) {
+    if ($_GET['deleted'] === 'blocked') {
+        $toasts[] = ['text' => 'Cannot delete: this voucher has already been claimed by customers.', 'type' => 'error'];
+    } else {
+        $toasts[] = ['text' => 'Deleted successfully.', 'type' => 'pending'];
+    }
+}
+if (isset($_GET['updated'])) {
+    $toasts[] = ['text' => 'Updated successfully.', 'type' => 'success'];
+}
+
+
+/* === Read Data from Database (for displaying on the page) === */
 
 // Load all settings into an array so we can use $settings['open_time'] etc.
 $settings     = [];
@@ -257,32 +275,24 @@ $vouchers = mysqli_query($conn, "SELECT * FROM voucher ORDER BY points_required 
             <header class="management-header">
                 <div>
                     <h1>System Settings</h1>
-                    <p>Manage arena business hours, peak pricing, closed days, and promo codes.</p>
+                    <p>Manage how the arena runs day to day, from hours and pricing to promos, vouchers and contact details.</p>
                 </div>
             </header>
 
-            <!-- Action feedback messages (success / error / deleted / updated) -->
-            <?php if ($message !== ""): ?>
-                <?php echo $message; ?>
-            <?php endif; ?>
-
-            <?php if (isset($_GET['deleted'])): ?>
-                <?php if ($_GET['deleted'] === 'blocked'): ?>
-                    <div class="badge error" style="width:100%;padding:15px;margin-bottom:20px;">Cannot delete: this voucher has already been claimed/used by customers.</div>
-                <?php else: ?>
-                    <div class="badge pending" style="width:100%;padding:15px;margin-bottom:20px;">Deleted successfully.</div>
-                <?php endif; ?>
-            <?php endif; ?>
-
-            <?php if (isset($_GET['updated'])): ?>
-                <div class="badge success" style="width:100%;padding:15px;margin-bottom:20px;">Updated successfully.</div>
-            <?php endif; ?>
+            <!-- Quick-jump tab bar: slider glides under the active tab as you scroll/click -->
+            <nav class="settings-tabs" id="settingsTabs">
+                <span class="settings-tab-slider" id="settingsTabSlider"></span>
+                <a href="#sec-hours"   class="settings-tab"><i class="fas fa-clock"></i> Business Hours</a>
+                <a href="#sec-pricing" class="settings-tab"><i class="fas fa-tag"></i> Pricing & Cancellation</a>
+                <a href="#sec-closed"  class="settings-tab"><i class="fas fa-calendar-times"></i> Closed Days</a>
+                <a href="#sec-promo"   class="settings-tab"><i class="fas fa-percent"></i> Promo Codes</a>
+                <a href="#sec-voucher" class="settings-tab"><i class="fas fa-ticket-alt"></i> Vouchers</a>
+                <a href="#sec-contact" class="settings-tab"><i class="fas fa-address-card"></i> Contact Info</a>
+            </nav>
 
 
-            <!-- ======================================================
-                 Section 1: Business Hours & Peak Pricing
-                 ====================================================== -->
-            <div class="settings-card">
+            <!-- Section 1: Business Hours & Peak Pricing -->
+            <div class="settings-card" id="sec-hours">
                 <h3><i class="fas fa-clock"></i> Business Hours & Peak Pricing</h3>
                 <p class="settings-desc">Changes here will apply to all courts automatically.</p>
 
@@ -319,29 +329,109 @@ $vouchers = mysqli_query($conn, "SELECT * FROM voucher ORDER BY points_required 
                     </div>
 
                     <!-- name="save_hours" tells PHP which form was submitted -->
-                    <button type="submit" name="save_hours" class="btn-add-account" style="margin-top:15px;">
+                    <button type="submit" name="save_hours" class="btn-add-account">
                         <i class="fas fa-save"></i> Save Hours
                     </button>
                 </form>
             </div>
 
 
-            <!-- ======================================================
-                 Section 2: Closed Days
-                 ====================================================== -->
-            <div class="settings-card">
+            <!-- Section 1.5: Pricing & Cancellation Policy -->
+            <div class="settings-card" id="sec-pricing">
+                <h3><i class="fas fa-tag"></i> Pricing & Cancellation Policy</h3>
+                <p class="settings-desc">Court hourly rates and the cancellation rule shown to customers.</p>
+
+                <form method="POST" action="">
+                    <div class="settings-grid">
+
+                        <div class="settings-field">
+                            <label>Off-Peak Price (RM / hour)</label>
+                            <input type="number" step="0.01" min="0" name="off_peak_price" class="form-control"
+                                   value="<?php echo htmlspecialchars($settings['off_peak_price'] ?? '10.00'); ?>" required>
+                        </div>
+
+                        <div class="settings-field">
+                            <label>Peak Price (RM / hour)</label>
+                            <input type="number" step="0.01" min="0" name="peak_price" class="form-control"
+                                   value="<?php echo htmlspecialchars($settings['peak_price'] ?? '15.00'); ?>" required>
+                        </div>
+
+                        <div class="settings-field">
+                            <label>Cancellation Notice<br><span class="label-hint">(hours before booking)</span></label>
+                            <input type="number" min="0" name="cancellation_hours" class="form-control"
+                                   value="<?php echo htmlspecialchars($settings['cancellation_hours'] ?? '2'); ?>" required>
+                        </div>
+
+                        <div class="settings-field">
+                            <label>Cancellation Fee (RM)</label>
+                            <input type="number" step="0.01" min="0" name="cancellation_fee" class="form-control"
+                                   value="<?php echo htmlspecialchars($settings['cancellation_fee'] ?? '10.00'); ?>" required>
+                        </div>
+
+                    </div>
+
+                    <button type="submit" name="save_pricing" class="btn-add-account">
+                        <i class="fas fa-save"></i> Save Pricing & Cancellation
+                    </button>
+                </form>
+            </div>
+
+
+            <!-- Section 1.6: Contact Information -->
+            <div class="settings-card" id="sec-contact">
+                <h3><i class="fas fa-address-card"></i> Contact Information</h3>
+                <p class="settings-desc">These details show on the Contact Us, FAQ and Cancellation Policy pages.</p>
+
+                <form method="POST" action="">
+                    <div class="settings-grid">
+
+                        <div class="settings-field">
+                            <label>Phone Number</label>
+                            <input type="text" name="contact_phone" class="form-control"
+                                   value="<?php echo htmlspecialchars($settings['contact_phone'] ?? '+603-1234 5678'); ?>">
+                        </div>
+
+                        <div class="settings-field">
+                            <label>Email Address</label>
+                            <input type="email" name="contact_email" class="form-control"
+                                   value="<?php echo htmlspecialchars($settings['contact_email'] ?? 'smasharenabadminton@gmail.com'); ?>">
+                        </div>
+
+                        <div class="settings-field">
+                            <label>WhatsApp Number</label>
+                            <input type="text" name="contact_whatsapp" class="form-control"
+                                   value="<?php echo htmlspecialchars($settings['contact_whatsapp'] ?? '+60 12-345 6789'); ?>">
+                        </div>
+
+                        <div class="settings-field">
+                            <label>Address</label>
+                            <input type="text" name="address" class="form-control"
+                                   value="<?php echo htmlspecialchars($settings['address'] ?? '123 Jalan Badminton, Kuala Lumpur, Malaysia'); ?>">
+                        </div>
+
+                    </div>
+
+                    <button type="submit" name="save_contact" class="btn-add-account">
+                        <i class="fas fa-save"></i> Save Contact Info
+                    </button>
+                </form>
+            </div>
+
+
+            <!-- Section 2: Closed Days -->
+            <div class="settings-card" id="sec-closed">
                 <h3><i class="fas fa-calendar-times"></i> Closed Days</h3>
                 <p class="settings-desc">Mark dates when the arena is closed. Players cannot book on these days.</p>
 
                 <!-- Form to add a new closed day -->
                 <form method="POST" action="" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px;">
 
-                    <div>
+                    <div class="settings-field">
                         <label>Date</label>
                         <input type="date" name="closed_date" class="form-control" required>
                     </div>
 
-                    <div style="flex:1; min-width:200px;">
+                    <div class="settings-field" style="flex:1; min-width:200px;">
                         <label>Reason</label>
                         <input type="text" name="reason" class="form-control" placeholder="e.g. Public Holiday">
                     </div>
@@ -384,10 +474,8 @@ $vouchers = mysqli_query($conn, "SELECT * FROM voucher ORDER BY points_required 
             </div>
 
 
-            <!-- ======================================================
-                 Section 3: Promo Codes
-                 ====================================================== -->
-            <div class="settings-card">
+            <!-- Section 3: Promo Codes -->
+            <div class="settings-card" id="sec-promo">
                 <h3><i class="fas fa-tag"></i> Promo Codes</h3>
                 <p class="settings-desc">Create discount codes for players to use during payment.</p>
 
@@ -429,7 +517,7 @@ $vouchers = mysqli_query($conn, "SELECT * FROM voucher ORDER BY points_required 
 
                     </div>
 
-                    <button type="submit" name="add_promo" class="btn-add-account" style="margin-top:15px;">
+                    <button type="submit" name="add_promo" class="btn-add-account">
                         <i class="fas fa-plus"></i> Create Promo Code
                     </button>
                 </form>
@@ -508,10 +596,8 @@ $vouchers = mysqli_query($conn, "SELECT * FROM voucher ORDER BY points_required 
             </div>
 
 
-            <!-- ======================================================
-                 Section 4: Voucher Management
-                 ====================================================== -->
-            <div class="settings-card">
+            <!-- Section 4: Voucher Management -->
+            <div class="settings-card" id="sec-voucher">
                 <h3><i class="fas fa-ticket-alt"></i> Voucher Management</h3>
                 <p class="settings-desc">Create vouchers that players can redeem using their loyalty points.</p>
 
@@ -545,7 +631,7 @@ $vouchers = mysqli_query($conn, "SELECT * FROM voucher ORDER BY points_required 
 
                     </div>
 
-                    <button type="submit" name="add_voucher" class="btn-add-account" style="margin-top:15px;">
+                    <button type="submit" name="add_voucher" class="btn-add-account">
                         <i class="fas fa-plus"></i> Create Voucher
                     </button>
                 </form>
@@ -583,8 +669,129 @@ $vouchers = mysqli_query($conn, "SELECT * FROM voucher ORDER BY points_required 
         </div> <!-- end manage-container -->
     </main>
 
+    <!-- Scroll-to-top button (same design and behaviour as the one on Manage Bookings) -->
+    <button id="scrollTopBtn" onclick="window.scrollTo({top:0, behavior:'smooth'})" aria-label="Back to top">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+
+    <!-- Toast notification stack (bottom-left). Server-rendered toasts sit here on load. -->
+    <div class="toast-container" id="toastContainer">
+        <?php foreach ($toasts as $t): ?>
+            <?php
+                $icon  = $t['type'] === 'success' ? 'fa-check'
+                       : ($t['type'] === 'error' ? 'fa-xmark' : 'fa-exclamation');
+                $label = $t['type'] === 'success' ? 'Success'
+                       : ($t['type'] === 'error' ? 'Error'   : 'Notice');
+            ?>
+            <div class="toast <?php echo htmlspecialchars($t['type']); ?>" data-toast>
+                <span class="toast-icon"><i class="fas <?php echo $icon; ?>"></i></span>
+                <div class="toast-body">
+                    <span class="toast-label"><?php echo $label; ?></span>
+                    <span class="toast-text"><?php echo htmlspecialchars($t['text']); ?></span>
+                </div>
+                <button class="toast-close" type="button" aria-label="Dismiss">&times;</button>
+            </div>
+        <?php endforeach; ?>
+    </div>
+
     <!-- JavaScript file -->
     <script src="../Dashboard/Dashboard.js"></script>
+
+    <script>
+    /* Tab bar — animated slider glides to whichever tab is active, and the active tab
+       is whichever section currently dominates the viewport (or whichever tab you clicked) */
+    (function () {
+        const nav    = document.getElementById('settingsTabs');
+        const slider = document.getElementById('settingsTabSlider');
+        const tabs   = nav ? nav.querySelectorAll('.settings-tab') : [];
+        const targets = Array.from(tabs)
+            .map(t => document.querySelector(t.getAttribute('href')))
+            .filter(Boolean);
+
+        function moveSliderTo(tab) {
+            if (!tab || !slider) return;
+            /* offsetLeft/offsetWidth give us the position relative to the nav (the offset parent) */
+            slider.style.width     = tab.offsetWidth + 'px';
+            slider.style.transform = 'translateX(' + tab.offsetLeft + 'px)';
+            slider.style.height    = tab.offsetHeight + 'px';
+            slider.style.top       = tab.offsetTop + 'px';
+            slider.style.opacity   = '1';
+        }
+
+        function setActive(id) {
+            let activeTab = null;
+            tabs.forEach(t => {
+                const isMatch = t.getAttribute('href') === '#' + id;
+                t.classList.toggle('is-active', isMatch);
+                if (isMatch) activeTab = t;
+            });
+            moveSliderTo(activeTab);
+        }
+
+        if ('IntersectionObserver' in window && targets.length) {
+            const io = new IntersectionObserver((entries) => {
+                /* Pick the entry closest to the top of the viewport */
+                const visible = entries
+                    .filter(e => e.isIntersecting)
+                    .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+                if (visible) setActive(visible.target.id);
+            }, { rootMargin: '-100px 0px -55% 0px', threshold: 0 });
+
+            targets.forEach(el => io.observe(el));
+        }
+
+        /* Hover preview — slider follows the cursor over the tabs, snaps back to active on mouse leave */
+        let activeTabRef = null;
+        tabs.forEach(tab => {
+            tab.addEventListener('mouseenter', () => moveSliderTo(tab));
+            tab.addEventListener('click', () => {
+                activeTabRef = tab;
+            });
+        });
+        if (nav) {
+            nav.addEventListener('mouseleave', () => {
+                const current = nav.querySelector('.settings-tab.is-active');
+                if (current) moveSliderTo(current);
+            });
+        }
+
+        /* Default-active on first paint */
+        if (targets[0]) {
+            requestAnimationFrame(() => setActive(targets[0].id));
+        }
+
+        /* Reposition slider on resize so width tracks new tab sizes */
+        window.addEventListener('resize', () => {
+            const current = nav && nav.querySelector('.settings-tab.is-active');
+            if (current) moveSliderTo(current);
+        });
+    })();
+
+    /* Scroll-to-top button visibility — appears once user scrolls past 300px */
+    (function () {
+        const btn = document.getElementById('scrollTopBtn');
+        if (!btn) return;
+        window.addEventListener('scroll', () => {
+            btn.classList.toggle('show', window.scrollY > 300);
+        });
+    })();
+
+    /* Toast — slide in on load, auto-dismiss after 4s, manual close on click */
+    (function () {
+        const toasts = document.querySelectorAll('#toastContainer [data-toast]');
+        toasts.forEach((toast, i) => {
+            /* Stagger entrance so multiple toasts don't all snap in at once */
+            setTimeout(() => toast.classList.add('show'), 80 + i * 90);
+
+            const dismiss = () => {
+                toast.classList.add('hide');
+                setTimeout(() => toast.remove(), 400);
+            };
+            toast.querySelector('.toast-close').addEventListener('click', dismiss);
+            setTimeout(dismiss, 4000 + i * 200);
+        });
+    })();
+    </script>
 
 </body>
 </html>

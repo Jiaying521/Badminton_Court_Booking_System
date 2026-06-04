@@ -3,7 +3,15 @@
     border-radius: 12px;
     padding: 24px;
     margin-bottom: 24px;
+    border: 1px solid #eef2f7;
     box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+/* Whichever card the mouse is on gets the amber spotlight — gives the user a clear visual anchor */
+.settings-card:hover {
+    border-color: rgba(245,158,11,0.45);
+    box-shadow: 0 12px 28px rgba(245,158,11,0.10), 0 4px 12px rgba(15,23,42,0.06);
+    transform: translateY(-2px);
 }
 
 .settings-card h3 {
@@ -25,9 +33,21 @@
 }
 
 .settings-grid {
+    /* auto-fit (not auto-fill) collapses empty tracks so 4 fields stretch evenly across the row
+       instead of leaving a phantom column on the right */
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 16px;
+}
+
+/* Action buttons at the bottom of a card form — save_*, add_promo, add_voucher — sit on the right edge
+   with comfortable breathing room above the inputs */
+.settings-card form > button[name^="save_"],
+.settings-card form > button[name="add_promo"],
+.settings-card form > button[name="add_voucher"] {
+    display: block;
+    margin-left: auto;
+    margin-top: 32px;
 }
 
 .settings-field label {
@@ -36,6 +56,12 @@
     font-weight: 600;
     color: #374151;
     margin-bottom: 6px;
+}
+/* Secondary hint sitting on a second line under the main label (e.g. "(hours before booking)") */
+.settings-field label .label-hint {
+    font-size: 11px;
+    font-weight: 500;
+    color: #94a3b8;
 }
 
 .form-control {
@@ -53,3 +79,282 @@
     outline: none;
     border-color: #f59e0b;
 }
+
+/* Make all input rows bottom-align so a label that wraps to 2 lines doesn't push its input down */
+.settings-grid {
+    align-items: end;
+}
+.settings-field label {
+    min-height: 36px;          /* fits one or two lines without jumping */
+    display: flex;
+    align-items: flex-end;
+    line-height: 1.3;
+}
+
+/* Quick-jump tab bar — capsule shape, with a slider that animates to the active/hovered tab */
+.settings-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 6px;
+    margin-bottom: 24px;
+    background: #ffffff;
+    border-radius: 999px;                  /* full pill */
+    border: 1px solid #eef2f7;
+    box-shadow: 0 2px 10px rgba(15,23,42,0.04);
+    position: sticky;
+    top: 12px;
+    z-index: 50;
+}
+
+/* The sliding amber pill — lives behind the tab labels and glides to whichever tab is active */
+.settings-tab-slider {
+    position: absolute;
+    top: 6px;
+    left: 0;
+    height: 36px;
+    width: 0;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    box-shadow: 0 4px 14px rgba(245,158,11,0.35);
+    opacity: 0;
+    transition:
+        transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+        width 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+        height 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+        top 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.25s;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.settings-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 16px;
+    border-radius: 999px;
+    background: transparent;
+    color: #1e293b;                        /* dark slate — readable on both white and amber */
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.18s;
+    position: relative;
+    z-index: 1;                            /* sit above the slider */
+}
+.settings-tab i {
+    font-size: 13px;
+    color: #1e293b;
+    transition: color 0.18s;
+}
+/* Hover and active states intentionally keep the same colour so every tab reads identically */
+.settings-tab:hover,
+.settings-tab.is-active     { color: #1e293b; }
+.settings-tab:hover i,
+.settings-tab.is-active i   { color: #1e293b; }
+
+/* Smooth scroll for anchor clicks + leave breathing space above each card so the sticky tab bar doesn't cover the title */
+html { scroll-behavior: smooth; }
+.settings-card { scroll-margin-top: 90px; }
+
+/* Scroll-to-top button (mirrors the one on Manage Bookings) */
+#scrollTopBtn {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #0f172a;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(245,158,11,0.4);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(12px);
+    transition: opacity 0.3s, transform 0.3s, visibility 0.3s, box-shadow 0.3s;
+    z-index: 999;
+}
+#scrollTopBtn.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+#scrollTopBtn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(245,158,11,0.55);
+}
+
+/* Bottom-left toast stack */
+.toast-container {
+    position: fixed;
+    left: 20px;
+    bottom: 20px;
+    display: flex;
+    flex-direction: column-reverse;  /* newest on top of older ones */
+    gap: 10px;
+    z-index: 9999;
+    pointer-events: none;            /* don't block clicks under empty stack */
+}
+/* Liquid-glass capsule toast: frosted background, soft inner highlight, coloured outer glow */
+.toast {
+    pointer-events: auto;
+    min-width: 320px;
+    max-width: 420px;
+    padding: 12px 18px 12px 14px;
+    border-radius: 999px;                                     /* full pill */
+    color: #0f172a;
+    background: rgba(255,255,255,0.55);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.65);
+    box-shadow:
+        0 12px 40px rgba(15,23,42,0.14),                      /* drop shadow */
+        0 1px 0 rgba(255,255,255,0.85) inset,                 /* top inner highlight */
+        0 -1px 0 rgba(15,23,42,0.04) inset,                   /* bottom inner shadow */
+        0 24px 60px -16px var(--glow, rgba(148,163,184,0.4)); /* coloured ambient glow */
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+    transform: translateX(-120%);
+    opacity: 0;
+    transition:
+        transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.45s,
+        box-shadow 0.3s;
+}
+.toast.show { transform: translateX(0); opacity: 1; }
+.toast.hide { transform: translateX(-120%); opacity: 0; }
+.toast:hover { box-shadow:
+        0 14px 44px rgba(15,23,42,0.18),
+        0 1px 0 rgba(255,255,255,0.9) inset,
+        0 -1px 0 rgba(15,23,42,0.05) inset,
+        0 28px 70px -18px var(--glow, rgba(148,163,184,0.55));
+}
+
+/* Glassy sheen across the top — gives the surface a wet/glossy look */
+.toast::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background:
+        linear-gradient(135deg,
+            rgba(255,255,255,0.55) 0%,
+            rgba(255,255,255,0.18) 35%,
+            rgba(255,255,255,0) 60%);
+    pointer-events: none;
+    mix-blend-mode: overlay;
+}
+
+/* Soft side bloom — a faint colour wash on the left, like light bleeding through the glass */
+.toast::before {
+    content: "";
+    position: absolute;
+    left: -40px;
+    top: -40px;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: var(--bloom, transparent);
+    filter: blur(28px);
+    opacity: 0.55;
+    pointer-events: none;
+}
+
+/* Icon chip — circular badge that carries the type colour */
+.toast .toast-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+    color: #fff;
+    position: relative;
+    z-index: 1;
+    box-shadow:
+        0 4px 12px var(--chip-shadow, rgba(15,23,42,0.15)),
+        0 0 0 4px rgba(255,255,255,0.45);                     /* halo ring */
+}
+
+/* Stacked text */
+.toast .toast-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    z-index: 1;
+}
+.toast .toast-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    line-height: 1.2;
+}
+.toast .toast-text {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #0f172a;
+    line-height: 1.35;
+    word-break: break-word;
+}
+.toast .toast-close {
+    margin-left: 4px;
+    align-self: center;
+    background: rgba(255,255,255,0.4);
+    border: 0;
+    color: #475569;
+    cursor: pointer;
+    font-size: 14px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transition: background 0.18s, color 0.18s;
+    position: relative;
+    z-index: 1;
+}
+.toast .toast-close:hover { background: rgba(15,23,42,0.08); color: #0f172a; }
+
+/* Per-type theming: each variant sets its glow, side-bloom, label colour, and chip gradient/shadow */
+.toast.success {
+    --glow: rgba(34,197,94,0.32);
+    --bloom: rgba(34,197,94,0.55);
+    --chip-shadow: rgba(34,197,94,0.45);
+}
+.toast.success .toast-icon  { background: linear-gradient(135deg, #22c55e, #15803d); }
+.toast.success .toast-label { color: #15803d; }
+
+.toast.pending {
+    --glow: rgba(245,158,11,0.34);
+    --bloom: rgba(245,158,11,0.55);
+    --chip-shadow: rgba(245,158,11,0.45);
+}
+.toast.pending .toast-icon  { background: linear-gradient(135deg, #f59e0b, #b45309); }
+.toast.pending .toast-label { color: #b45309; }
+
+.toast.error {
+    --glow: rgba(239,68,68,0.34);
+    --bloom: rgba(239,68,68,0.55);
+    --chip-shadow: rgba(239,68,68,0.45);
+}
+.toast.error .toast-icon  { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+.toast.error .toast-label { color: #b91c1c; }
