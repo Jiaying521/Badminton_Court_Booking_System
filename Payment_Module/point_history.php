@@ -22,27 +22,11 @@ if ($u_row = $u_res->fetch_assoc()) {
     $user_name = $u_row['name'];
 }
 
-// 2. Calculate Active Points Balance (RM 1 spent = 1 Point)
-// Sum up the prices of all 'Confirmed' bookings to calculate total points earned
-$stmt = $conn->prepare("SELECT SUM(total_price) FROM bookings WHERE user_id = ? AND status = 'Confirmed'");
+// 2. Read live points balance directly from users.loyalty_points (single source of truth)
+$stmt = $conn->prepare("SELECT loyalty_points FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
-$totalSpent = $stmt->get_result()->fetch_row()[0] ?? 0;
-$totalPointsEarned = floor($totalSpent * 1); // RM1 = 1 point formula rate
-
-// Sum up the costs of all vouchers this user has redeemed from the rewards shop
-$stmt = $conn->prepare("
-    SELECT SUM(v.points_required) 
-    FROM user_vouchers uv 
-    JOIN voucher v ON uv.voucher_id = v.id 
-    WHERE uv.user_id = ?
-");
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$pointsUsed = $stmt->get_result()->fetch_row()[0] ?? 0;
-
-// Subtract used points from earned points to find their current available balance
-$current_points = $totalPointsEarned - $pointsUsed;
+$current_points = (int)($stmt->get_result()->fetch_row()[0] ?? 0);
 
 
 // 3. FETCH EARNED LOG ITEMS (From Confirmed Bookings)

@@ -16,26 +16,10 @@ $userStmt = $pdo->prepare("SELECT name FROM users WHERE id = ?");
 $userStmt->execute([$user_id]);
 $user = $userStmt->fetch();
 
-// 2. 计算用户赚取到的总积分 (RM 1 spent = 1 Point)
-// Sum up the subtotal prices of all their 'Confirmed' court bookings
-$stmt = $pdo->prepare("SELECT SUM(total_price) FROM bookings WHERE user_id = ? AND status = 'Confirmed'");
+// 2. Read live points balance directly from users.loyalty_points (single source of truth)
+$stmt = $pdo->prepare("SELECT loyalty_points FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
-$totalSpent = $stmt->fetchColumn() ?? 0;
-$totalPointsEarned = floor($totalSpent * 1); // Our new RM1 = 1 point formula rate
-
-// 3. 计算用户已经消耗用掉的积分
-// Sum up the point costs of all vouchers this user has already claimed
-$stmt = $pdo->prepare("
-    SELECT SUM(v.points_required) 
-    FROM user_vouchers uv 
-    JOIN voucher v ON uv.voucher_id = v.id 
-    WHERE uv.user_id = ?
-");
-$stmt->execute([$user_id]);
-$pointsUsed = $stmt->fetchColumn() ?? 0;
-
-// Find their current available balance by subtracting used points from lifetime earned points
-$current_points = $totalPointsEarned - $pointsUsed;
+$current_points = (int)($stmt->fetchColumn() ?? 0);
 
 // 4. 处理用户点击 "Redeem" 按钮的后台动作逻辑
 // Check if the user clicked a "Redeem" link button on the UI shelf
@@ -54,6 +38,10 @@ if (isset($_GET['action']) && $_GET['action'] === 'redeem') {
             // Success: Insert a new voucher entry row into their personal inventory wallet
             $ins = $pdo->prepare("INSERT INTO user_vouchers (user_id, voucher_id, is_used) VALUES (?, ?, 0)");
             $ins->execute([$user_id, $voucher_id]);
+
+            // Deduct points from users.loyalty_points
+            $deduct = $pdo->prepare("UPDATE users SET loyalty_points = loyalty_points - ? WHERE id = ?");
+            $deduct->execute([(int)$v_item['points_required'], $user_id]);
             
             // Pop up a clean success alert box and refresh the shop interface page
             echo "<script>alert('Successfully redeemed " . $v_item['title'] . "!'); window.location.href='redeem_voucher.php';</script>";

@@ -275,8 +275,17 @@ if ($display_amount < 0) {
                     </script>
                     <h2 style="color:#2b7e3a; font-weight:700; margin-bottom:10px;">Payment Details</h2>
                     <div class="clone-container">
-                        <p style="margin: 10px 0; display:flex; justify-content:space-between;"><strong>Method:</strong> <span style="color:#333; font-weight:600;"><?php echo htmlspecialchars($sub_method ? $sub_method : $method); ?></span></p>
-                        <p style="margin: 10px 0; display:flex; justify-content:space-between;"><strong>Account Type:</strong> <span style="color:#666;">Savings Account / Default</span></p>
+                        <?php
+                            if ($method === 'App Wallet') {
+                                $display_method = 'Smash Arena Wallet';
+                                $display_account_type = 'In-App Wallet Balance';
+                            } else {
+                                $display_method = $sub_method ? $sub_method : $method;
+                                $display_account_type = 'Savings Account / Default';
+                            }
+                        ?>
+                        <p style="margin: 10px 0; display:flex; justify-content:space-between;"><strong>Method:</strong> <span style="color:#333; font-weight:600;"><?php echo htmlspecialchars($display_method); ?></span></p>
+                        <p style="margin: 10px 0; display:flex; justify-content:space-between;"><strong>Account Type:</strong> <span style="color:#666;"><?php echo htmlspecialchars($display_account_type); ?></span></p>
                         <p style="margin: 10px 0; display:flex; justify-content:space-between;"><strong>Booking Target ID:</strong> <span style="color:#666;">#<?php echo htmlspecialchars($booking_id); ?></span></p>
                         <hr style="border:0; border-top:1px solid #eee; margin:12px 0;">
                         <p style="margin: 8px 0; display:flex; justify-content:space-between; font-size:1.2rem;"><strong>Amount to Deduct:</strong> <span style="color:#2b7e3a; font-weight:bold;">RM <?php echo number_format($display_amount, 2); ?></span></p>
@@ -298,12 +307,25 @@ if ($display_amount < 0) {
                 <h2 style="color:#2b7e3a; font-weight:700;">Payment Successful</h2>
                 <p style="color:#5a6e5c; margin-bottom:20px; font-size:14px;">Your transaction has completed secure authentication.</p>
 
+                <?php
+                    $points_earned = (int) floor((float)$amount);
+                    $available_points = 0;
+                    if ($user_id > 0) {
+                        $stmt_pts = $conn->prepare("SELECT loyalty_points FROM users WHERE id = ?");
+                        $stmt_pts->bind_param("i", $user_id);
+                        $stmt_pts->execute();
+                        $available_points = (int)($stmt_pts->get_result()->fetch_row()[0] ?? 0);
+                    }
+                ?>
                 <div class="receipt-box">
                     <h4 style="text-align:center; margin-top:0; border-bottom: 1px solid #ddd; padding-bottom:8px; font-weight:700; color:#1a2930; letter-spacing:1px;">TRANSACTION RECEIPT</h4>
                     <p style="margin:8px 0; font-size:14px;"><strong>Merchant:</strong> Smash Arena Hub</p>
                     <p style="margin:8px 0; font-size:14px;"><strong>Booking Reference:</strong> #<?php echo htmlspecialchars($booking_id); ?></p>
                     <p style="margin:8px 0; font-size:14px;"><strong>Amount Credited:</strong> <span style="color:#2b7e3a; font-weight:bold;">RM <?php echo number_format($amount, 2); ?></span></p>
                     <p style="margin:8px 0; font-size:14px;"><strong>Status:</strong> <span style="color:#2b7e3a; font-weight:bold;">Approved / Settled</span></p>
+                    <hr style="border:0; border-top:1px dashed #ccc; margin:10px 0;">
+                    <p style="margin:8px 0; font-size:14px;"><strong><i class="fas fa-star" style="color:#e0a800;"></i> Points Earned:</strong> <span style="color:#2b7e3a; font-weight:bold;">+<?php echo $points_earned; ?> Pts</span></p>
+                    <p style="margin:8px 0; font-size:14px;"><strong><i class="fas fa-wallet" style="color:#2b7e3a;"></i> Available Points:</strong> <span style="color:#1a2930; font-weight:bold;"><?php echo $available_points; ?> Pts</span></p>
                 </div>
             <?php else: ?>
                 <div style="color: #ff4d4d; font-size: 4rem; margin-top: 15px; margin-bottom: 10px;"><i class="fas fa-times-circle"></i></div>

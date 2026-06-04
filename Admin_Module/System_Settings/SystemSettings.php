@@ -9,14 +9,12 @@
 session_start();
 
 // ---------- 2. Access Control ----------
-// Anyone else gets redirected to the login page.
 if (!isset($_SESSION['username']) || !in_array($_SESSION['role'], ['Superadmin', 'Admin'])) {
     header("Location: ../LoginPage.php");
     exit();
 }
 
 // ---------- 3. Disable Browser Caching ----------
-// Prevents the browser from showing an old cached page when pressing Back.
 header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Pragma: no-cache");
 header("Expires: 0");
@@ -24,7 +22,7 @@ header("Expires: 0");
 // ---------- 4. Connect to Database ----------
 $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
 
-// FIX 1: Check if database connection succeeded
+
 if (!$conn) {
     die("Database connection failed: " . mysqli_connect_error());
 }
@@ -190,6 +188,17 @@ if (isset($_POST['add_voucher'])) {
 // ----------------------------------------------------------
 if (isset($_GET['delete_voucher'])) {
     $vid = intval($_GET['delete_voucher']);
+
+    // Check if anyone has already claimed/used this voucher before allowing the delete.
+    $check = mysqli_query($conn, "SELECT COUNT(*) AS c FROM user_vouchers WHERE voucher_id = $vid");
+    $used_count = (int) mysqli_fetch_assoc($check)['c'];
+
+    if ($used_count > 0) {
+        // Block hard delete — it would orphan customer voucher records.
+        header("Location: SystemSettings.php?deleted=blocked");
+        exit();
+    }
+
     mysqli_query($conn, "DELETE FROM voucher WHERE id = $vid");
     header("Location: SystemSettings.php?deleted=1");
     exit();
@@ -258,7 +267,11 @@ $vouchers = mysqli_query($conn, "SELECT * FROM voucher ORDER BY points_required 
             <?php endif; ?>
 
             <?php if (isset($_GET['deleted'])): ?>
-                <div class="badge pending" style="width:100%;padding:15px;margin-bottom:20px;">Deleted successfully.</div>
+                <?php if ($_GET['deleted'] === 'blocked'): ?>
+                    <div class="badge error" style="width:100%;padding:15px;margin-bottom:20px;">Cannot delete: this voucher has already been claimed/used by customers.</div>
+                <?php else: ?>
+                    <div class="badge pending" style="width:100%;padding:15px;margin-bottom:20px;">Deleted successfully.</div>
+                <?php endif; ?>
             <?php endif; ?>
 
             <?php if (isset($_GET['updated'])): ?>
@@ -498,7 +511,6 @@ $vouchers = mysqli_query($conn, "SELECT * FROM voucher ORDER BY points_required 
             <!-- ======================================================
                  Section 4: Voucher Management
                  ====================================================== -->
-            <!-- FIX 2: Moved Section 4 inside manage-container, before </div></main> -->
             <div class="settings-card">
                 <h3><i class="fas fa-ticket-alt"></i> Voucher Management</h3>
                 <p class="settings-desc">Create vouchers that players can redeem using their loyalty points.</p>

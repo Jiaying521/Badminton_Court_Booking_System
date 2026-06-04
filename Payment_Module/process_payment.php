@@ -111,6 +111,17 @@ if ($stmt_pay->execute()) {
             $update_stmt->execute();
         }
 
+        // LOYALTY POINTS: RM 1 = 1 point, persist into users.loyalty_points
+        if ($user_id > 0) {
+            $points_earned = (int) floor($final_amount);
+            if ($points_earned > 0) {
+                $pts_sql = "UPDATE users SET loyalty_points = loyalty_points + ? WHERE id = ?";
+                $pts_stmt = $conn->prepare($pts_sql);
+                $pts_stmt->bind_param("ii", $points_earned, $user_id);
+                $pts_stmt->execute();
+            }
+        }
+
         // CONSUME THE VOUCHER LOGIC: Mark it as used so they can't reuse it!
         // Switch is_used to 1 for this specific voucher row so they can't exploit it again
         if (!empty($user_voucher_id) && $user_id > 0) {
