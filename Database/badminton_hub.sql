@@ -941,6 +941,19 @@ ALTER TABLE `court_availability`
 --
 ALTER TABLE `payments`
   ADD CONSTRAINT `fk_payments_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE;
+  
+-- 插入缺失的设置记录（如果不存在）
+INSERT INTO `settings` (`setting_key`, `setting_value`) VALUES 
+('off_peak_price', '10.00'),
+('peak_price', '15.00'),
+('cancellation_hours', '2'),
+('cancellation_fee', '10.00'),
+('contact_phone', '+603-1234 5678'),
+('contact_email', 'smasharenabadminton@gmail.com'),
+('contact_whatsapp', '+60 12-345 6789'),
+('address', '123 Jalan Badminton, Kuala Lumpur, Malaysia')
+ON DUPLICATE KEY UPDATE `setting_value` = VALUES(`setting_value`);
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
