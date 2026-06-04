@@ -433,7 +433,9 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             font-weight: 600;
         }
         
-        .action-btns { display: flex; gap: 0.6rem; }
+        .action-btns { gap: 0.6rem; vertical-align: middle; white-space: nowrap; }
+        .action-btns > * { display: inline-flex; align-items: center; vertical-align: middle; margin-right: 0.6rem; }
+        .action-btns > *:last-child { margin-right: 0; }
         .btn-view { 
             background: rgba(232,240,229,0.8);
             color: #2c4a2e; 
@@ -643,7 +645,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         @media (max-width: 768px) { 
             body { padding: 1rem; } 
             th, td { padding: 0.5rem; font-size: 0.8rem; } 
-            .action-btns { flex-direction: column; } 
+            .action-btns > * { display: block; margin-right: 0; margin-bottom: 0.4rem; }
             .stats-grid { grid-template-columns: repeat(2, 1fr); } 
             .navbar { flex-direction: column; border-radius: 28px; }
             .logo-area img { height: 40px; }
