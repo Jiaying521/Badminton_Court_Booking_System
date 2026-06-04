@@ -1,15 +1,18 @@
 <?php
-// wallet_gateway.php - The Mock Wallet Top-Up Authentication Interface
+// Payment_Module/wallet_gateway.php - The Mock Wallet Top-Up Authentication Interface
+// Start session tracking so we can pull or verify user accounts parameters
 session_start();
-$reload_amt = $_POST['reload_amount'] ?? 0;
-$pay_method = $_POST['pay_method'] ?? 'Bank';
-$return_to = $_POST['return_to'] ?? 'dashboard';
-$b_id = $_POST['booking_id'] ?? 0;
-$b_amt = $_POST['amount'] ?? 0;
 
-// Security fallback to prevent negative data hacking
+// Catch all top-up allocation data passed down from your main wallet screen form submit
+$reload_amt = $_POST['reload_amount'] ?? 0; // How much cash they want to add to their balance
+$pay_method = $_POST['pay_method'] ?? 'Bank'; // Method chosen (Bank, Card, or TNG QR)
+$return_to = $_POST['return_to'] ?? 'dashboard'; // Remembers if they came from checkout or profile links
+$b_id = $_POST['booking_id'] ?? 0;      // The current court booking ID if they are mid-checkout
+$b_amt = $_POST['amount'] ?? 0;          // The court price if they are mid-checkout
+
+// Security fallback check to stop script hacking attempts if amount values are invalid
 if ($reload_amt < 1) {
-    die("Security Exception: Invalid transaction request detected.");
+    die("Security Exception: Invalid transaction request detected."); // Kill script instantly
 }
 ?>
 <!DOCTYPE html>
@@ -21,21 +24,26 @@ if ($reload_amt < 1) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* Base universal padding resets to eliminate default browser layout spaces bugs */
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:'Inter',sans-serif; background:#f5f9f0; padding:2rem; display:flex; justify-content:center; align-items:center; min-height:100vh; }
         
+        /* Center panel credentials card layout formatting configurations blueprint definitions */
         .gateway-card { background:white; padding:40px; border-radius:24px; width:100%; max-width:440px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.04); border-top: 6px solid #2b7e3a; }
         
         .form-group { margin-bottom: 16px; text-align: left; }
         .form-group label { display: block; font-size: 11px; font-weight: 700; color: #555; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
         
+        /* Clean text field input forms aesthetics layout templates styling parameters */
         .gateway-input { width: 100%; padding: 12px 14px; border-radius: 8px; border: 1px solid #ccc; outline: none; font-size: 14px; font-family: inherit; color: #333; background: #fafafa; transition: 0.2s; }
         .gateway-input:focus { border-color: #2b7e3a; background: #fff; box-shadow: 0 0 0 3px rgba(43,126,58,0.1); }
         
+        /* Hide password visibility text fields eye utility formatting characteristics blueprint design */
         .password-wrapper { position: relative; display: flex; align-items: center; width: 100%; }
         .toggle-password-eye { position: absolute; right: 15px; color: #666; cursor: pointer; transition: 0.2s; font-size: 16px; z-index: 10; }
         .toggle-password-eye:hover { color: #2b7e3a; }
         
+        /* Master green operation continuation button layout properties configuration definitions template */
         .btn-green { width: 100%; padding: 15px; margin-top: 20px; background-color: #2b7e3a; color: white; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; font-size: 1rem; text-decoration:none; display:inline-block; transition: 0.2s; }
         .btn-green:hover { background-color: #1f5a2a; }
         
@@ -44,6 +52,7 @@ if ($reload_amt < 1) {
         .input-row { display: flex; gap: 12px; }
         .input-row .form-group { flex: 1; margin-bottom: 0; }
 
+        /* Custom blue Touch n Go branding design attributes styling layouts context components */
         .tng-btn { background: #005eb8; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 12px; transition: 0.2s; font-size: 13px; }
         .tng-btn:hover { background: #004487; }
         .countdown-text { font-size: 12px; color: #ffeb3b; font-weight: bold; margin-top: 5px; display: block; letter-spacing: 0.5px; }
@@ -163,6 +172,7 @@ if ($reload_amt < 1) {
     </div>
 
 <script>
+// Interactive password utility swapping string input characters type parameters back and forth on eye icon clicks triggers
 function togglePasswordVisibility(inputId, iconElement) {
     const passwordInput = document.getElementById(inputId);
     if (passwordInput.type === "password") {
@@ -176,6 +186,7 @@ function togglePasswordVisibility(inputId, iconElement) {
     }
 }
 
+// Background thread sequence tracking TNG QR ticker expiration clocks live inside active screen viewport templates rules
 <?php if ($pay_method == 'TNG'): ?>
 let duration = 300; 
 const timerElement = document.getElementById('reloadTngTimer');
@@ -192,16 +203,20 @@ const interval = setInterval(function() {
     }
 }, 1000);
 
+// Automation click simulator processing background redirection logic to pass wallet parameters over to database update processing files
 function simulateReloadTngScan() {
     clearInterval(interval);
+    // Hide default text choice elements out of sight
     document.getElementById('tngScanningView').style.display = 'none';
     document.getElementById('cancelBtnLink').style.display = 'none';
+    // Throw up the blue processing animation view fields blocks layers components
     document.getElementById('tngLoadingView').style.display = 'block';
     
     const container = document.getElementById('gatewayMainContainer');
     container.style.background = '#005eb8';
     container.style.borderColor = '#005eb8';
 
+    // Submit forms datasets payload downstream to process_reload.php safely after brief processing animations delay frames loops
     setTimeout(function() {
         document.getElementById('reloadForm').submit();
     }, 2000);

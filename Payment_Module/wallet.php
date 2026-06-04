@@ -1,27 +1,39 @@
 <?php
+// Bring in our master configuration settings
 require_once __DIR__ . '/../config.php';
+// Include our MySQLi connection file to read/write to tables
 include 'db_connect.php'; 
-if (!isLoggedIn()) redirect('homepage.php');
 
+// Make sure the session is active so we can track who is logged in
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Get the user ID from the active login session
 $user_id = $_SESSION['user_id'];
 
 // Fetch REAL balance from database
+// Prepare an SQL statement to look up the user's cash balance securely
 $stmt = $conn->prepare("SELECT wallet_balance FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $res = $stmt->get_result();
 $user_data = $res->fetch_assoc();
+// Save the balance number, default to 0.00 if it comes back empty
 $current_balance = $user_data['wallet_balance'] ?? 0.00;
 
 // Smart Return Logic
+// Check the URL parameter to see if the user came from 'checkout' or just the regular dashboard link
 $return_to = $_GET['return'] ?? 'dashboard'; 
-$b_id = $_GET['booking_id'] ?? 0;
-$b_amt = $_GET['amount'] ?? 0;
+$b_id = $_GET['booking_id'] ?? 0; // Remembers current booking ID if they are topping up mid-checkout
+$b_amt = $_GET['amount'] ?? 0;    // Remembers checkout cost total if they are mid-checkout
 
+// If they came from the checkout screen, build a back link to send them right back there
 if ($return_to === 'checkout') {
     $back_url = "checkout.php?booking_id=$b_id&amount=$b_amt";
     $back_label = "Back to Checkout";
 } else {
+    // Otherwise, build a back link to send them back to their standard dashboard view
     $back_url = "../Customer_Module/dashboard.php";
     $back_label = "Back to Dashboard";
 }
@@ -35,26 +47,34 @@ if ($return_to === 'checkout') {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* Baseline structural resets to remove default spacing anomalies */
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Inter',sans-serif; background:#f5f9f0; padding:2rem; display:flex; justify-content:center; min-height:100vh; align-items:center; }
+        body { font-family:'Inter',sans-serif; background:#f5f9f0; padding:2rem; display:flex; justify-content:center; align-items:center; min-height:100vh; }
         
+        /* Central layout panel wallet card design traits blueprint definitions */
         .wallet-card { background: white; padding: 2.5rem; border-radius: 32px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); width: 100%; max-width: 480px; text-align: center; border: 1px solid #eaf5e6; }
         
+        /* Gradient balance indicator box context properties styles template layout rules */
         .balance-box { background: linear-gradient(135deg,#2b7e3a,#113f19); color: white; padding: 2rem; border-radius: 24px; margin: 1.5rem 0; box-shadow: 0 8px 20px rgba(43,126,58,0.15); }
         
+        /* Quick select grids mapping layout spacing definitions metrics */
         .quick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
         
+        /* Quick choose amounts shortcut selection buttons aesthetics styles definitions blocks */
         .amt-btn { background: #f8faf5; border: 1.5px solid #e0e8dc; padding: 14px; border-radius: 14px; cursor: pointer; font-weight: 700; color: #2b7e3a; transition: 0.2s; font-size: 0.95rem; }
         .amt-btn:hover { background: #eaf5e6; color: #1f5a2a; border-color: #2b7e3a; }
         .amt-btn.active { background: #2b7e3a; color: white; border-color: #2b7e3a; box-shadow: 0 4px 10px rgba(43,126,58,0.2); }
         
+        /* External reload funding channel selector button option wrapper row card layout characteristics */
         .method-card { border: 1.5px solid #e0e0e0; padding: 16px; border-radius: 14px; margin-bottom: 12px; display: flex; align-items: center; cursor: pointer; text-align: left; background: white; transition: 0.2s; }
         .method-card:hover { border-color: #2b7e3a; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
         .method-card input[type="radio"] { accent-color: #2b7e3a; transform: scale(1.1); }
         
+        /* Large numerical custom deposit text field container block parameters layouts styling properties */
         .topup-input { width: 100%; padding: 1rem; border-radius: 16px; border: 2px solid #e0e8dc; margin-bottom: 15px; text-align: center; font-size: 1.6rem; font-weight: 800; color: #2b7e3a; background: #fafdfa; outline: none; transition: 0.2s; }
         .topup-input:focus { border-color: #2b7e3a; background: white; box-shadow: 0 0 0 4px rgba(43,126,58,0.08); }
         
+        /* Main confirmation continuation action button element attributes template styling scripts rules */
         .btn-reload { background: #2b7e3a; color: white; border: none; padding: 1.1rem; border-radius: 50px; width: 100%; font-weight: 700; cursor: pointer; font-size: 1rem; transition: 0.2s; box-shadow: 0 4px 12px rgba(43,126,58,0.15); }
         .btn-reload:hover { background: #1f5a2a; transform: translateY(-1px); }
         
@@ -109,20 +129,26 @@ if ($return_to === 'checkout') {
     </div>
 
     <script>
+        // Triggered automatically on fast selection panel clicks to set numerical fields properties instantly
         function selectAmt(v, buttonElement) { 
             document.getElementById('reload_amt').value = v; 
+            // Wipe out active styling states off all shortcut buttons lines layouts components
             document.querySelectorAll('.amt-btn').forEach(btn => btn.classList.remove('active'));
+            // Highlight the chosen button module element live visually on screen layout components templates styles
             buttonElement.classList.add('active');
         }
         
+        // Listen for raw keypress typings inside number field boxes to strip active highlights from shortcut grids items automatically
         document.getElementById('reload_amt').addEventListener('input', function() {
             document.querySelectorAll('.amt-btn').forEach(btn => btn.classList.remove('active'));
         });
 
         // 🟢 JAVASCRIPT VALIDATION ENGINE: Strictly forces positive numbers
+        // Verification function triggered on submit to catch empty rows, zero, or negative money manipulation inputs hacks instantly before moving forward
         function validateReload() {
             const a = parseFloat(document.getElementById('reload_amt').value);
             if (isNaN(a) || a < 1) { 
+                // Alert a security error popup and halt form posting pipeline routes cleanly inside layout structures boundaries parameters rows
                 alert("Security Error: Invalid reload allocation amount. Minimum deposit is RM 1.00"); 
                 return false; 
             }

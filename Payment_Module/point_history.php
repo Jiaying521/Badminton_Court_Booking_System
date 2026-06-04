@@ -1,9 +1,11 @@
 <?php
 // Payment_Module/point_history.php - Loyalty Points Log & Voucher Inventory
+// Start our session tracking to access the logged-in user's data
 session_start();
+// Bring in our database connection setup file
 include 'db_connect.php';
 
-// Check login status safely matching your layout parameters
+// If the user isn't logged in, kick them back to the customer home page safely
 $user_id = $_SESSION['user_id'] ?? 0;
 if ($user_id == 0) {
     die("<script>window.location.href='../Customer_Module/homepage.php';</script>");
@@ -11,6 +13,7 @@ if ($user_id == 0) {
 
 // 1. Fetch User Info for greeting header layout elements
 $user_name = "Player";
+// Secure query to find the user's name from their user ID
 $u_stmt = $conn->prepare("SELECT name FROM users WHERE id = ?");
 $u_stmt->bind_param("i", $user_id);
 $u_stmt->execute();
@@ -19,13 +22,15 @@ if ($u_row = $u_res->fetch_assoc()) {
     $user_name = $u_row['name'];
 }
 
-// 2. Calculate Active Points Balance (RM 10 spent = 1 Point)
+// 2. Calculate Active Points Balance (RM 1 spent = 1 Point)
+// Sum up the prices of all 'Confirmed' bookings to calculate total points earned
 $stmt = $conn->prepare("SELECT SUM(total_price) FROM bookings WHERE user_id = ? AND status = 'Confirmed'");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $totalSpent = $stmt->get_result()->fetch_row()[0] ?? 0;
-$totalPointsEarned = floor($totalSpent * 1); // RM1 = 1point
+$totalPointsEarned = floor($totalSpent * 1); // RM1 = 1 point formula rate
 
+// Sum up the costs of all vouchers this user has redeemed from the rewards shop
 $stmt = $conn->prepare("
     SELECT SUM(v.points_required) 
     FROM user_vouchers uv 
@@ -36,11 +41,13 @@ $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $pointsUsed = $stmt->get_result()->fetch_row()[0] ?? 0;
 
+// Subtract used points from earned points to find their current available balance
 $current_points = $totalPointsEarned - $pointsUsed;
 
 
 // 3. FETCH EARNED LOG ITEMS (From Confirmed Bookings)
 $earned_list = [];
+// Query to pull all successful bookings so we can show them as point-earning history entries
 $e_stmt = $conn->prepare("
     SELECT id, booking_date, total_price 
     FROM bookings 
@@ -51,17 +58,19 @@ $e_stmt->bind_param("i", $user_id);
 $e_stmt->execute();
 $e_res = $e_stmt->get_result();
 while ($row = $e_res->fetch_assoc()) {
+    // Structure each row as an 'Earned' point transaction type log item
     $earned_list[] = [
         'type' => 'Earned',
         'title' => 'Court Booking Reward (ID: #' . $row['id'] . ')',
         'date' => $row['booking_date'],
-        'points' => floor($row['total_price'] * 1), // RM1 = 1point
+        'points' => floor($row['total_price'] * 1), // RM1 = 1 point formatting layout
         'amount_info' => 'Spent RM ' . number_format($row['total_price'], 2)
     ];
 }
 
 // 4. FETCH SPENT LOG ITEMS (From Redeemed Vouchers)
 $spent_list = [];
+// Query to pull all the shop voucher redemptions so we can show them as points spent
 $s_stmt = $conn->prepare("
     SELECT uv.redeemed_at, v.title, v.points_required 
     FROM user_vouchers uv 
@@ -73,6 +82,7 @@ $s_stmt->bind_param("i", $user_id);
 $s_stmt->execute();
 $s_res = $s_stmt->get_result();
 while ($row = $s_res->fetch_assoc()) {
+    // Structure each row as a 'Spent' point transaction type log item
     $spent_list[] = [
         'type' => 'Spent',
         'title' => 'Redeemed ' . $row['title'],
@@ -82,8 +92,9 @@ while ($row = $s_res->fetch_assoc()) {
     ];
 }
 
-// Combine both arrays and sort by date descending
+// Combine both arrays (Earned + Spent) into a single master history list stream
 $history_log = array_merge($earned_list, $spent_list);
+// Sort the master logs array so the newest points events appear right at the top
 usort($history_log, function($a, $b) {
     return strcmp($b['date'], $a['date']);
 });
@@ -91,6 +102,7 @@ usort($history_log, function($a, $b) {
 
 // 5. FETCH ALL USER OWNED VOUCHERS INVENTORY IN DETAIL
 $user_inventory = [];
+// Query to pull every voucher the user owns to display in their visual wallet collection
 $inv_stmt = $conn->prepare("
     SELECT uv.id, uv.is_used, uv.redeemed_at, v.title, v.discount_amount 
     FROM user_vouchers uv
@@ -102,6 +114,7 @@ $inv_stmt->bind_param("i", $user_id);
 $inv_stmt->execute();
 $inv_res = $inv_stmt->get_result();
 while ($row = $inv_res->fetch_assoc()) {
+    // Push each voucher record into our active client inventory array list
     $user_inventory[] = $row;
 }
 ?>
@@ -114,11 +127,12 @@ while ($row = $inv_res->fetch_assoc()) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* CSS resets to clear uneven baseline browser margins spacing */
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:'Inter',sans-serif; background:linear-gradient(145deg,#f5f9f0 0%,#e8efe2 100%); color:#1e2a2e; padding:2rem; }
         .container { max-width:1200px; margin:0 auto; }
         
-        /* Navbar matching system theme guidelines layout structure */
+        /* Layout navigation header options rows style guidelines blueprint templates grids */
         .navbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; padding-bottom:1rem; border-bottom:1px solid rgba(43,126,58,0.15); }
         .logo-area { display:flex; align-items:center; gap:0.8rem; text-decoration:none; color: inherit; }
         .logo-text { font-size:1.3rem; font-weight:700; color:#2b7e3a; }
@@ -130,24 +144,24 @@ while ($row = $inv_res->fetch_assoc()) {
         .header-section { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem; }
         .header-section h1 { color:#1e3a2a; font-size:1.8rem; }
         
-        /* Account points balance tracking board element styling */
+        /* Grand totals indicator green summary block parameters layouts styling properties links keys */
         .points-summary-card { background:linear-gradient(135deg,#2b7e3a,#1b5e2a); color:white; padding:1.5rem 2rem; border-radius:24px; display:flex; align-items:center; justify-content:space-between; margin-bottom:2rem; box-shadow:0 6px 18px rgba(43,126,58,0.15); }
         .points-val { font-size:2.5rem; font-weight:800; }
         .btn-shop { background:white; color:#2b7e3a; padding:0.6rem 1.2rem; border-radius:50px; font-weight:700; text-decoration:none; font-size:0.85rem; display:inline-flex; align-items:center; gap:5px; transition:0.2s; }
         .btn-shop:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,0.1); }
 
-        /* Split grid tracking history rows content block containers */
+        /* Split display panels schema: 2 columns wide split blueprint framework columns */
         .history-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
         .panel-box { background:white; border-radius:24px; padding:1.5rem; box-shadow:0 4px 15px rgba(0,0,0,0.02); border:1px solid rgba(43,126,58,0.06); }
         .panel-title { font-size:1.15rem; font-weight:700; color:#1e3a2a; margin-bottom:1.2rem; display:flex; align-items:center; gap:0.5rem; border-bottom:2px solid #eaf5e6; padding-bottom:0.5rem; }
         
-        /* Points history table element spacing schemas */
+        /* Log history listing sheet row lines templates formatting rules columns properties keys */
         .log-table { width:100%; border-collapse:collapse; }
         .log-table td { padding:1rem 0.5rem; border-bottom:1px solid #f0f4ee; vertical-align:middle; font-size:0.85rem; }
         .text-earned { color:#2b7e3a; font-weight:700; font-size:1rem; }
         .text-spent { color:#e67e22; font-weight:700; font-size:1rem; }
         
-        /* Voucher card listing design rules grid layout definitions */
+        /* Coupons inventory items container blueprints templates elements styles links */
         .coupon-grid { display:flex; flex-direction:column; gap:0.8rem; }
         .coupon-card { border:1px dashed #cbd5c0; background:#fafdf7; border-radius:14px; padding:1rem; display:flex; justify-content:space-between; align-items:center; }
         .coupon-card.used-coupon { background:#f5f5f5; border-style:solid; border-color:#e0e0e0; opacity:0.7; }
@@ -156,6 +170,7 @@ while ($row = $inv_res->fetch_assoc()) {
         .badge-active { background:#d4edda; color:#155724; }
         .badge-used { background:#e0e0e0; color:#555; }
 
+        /* Responsive design utility adjusting column structure grid definitions automatically on phone viewports scale */
         @media (max-width:768px) { .history-grid { grid-template-columns:1fr; } }
     </style>
 </head>
@@ -223,7 +238,7 @@ while ($row = $inv_res->fetch_assoc()) {
                     <?php foreach($user_inventory as $coupon): ?>
                         <div class="coupon-card <?php echo ($coupon['is_used'] == 1) ? 'used-coupon' : ''; ?>">
                             <div>
-                                <h4 style="color:#1e3a2a; font-weight:700;"><i class="fas fa-gift" style="color:#e67e2オレンジ; margin-right:4px;"></i> <?php echo htmlspecialchars($coupon['title']); ?></h4>
+                                <h4 style="color:#1e3a2a; font-weight:700;"><i class="fas fa-gift" style="color:#e67e22; margin-right:4px;"></i> <?php echo htmlspecialchars($coupon['title']); ?></h4>
                                 <small style="color:#777; display:block; margin-top:3px;">Claimed: <?php echo date('M j, Y', strtotime($coupon['redeemed_at'])); ?></small>
                             </div>
                             <div style="text-align:right;">
