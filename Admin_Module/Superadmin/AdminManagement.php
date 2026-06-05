@@ -13,6 +13,7 @@ require '../Email_System/phpmailer/src/PHPMailer.php';
 require '../Email_System/phpmailer/src/SMTP.php';
 
 session_start();
+require_once __DIR__ . '/../toast/toast_init.php';
 
 // Security check - If no session, redirect immediately
 if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'Superadmin') {
@@ -86,8 +87,6 @@ function sendTemporaryPassword($to_email, $username, $temp_pass) {
     }
 }
 
-$message = "";
-
 // Handle account creation
 if (isset($_POST['add_account'])) {
     $user        = mysqli_real_escape_string($conn, $_POST['username']);
@@ -100,9 +99,9 @@ if (isset($_POST['add_account'])) {
     if (mysqli_num_rows($check) > 0) {
         $found = mysqli_fetch_assoc($check);
         if ($found['username'] === $user) {
-            $message = "<div class='badge pending' style='width:100%; padding:15px; margin-bottom:20px;'>Error: Username already exists!</div>";
+            $toasts[] = ['text' => 'Username already exists!', 'type' => 'error'];
         } else {
-            $message = "<div class='badge pending' style='width:100%; padding:15px; margin-bottom:20px;'>Error: Email address already exists!</div>";
+            $toasts[] = ['text' => 'Email address already exists!', 'type' => 'error'];
         }
     } else {
         $sql = "INSERT INTO admins (username, email, password, role, status, is_coach, coach_price_per_hour)
@@ -111,12 +110,12 @@ if (isset($_POST['add_account'])) {
         if (mysqli_query($conn, $sql)) {
             $mail_sent = sendTemporaryPassword($email, $user, $temp_pass);
             if ($mail_sent) {
-                $message = "<div class='badge success' style='width:100%; padding:15px; margin-bottom:20px;'>Success: Account Created & Email Sent.</div>";
+                $toasts[] = ['text' => 'Account created & email sent.', 'type' => 'success'];
             } else {
-                $message = "<div class='badge success' style='width:100%; padding:15px; margin-bottom:20px;'>Success: Account Created (Email skipped).</div>";
+                $toasts[] = ['text' => 'Account created (email skipped).', 'type' => 'success'];
             }
         } else {
-            $message = "<div class='badge pending' style='width:100%; padding:15px; margin-bottom:20px;'>Database Error: " . mysqli_error($conn) . "</div>";
+            $toasts[] = ['text' => 'Database error: ' . mysqli_error($conn), 'type' => 'error'];
         }
     }
 }
@@ -220,8 +219,6 @@ $result = mysqli_query($conn, $query);
                     </button>
                 </div>
             </header>
-
-            <?php if($message !== "") echo $message; ?>
 
             <!-- Add Admin Form -->
             <div id="adminForm" class="form-card">
@@ -330,5 +327,10 @@ $result = mysqli_query($conn, $query);
     <script src="../Dashboard/Dashboard.js"></script>
     <script src="AdminManagement.js"></script>
 
+    <!-- Scroll-to-top -->
+    <?php include __DIR__ . '/../scroll_top.php'; ?>
+
+    <!-- Toast notifications -->
+    <?php include __DIR__ . '/../toast/toast.php'; ?>
 </body>
 </html>

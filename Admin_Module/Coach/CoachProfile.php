@@ -152,7 +152,6 @@ $ac = $avail_colors[$avail] ?? $avail_colors['Available'];
 
         <div class="cp-hero-info">
             <div class="cp-hero-name"><?php echo htmlspecialchars($coach['name']); ?></div>
-            <div class="cp-hero-role"><i class="fas fa-whistle"></i> Coach</div>
             <div class="cp-hero-meta">
                 <span><i class="fas fa-envelope"></i> <?php echo htmlspecialchars($coach['email']); ?></span>
                 <?php if ($coach['phone']): ?>
@@ -280,5 +279,13 @@ $ac = $avail_colors[$avail] ?? $avail_colors['Available'];
 <!-- All page-specific JS lives in CoachProfile.js -->
 <script src="CoachProfile.js"></script>
 
+<!-- Modal styling -->
+<?php include __DIR__ . '/../modal.php'; ?>
+
+<!-- Scroll-to-top -->
+<?php include __DIR__ . '/../scroll_top.php'; ?>
+
+<!-- Toast notifications -->
+<?php include __DIR__ . '/../toast/toast.php'; ?>
 </body>
 </html>

@@ -41,10 +41,11 @@ function openEditModal(id, date, startTime, endTime, courtId, coachId, sessionTy
     document.getElementById('modal-booking-date').value = date;
     document.getElementById('modal-start-time').value   = startTime;
     document.getElementById('modal-end-time').value     = endTime;
-    document.getElementById('modal-court-id').value     = courtId;
-    document.getElementById('modal-coach-id').value     = coachId;
     document.getElementById('modal-session-type').value = sessionType;
     document.getElementById('modal-notes').value        = notes;
+
+    setSearchSelectValue(document.getElementById('editCourtSearch'), courtId);
+    setSearchSelectValue(document.getElementById('editCoachSearch'), coachId);
 
     document.getElementById('editModal').classList.add('active');
 }
@@ -62,7 +63,90 @@ document.getElementById('editModal').addEventListener('click', function(e) {
 // Open add booking modal
 function openAddModal() {
     document.getElementById('addModal').classList.add('active');
+    document.querySelectorAll('#addModal .search-select').forEach(resetSearchSelect);
+    // Default Add modal coach to "No Coach" so the form can submit without a manual pick
+    var addCoach = document.querySelector('#addModal [data-search="addCoach"]');
+    if (addCoach) setSearchSelectValue(addCoach, 0);
 }
+
+// Search-select: filter list as user types, click item to pick.
+// Applied to every element with class .search-select on the page (Player, Court, Coach in both add + edit modals).
+function initSearchSelect(wrapper) {
+    var input  = wrapper.querySelector('.search-select-input');
+    var hidden = wrapper.querySelector('.search-select-value');
+    var list   = wrapper.querySelector('.search-select-list');
+    var empty  = wrapper.querySelector('.search-select-empty');
+    if (!input || !hidden || !list) return;
+    var items = list.querySelectorAll('.search-select-item');
+
+    input.addEventListener('focus', function () { wrapper.classList.add('is-open'); });
+    input.addEventListener('blur',  function () {
+        // Delay so item mousedown can register before list collapses
+        setTimeout(function () { wrapper.classList.remove('is-open'); }, 150);
+    });
+
+    input.addEventListener('input', function () {
+        var q = this.value.trim().toLowerCase();
+        var visibleCount = 0;
+        items.forEach(function (el) {
+            var name = el.getAttribute('data-name').toLowerCase();
+            var match = name.indexOf(q) !== -1;
+            el.style.display = match ? '' : 'none';
+            if (match) visibleCount++;
+        });
+        if (empty) empty.style.display = visibleCount === 0 ? 'block' : 'none';
+        wrapper.classList.add('is-open');
+        hidden.value = '';
+        items.forEach(function (el) { el.classList.remove('is-selected'); });
+    });
+
+    items.forEach(function (el) {
+        el.addEventListener('mousedown', function (e) { e.preventDefault(); });
+        el.addEventListener('click', function () {
+            hidden.value = this.getAttribute('data-id');
+            input.value  = this.getAttribute('data-name');
+            items.forEach(function (other) { other.classList.remove('is-selected'); });
+            this.classList.add('is-selected');
+            wrapper.classList.remove('is-open');
+        });
+    });
+}
+
+function resetSearchSelect(wrapper) {
+    var input  = wrapper.querySelector('.search-select-input');
+    var hidden = wrapper.querySelector('.search-select-value');
+    var empty  = wrapper.querySelector('.search-select-empty');
+    if (input)  input.value  = '';
+    if (hidden) hidden.value = '';
+    if (empty)  empty.style.display = 'none';
+    wrapper.querySelectorAll('.search-select-item').forEach(function (el) {
+        el.classList.remove('is-selected');
+        el.style.display = '';
+    });
+}
+
+function setSearchSelectValue(wrapper, id) {
+    if (!wrapper) return;
+    var input  = wrapper.querySelector('.search-select-input');
+    var hidden = wrapper.querySelector('.search-select-value');
+    var empty  = wrapper.querySelector('.search-select-empty');
+    var match  = wrapper.querySelector('.search-select-item[data-id="' + id + '"]');
+    wrapper.querySelectorAll('.search-select-item').forEach(function (el) {
+        el.classList.remove('is-selected');
+        el.style.display = '';
+    });
+    if (empty) empty.style.display = 'none';
+    if (match) {
+        hidden.value = match.getAttribute('data-id');
+        input.value  = match.getAttribute('data-name');
+        match.classList.add('is-selected');
+    } else {
+        if (hidden) hidden.value = '';
+        if (input)  input.value  = '';
+    }
+}
+
+document.querySelectorAll('.search-select').forEach(initSearchSelect);
 
 // Close add booking modal
 function closeAddModal() {
@@ -107,7 +191,7 @@ function updateBulkCount() {
 
 function submitBulk(action) {
     const ids = [...document.querySelectorAll('.row-check:checked')].map(c => c.value);
-    if (!ids.length) { alert('Please select at least one booking.'); return; }
+    if (!ids.length) { Toast.show('Please select at least one booking.', 'pending'); return; }
     if (!confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} ${ids.length} booking(s)?`)) return;
     document.getElementById('bulkAction').value = action;
     document.getElementById('bulkIds').value = ids.join(',');

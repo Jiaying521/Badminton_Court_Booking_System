@@ -1,6 +1,7 @@
 ﻿<?php
     // Login Status Check
     session_start();
+    require_once __DIR__ . '/../toast/toast_init.php';
     if(!isset($_SESSION['username'])){
         header("Location: ../LoginPage.php");
         exit();
@@ -45,7 +46,8 @@
         // Check if court name already exists
         $check = mysqli_query($conn, "SELECT id FROM courts WHERE court_name = '$court_name'");
         if(mysqli_num_rows($check) > 0){
-            $error = "Court name already exists!";
+            header("Location: ManageCourts.php?error=duplicate");
+            exit();
         } else {
             // Insert into database
             $sql = "INSERT INTO courts (court_name, court_type, location, facilities, price_off_peak, price_peak, is_active)
@@ -60,7 +62,9 @@
                 header("Location: ManageCourts.php?success=1");
                 exit();
             } else {
-                $error = "Database error: " . mysqli_error($conn);
+                toast_push('Database error: ' . mysqli_error($conn), 'error');
+                header("Location: ManageCourts.php");
+                exit();
             }
         }
     }
@@ -99,11 +103,7 @@
                 </div>
             </header>
 
-            <?php if($error !== ""): ?>
-                <div class="badge pending" style="width:100%; padding:15px; margin-bottom:20px;">
-                    <?php echo $error; ?>
-                </div>
-            <?php endif; ?>
+<?php if($error !== ""): $toasts[] = ['text' => $error, 'type' => 'error']; endif; ?>
 
             <div class="form-card active">
                 <form method="POST" class="form-grid">
@@ -160,5 +160,11 @@
     </main>
 
     <script src="../Dashboard/Dashboard.js"></script>
+
+    <!-- Scroll-to-top -->
+    <?php include __DIR__ . '/../scroll_top.php'; ?>
+
+    <!-- Toast notifications -->
+    <?php include __DIR__ . '/../toast/toast.php'; ?>
 </body>
 </html>

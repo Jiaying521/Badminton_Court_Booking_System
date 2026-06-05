@@ -1,6 +1,7 @@
 ﻿<?php 
     //LOGIN Check
     session_start();
+    require_once __DIR__ . '/../toast/toast_init.php';
     if(!isset($_SESSION['username'])){
         header("Location: ../LoginPage.php");
         exit();
@@ -84,7 +85,9 @@
         }
     }
 
-    $message = "";
+    // Toast notifications from URL params
+    if (isset($_GET['success'])) { $toasts[] = ['text' => 'Coach updated successfully!',   'type' => 'success']; }
+    if (isset($_GET['updated'])) { $toasts[] = ['text' => 'Status updated successfully!', 'type' => 'success']; }
 
     //Handle create coach account
     if(isset($_POST['add_account'])){
@@ -105,9 +108,9 @@
         if(mysqli_num_rows($check) > 0){
             $found = mysqli_fetch_assoc($check);
             if($found['username'] === $user){
-                $message = "<div class='badge pending' style='width:100%; padding:15px; margin-bottom:20px;'>Error: Username already exists!</div>";
+                $toasts[] = ['text' => 'Username already exists!', 'type' => 'error'];
             } else {
-                $message = "<div class='badge pending' style='width:100%; padding:15px; margin-bottom:20px;'>Error: Email address already exists!</div>";
+                $toasts[] = ['text' => 'Email address already exists!', 'type' => 'error'];
             }
         } else {
             $sql = "INSERT INTO admins (username, email, password, role, status, specialisation, is_coach, coach_price_per_hour)
@@ -122,12 +125,12 @@
 
                 $mail_sent = sendTemporaryPassword($email, $user, $temp_pass);
                 if($mail_sent){
-                    $message = "<div class='badge success' style='width:100%; padding:15px; margin-bottom:20px;'>Success: Coach Account Created & Email Sent.</div>";
+                    $toasts[] = ['text' => 'Coach account created & email sent.', 'type' => 'success'];
                 } else {
-                    $message = "<div class='badge success' style='width:100%; padding:15px; margin-bottom:20px;'>Success: Coach Account Created (Email skipped).</div>";
+                    $toasts[] = ['text' => 'Coach account created (email skipped).', 'type' => 'success'];
                 }
             } else {
-                $message = "<div class='badge pending' style='width:100%; padding:15px; margin-bottom:20px;'>Database Error: " . mysqli_error($conn) . "</div>";
+                $toasts[] = ['text' => 'Database error: ' . mysqli_error($conn), 'type' => 'error'];
             }
         }
     }
@@ -287,46 +290,13 @@
                     <button class="btn-filter-toggle" onclick="toggleFilter()">
                         <i class="fas fa-filter"></i> Filter
                     </button>
-                    <button class="btn-add-account" onclick="toggleCoachForm()">
+                    <button class="btn-add-account" type="button" onclick="openAddCoachModal()">
                         <i class="fas fa-plus"></i> Add Coach
                     </button>
                 </div>
             </header>
 
-            <?php if($message !== "") echo $message; ?>
 
-            <?php if(isset($_GET['success'])): ?>
-                <div class="badge success" style="width:100%; padding:15px; margin-bottom:20px;">Coach updated successfully!</div>
-            <?php endif; ?>
-
-            <?php if(isset($_GET['updated'])): ?>
-                <div class="badge success" style="width:100%; padding:15px; margin-bottom:20px;">Status updated successfully!</div>
-            <?php endif; ?>
-
-            <!-- Add Coach Form -->
-            <div id="coachForm" class="form-card">
-                <h3>Create New Coach</h3>
-                <form method="POST" class="form-grid">
-                    <input type="text" name="username" placeholder="Coach Name" required>
-                    <input type="email" name="email" placeholder="Email" required>
-                    <select name="spec" required>
-                        <option value="" disabled selected>Select Coaching Specialty</option>
-                        <option value="Singles Coaching">Singles Coaching</option>
-                        <option value="Doubles Coaching">Doubles Coaching</option>
-                        <option value="Fitness & Conditioning">Fitness &amp; Conditioning</option>
-                        <option value="Junior Development">Junior Development</option>
-                        <option value="Tournament Preparation">Tournament Preparation</option>
-                    </select>
-                    <input type="number" name="coach_price_per_hour" placeholder="Price Per Hour (RM)" step="0.01" min="0" required>
-                    <select name="gender_add">
-                        <option value="">-- Gender (Optional) --</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                    </select>
-                    <input type="number" name="age_add" placeholder="Age (Optional)" min="18" max="80">
-                    <button type="submit" name="add_account" class="btn-create">Create Account</button>
-                </form>
-            </div>
 
             <!-- Collapsible Filter Panel -->
             <div class="filter-panel <?php echo $has_filter ? 'open' : ''; ?>" id="filterPanel">
@@ -453,6 +423,71 @@
         </div>
     </main>
 
+    <!-- Add Coach Modal -->
+    <div class="modal-overlay" id="coachAddModal">
+        <div class="modal-card">
+
+            <div class="modal-header">
+                <h2><i class="fas fa-user-plus"></i> Create New Coach</h2>
+                <button class="modal-close" type="button" onclick="closeAddCoachModal()">&times;</button>
+            </div>
+
+            <form method="POST">
+                <div style="padding:22px 28px; display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+
+                    <div class="modal-field">
+                        <label>Coach Name</label>
+                        <input type="text" name="username" placeholder="e.g. John Tan" required>
+                    </div>
+
+                    <div class="modal-field">
+                        <label>Email</label>
+                        <input type="email" name="email" placeholder="coach@example.com" required>
+                    </div>
+
+                    <div class="modal-field" style="grid-column: 1 / -1;">
+                        <label>Coaching Specialty</label>
+                        <select name="spec" required>
+                            <option value="" disabled selected>Select Coaching Specialty</option>
+                            <option value="Singles Coaching">Singles Coaching</option>
+                            <option value="Doubles Coaching">Doubles Coaching</option>
+                            <option value="Fitness & Conditioning">Fitness &amp; Conditioning</option>
+                            <option value="Junior Development">Junior Development</option>
+                            <option value="Tournament Preparation">Tournament Preparation</option>
+                        </select>
+                    </div>
+
+                    <div class="modal-field">
+                        <label>Price Per Hour (RM)</label>
+                        <input type="number" name="coach_price_per_hour" placeholder="e.g. 50.00" step="0.01" min="0" required>
+                    </div>
+
+                    <div class="modal-field">
+                        <label>Gender (Optional)</label>
+                        <select name="gender_add">
+                            <option value="">-- Select --</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+
+                    <div class="modal-field">
+                        <label>Age (Optional)</label>
+                        <input type="number" name="age_add" placeholder="18 - 80" min="18" max="80">
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-modal-cancel" onclick="closeAddCoachModal()">Cancel</button>
+                    <button type="submit" name="add_account" class="btn-modal-save">
+                        <i class="fas fa-user-plus"></i> Create Account
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Edit Coach Modal -->
     <div class="modal-overlay" id="coachEditModal">
 
@@ -565,5 +600,13 @@
     <!-- All page-specific UI logic lives in ManageCoaches.js -->
     <script src="ManageCoaches.js"></script>
 
+    <!-- Modal styling -->
+    <?php include __DIR__ . '/../modal.php'; ?>
+
+    <!-- Scroll-to-top -->
+    <?php include __DIR__ . '/../scroll_top.php'; ?>
+
+    <!-- Toast notifications -->
+    <?php include __DIR__ . '/../toast/toast.php'; ?>
 </body>
 </html>

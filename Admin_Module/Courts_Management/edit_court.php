@@ -1,5 +1,6 @@
 ﻿<?php
 session_start();
+require_once __DIR__ . '/../toast/toast_init.php';
 if (!isset($_SESSION['username']) || !in_array($_SESSION['role'], ['Superadmin', 'Admin'])) {
     header("Location: ../LoginPage.php");
     exit();
@@ -95,11 +96,7 @@ if (!$court) {
                 </div>
             </header>
 
-            <?php if ($error !== ""): ?>
-                <div class="badge pending" style="width:100%; padding:15px; margin-bottom:20px;">
-                    <?php echo htmlspecialchars($error); ?>
-                </div>
-            <?php endif; ?>
+<?php if ($error !== ""): $toasts[] = ['text' => $error, 'type' => 'error']; endif; ?>
 
             <div class="form-card active">
                 <form method="POST" class="form-grid">
@@ -152,5 +149,11 @@ if (!$court) {
     </main>
 
     <script src="../Dashboard/Dashboard.js"></script>
+
+    <!-- Scroll-to-top -->
+    <?php include __DIR__ . '/../scroll_top.php'; ?>
+
+    <!-- Toast notifications -->
+    <?php include __DIR__ . '/../toast/toast.php'; ?>
 </body>
 </html>

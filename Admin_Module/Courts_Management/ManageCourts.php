@@ -2,6 +2,7 @@
     
     // Login Status Check
     session_start();
+    require_once __DIR__ . '/../toast/toast_init.php';
     if(!isset($_SESSION['username'])){
         header("Location: ../LoginPage.php");
         exit();
@@ -17,6 +18,13 @@
     header("Cache-Control: no-cache, no-store, must-revalidate"); 
     header("Pragma: no-cache");
     header("Expires: 0");
+
+    // Toast notifications from URL params (redirects from AddCourt / edit_court / delete)
+    if (isset($_GET['success']))  { $toasts[] = ['text' => 'Court saved successfully!', 'type' => 'success']; }
+    if (isset($_GET['deleted']))  { $toasts[] = ['text' => 'Court deleted (or deactivated) successfully.', 'type' => 'pending']; }
+    if (isset($_GET['error']) && $_GET['error'] === 'duplicate') {
+        $toasts[] = ['text' => 'Court name already exists!', 'type' => 'error'];
+    }
 
     // Database Connection
     $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
@@ -157,9 +165,9 @@
                     <button class="btn-filter-toggle" onclick="toggleFilter()">
                         <i class="fas fa-filter"></i> Filter
                     </button>
-                    <a href="AddCourt.php" class="btn-add-account" style="text-decoration:none;">
+                    <button type="button" class="btn-add-account" onclick="openAddCourtModal()">
                         <i class="fas fa-plus"></i> Add Court
-                    </a>
+                    </button>
                 </div>
             </header>
 
@@ -193,24 +201,6 @@
                 </form>
             </div>
 
-            <!-- Success / Error Messages -->
-            <?php if(isset($_GET['success'])): ?>
-                <div class="badge success" style="width:100%; padding:15px; margin-bottom:20px;">
-                    Court saved successfully!
-                </div>
-            <?php endif; ?>
-
-            <?php if(isset($_GET['deleted'])): ?>
-                <div class="badge pending" style="width:100%; padding:15px; margin-bottom:20px;">
-                    Court deleted (or deactivated) successfully.
-                </div>
-            <?php endif; ?>
-
-            <?php if(isset($_GET['error']) && $_GET['error'] === 'duplicate'): ?>
-                <div class="badge pending" style="width:100%; padding:15px; margin-bottom:20px;">
-                    Error: Court name already exists!
-                </div>
-            <?php endif; ?>
 
             <!-- Court Table -->
             <table class="data-table">
@@ -338,7 +328,83 @@
         </div>
     </div>
 
+    <!-- Add Court Modal -->
+    <div class="modal-overlay" id="addCourtModal">
+        <div class="modal-card">
+
+            <div class="modal-header">
+                <h2><i class="fas fa-plus"></i> Add New Court</h2>
+                <button class="modal-close" type="button" onclick="closeAddCourtModal()">&times;</button>
+            </div>
+
+            <form action="AddCourt.php" method="POST">
+                <div class="modal-grid">
+
+                    <div class="modal-field">
+                        <label>Court Name</label>
+                        <input type="text" name="court_name" placeholder="e.g. Court A" required>
+                    </div>
+
+                    <div class="modal-field">
+                        <label>Court Type</label>
+                        <select name="court_type" required>
+                            <option value="" disabled selected>Select Type</option>
+                            <option value="Standard">Standard</option>
+                            <option value="Training">Training</option>
+                        </select>
+                    </div>
+
+                    <div class="modal-field">
+                        <label>Location</label>
+                        <input type="text" name="location" placeholder="e.g. Main Hall 1">
+                    </div>
+
+                    <div class="modal-field">
+                        <label>Facilities</label>
+                        <input type="text" name="facilities" placeholder="e.g. Shower, Locker">
+                    </div>
+
+                    <div class="modal-field">
+                        <label>Off-Peak Price (RM)</label>
+                        <input type="number" name="price_off_peak" value="10.00" step="0.01" min="0" required>
+                    </div>
+
+                    <div class="modal-field">
+                        <label>Peak Price (RM)</label>
+                        <input type="number" name="price_peak" value="15.00" step="0.01" min="0" required>
+                    </div>
+
+                    <div class="modal-field full-width">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="is_active" checked> Active
+                        </label>
+                    </div>
+
+                </div>
+
+                <div class="modal-actions">
+                    <div></div>
+                    <div style="display:flex; gap:10px;">
+                        <button type="button" class="btn-modal-cancel" onclick="closeAddCourtModal()">Cancel</button>
+                        <button type="submit" name="save_court" class="btn-modal-save">
+                            <i class="fas fa-save"></i> Save Court
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="ManageCourts.js"></script>
     <script src="../Dashboard/Dashboard.js"></script>
+
+    <!-- Modal styling -->
+    <?php include __DIR__ . '/../modal.php'; ?>
+
+    <!-- Scroll-to-top -->
+    <?php include __DIR__ . '/../scroll_top.php'; ?>
+
+    <!-- Toast notifications -->
+    <?php include __DIR__ . '/../toast/toast.php'; ?>
 </body>
 </html>

@@ -548,5 +548,11 @@ if ($q_dates) {
 
     <!-- Dashboard Scripts -->
     <script src="Dashboard.js"></script>
+
+    <!-- Scroll-to-top -->
+    <?php include __DIR__ . '/../scroll_top.php'; ?>
+
+    <!-- Toast notifications -->
+    <?php include __DIR__ . '/../toast/toast.php'; ?>
 </body>
 </html>

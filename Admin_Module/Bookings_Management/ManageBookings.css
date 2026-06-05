@@ -467,6 +467,71 @@
     background: #4f46e5;
 }
 
+/* Player search dropdown (Add Booking modal) */
+.search-select {
+    position: relative;
+    width: 100%;
+}
+.search-select-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'Outfit', sans-serif;
+    background: #fff;
+    color: #0f172a;
+    box-sizing: border-box;
+    transition: border-color 0.18s, box-shadow 0.18s;
+}
+.search-select-input::placeholder { color: #94a3b8; }
+.search-select-input:focus {
+    outline: none;
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 3px rgba(245,158,11,0.12);
+}
+.search-select-list {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    max-height: 220px;
+    overflow-y: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 4px;
+    background: #fff;
+    box-shadow: 0 12px 32px rgba(15,23,42,0.14);
+    display: none;
+    z-index: 50;
+}
+.search-select.is-open .search-select-list { display: block; }
+.search-select-item {
+    padding: 9px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #0f172a;
+    cursor: pointer;
+    transition: background 0.12s;
+}
+.search-select-item:hover {
+    background: #fff7ed;
+    color: #b45309;
+}
+.search-select-item.is-selected {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+    font-weight: 600;
+}
+.search-select-empty {
+    padding: 14px 12px;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 13px;
+}
+.search-select-list::-webkit-scrollbar { width: 6px; }
+.search-select-list::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
+
 /*  Scroll To Top Button */
 #scrollTopBtn {
     position: fixed;

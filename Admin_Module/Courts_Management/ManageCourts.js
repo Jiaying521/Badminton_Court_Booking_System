@@ -24,7 +24,29 @@ function closeCourtModal() {
     document.getElementById('courtModal').classList.remove('active');
 }
 
-// Close modal when clicking outside the card
-document.getElementById('courtModal').addEventListener('click', function(e) {
-    if (e.target === this) closeCourtModal();
+// Add Court modal (falls back to AddCourt.php if the modal div is not on this page)
+function openAddCourtModal() {
+    var m = document.getElementById('addCourtModal');
+    if (m) {
+        m.classList.add('active');
+        m.style.display = 'flex';
+    } else {
+        window.location.href = 'AddCourt.php';
+    }
+}
+function closeAddCourtModal() {
+    var m = document.getElementById('addCourtModal');
+    if (m) { m.classList.remove('active'); m.style.display = 'none'; }
+}
+
+// Close modals when clicking outside the card
+document.addEventListener('DOMContentLoaded', function () {
+    var edit = document.getElementById('courtModal');
+    if (edit) edit.addEventListener('click', function (e) {
+        if (e.target === this) closeCourtModal();
+    });
+    var add = document.getElementById('addCourtModal');
+    if (add) add.addEventListener('click', function (e) {
+        if (e.target === this) closeAddCourtModal();
+    });
 });

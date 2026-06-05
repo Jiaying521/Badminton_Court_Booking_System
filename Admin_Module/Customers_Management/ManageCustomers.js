@@ -186,7 +186,7 @@ function applyChartFilter() {
     const from = document.getElementById('chartFrom').value;
     const to   = document.getElementById('chartTo').value;
     if (from && to && from > to) {
-        alert('From cannot be later than To');
+        Toast.show('From date cannot be later than To date.', 'pending');
         return;
     }
     switchChart(currentChartType);

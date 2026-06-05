@@ -1,5 +1,6 @@
 ﻿<?php
     session_start();
+    require_once __DIR__ . '/../toast/toast_init.php';
     if(!isset($_SESSION['username'])){
         header("Location: ../LoginPage.php");
         exit();
@@ -15,6 +16,12 @@
     header("Cache-Control: no-cache, no-store, must-revalidate"); 
     header("Pragma: no-cache");
     header("Expires: 0");
+
+    // Toast notifications from URL params (redirects from AddBooking / edit / bulk actions)
+    if (isset($_GET['updated']))  { $toasts[] = ['text' => 'Booking status updated successfully!', 'type' => 'success']; }
+    if (isset($_GET['edited']))   { $toasts[] = ['text' => 'Booking updated successfully!',        'type' => 'success']; }
+    if (isset($_GET['added']))    { $toasts[] = ['text' => 'Booking added successfully!',          'type' => 'success']; }
+    if (isset($_GET['conflict'])) { $toasts[] = ['text' => 'This time slot is already booked. Please choose another time.', 'type' => 'pending']; }
 
     // Handle bulk action
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['ids'])) {
@@ -284,34 +291,6 @@
                 </form>
             </div>
 
-            <!-- Update Success Message -->
-            <?php if(isset($_GET['updated'])): ?>
-                <div class="badge success" style="width:100%; padding:15px; margin-bottom:20px;">
-                    Booking status updated successfully!
-                </div>
-            <?php endif; ?>
-
-            <!-- Edit Success Message -->
-            <?php if(isset($_GET['edited'])): ?>
-                <div class="badge success" style="width:100%; padding:15px; margin-bottom:20px;">
-                    Booking updated successfully!
-                </div>
-            <?php endif; ?>
-
-            <!-- Add Success Message -->
-            <?php if(isset($_GET['added'])): ?>
-                <div class="badge success" style="width:100%; padding:15px; margin-bottom:20px;">
-                    Booking added successfully!
-                </div>
-            <?php endif; ?>
-
-            <!-- Add Conflict Error Message -->
-            <?php if(isset($_GET['conflict'])): ?>
-                <div class="badge pending" style="width:100%; padding:15px; margin-bottom:20px;">
-                    This time slot is already booked. Please choose another time.
-                </div>
-            <?php endif; ?>
-            
             <!-- Bulk Action Bar -->
             <div class="bulk-action-bar" id="bulkActionBar">
                 <span id="bulkCount">0 selected</span>
@@ -545,25 +524,35 @@
 
                     <div class="modal-field">
                         <label>Court</label>
-                        <select name="court_id" id="modal-court-id" required>
-                            <?php foreach($courts_list as $court): ?>
-                                <option value="<?php echo $court['id']; ?>">
-                                    <?php echo htmlspecialchars($court['court_name']); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
+                        <div class="search-select" data-search="editCourt" id="editCourtSearch">
+                            <input type="text" class="search-select-input" placeholder="Type to search a court..." autocomplete="off">
+                            <input type="hidden" name="court_id" class="search-select-value" required>
+                            <div class="search-select-list">
+                                <?php foreach($courts_list as $court): ?>
+                                    <div class="search-select-item" data-id="<?php echo $court['id']; ?>" data-name="<?php echo htmlspecialchars($court['court_name']); ?>">
+                                        <?php echo htmlspecialchars($court['court_name']); ?>
+                                    </div>
+                                <?php endforeach; ?>
+                                <div class="search-select-empty" style="display:none;">No courts match.</div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="modal-field">
                         <label>Coach</label>
-                        <select name="coach_id" id="modal-coach-id">
-                            <option value="0">No Coach</option>
-                            <?php foreach($coaches_list as $coach): ?>
-                                <option value="<?php echo $coach['id']; ?>">
-                                    <?php echo htmlspecialchars($coach['name']); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
+                        <div class="search-select" data-search="editCoach" id="editCoachSearch">
+                            <input type="text" class="search-select-input" placeholder="Type to search a coach..." autocomplete="off">
+                            <input type="hidden" name="coach_id" class="search-select-value" value="0">
+                            <div class="search-select-list">
+                                <div class="search-select-item" data-id="0" data-name="No Coach">No Coach</div>
+                                <?php foreach($coaches_list as $coach): ?>
+                                    <div class="search-select-item" data-id="<?php echo $coach['id']; ?>" data-name="<?php echo htmlspecialchars($coach['name']); ?>">
+                                        <?php echo htmlspecialchars($coach['name']); ?>
+                                    </div>
+                                <?php endforeach; ?>
+                                <div class="search-select-empty" style="display:none;">No coaches match.</div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="modal-field full-width">
@@ -607,14 +596,18 @@
 
                     <div class="modal-field full-width">
                         <label>Player</label>
-                        <select name="user_id" required>
-                            <option value="">Select Player</option>
-                            <?php foreach($users_list as $user): ?>
-                                <option value="<?php echo $user['id']; ?>">
-                                    <?php echo htmlspecialchars($user['name']); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
+                        <div class="search-select" data-search="addPlayer">
+                            <input type="text" class="search-select-input" placeholder="Type to search a player..." autocomplete="off">
+                            <input type="hidden" name="user_id" class="search-select-value" required>
+                            <div class="search-select-list">
+                                <?php foreach($users_list as $user): ?>
+                                    <div class="search-select-item" data-id="<?php echo $user['id']; ?>" data-name="<?php echo htmlspecialchars($user['name']); ?>">
+                                        <?php echo htmlspecialchars($user['name']); ?>
+                                    </div>
+                                <?php endforeach; ?>
+                                <div class="search-select-empty" style="display:none;">No players match your search.</div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="modal-field full-width">
@@ -634,26 +627,35 @@
 
                     <div class="modal-field">
                         <label>Court</label>
-                        <select name="court_id" required>
-                            <option value="">Select Court</option>
-                            <?php foreach($courts_list as $court): ?>
-                                <option value="<?php echo $court['id']; ?>">
-                                    <?php echo htmlspecialchars($court['court_name']); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
+                        <div class="search-select" data-search="addCourt">
+                            <input type="text" class="search-select-input" placeholder="Type to search a court..." autocomplete="off">
+                            <input type="hidden" name="court_id" class="search-select-value" required>
+                            <div class="search-select-list">
+                                <?php foreach($courts_list as $court): ?>
+                                    <div class="search-select-item" data-id="<?php echo $court['id']; ?>" data-name="<?php echo htmlspecialchars($court['court_name']); ?>">
+                                        <?php echo htmlspecialchars($court['court_name']); ?>
+                                    </div>
+                                <?php endforeach; ?>
+                                <div class="search-select-empty" style="display:none;">No courts match.</div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="modal-field">
                         <label>Coach</label>
-                        <select name="coach_id">
-                            <option value="0">No Coach</option>
-                            <?php foreach($coaches_list as $coach): ?>
-                                <option value="<?php echo $coach['id']; ?>">
-                                    <?php echo htmlspecialchars($coach['name']); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
+                        <div class="search-select" data-search="addCoach">
+                            <input type="text" class="search-select-input" placeholder="Type to search a coach..." autocomplete="off">
+                            <input type="hidden" name="coach_id" class="search-select-value" value="0">
+                            <div class="search-select-list">
+                                <div class="search-select-item" data-id="0" data-name="No Coach">No Coach</div>
+                                <?php foreach($coaches_list as $coach): ?>
+                                    <div class="search-select-item" data-id="<?php echo $coach['id']; ?>" data-name="<?php echo htmlspecialchars($coach['name']); ?>">
+                                        <?php echo htmlspecialchars($coach['name']); ?>
+                                    </div>
+                                <?php endforeach; ?>
+                                <div class="search-select-empty" style="display:none;">No coaches match.</div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="modal-field full-width">
@@ -699,5 +701,11 @@
         });
     </script>
     <?php endif; ?>
+
+    <!-- Modal styling -->
+    <?php include __DIR__ . '/../modal.php'; ?>
+
+    <!-- Toast notifications -->
+    <?php include __DIR__ . '/../toast/toast.php'; ?>
 </body>
 </html>

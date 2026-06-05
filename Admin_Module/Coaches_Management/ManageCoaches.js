@@ -1,16 +1,20 @@
-﻿// ManageCoaches.js
-// All UI logic for the Coach Management page:
-//   - show/hide the "Create Coach" form and the filter panel
-//   - open/close the Edit Coach modal and fill its inputs
-//   - let the admin crop a new profile photo before saving
+﻿let cropperInstance = null;
 
-let cropperInstance = null;
-
-// Open / hide the "Create New Coach" form card.
-function toggleCoachForm() {
-    const form = document.getElementById('coachForm');
-    form.classList.toggle('active');
+// Add Coach modal
+function openAddCoachModal() {
+    var m = document.getElementById('coachAddModal');
+    if (m) { m.classList.add('active'); m.style.display = 'flex'; }
 }
+function closeAddCoachModal() {
+    var m = document.getElementById('coachAddModal');
+    if (m) { m.classList.remove('active'); m.style.display = 'none'; }
+}
+document.addEventListener('DOMContentLoaded', function () {
+    var modal = document.getElementById('coachAddModal');
+    if (modal) modal.addEventListener('click', function (e) {
+        if (e.target === this) closeAddCoachModal();
+    });
+});
 
 // Open / hide the filter panel above the coach table.
 function toggleFilter() {

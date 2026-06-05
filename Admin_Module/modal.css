@@ -1,0 +1,56 @@
+.modal-overlay .modal-card,
+.modal-overlay .modal-content {
+    border-radius: 20px !important;
+    box-shadow: 0 24px 64px rgba(15,23,42,0.28);
+}
+
+.modal-overlay .modal-header h2 i,
+.modal-overlay .modal-header h3 i {
+    color: #f59e0b;
+}
+
+.modal-overlay .modal-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    line-height: 1;
+    padding: 0;
+    transition: background 0.2s, color 0.2s, transform 0.25s;
+}
+.modal-overlay .modal-close:hover {
+    background: #fee2e2 !important;
+    color: #dc2626 !important;
+    transform: rotate(90deg);
+}
+
+.modal-overlay .btn-modal-save {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    color: #0f172a !important;
+    border-radius: 999px !important;
+}
+.modal-overlay .btn-modal-save:hover {
+    filter: brightness(1.04);
+    box-shadow: 0 8px 22px rgba(245,158,11,0.45);
+}
+
+.modal-overlay .btn-modal-cancel {
+    border-radius: 999px !important;
+}
+
+.modal-overlay .btn-modal-delete {
+    border-radius: 999px !important;
+}
+
+.modal-overlay .btn-create {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    color: #0f172a !important;
+    border-radius: 999px !important;
+}

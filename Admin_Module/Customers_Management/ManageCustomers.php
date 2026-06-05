@@ -1,6 +1,7 @@
 ﻿<?php 
     //LOGIN Check
     session_start();
+    require_once __DIR__ . '/../toast/toast_init.php';
     if(!isset($_SESSION['username'])){
         header("Location: ../LoginPage.php");
         exit();
@@ -27,7 +28,9 @@
     // This page sits at Admin_Module root, so navbar links don't need a prefix.
     $base_path = '../';
 
-    $message = "";
+    // Toast notifications from URL params
+    if (isset($_GET['success']))        { $toasts[] = ['text' => 'Customer updated successfully!',       'type' => 'success']; }
+    if (isset($_GET['wallet_updated'])) { $toasts[] = ['text' => 'Wallet balance updated successfully!', 'type' => 'success']; }
 
     // ── AJAX: fetch customer details ──────────────────────────────────────────
     if(isset($_GET['fetch_details'])){
@@ -95,7 +98,7 @@
         if($result_upd){
             header("Location: ManageCustomers.php?success=1");
         } else {
-            $message = "<div class='badge pending' style='width:100%; padding:15px; margin-bottom:20px;'>Database Error: " . mysqli_error($conn) . "</div>";
+            $toasts[] = ['text' => 'Database error: ' . mysqli_error($conn), 'type' => 'error'];
         }
         exit();
     }
@@ -245,15 +248,6 @@
                 </div>
             </header>
 
-            <?php if($message !== "") echo $message; ?>
-
-            <?php if(isset($_GET['success'])): ?>
-                <div class="badge success" style="width:100%; padding:15px; margin-bottom:20px;">Customer updated successfully!</div>
-            <?php endif; ?>
-
-            <?php if(isset($_GET['wallet_updated'])): ?>
-                <div class="badge success" style="width:100%; padding:15px; margin-bottom:20px;">Wallet balance updated successfully!</div>
-            <?php endif; ?>
 
             <!-- Summary Stats -->
             <div class="customer-stats">
@@ -662,5 +656,13 @@
 
     <script src="ManageCustomers.js"></script>
 
+    <!-- Modal styling -->
+    <?php include __DIR__ . '/../modal.php'; ?>
+
+    <!-- Scroll-to-top -->
+    <?php include __DIR__ . '/../scroll_top.php'; ?>
+
+    <!-- Toast notifications -->
+    <?php include __DIR__ . '/../toast/toast.php'; ?>
 </body>
 </html>

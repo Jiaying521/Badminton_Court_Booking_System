@@ -57,7 +57,7 @@ function runExport(mode) {
     } else {
         startDate = document.getElementById('exportStart').value;
         endDate   = document.getElementById('exportEnd').value;
-        if (!startDate || !endDate) { alert('Please select both dates.'); return; }
+        if (!startDate || !endDate) { Toast.show('Please select both dates.', 'pending'); return; }
     }
 
     const url = `export_report.php?start_date=${startDate}&end_date=${endDate}&mode=${mode}`;

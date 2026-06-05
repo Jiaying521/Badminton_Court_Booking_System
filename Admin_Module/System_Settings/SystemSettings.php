@@ -194,8 +194,8 @@ if (isset($_POST['save_pricing'])) {
 }
 
 
-/* Action J: Save Contact Information (contact_phone, contact_email, contact_whatsapp, address) */
-if (isset($_POST['save_contact'])) {
+/* Action J: Save Contact Information (Superadmin only — Admin must not be able to change global contact details) */
+if (isset($_POST['save_contact']) && $role === 'Superadmin') {
 
     /* mysqli_real_escape_string protects against SQL injection on text fields */
     $contact_phone    = mysqli_real_escape_string($conn, trim($_POST['contact_phone']));
@@ -287,7 +287,9 @@ $vouchers = mysqli_query($conn, "SELECT * FROM voucher ORDER BY points_required 
                 <a href="#sec-closed"  class="settings-tab"><i class="fas fa-calendar-times"></i> Closed Days</a>
                 <a href="#sec-promo"   class="settings-tab"><i class="fas fa-percent"></i> Promo Codes</a>
                 <a href="#sec-voucher" class="settings-tab"><i class="fas fa-ticket-alt"></i> Vouchers</a>
+                <?php if ($role === 'Superadmin'): ?>
                 <a href="#sec-contact" class="settings-tab"><i class="fas fa-address-card"></i> Contact Info</a>
+                <?php endif; ?>
             </nav>
 
 
@@ -377,7 +379,8 @@ $vouchers = mysqli_query($conn, "SELECT * FROM voucher ORDER BY points_required 
             </div>
 
 
-            <!-- Section 1.6: Contact Information -->
+            <!-- Section 1.6: Contact Information (Superadmin only) -->
+            <?php if ($role === 'Superadmin'): ?>
             <div class="settings-card" id="sec-contact">
                 <h3><i class="fas fa-address-card"></i> Contact Information</h3>
                 <p class="settings-desc">These details show on the Contact Us, FAQ and Cancellation Policy pages.</p>
@@ -416,6 +419,7 @@ $vouchers = mysqli_query($conn, "SELECT * FROM voucher ORDER BY points_required 
                     </button>
                 </form>
             </div>
+            <?php endif; ?>
 
 
             <!-- Section 2: Closed Days -->
@@ -669,30 +673,11 @@ $vouchers = mysqli_query($conn, "SELECT * FROM voucher ORDER BY points_required 
         </div> <!-- end manage-container -->
     </main>
 
-    <!-- Scroll-to-top button (same design and behaviour as the one on Manage Bookings) -->
-    <button id="scrollTopBtn" onclick="window.scrollTo({top:0, behavior:'smooth'})" aria-label="Back to top">
-        <i class="fas fa-chevron-up"></i>
-    </button>
+    <!-- Scroll-to-top -->
+    <?php include __DIR__ . '/../scroll_top.php'; ?>
 
-    <!-- Toast notification stack (bottom-left). Server-rendered toasts sit here on load. -->
-    <div class="toast-container" id="toastContainer">
-        <?php foreach ($toasts as $t): ?>
-            <?php
-                $icon  = $t['type'] === 'success' ? 'fa-check'
-                       : ($t['type'] === 'error' ? 'fa-xmark' : 'fa-exclamation');
-                $label = $t['type'] === 'success' ? 'Success'
-                       : ($t['type'] === 'error' ? 'Error'   : 'Notice');
-            ?>
-            <div class="toast <?php echo htmlspecialchars($t['type']); ?>" data-toast>
-                <span class="toast-icon"><i class="fas <?php echo $icon; ?>"></i></span>
-                <div class="toast-body">
-                    <span class="toast-label"><?php echo $label; ?></span>
-                    <span class="toast-text"><?php echo htmlspecialchars($t['text']); ?></span>
-                </div>
-                <button class="toast-close" type="button" aria-label="Dismiss">&times;</button>
-            </div>
-        <?php endforeach; ?>
-    </div>
+    <!-- Toast notifications -->
+    <?php include __DIR__ . '/../toast/toast.php'; ?>
 
     <!-- JavaScript file -->
     <script src="../Dashboard/Dashboard.js"></script>
@@ -767,30 +752,6 @@ $vouchers = mysqli_query($conn, "SELECT * FROM voucher ORDER BY points_required 
         });
     })();
 
-    /* Scroll-to-top button visibility — appears once user scrolls past 300px */
-    (function () {
-        const btn = document.getElementById('scrollTopBtn');
-        if (!btn) return;
-        window.addEventListener('scroll', () => {
-            btn.classList.toggle('show', window.scrollY > 300);
-        });
-    })();
-
-    /* Toast — slide in on load, auto-dismiss after 4s, manual close on click */
-    (function () {
-        const toasts = document.querySelectorAll('#toastContainer [data-toast]');
-        toasts.forEach((toast, i) => {
-            /* Stagger entrance so multiple toasts don't all snap in at once */
-            setTimeout(() => toast.classList.add('show'), 80 + i * 90);
-
-            const dismiss = () => {
-                toast.classList.add('hide');
-                setTimeout(() => toast.remove(), 400);
-            };
-            toast.querySelector('.toast-close').addEventListener('click', dismiss);
-            setTimeout(dismiss, 4000 + i * 200);
-        });
-    })();
     </script>
 
 </body>

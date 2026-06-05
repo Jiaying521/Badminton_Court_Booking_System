@@ -329,5 +329,10 @@ while($r = mysqli_fetch_assoc($q_by_status)) $status_rows[] = $r;
 </script>
 <script src="RevenueReport.js"></script>
 
+<!-- Scroll-to-top -->
+<?php include __DIR__ . '/../scroll_top.php'; ?>
+
+<!-- Toast notifications -->
+<?php include __DIR__ . '/../toast/toast.php'; ?>
 </body>
 </html>
