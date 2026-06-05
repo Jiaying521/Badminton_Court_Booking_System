@@ -98,14 +98,65 @@ if($booking_id) {
         body { font-family:'Inter',sans-serif; background:#f5f9f0; padding:2rem; }
         .container { max-width:1400px; margin:0 auto; }
         
-        /* Layout steps header bar code styles */
-        .progress-bar { display:flex; justify-content:space-between; margin-bottom:2rem; background:white; padding:1rem 2rem; border-radius:60px; }
-        .progress-step { text-align:center; flex:1; }
-        .progress-step .step-number { width:32px; height:32px; background:#e0e0e0; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:0.3rem; color: #333; }
-        .progress-step.active .step-number { background:#2b7e3a; color:white; }
-        .progress-step.completed .step-number { background:#2b7e3a; color:white; }
-        .progress-step .step-label { font-size:0.75rem; color:#888; }
-        .progress-step.active .step-label { color:#2b7e3a; font-weight:600; }
+        /* Layout steps header bar code styles — animated (matches addons.php) */
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(10px);
+            padding: 0.8rem 2rem;
+            border-radius: 80px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            border: 1px solid rgba(255,255,255,0.3);
+            animation: fadeInDown 0.6s ease-out;
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .progress-step { text-align:center; flex:1; position: relative; }
+        .progress-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 15px;
+            right: -50%;
+            width: 100%;
+            height: 2px;
+            background: #e0e8dc;
+            z-index: 0;
+        }
+        .progress-step.completed:not(:last-child)::after { background: #2b7e3a; }
+        .progress-step .step-number {
+            width: 36px;
+            height: 36px;
+            background: #e0e8dc;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.4rem;
+            font-weight: 700;
+            font-size: 0.9rem;
+            position: relative;
+            z-index: 1;
+            transition: 0.3s;
+            color: #5a6e5c;
+        }
+        .progress-step.active .step-number {
+            background: #2b7e3a;
+            color: white;
+            box-shadow: 0 0 0 4px rgba(43,126,58,0.2);
+            animation: pulseStep 2s ease-in-out infinite;
+        }
+        @keyframes pulseStep {
+            0%, 100% { box-shadow: 0 0 0 0px rgba(43,126,58,0.4); }
+            50% { box-shadow: 0 0 0 6px rgba(43,126,58,0.1); }
+        }
+        .progress-step.completed .step-number { background: #2b7e3a; color: white; }
+        .progress-step .step-label { font-size: 0.75rem; color: #888; font-weight: 500; }
+        .progress-step.active .step-label { color: #2b7e3a; font-weight: 700; }
+        .progress-step.completed .step-label { color: #2b7e3a; }
         
         /* Split layout container: Left column is 2x wider than right column card summary box */
         .row-2cols { display:grid; grid-template-columns:2fr 1fr; gap:1.5rem; }
@@ -146,9 +197,9 @@ if($booking_id) {
 <div class="container">
 
     <div class="progress-bar">
-        <div class="progress-step completed"><div class="step-number">1</div><div class="step-label">Court</div></div>
-        <div class="progress-step completed"><div class="step-number">2</div><div class="step-label">Time</div></div>
-        <div class="progress-step completed"><div class="step-number">3</div><div class="step-label">Add-ons</div></div>
+        <div class="progress-step completed"><div class="step-number"><i class="fas fa-check"></i></div><div class="step-label">Court</div></div>
+        <div class="progress-step completed"><div class="step-number"><i class="fas fa-check"></i></div><div class="step-label">Time</div></div>
+        <div class="progress-step completed"><div class="step-number"><i class="fas fa-check"></i></div><div class="step-label">Add-ons</div></div>
         <div class="progress-step active"><div class="step-number">4</div><div class="step-label">Payment</div></div>
     </div>
     

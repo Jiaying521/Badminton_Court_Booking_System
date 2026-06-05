@@ -33,18 +33,10 @@ $stmt = $pdo->prepare("SELECT SUM(total_price) FROM bookings WHERE user_id = ? A
 $stmt->execute([$user_id]);
 $totalSpent = $stmt->fetchColumn() ?? 0;
 
-// 计算积分
-$stmt_used = $pdo->prepare("
-    SELECT SUM(v.points_required) 
-    FROM user_vouchers uv 
-    JOIN voucher v ON uv.voucher_id = v.id 
-    WHERE uv.user_id = ?
-");
-$stmt_used->execute([$user_id]);
-$pointsUsed = $stmt_used->fetchColumn() ?? 0;
-
-$lifetimePoints = floor($totalSpent * 1);
-$currentPointsBalance = $lifetimePoints - $pointsUsed;
+// 积分 — read directly from users.loyalty_points (single source of truth, same as redeem_voucher.php)
+$stmt_pts = $pdo->prepare("SELECT loyalty_points FROM users WHERE id = ?");
+$stmt_pts->execute([$user_id]);
+$currentPointsBalance = (int)($stmt_pts->fetchColumn() ?? 0);
 
 // 获取所有场地类型
 $types = [];
