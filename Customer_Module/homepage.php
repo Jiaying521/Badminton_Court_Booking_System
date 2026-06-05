@@ -28,7 +28,6 @@ require_once __DIR__ . '/functions.php';
             position: relative;
         }
         
-        /* 动态粒子背景 */
         body::before {
             content: '';
             position: fixed;
@@ -42,7 +41,6 @@ require_once __DIR__ . '/functions.php';
             z-index: 0;
         }
         
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #e0e8dc; border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: #2b7e3a; border-radius: 10px; }
@@ -445,7 +443,7 @@ require_once __DIR__ . '/functions.php';
             box-shadow: 0 12px 30px rgba(0,0,0,0.2);
         }
         
-        /* Modal Styles (保持原有但添加玻璃态) */
+        /* Modal Styles */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(8px); }
         .modal-content { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); margin: 3% auto; padding: 2rem; width: 90%; max-width: 500px; max-height: 85vh; overflow-y: auto; border-radius: 32px; animation: fadeInUp 0.4s; border: 1px solid rgba(255,255,255,0.3); }
         .modal-content::-webkit-scrollbar { width: 6px; }
@@ -481,6 +479,40 @@ require_once __DIR__ . '/functions.php';
         .password-match { font-size: 0.75rem; margin-top: -0.5rem; margin-bottom: 0.5rem; }
         .password-match.valid { color: #2b7e3a; }
         .password-match.invalid { color: #e67e22; }
+        
+        /* Password Hint - 醒目提示 */
+        .password-hint {
+            background: #fff3cd !important;
+            border-left: 4px solid #e67e22 !important;
+            padding: 0.75rem 1rem !important;
+            margin: 0.5rem 0 0.8rem !important;
+            border-radius: 12px !important;
+            font-size: 0.8rem !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 0.6rem !important;
+            animation: hintPulse 1.5s ease-in-out 2;
+        }
+        
+        @keyframes hintPulse {
+            0%, 100% { background: #fff3cd; border-left-color: #e67e22; }
+            50% { background: #ffeaa7; border-left-color: #f39c12; }
+        }
+        
+        .password-hint i {
+            color: #e67e22;
+            font-size: 1.1rem;
+        }
+        
+        .password-hint span {
+            color: #856404;
+            line-height: 1.4;
+        }
+        
+        .password-hint strong {
+            color: #e67e22;
+            font-weight: 700;
+        }
         
         /* Footer */
         .footer { 
@@ -599,12 +631,32 @@ require_once __DIR__ . '/functions.php';
 
 <!-- Register Modal -->
 <div id="registerModal" class="modal"><div class="modal-content"><span class="close" id="closeRegister">&times;</span><h2>Create Account</h2>
-<label>Name <span style="color:#e67e22;">*</span></label><input type="text" id="regName" placeholder="Your display name"><div id="nameStatus" class="username-status"></div>
-<label>Email <span style="color:#e67e22;">*</span></label><input type="email" id="regEmail" placeholder="Your email">
-<label>Password <span style="color:#e67e22;">*</span></label><input type="password" id="regPassword" placeholder="At least 6 characters + 1 symbol"><div class="strength-meter"><div class="strength-meter-fill" id="passwordStrengthFill"></div></div><div id="passwordStrengthText" class="strength-text"></div>
-<label>Confirm Password <span style="color:#e67e22;">*</span></label><input type="password" id="regConfirmPassword" placeholder="Confirm your password"><div id="passwordMatch" class="password-match"></div>
-<label>Phone <span style="color:#e67e22;">*</span></label><div style="display:flex; gap:8px;"><select id="regPhoneCode" style="width:30%;"><option value="+60">+60 (MY)</option><option value="+65">+65 (SG)</option></select><input type="tel" id="regPhone" placeholder="12345678" style="width:70%;"></div>
-<button class="btn-secondary-modal" id="sendRegCodeBtn">Send Code</button><input type="text" id="regVerifyCode" placeholder="Verification code" style="display:none;"><button class="btn-secondary-modal" id="verifyRegCodeBtn" style="display:none;">Verify</button>
+<label>Name <span style="color:#e67e22;">*</span></label>
+<input type="text" id="regName" placeholder="Your display name"><div id="nameStatus" class="username-status"></div>
+
+<label>Email <span style="color:#e67e22;">*</span></label>
+<input type="email" id="regEmail" placeholder="Your email">
+
+<label>Password <span style="color:#e67e22;">*</span></label>
+<input type="password" id="regPassword" placeholder="At least 6 characters + 1 symbol">
+<div class="strength-meter"><div class="strength-meter-fill" id="passwordStrengthFill"></div></div>
+<div id="passwordStrengthText" class="strength-text"></div>
+
+<!-- 醒目的密码提示 -->
+<div class="password-hint">
+    <i class="fas fa-exclamation-triangle"></i>
+    <span><strong>⚠️ Password Requirements:</strong> At least <strong>6 characters</strong>, and must include <strong>at least 1 symbol</strong> (e.g., ! @ # $ % ^ & * etc.)</span>
+</div>
+
+<label>Confirm Password <span style="color:#e67e22;">*</span></label>
+<input type="password" id="regConfirmPassword" placeholder="Confirm your password"><div id="passwordMatch" class="password-match"></div>
+
+<label>Phone <span style="color:#e67e22;">*</span></label>
+<div style="display:flex; gap:8px;"><select id="regPhoneCode" style="width:30%;"><option value="+60">+60 (MY)</option><option value="+65">+65 (SG)</option></select><input type="tel" id="regPhone" placeholder="12345678" style="width:70%;"></div>
+
+<button class="btn-secondary-modal" id="sendRegCodeBtn">Send Code</button>
+<input type="text" id="regVerifyCode" placeholder="Verification code" style="display:none;">
+<button class="btn-secondary-modal" id="verifyRegCodeBtn" style="display:none;">Verify</button>
 <button class="btn-primary-modal" id="registerFinalBtn" disabled>Register</button>
 <div class="toggle-link"><a id="switchToLoginFromRegister">Already have an account? Log in</a></div>
 <div id="regError" class="error-msg"></div></div></div>

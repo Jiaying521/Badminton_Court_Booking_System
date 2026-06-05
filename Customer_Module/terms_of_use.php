@@ -2,6 +2,31 @@
 require_once __DIR__ . '/../config.php';
 $isLoggedIn = isset($_SESSION['user_id']);
 $back_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
+$home_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
+
+// 从 settings 表获取动态配置
+function getSetting($key, $default = '') {
+    global $pdo;
+    $stmt = $pdo->prepare("SELECT setting_value FROM settings WHERE setting_key = ?");
+    $stmt->execute([$key]);
+    $row = $stmt->fetch();
+    return $row ? $row['setting_value'] : $default;
+}
+
+// 获取各种设置
+$open_time = getSetting('open_time', '08:00');
+$close_time = getSetting('close_time', '01:00');
+$peak_start = getSetting('peak_start', '15:00');
+$off_peak_price = getSetting('off_peak_price', '10.00');
+$peak_price = getSetting('peak_price', '15.00');
+$contact_phone = getSetting('contact_phone', '+603-1234 5678');
+$contact_email = getSetting('contact_email', 'smasharenabadminton@gmail.com');
+$address = getSetting('address', '123 Jalan Badminton, Kuala Lumpur, Malaysia');
+
+// 格式化时间显示
+$open_time_display = date('h:i A', strtotime($open_time));
+$close_time_display = date('h:i A', strtotime($close_time));
+$peak_start_display = date('h:i A', strtotime($peak_start));
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -51,7 +76,6 @@ $back_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
         ::-webkit-scrollbar-thumb { background: #2b7e3a; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #1f5a2a; }
         
-        /* Glassmorphism Navbar */
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -259,7 +283,6 @@ $back_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
             border-left: 4px solid #2b7e3a;
         }
         
-        /* Footer */
         .footer { 
             background: #0f1f12; 
             color: #cbd5c0; 
@@ -341,12 +364,12 @@ $back_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
 </head>
 <body>
 <nav class="navbar">
-    <a href="<?php echo $back_link; ?>" class="logo-area">
+    <a href="<?php echo $home_link; ?>" class="logo-area">
         <img src="../Pictures/Admin_Module/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
         <div class="logo-text">Smash <span>Arena</span></div>
     </a>
     <div class="nav-links">
-        <a href="homepage.php">Home</a>
+        <a href="<?php echo $home_link; ?>">Home</a>
         <a href="dashboard.php">Courts</a>
         <a href="my_bookings.php">My Bookings</a>
         <a href="coaches.php">Coaches</a>
@@ -370,12 +393,23 @@ $back_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
         <div class="section">
             <h2>2. User Accounts</h2>
             <p>To use our booking services, you must create an account. You are responsible for:</p>
-            <ul><li>Maintaining the confidentiality of your password</li><li>All activities that occur under your account</li><li>Providing accurate and complete information</li><li>Notifying us immediately of any unauthorized use</li></ul>
+            <ul>
+                <li>Maintaining the confidentiality of your password</li>
+                <li>All activities that occur under your account</li>
+                <li>Providing accurate and complete information</li>
+                <li>Notifying us immediately of any unauthorized use</li>
+            </ul>
         </div>
         
         <div class="section">
             <h2>3. Booking and Payments</h2>
-            <ul><li>All bookings are subject to availability</li><li>Prices are as displayed at the time of booking</li><li>Payments must be made in full at the time of booking</li><li>We reserve the right to change prices without prior notice</li><li>Wallet credits are non-transferable and have no cash value</li></ul>
+            <ul>
+                <li>All bookings are subject to availability</li>
+                <li>Prices are as displayed at the time of booking</li>
+                <li>Payments must be made in full at the time of booking</li>
+                <li>We reserve the right to change prices without prior notice</li>
+                <li>Wallet credits are non-transferable and have no cash value</li>
+            </ul>
         </div>
         
         <div class="section">
@@ -386,20 +420,38 @@ $back_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
         <div class="section">
             <h2>5. Code of Conduct</h2>
             <p>When using our facilities, you agree to:</p>
-            <ul><li>Respect other players and staff</li><li>Follow safety guidelines and facility rules</li><li>Not engage in any disruptive or harmful behavior</li><li>Use equipment properly and report any damages</li></ul>
+            <ul>
+                <li>Respect other players and staff</li>
+                <li>Follow safety guidelines and facility rules</li>
+                <li>Not engage in any disruptive or harmful behavior</li>
+                <li>Use equipment properly and report any damages</li>
+            </ul>
         </div>
         
         <div class="section">
             <h2>6. Prohibited Activities</h2>
             <p>You may not:</p>
-            <ul><li>Use our services for any illegal purpose</li><li>Attempt to gain unauthorized access to our systems</li><li>Resell or transfer bookings without authorization</li><li>Use automated systems to make bookings</li><li>Post false or misleading information</li></ul>
+            <ul>
+                <li>Use our services for any illegal purpose</li>
+                <li>Attempt to gain unauthorized access to our systems</li>
+                <li>Resell or transfer bookings without authorization</li>
+                <li>Use automated systems to make bookings</li>
+                <li>Post false or misleading information</li>
+            </ul>
         </div>
         
         <div class="section">
             <h2>7. Liability</h2>
             <p>Smash Arena is not liable for:</p>
-            <ul><li>Any injuries sustained during play (please play responsibly)</li><li>Loss or damage of personal belongings</li><li>Service interruptions due to maintenance or emergencies</li><li>Third-party services or products</li></ul>
-            <div class="highlight"><i class="fas fa-shield-alt"></i> <strong>Play at your own risk.</strong> We recommend warming up properly and using appropriate safety equipment.</div>
+            <ul>
+                <li>Any injuries sustained during play (please play responsibly)</li>
+                <li>Loss or damage of personal belongings</li>
+                <li>Service interruptions due to maintenance or emergencies</li>
+                <li>Third-party services or products</li>
+            </ul>
+            <div class="highlight">
+                <i class="fas fa-shield-alt"></i> <strong>Play at your own risk.</strong> We recommend warming up properly and using appropriate safety equipment.
+            </div>
         </div>
         
         <div class="section">
@@ -419,19 +471,50 @@ $back_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
         
         <div class="section">
             <h2>11. Contact Information</h2>
-            <p>For questions about these Terms of Use, please contact us at <strong>smasharenabadminton@gmail.com</strong>.</p>
+            <p>For questions about these Terms of Use, please contact us at <strong><?php echo htmlspecialchars($contact_email); ?></strong>.</p>
         </div>
     </div>
 </div>
 
 <footer class="footer">
     <div class="footer-container">
-        <div class="footer-col"><h3>Smash Arena</h3><p><i class="fas fa-map-marker-alt"></i> 123 Jalan Badminton, Kuala Lumpur</p><p><i class="fas fa-phone-alt"></i> +603-1234 5678</p><p><i class="fas fa-envelope"></i> smasharenabadminton@gmail.com</p><div class="social-icons"><a href="#"><i class="fab fa-facebook-f"></i></a><a href="#"><i class="fab fa-instagram"></i></a><a href="#"><i class="fab fa-twitter"></i></a><a href="#"><i class="fab fa-whatsapp"></i></a></div></div>
-        <div class="footer-col"><h4>Quick Links</h4><a href="dashboard.php">Find a Court</a><a href="my_bookings.php">My Bookings</a><a href="../Payment_Module/wallet.php">Wallet</a></div>
-        <div class="footer-col"><h4>Support</h4><a href="faq.php">FAQs</a><a href="cancellation_policy.php">Cancellation Policy</a><a href="privacy_policy.php">Privacy Policy</a><a href="terms_of_use.php">Terms of Use</a><a href="contact_us.php">Contact Us</a></div>
-        <div class="footer-col"><h4>Operating Hours</h4><p><i class="fas fa-clock"></i> Monday - Sunday: <?php echo getOperatingHours(); ?></p><p><i class="fas fa-tag"></i> 8am - <?php echo date('h:i A', strtotime(getSetting('peak_start', '15:00'))); ?>: RM <?php echo getSetting('off_peak_price', '10'); ?>/hour</p><p><i class="fas fa-tag"></i> <?php echo date('h:i A', strtotime(getSetting('peak_start', '15:00'))); ?> - <?php echo date('h:i A', strtotime(getSetting('close_time', '01:00'))); ?>: RM <?php echo getSetting('peak_price', '15'); ?>/hour</p><p><i class="fas fa-calendar-alt"></i> Open daily including public holidays</p></div>
+        <div class="footer-col">
+            <h3>Smash Arena</h3>
+            <p><i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($address); ?></p>
+            <p><i class="fas fa-phone-alt"></i> <?php echo htmlspecialchars($contact_phone); ?></p>
+            <p><i class="fas fa-envelope"></i> <?php echo htmlspecialchars($contact_email); ?></p>
+            <div class="social-icons">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-whatsapp"></i></a>
+            </div>
+        </div>
+        <div class="footer-col">
+            <h4>Quick Links</h4>
+            <a href="dashboard.php">Find a Court</a>
+            <a href="my_bookings.php">My Bookings</a>
+            <a href="../Payment_Module/wallet.php">Wallet</a>
+        </div>
+        <div class="footer-col">
+            <h4>Support</h4>
+            <a href="faq.php">FAQs</a>
+            <a href="cancellation_policy.php">Cancellation Policy</a>
+            <a href="privacy_policy.php">Privacy Policy</a>
+            <a href="terms_of_use.php">Terms of Use</a>
+            <a href="contact_us.php">Contact Us</a>
+        </div>
+        <div class="footer-col">
+            <h4>Operating Hours</h4>
+            <p><i class="fas fa-clock"></i> Monday - Sunday: <?php echo $open_time_display; ?> - <?php echo $close_time_display; ?></p>
+            <p><i class="fas fa-tag"></i> <?php echo $open_time_display; ?> - <?php echo $peak_start_display; ?>: RM <?php echo $off_peak_price; ?>/hour</p>
+            <p><i class="fas fa-tag"></i> <?php echo $peak_start_display; ?> - <?php echo $close_time_display; ?>: RM <?php echo $peak_price; ?>/hour</p>
+            <p><i class="fas fa-calendar-alt"></i> Open daily including public holidays</p>
+        </div>
     </div>
-    <div class="footer-bottom"><p>&copy; 2025 Smash Arena – Your Game, Our Court. All rights reserved.</p></div>
+    <div class="footer-bottom">
+        <p>&copy; 2025 Smash Arena – Your Game, Our Court. All rights reserved.</p>
+    </div>
 </footer>
 </body>
 </html>

@@ -46,7 +46,7 @@ if (!preg_match('/[!@#$%^&*(),.?":{}|<>]/', $password)) {
     exit;
 }
 
-// 插入新用户（不再验证 OTP，因为前端已经验证过了）
+// 插入新用户
 $hashed = password_hash($password, PASSWORD_DEFAULT);
 $stmt = $pdo->prepare("INSERT INTO users (name, email, password, phone) VALUES (?, ?, ?, ?)");
 $result = $stmt->execute([$name, $email, $hashed, $phone]);

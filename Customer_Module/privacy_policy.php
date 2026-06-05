@@ -2,6 +2,31 @@
 require_once __DIR__ . '/../config.php';
 $isLoggedIn = isset($_SESSION['user_id']);
 $back_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
+$home_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
+
+// 从 settings 表获取动态配置
+function getSetting($key, $default = '') {
+    global $pdo;
+    $stmt = $pdo->prepare("SELECT setting_value FROM settings WHERE setting_key = ?");
+    $stmt->execute([$key]);
+    $row = $stmt->fetch();
+    return $row ? $row['setting_value'] : $default;
+}
+
+// 获取各种设置
+$open_time = getSetting('open_time', '08:00');
+$close_time = getSetting('close_time', '01:00');
+$peak_start = getSetting('peak_start', '15:00');
+$off_peak_price = getSetting('off_peak_price', '10.00');
+$peak_price = getSetting('peak_price', '15.00');
+$contact_phone = getSetting('contact_phone', '+603-1234 5678');
+$contact_email = getSetting('contact_email', 'smasharenabadminton@gmail.com');
+$address = getSetting('address', '123 Jalan Badminton, Kuala Lumpur, Malaysia');
+
+// 格式化时间显示
+$open_time_display = date('h:i A', strtotime($open_time));
+$close_time_display = date('h:i A', strtotime($close_time));
+$peak_start_display = date('h:i A', strtotime($peak_start));
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -51,7 +76,6 @@ $back_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
         ::-webkit-scrollbar-thumb { background: #2b7e3a; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #1f5a2a; }
         
-        /* Glassmorphism Navbar */
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -229,6 +253,7 @@ $back_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
         }
         .last-updated { 
             background: rgba(234,245,230,0.6);
+            backdrop-filter: blur(5px);
             display: inline-block; 
             padding: 0.3rem 1rem; 
             border-radius: 50px; 
@@ -277,7 +302,6 @@ $back_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
             border-left: 4px solid #2b7e3a;
         }
         
-        /* Footer */
         .footer { 
             background: #0f1f12; 
             color: #cbd5c0; 
@@ -360,12 +384,12 @@ $back_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
 </head>
 <body>
 <nav class="navbar">
-    <a href="<?php echo $back_link; ?>" class="logo-area">
+    <a href="<?php echo $home_link; ?>" class="logo-area">
         <img src="../Pictures/Admin_Module/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
         <div class="logo-text">Smash <span>Arena</span></div>
     </a>
     <div class="nav-links">
-        <a href="homepage.php">Home</a>
+        <a href="<?php echo $home_link; ?>">Home</a>
         <a href="dashboard.php">Courts</a>
         <a href="my_bookings.php">My Bookings</a>
         <a href="coaches.php">Coaches</a>
@@ -379,46 +403,77 @@ $back_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
         <div class="policy-header">
             <h1>Privacy Policy</h1>
             <p>Your privacy is important to us. This policy explains how we collect, use, and protect your information.</p>
-            <div class="last-updated"><i class="fas fa-calendar-alt"></i> Last Updated: May 18, 2025</div>
+            <div class="last-updated"><i class="fas fa-calendar-alt"></i> Last Updated: June 5, 2025</div>
         </div>
 
         <div class="section">
             <h2>1. Information We Collect</h2>
             <p>When you use Smash Arena, we collect the following types of information:</p>
-            <ul><li><strong>Personal Information:</strong> Name, email address, phone number, and NRIC/passport number (for identification purposes).</li><li><strong>Booking Information:</strong> Court preferences, booking dates and times, coach selections, and add-on purchases.</li><li><strong>Payment Information:</strong> Transaction details, payment method, and wallet balance (payment card details are processed securely by our payment partners).</li><li><strong>Usage Data:</strong> IP address, browser type, device information, and how you interact with our website.</li></ul>
+            <ul>
+                <li><strong>Personal Information:</strong> Name, email address, phone number, and NRIC/passport number (for identification purposes).</li>
+                <li><strong>Booking Information:</strong> Court preferences, booking dates and times, coach selections, and add-on purchases.</li>
+                <li><strong>Payment Information:</strong> Transaction details, payment method, and wallet balance (payment card details are processed securely by our payment partners).</li>
+                <li><strong>Usage Data:</strong> IP address, browser type, device information, and how you interact with our website.</li>
+            </ul>
         </div>
 
         <div class="section">
             <h2>2. How We Use Your Information</h2>
             <p>We use your information for the following purposes:</p>
-            <ul><li>To process and manage your court bookings.</li><li>To communicate with you about your bookings, updates, and promotions.</li><li>To process payments and manage your wallet balance.</li><li>To improve our services and website experience.</li><li>To comply with legal obligations and prevent fraudulent activities.</li></ul>
+            <ul>
+                <li>To process and manage your court bookings.</li>
+                <li>To communicate with you about your bookings, updates, and promotions.</li>
+                <li>To process payments and manage your wallet balance.</li>
+                <li>To improve our services and website experience.</li>
+                <li>To comply with legal obligations and prevent fraudulent activities.</li>
+            </ul>
         </div>
 
         <div class="section">
             <h2>3. Information Sharing</h2>
             <p>We do not sell, trade, or rent your personal information to third parties. We may share your information with:</p>
-            <ul><li><strong>Service Providers:</strong> Payment processors, email service providers, and hosting services that help us operate our platform.</li><li><strong>Legal Authorities:</strong> When required by law or to protect our rights and safety.</li><li><strong>Business Transfers:</strong> In the event of a merger, acquisition, or sale of assets.</li></ul>
-            <div class="highlight"><i class="fas fa-shield-alt"></i> <strong>Your data is never sold to third parties for marketing purposes.</strong></div>
+            <ul>
+                <li><strong>Service Providers:</strong> Payment processors, email service providers, and hosting services that help us operate our platform.</li>
+                <li><strong>Legal Authorities:</strong> When required by law or to protect our rights and safety.</li>
+                <li><strong>Business Transfers:</strong> In the event of a merger, acquisition, or sale of assets.</li>
+            </ul>
+            <div class="highlight">
+                <i class="fas fa-shield-alt"></i> <strong>Your data is never sold to third parties for marketing purposes.</strong>
+            </div>
         </div>
 
         <div class="section">
             <h2>4. Data Security</h2>
             <p>We implement appropriate technical and organizational measures to protect your personal information, including:</p>
-            <ul><li>SSL encryption for all data transmission.</li><li>Secure database storage with access controls.</li><li>Regular security audits and updates.</li><li>Password hashing using industry-standard algorithms.</li></ul>
+            <ul>
+                <li>SSL encryption for all data transmission.</li>
+                <li>Secure database storage with access controls.</li>
+                <li>Regular security audits and updates.</li>
+                <li>Password hashing using industry-standard algorithms.</li>
+            </ul>
             <p>However, no method of transmission over the Internet is 100% secure. While we strive to protect your data, we cannot guarantee absolute security.</p>
         </div>
 
         <div class="section">
             <h2>5. Your Rights</h2>
             <p>You have the following rights regarding your personal information:</p>
-            <ul><li><strong>Access:</strong> Request a copy of the data we hold about you.</li><li><strong>Correction:</strong> Update or correct inaccurate information.</li><li><strong>Deletion:</strong> Request deletion of your account and personal data.</li><li><strong>Opt-out:</strong> Unsubscribe from marketing communications.</li></ul>
-            <p>To exercise these rights, please contact us at <strong>smasharenabadminton@gmail.com</strong>.</p>
+            <ul>
+                <li><strong>Access:</strong> Request a copy of the data we hold about you.</li>
+                <li><strong>Correction:</strong> Update or correct inaccurate information.</li>
+                <li><strong>Deletion:</strong> Request deletion of your account and personal data.</li>
+                <li><strong>Opt-out:</strong> Unsubscribe from marketing communications.</li>
+            </ul>
+            <p>To exercise these rights, please contact us at <strong><?php echo htmlspecialchars($contact_email); ?></strong>.</p>
         </div>
 
         <div class="section">
             <h2>6. Cookies and Tracking</h2>
             <p>We use cookies and similar tracking technologies to enhance your browsing experience. Cookies help us:</p>
-            <ul><li>Remember your login session.</li><li>Understand how you use our website.</li><li>Personalize content and recommendations.</li></ul>
+            <ul>
+                <li>Remember your login session.</li>
+                <li>Understand how you use our website.</li>
+                <li>Personalize content and recommendations.</li>
+            </ul>
             <p>You can control cookie settings through your browser preferences. Disabling cookies may affect certain features of our website.</p>
         </div>
 
@@ -431,17 +486,58 @@ $back_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
             <h2>8. Changes to This Policy</h2>
             <p>We may update this Privacy Policy from time to time. Any changes will be posted on this page with an updated "Last Updated" date. We encourage you to review this policy periodically.</p>
         </div>
+        
+        <div class="section">
+            <h2>9. Contact Us</h2>
+            <p>If you have any questions about this Privacy Policy, please contact us:</p>
+            <ul>
+                <li>By email: <strong><?php echo htmlspecialchars($contact_email); ?></strong></li>
+                <li>By phone: <strong><?php echo htmlspecialchars($contact_phone); ?></strong></li>
+                <li>By mail: <strong><?php echo htmlspecialchars($address); ?></strong></li>
+            </ul>
+        </div>
     </div>
 </div>
 
 <footer class="footer">
     <div class="footer-container">
-        <div class="footer-col"><h3>Smash Arena</h3><p><i class="fas fa-map-marker-alt"></i> 123 Jalan Badminton, Kuala Lumpur</p><p><i class="fas fa-phone-alt"></i> +603-1234 5678</p><p><i class="fas fa-envelope"></i> smasharenabadminton@gmail.com</p><div class="social-icons"><a href="#"><i class="fab fa-facebook-f"></i></a><a href="#"><i class="fab fa-instagram"></i></a><a href="#"><i class="fab fa-twitter"></i></a><a href="#"><i class="fab fa-whatsapp"></i></a></div></div>
-        <div class="footer-col"><h4>Quick Links</h4><a href="dashboard.php">Find a Court</a><a href="my_bookings.php">My Bookings</a><a href="../Payment_Module/wallet.php">Wallet</a></div>
-        <div class="footer-col"><h4>Support</h4><a href="faq.php">FAQs</a><a href="cancellation_policy.php">Cancellation Policy</a><a href="privacy_policy.php">Privacy Policy</a><a href="terms_of_use.php">Terms of Use</a><a href="contact_us.php">Contact Us</a></div>
-        <div class="footer-col"><h4>Operating Hours</h4><p><i class="fas fa-clock"></i> Monday - Sunday: <?php echo getOperatingHours(); ?></p><p><i class="fas fa-tag"></i> 8am - <?php echo date('h:i A', strtotime(getSetting('peak_start', '15:00'))); ?>: RM <?php echo getSetting('off_peak_price', '10'); ?>/hour</p><p><i class="fas fa-tag"></i> <?php echo date('h:i A', strtotime(getSetting('peak_start', '15:00'))); ?> - <?php echo date('h:i A', strtotime(getSetting('close_time', '01:00'))); ?>: RM <?php echo getSetting('peak_price', '15'); ?>/hour</p><p><i class="fas fa-calendar-alt"></i> Open daily including public holidays</p></div>
+        <div class="footer-col">
+            <h3>Smash Arena</h3>
+            <p><i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($address); ?></p>
+            <p><i class="fas fa-phone-alt"></i> <?php echo htmlspecialchars($contact_phone); ?></p>
+            <p><i class="fas fa-envelope"></i> <?php echo htmlspecialchars($contact_email); ?></p>
+            <div class="social-icons">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-whatsapp"></i></a>
+            </div>
+        </div>
+        <div class="footer-col">
+            <h4>Quick Links</h4>
+            <a href="dashboard.php">Find a Court</a>
+            <a href="my_bookings.php">My Bookings</a>
+            <a href="../Payment_Module/wallet.php">Wallet</a>
+        </div>
+        <div class="footer-col">
+            <h4>Support</h4>
+            <a href="faq.php">FAQs</a>
+            <a href="cancellation_policy.php">Cancellation Policy</a>
+            <a href="privacy_policy.php">Privacy Policy</a>
+            <a href="terms_of_use.php">Terms of Use</a>
+            <a href="contact_us.php">Contact Us</a>
+        </div>
+        <div class="footer-col">
+            <h4>Operating Hours</h4>
+            <p><i class="fas fa-clock"></i> Monday - Sunday: <?php echo $open_time_display; ?> - <?php echo $close_time_display; ?></p>
+            <p><i class="fas fa-tag"></i> <?php echo $open_time_display; ?> - <?php echo $peak_start_display; ?>: RM <?php echo $off_peak_price; ?>/hour</p>
+            <p><i class="fas fa-tag"></i> <?php echo $peak_start_display; ?> - <?php echo $close_time_display; ?>: RM <?php echo $peak_price; ?>/hour</p>
+            <p><i class="fas fa-calendar-alt"></i> Open daily including public holidays</p>
+        </div>
     </div>
-    <div class="footer-bottom"><p>&copy; 2025 Smash Arena – Your Game, Our Court. All rights reserved.</p></div>
+    <div class="footer-bottom">
+        <p>&copy; 2025 Smash Arena – Your Game, Our Court. All rights reserved.</p>
+    </div>
 </footer>
 </body>
 </html>

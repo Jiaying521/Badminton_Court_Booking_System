@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../config.php';
 $isLoggedIn = isset($_SESSION['user_id']);
 $back_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
+$home_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
 
 // 从 settings 表获取动态配置
 function getSetting($key, $default = '') {
@@ -76,6 +77,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         ::-webkit-scrollbar-thumb { background: #2b7e3a; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #1f5a2a; }
         
+        /* Glassmorphism Navbar */
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -382,12 +384,12 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
 </head>
 <body>
 <nav class="navbar">
-    <a href="<?php echo $back_link; ?>" class="logo-area">
+    <a href="<?php echo $home_link; ?>" class="logo-area">
         <img src="../Pictures/Admin_Module/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
         <div class="logo-text">Smash <span>Arena</span></div>
     </a>
     <div class="nav-links">
-        <a href="homepage.php">Home</a>
+        <a href="<?php echo $home_link; ?>">Home</a>
         <a href="dashboard.php">Courts</a>
         <a href="my_bookings.php">My Bookings</a>
         <a href="coaches.php">Coaches</a>

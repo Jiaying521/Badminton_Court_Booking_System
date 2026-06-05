@@ -1038,6 +1038,13 @@ ALTER TABLE `court_availability`
 --
 ALTER TABLE `payments`
   ADD CONSTRAINT `fk_payments_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE;
+
+-- 1. 添加 cancellation_count 字段到 users 表
+ALTER TABLE users ADD COLUMN cancellation_count INT DEFAULT 0 AFTER wallet_balance;
+
+-- 2. 添加 reschedule_count 字段到 bookings 表
+ALTER TABLE bookings ADD COLUMN reschedule_count INT DEFAULT 0 AFTER status;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
