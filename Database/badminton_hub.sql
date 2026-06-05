@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 05, 2026 at 09:58 AM
+-- Generation Time: Jun 05, 2026 at 03:56 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -106,62 +106,64 @@ CREATE TABLE `bookings` (
   `status` enum('Pending','Confirmed','Cancelled','Completed') DEFAULT 'Pending',
   `cancellation_fee` decimal(10,2) DEFAULT 0.00,
   `notes` text DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `completion_photo` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `bookings`
 --
 
-INSERT INTO `bookings` (`id`, `user_id`, `court_id`, `booking_date`, `start_time`, `end_time`, `total_hours`, `coach_id`, `coach_hours`, `coach_price_total`, `session_type`, `total_price`, `status`, `cancellation_fee`, `notes`, `created_at`) VALUES
-(6, 2, 1, '2026-05-02', '09:00:00', '11:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 0.00, 'Alice morning training', '2026-04-30 16:34:47'),
-(7, 3, 2, '2026-05-03', '14:00:00', '16:00:00', 2, NULL, 0, 0.00, '', 50.00, 'Pending', 0.00, 'Michael weekend match', '2026-04-30 16:34:47'),
-(8, 4, 1, '2026-05-04', '08:00:00', '10:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 0.00, 'Siti fitness practice', '2026-04-30 16:34:47'),
-(9, 5, 3, '2026-05-04', '18:00:00', '20:00:00', 2, NULL, 0, 0.00, '', 50.00, 'Confirmed', 0.00, 'Ahmad evening session', '2026-04-30 16:34:47'),
-(10, 6, 2, '2026-05-05', '10:00:00', '12:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Cancelled', 0.00, 'Rachel cancelled booking', '2026-04-30 16:34:47'),
-(11, 7, 1, '2026-05-05', '13:00:00', '15:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 0.00, 'Daniel weekday practice', '2026-04-30 16:34:47'),
-(12, 8, 3, '2026-05-06', '16:00:00', '18:00:00', 2, NULL, 0, 0.00, '', 50.00, 'Completed', 0.00, 'Priya competitive game', '2026-04-30 16:34:47'),
-(13, 9, 2, '2026-05-06', '19:00:00', '21:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 0.00, 'Jason night practice', '2026-04-30 16:34:47'),
-(14, 10, 1, '2026-05-07', '07:00:00', '09:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 0.00, 'Nurul early session', '2026-04-30 16:34:47'),
-(15, 11, 1, '2026-05-15', '21:00:00', '23:00:00', 2, 0, 0, 0.00, 'Casual Play', 30.00, 'Cancelled', 0.00, '', '2026-05-07 03:29:21'),
-(16, 11, 1, '2026-05-08', '09:00:00', '11:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 0.00, '', '2026-05-07 03:40:37'),
-(17, 11, 1, '2026-05-08', '11:00:00', '01:00:00', 14, 0, 0, 0.00, 'Casual Play', 195.00, 'Cancelled', 0.00, '', '2026-05-07 03:43:56'),
-(18, 11, 1, '2026-05-08', '12:00:00', '18:00:00', 6, 0, 0, 0.00, 'Casual Play', 80.00, 'Cancelled', 0.00, '', '2026-05-07 03:44:12'),
-(19, 11, 3, '2026-05-08', '08:00:00', '10:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 0.00, '', '2026-05-07 03:50:54'),
-(20, 11, 3, '2026-05-08', '14:00:00', '20:00:00', 6, 0, 0, 0.00, 'Casual Play', 90.00, 'Cancelled', 0.00, '', '2026-05-07 03:59:49'),
-(21, 11, 1, '2026-05-23', '08:00:00', '09:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', 0.00, '', '2026-05-07 04:02:04'),
-(22, 11, 1, '2026-05-22', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', 0.00, '', '2026-05-07 04:02:30'),
-(23, 11, 2, '2026-05-08', '16:00:00', '21:00:00', 5, 0, 0, 0.00, 'Casual Play', 75.00, 'Cancelled', 0.00, '', '2026-05-07 04:02:54'),
-(24, 11, 1, '2026-05-15', '10:00:00', '16:00:00', 6, 0, 0, 0.00, 'Casual Play', 70.00, 'Cancelled', 0.00, '', '2026-05-07 04:05:31'),
-(25, 11, 2, '2026-05-08', '13:00:00', '14:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', 0.00, '', '2026-05-07 04:05:43'),
-(26, 11, 2, '2026-05-29', '13:00:00', '00:00:00', 11, 0, 0, 0.00, 'Casual Play', 160.00, 'Cancelled', 0.00, '', '2026-05-07 04:06:31'),
-(27, 11, 1, '2026-05-08', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-07 04:16:32'),
-(28, 11, 1, '2026-05-07', '13:00:00', '14:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Confirmed', 0.00, '', '2026-05-07 04:24:15'),
-(29, 11, 2, '2026-05-08', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Pending', 0.00, '', '2026-05-07 04:40:34'),
-(30, 11, 2, '2026-05-28', '08:00:00', '09:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-07 05:24:25'),
-(31, 11, 2, '2026-05-14', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-07 05:33:03'),
-(32, 11, 2, '2026-05-23', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Confirmed', 0.00, '', '2026-05-07 05:37:58'),
-(33, 1, 5, '2026-05-18', '16:00:00', '17:00:00', 1, 0, 0, 0.00, 'Casual Play', 15.00, 'Confirmed', 0.00, '', '2026-05-18 07:36:21'),
-(34, 1, 8, '2026-05-18', '16:00:00', '17:00:00', 1, 4, 1, 10.00, 'Casual Play', 224.00, 'Confirmed', 0.00, '', '2026-05-18 07:59:13'),
-(35, 1, 1, '2026-05-21', '09:00:00', '11:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 10.00, '', '2026-05-20 10:42:20'),
-(36, 1, 1, '2026-05-22', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 10.00, '', '2026-05-20 11:02:24'),
-(37, 1, 1, '2026-05-21', '14:00:00', '15:00:00', 1, 0, 0, 0.00, 'Casual Play', 15.00, 'Cancelled', 10.00, '', '2026-05-20 11:11:59'),
-(38, 1, 1, '2026-05-21', '15:00:00', '16:00:00', 1, 0, 0, 0.00, 'Casual Play', 15.00, 'Cancelled', 10.00, '', '2026-05-20 11:16:04'),
-(39, 1, 2, '2026-05-21', '12:00:00', '14:00:00', 2, 0, 0, 0.00, 'Casual Play', 319.00, 'Confirmed', 0.00, '', '2026-05-20 11:28:04'),
-(40, 1, 3, '2026-05-21', '09:00:00', '11:00:00', 2, 0, 0, 0.00, 'Casual Play', 219.00, 'Cancelled', 10.00, '', '2026-05-20 11:28:53'),
-(41, 1, 3, '2026-05-21', '11:00:00', '13:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 10.00, '', '2026-05-20 11:31:45'),
-(42, 1, 3, '2026-05-21', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Confirmed', 0.00, '', '2026-05-20 11:35:21'),
-(43, 1, 1, '2026-05-21', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Confirmed', 0.00, '', '2026-05-20 11:40:50'),
-(44, 1, 1, '2026-05-29', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-20 11:49:45'),
-(45, 1, 1, '2026-05-21', '13:00:00', '15:00:00', 2, 0, 0, 0.00, 'Casual Play', 25.00, 'Confirmed', 0.00, '', '2026-05-20 12:21:58'),
-(46, 1, 1, '2026-05-22', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Confirmed', 0.00, '', '2026-05-21 04:36:43'),
-(47, 1, 2, '2026-05-28', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-21 06:43:16'),
-(48, 1, 8, '2026-05-21', '15:00:00', '16:00:00', 1, 1, 1, 25.00, 'Casual Play', 40.00, 'Pending', 0.00, '', '2026-05-21 06:43:43'),
-(49, 1, 8, '2026-05-21', '16:00:00', '17:00:00', 1, 1, 1, 25.00, 'Casual Play', 40.00, 'Confirmed', 0.00, '', '2026-05-21 06:44:20'),
-(50, 1, 2, '2026-05-29', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-21 15:28:45'),
-(51, 1, 2, '2026-05-27', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-26 17:05:37'),
-(52, 11, 2, '2026-06-10', '08:45:00', '11:42:00', 3, 1, 3, 150.00, 'Casual Play', 180.00, 'Cancelled', 0.00, '', '2026-06-05 00:42:35'),
-(53, 1, 2, '2026-06-24', '09:00:00', '18:00:00', 9, 0, 0, 0.00, 'Casual Play', 110.00, 'Pending', 0.00, '', '2026-06-05 03:28:27');
+INSERT INTO `bookings` (`id`, `user_id`, `court_id`, `booking_date`, `start_time`, `end_time`, `total_hours`, `coach_id`, `coach_hours`, `coach_price_total`, `session_type`, `total_price`, `status`, `cancellation_fee`, `notes`, `created_at`, `completion_photo`) VALUES
+(6, 2, 1, '2026-05-02', '09:00:00', '11:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 0.00, 'Alice morning training', '2026-04-30 16:34:47', NULL),
+(7, 3, 2, '2026-05-03', '14:00:00', '16:00:00', 2, NULL, 0, 0.00, '', 50.00, 'Pending', 0.00, 'Michael weekend match', '2026-04-30 16:34:47', NULL),
+(8, 4, 1, '2026-05-04', '08:00:00', '10:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 0.00, 'Siti fitness practice', '2026-04-30 16:34:47', NULL),
+(9, 5, 3, '2026-05-04', '18:00:00', '20:00:00', 2, NULL, 0, 0.00, '', 50.00, 'Confirmed', 0.00, 'Ahmad evening session', '2026-04-30 16:34:47', NULL),
+(10, 6, 2, '2026-05-05', '10:00:00', '12:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Cancelled', 0.00, 'Rachel cancelled booking', '2026-04-30 16:34:47', NULL),
+(11, 7, 1, '2026-05-05', '13:00:00', '15:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 0.00, 'Daniel weekday practice', '2026-04-30 16:34:47', NULL),
+(12, 8, 3, '2026-05-06', '16:00:00', '18:00:00', 2, NULL, 0, 0.00, '', 50.00, 'Completed', 0.00, 'Priya competitive game', '2026-04-30 16:34:47', NULL),
+(13, 9, 2, '2026-05-06', '19:00:00', '21:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 0.00, 'Jason night practice', '2026-04-30 16:34:47', NULL),
+(14, 10, 1, '2026-05-07', '07:00:00', '09:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 0.00, 'Nurul early session', '2026-04-30 16:34:47', NULL),
+(15, 11, 1, '2026-05-15', '21:00:00', '23:00:00', 2, 0, 0, 0.00, 'Casual Play', 30.00, 'Cancelled', 0.00, '', '2026-05-07 03:29:21', NULL),
+(16, 11, 1, '2026-05-08', '09:00:00', '11:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 0.00, '', '2026-05-07 03:40:37', NULL),
+(17, 11, 1, '2026-05-08', '11:00:00', '01:00:00', 14, 0, 0, 0.00, 'Casual Play', 195.00, 'Cancelled', 0.00, '', '2026-05-07 03:43:56', NULL),
+(18, 11, 1, '2026-05-08', '12:00:00', '18:00:00', 6, 0, 0, 0.00, 'Casual Play', 80.00, 'Cancelled', 0.00, '', '2026-05-07 03:44:12', NULL),
+(19, 11, 3, '2026-05-08', '08:00:00', '10:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 0.00, '', '2026-05-07 03:50:54', NULL),
+(20, 11, 3, '2026-05-08', '14:00:00', '20:00:00', 6, 0, 0, 0.00, 'Casual Play', 90.00, 'Cancelled', 0.00, '', '2026-05-07 03:59:49', NULL),
+(21, 11, 1, '2026-05-23', '08:00:00', '09:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', 0.00, '', '2026-05-07 04:02:04', NULL),
+(22, 11, 1, '2026-05-22', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', 0.00, '', '2026-05-07 04:02:30', NULL),
+(23, 11, 2, '2026-05-08', '16:00:00', '21:00:00', 5, 0, 0, 0.00, 'Casual Play', 75.00, 'Cancelled', 0.00, '', '2026-05-07 04:02:54', NULL),
+(24, 11, 1, '2026-05-15', '10:00:00', '16:00:00', 6, 0, 0, 0.00, 'Casual Play', 70.00, 'Cancelled', 0.00, '', '2026-05-07 04:05:31', NULL),
+(25, 11, 2, '2026-05-08', '13:00:00', '14:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', 0.00, '', '2026-05-07 04:05:43', NULL),
+(26, 11, 2, '2026-05-29', '13:00:00', '00:00:00', 11, 0, 0, 0.00, 'Casual Play', 160.00, 'Cancelled', 0.00, '', '2026-05-07 04:06:31', NULL),
+(27, 11, 1, '2026-05-08', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-07 04:16:32', NULL),
+(28, 11, 1, '2026-05-07', '13:00:00', '14:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Confirmed', 0.00, '', '2026-05-07 04:24:15', NULL),
+(29, 11, 2, '2026-05-08', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Pending', 0.00, '', '2026-05-07 04:40:34', NULL),
+(30, 11, 2, '2026-05-28', '08:00:00', '09:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-07 05:24:25', NULL),
+(31, 11, 2, '2026-05-14', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-07 05:33:03', NULL),
+(32, 11, 2, '2026-05-23', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Confirmed', 0.00, '', '2026-05-07 05:37:58', NULL),
+(33, 1, 5, '2026-05-18', '16:00:00', '17:00:00', 1, 0, 0, 0.00, 'Casual Play', 15.00, 'Confirmed', 0.00, '', '2026-05-18 07:36:21', NULL),
+(34, 1, 8, '2026-05-18', '16:00:00', '17:00:00', 1, 4, 1, 10.00, 'Casual Play', 224.00, 'Confirmed', 0.00, '', '2026-05-18 07:59:13', NULL),
+(35, 1, 1, '2026-05-21', '09:00:00', '11:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 10.00, '', '2026-05-20 10:42:20', NULL),
+(36, 1, 1, '2026-05-22', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 10.00, '', '2026-05-20 11:02:24', NULL),
+(37, 1, 1, '2026-05-21', '14:00:00', '15:00:00', 1, 0, 0, 0.00, 'Casual Play', 15.00, 'Cancelled', 10.00, '', '2026-05-20 11:11:59', NULL),
+(38, 1, 1, '2026-05-21', '15:00:00', '16:00:00', 1, 0, 0, 0.00, 'Casual Play', 15.00, 'Cancelled', 10.00, '', '2026-05-20 11:16:04', NULL),
+(39, 1, 2, '2026-05-21', '12:00:00', '14:00:00', 2, 0, 0, 0.00, 'Casual Play', 319.00, 'Confirmed', 0.00, '', '2026-05-20 11:28:04', NULL),
+(40, 1, 3, '2026-05-21', '09:00:00', '11:00:00', 2, 0, 0, 0.00, 'Casual Play', 219.00, 'Cancelled', 10.00, '', '2026-05-20 11:28:53', NULL),
+(41, 1, 3, '2026-05-21', '11:00:00', '13:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 10.00, '', '2026-05-20 11:31:45', NULL),
+(42, 1, 3, '2026-05-21', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Confirmed', 0.00, '', '2026-05-20 11:35:21', NULL),
+(43, 1, 1, '2026-05-21', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Confirmed', 0.00, '', '2026-05-20 11:40:50', NULL),
+(44, 1, 1, '2026-05-29', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-20 11:49:45', NULL),
+(45, 1, 1, '2026-05-21', '13:00:00', '15:00:00', 2, 0, 0, 0.00, 'Casual Play', 25.00, 'Confirmed', 0.00, '', '2026-05-20 12:21:58', NULL),
+(46, 1, 1, '2026-05-22', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Confirmed', 0.00, '', '2026-05-21 04:36:43', NULL),
+(47, 1, 2, '2026-05-28', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-21 06:43:16', NULL),
+(48, 1, 8, '2026-05-21', '15:00:00', '16:00:00', 1, 1, 1, 25.00, 'Casual Play', 40.00, 'Pending', 0.00, '', '2026-05-21 06:43:43', NULL),
+(49, 1, 8, '2026-05-21', '16:00:00', '17:00:00', 1, 1, 1, 25.00, 'Casual Play', 40.00, 'Confirmed', 0.00, '', '2026-05-21 06:44:20', NULL),
+(50, 1, 2, '2026-05-29', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-21 15:28:45', NULL),
+(51, 1, 2, '2026-05-27', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-26 17:05:37', NULL),
+(52, 11, 2, '2026-06-10', '08:45:00', '11:42:00', 3, 1, 3, 150.00, 'Casual Play', 180.00, 'Cancelled', 0.00, '', '2026-06-05 00:42:35', NULL),
+(53, 1, 2, '2026-06-24', '09:00:00', '18:00:00', 9, 0, 0, 0.00, 'Casual Play', 110.00, 'Pending', 0.00, '', '2026-06-05 03:28:27', NULL),
+(54, 1, 2, '2026-06-17', '13:00:00', '18:00:00', 5, 0, 0, 0.00, 'Casual Play', 70.00, 'Pending', 0.00, '', '2026-06-05 13:27:19', NULL);
 
 -- --------------------------------------------------------
 
@@ -235,7 +237,7 @@ CREATE TABLE `coaches` (
 --
 
 INSERT INTO `coaches` (`id`, `admin_id`, `name`, `specialty`, `phone`, `price_per_hour`, `is_active`, `gender`, `age`, `profile_img`, `availability_status`, `available_from`, `available_to`) VALUES
-(1, 2, 'Coach Lim', 'Singles Coaching', '', 50.00, 1, '', 40, '1779345778_coach.png', 'Available', NULL, NULL),
+(1, 2, 'Coach Lim', 'Singles Coaching', '', 50.00, 1, '', 40, '1779345778_coach.png', 'Available', '20:47:00', '20:45:00'),
 (2, 3, 'Coach Wong', 'Doubles Coaching', '', 20.00, 1, '', 0, NULL, 'Available', NULL, NULL),
 (3, 4, 'Coach Tan', 'Junior Development', '', 30.00, 1, 'Male', NULL, NULL, 'Available', NULL, NULL);
 
@@ -281,6 +283,36 @@ CREATE TABLE `coach_availability_log` (
   `changed_by_name` varchar(100) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `coach_availability_log`
+--
+
+INSERT INTO `coach_availability_log` (`id`, `coach_id`, `date`, `action`, `old_status`, `new_status`, `old_start_time`, `old_end_time`, `new_start_time`, `new_end_time`, `reason`, `changed_by`, `changed_by_role`, `changed_by_name`, `created_at`) VALUES
+(1, 1, '2026-06-05', 'created', NULL, 'On Leave', NULL, NULL, NULL, NULL, '', 2, 'Coach', 'Coach Lim', '2026-06-05 12:46:26'),
+(2, 1, '2026-06-06', 'created', NULL, 'On Leave', NULL, NULL, NULL, NULL, '', 2, 'Coach', 'Coach Lim', '2026-06-05 12:46:26'),
+(3, 1, '2026-06-05', 'updated', 'On Leave', 'On Leave', NULL, NULL, NULL, NULL, '', 2, 'Coach', 'Coach Lim', '2026-06-05 12:46:31'),
+(4, 1, '2026-06-06', 'updated', 'On Leave', 'On Leave', NULL, NULL, NULL, NULL, '', 2, 'Coach', 'Coach Lim', '2026-06-05 12:46:31'),
+(5, 1, '2026-06-06', 'deleted', 'On Leave', NULL, NULL, NULL, NULL, NULL, NULL, 2, 'Coach', 'Coach Lim', '2026-06-05 13:03:51'),
+(6, 1, '2026-06-05', 'updated', 'On Leave', 'On Leave', NULL, NULL, NULL, NULL, '', 2, 'Coach', 'Coach Lim', '2026-06-05 13:03:59'),
+(7, 1, '2026-06-05', 'updated', 'On Leave', 'On Leave', NULL, NULL, NULL, NULL, '', 2, 'Coach', 'Coach Lim', '2026-06-05 13:04:02'),
+(8, 1, '2026-06-06', 'created', NULL, 'On Leave', NULL, NULL, NULL, NULL, '', 2, 'Coach', 'Coach Lim', '2026-06-05 13:04:02'),
+(9, 1, '2026-06-05', 'updated', 'On Leave', 'On Leave', NULL, NULL, NULL, NULL, '', 2, 'Coach', 'Coach Lim', '2026-06-05 13:04:06'),
+(10, 1, '2026-06-06', 'updated', 'On Leave', 'On Leave', NULL, NULL, NULL, NULL, '', 2, 'Coach', 'Coach Lim', '2026-06-05 13:04:06'),
+(11, 1, '2026-06-05', 'updated', 'On Leave', 'On Leave', NULL, NULL, NULL, NULL, '', 2, 'Coach', 'Coach Lim', '2026-06-05 13:04:07'),
+(12, 1, '2026-06-06', 'updated', 'On Leave', 'On Leave', NULL, NULL, NULL, NULL, '', 2, 'Coach', 'Coach Lim', '2026-06-05 13:04:07'),
+(13, 1, '2026-06-05', 'updated', 'On Leave', 'On Leave', NULL, NULL, NULL, NULL, '', 2, 'Coach', 'Coach Lim', '2026-06-05 13:04:07'),
+(14, 1, '2026-06-06', 'updated', 'On Leave', 'On Leave', NULL, NULL, NULL, NULL, '', 2, 'Coach', 'Coach Lim', '2026-06-05 13:04:07'),
+(15, 1, '2026-06-05', 'updated', 'On Leave', 'On Leave', NULL, NULL, NULL, NULL, '', 2, 'Coach', 'Coach Lim', '2026-06-05 13:04:22'),
+(16, 1, '2026-06-06', 'updated', 'On Leave', 'On Leave', NULL, NULL, NULL, NULL, '', 2, 'Coach', 'Coach Lim', '2026-06-05 13:04:22'),
+(17, 1, '2026-06-05', 'updated', 'On Leave', 'On Leave', NULL, NULL, NULL, NULL, '', 2, 'Coach', 'Coach Lim', '2026-06-05 13:04:22'),
+(18, 1, '2026-06-06', 'updated', 'On Leave', 'On Leave', NULL, NULL, NULL, NULL, '', 2, 'Coach', 'Coach Lim', '2026-06-05 13:04:22'),
+(19, 1, '2026-06-05', 'updated', 'On Leave', 'On Leave', NULL, NULL, NULL, NULL, '', 2, 'Coach', 'Coach Lim', '2026-06-05 13:04:22'),
+(20, 1, '2026-06-06', 'updated', 'On Leave', 'On Leave', NULL, NULL, NULL, NULL, '', 2, 'Coach', 'Coach Lim', '2026-06-05 13:04:22'),
+(21, 1, '2026-06-05', 'updated', 'On Leave', 'On Leave', NULL, NULL, NULL, NULL, '', 2, 'Coach', 'Coach Lim', '2026-06-05 13:04:23'),
+(22, 1, '2026-06-06', 'updated', 'On Leave', 'On Leave', NULL, NULL, NULL, NULL, '', 2, 'Coach', 'Coach Lim', '2026-06-05 13:04:23'),
+(23, 1, '2026-06-06', 'deleted', 'On Leave', NULL, NULL, NULL, NULL, NULL, NULL, 2, 'Coach', 'Coach Lim', '2026-06-05 13:04:30'),
+(24, 1, '2026-06-05', 'deleted', 'On Leave', NULL, NULL, NULL, NULL, NULL, NULL, 2, 'Coach', 'Coach Lim', '2026-06-05 13:04:34');
 
 -- --------------------------------------------------------
 
@@ -456,7 +488,17 @@ INSERT INTO `notifications` (`id`, `recipient_role`, `recipient_id`, `type`, `ti
 (5, 'Coach', 2, 'booking', 'New Session Assigned', 'You have a new coaching session on 2026-06-10 at 08:45.', 52, 'booking', 1, '2026-06-05 00:42:35'),
 (6, 'Admin', NULL, 'cancelled', 'Booking Cancelled', 'Booking #52 for wz at Court B on 10 Jun 2026 has been cancelled.', 52, 'booking', 0, '2026-06-05 04:00:39'),
 (7, 'Superadmin', NULL, 'cancelled', 'Booking Cancelled', 'Booking #52 for wz at Court B on 10 Jun 2026 has been cancelled.', 52, 'booking', 1, '2026-06-05 04:00:39'),
-(8, 'Coach', 2, 'cancelled', 'Session Cancelled', 'Your coaching session at Court B on 10 Jun 2026 08:45 AM has been cancelled.', 52, 'booking', 1, '2026-06-05 04:00:39');
+(8, 'Coach', 2, 'cancelled', 'Session Cancelled', 'Your coaching session at Court B on 10 Jun 2026 08:45 AM has been cancelled.', 52, 'booking', 1, '2026-06-05 04:00:39'),
+(9, 'Admin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #49 for John Doe at Court H on 21 May 2026 04:00 PM has been confirmed.', 49, 'booking', 0, '2026-06-05 13:05:55'),
+(10, 'Superadmin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #49 for John Doe at Court H on 21 May 2026 04:00 PM has been confirmed.', 49, 'booking', 1, '2026-06-05 13:05:55'),
+(11, 'Coach', 2, 'confirmed', 'Session Confirmed', 'Your coaching session at Court H on 21 May 2026 04:00 PM has been confirmed.', 49, 'booking', 1, '2026-06-05 13:05:55'),
+(12, 'Admin', NULL, 'completed', 'Session Completed', 'Booking #49 for John Doe at Court H on 21 May 2026 04:00 PM has been marked completed by coach.', 49, 'booking', 0, '2026-06-05 13:06:27'),
+(13, 'Superadmin', NULL, 'completed', 'Session Completed', 'Booking #49 for John Doe at Court H on 21 May 2026 04:00 PM has been marked completed by coach.', 49, 'booking', 1, '2026-06-05 13:06:27'),
+(14, 'Admin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #49 for John Doe at Court H on 21 May 2026 04:00 PM has been confirmed.', 49, 'booking', 0, '2026-06-05 13:08:52'),
+(15, 'Superadmin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #49 for John Doe at Court H on 21 May 2026 04:00 PM has been confirmed.', 49, 'booking', 1, '2026-06-05 13:08:52'),
+(16, 'Coach', 2, 'confirmed', 'Session Confirmed', 'Your coaching session at Court H on 21 May 2026 04:00 PM has been confirmed.', 49, 'booking', 1, '2026-06-05 13:08:52'),
+(17, 'Admin', NULL, 'completed', 'Session Completed', 'Booking #49 for John Doe at Court H on 21 May 2026 04:00 PM has been marked completed by coach.', 49, 'booking', 0, '2026-06-05 13:19:19'),
+(18, 'Superadmin', NULL, 'completed', 'Session Completed', 'Booking #49 for John Doe at Court H on 21 May 2026 04:00 PM has been marked completed by coach.', 49, 'booking', 1, '2026-06-05 13:19:19');
 
 -- --------------------------------------------------------
 
@@ -543,44 +585,44 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `category`, `name`, `description`, `price`, `image_url`, `stock`, `is_active`) VALUES
-(1, 'racket', 'Yonex Astrox 100ZZ', 'Professional grade, head heavy balance', 899.00, 'rackets/yonex_astrox_100zz.jpg', 0, 1),
-(2, 'racket', 'Yonex Nanflare 800', 'Ultra light, head light balance', 799.00, 'rackets/yonex_nanoflare_800.jpg', 0, 1),
-(3, 'racket', 'Li-Ning Axforce 80', 'Powerful smash, stiff shaft', 699.00, 'rackets/li-ning_axforce_80.jpg', 0, 1),
-(4, 'racket', 'Victor Thruster F', 'Enhanced power, box frame', 649.00, 'rackets/victor_thruster_f.jpg', 0, 1),
-(5, 'racket', 'Yonex Arcsaber 11', 'All-round performance', 599.00, 'rackets/yonex_arcsaber_11.jpg', 0, 1),
-(6, 'racket', 'Apacs Z-Ziggler', 'High speed, affordable', 299.00, 'rackets/apacs_z_ziggler.jpg', 0, 1),
-(7, 'racket', 'Protech Classic', 'Entry level, good for beginners', 199.00, 'rackets/protech_classic.jpg', 0, 1),
-(8, 'racket', 'Yonex Astrox 99', 'Extreme power for advanced', 899.00, 'rackets/yonex_astrox_99.jpg', 0, 1),
-(9, 'racket', 'Victor Auraspeed 90S', 'Fast swing, aerodynamic frame', 749.00, 'rackets/victor_auraspeed_90s.jpg', 0, 1),
-(10, 'racket', 'Li-Ning 3D Calibar 900', '3D frame design, powerful', 799.00, 'rackets/li-ning_3d_calibar_900.jpg', 0, 1),
-(11, 'string', 'Yonex BG-65', 'Durable, all-round performance', 35.00, 'strings/yonex_bg-65.png', 0, 1),
-(12, 'string', 'Yonex BG-66 Ultimax', 'Repulsive power, thin gauge', 40.00, 'strings/yonex_bg-66_ultimax.png', 0, 1),
-(13, 'string', 'Yonex BG-80 Power', 'Rough surface for spin', 45.00, 'strings/yonex_bg-80_power.png', 0, 1),
-(14, 'string', 'Li-Ning No.1', 'High repulsion, durable', 42.00, 'strings/li-ning_no.1.png', 0, 1),
-(15, 'string', 'Victor VBS-66N', 'Excellent control', 38.00, 'strings/victor_vbs-66n.png', 0, 1),
-(16, 'string', 'Apacs L66', 'Affordable performance', 28.00, 'strings/apacs_l66.png', 0, 1),
-(17, 'shuttlecock', 'Aeroplane EG1130 (Speed 77)', 'Tournament grade, goose feather', 85.00, 'shuttlecocks/aeroplane_eg1130_(speed_77).jpg', 0, 1),
-(18, 'shuttlecock', 'Protech Masterpiece', 'High durability, consistent flight', 75.00, 'shuttlecocks/protech_masterpiece.jpg', 0, 1),
-(19, 'shuttlecock', 'Yonex Aerosensa 30', 'Official tournament shuttle', 95.00, 'shuttlecocks/yonex_aerosensa_30.jpg', 0, 1),
-(20, 'shuttlecock', 'RSL Classic Tourney', 'Premium quality, good speed', 78.00, 'shuttlecocks/rsl_classic_tourney.jpg', 0, 1),
-(21, 'shuttlecock', 'Apacs 900 Feather Shuttlecock', 'Good for training', 55.00, 'shuttlecocks/apacs_900_feather_shuttlecock.jpg', 0, 1),
-(22, 'grip', 'Yonex Super Grap (Red)', 'Tacky feel, absorbs sweat', 12.00, 'grips/yonex_super_grap_(red).jpg', 0, 1),
-(23, 'grip', 'Yonex Super Grap (Yellow)', 'Tacky feel, absorbs sweat', 12.00, 'grips/yonex_super_grap_(yellow).jpg', 0, 1),
-(24, 'grip', 'Yonex Super Grap (Black)', 'Tacky feel, absorbs sweat', 12.00, 'grips/yonex_super_grap_(black).jpg', 0, 1),
-(25, 'grip', 'Li-Ning GP1000', 'Cushioning, anti-slip', 15.00, 'grips/li_ning_gp1000.jpg', 0, 1),
-(26, 'grip', 'Victor GR233', 'Excellent absorption', 14.00, 'grips/victor_gr233.jpg', 0, 1),
-(27, 'grip', 'Apacs Cushion Grip', 'Affordable, comfortable', 8.00, 'grips/apacs_cushion_grip.jpg', 0, 1),
-(28, 'snack', 'KitKat Chocolate', 'Crispy wafer chocolate bar', 4.50, 'snacks/kitkat_chocolate.jpg', 0, 1),
-(29, 'snack', 'Oreo Biscuits', 'Original flavor', 3.50, 'snacks/oreo_biscuits.jpg', 0, 1),
-(30, 'snack', 'Pringles Original', 'Potato chips', 6.50, 'snacks/pringles_original.jpg', 0, 1),
-(31, 'snack', 'Mister Potato', 'Crispy potato snack', 4.00, 'snacks/mister_potato.jpg', 0, 1),
-(32, 'snack', 'Cadbury Dairy Milk', 'Milk chocolate bar', 5.00, 'snacks/cadbury_dairy_milk.jpg', 0, 1),
-(33, 'drink', '100 Plus Isotonic', 'Replenish energy, 500ml', 3.50, 'drinks/100_plus_isotonic.jpg', 0, 1),
-(34, 'drink', 'Mineral Water', '500ml', 1.50, 'drinks/mineral_water.jpg', 0, 1),
-(35, 'drink', 'Coca Cola', '330ml can', 2.50, 'drinks/coca_cola.jpg', 0, 1),
-(36, 'drink', 'Sprite', '330ml can', 2.50, 'drinks/sprite.jpg', 0, 1),
-(37, 'drink', 'Revive Isotonic', 'Sports drink, 500ml', 3.00, 'drinks/revive_isotonic.jpg', 0, 1),
-(38, 'drink', 'Milo', 'Chocolate malt drink', 3.00, 'drinks/milo.jpg', 0, 1);
+(1, 'racket', 'Yonex Astrox 100ZZ', 'Professional grade, head heavy balance', 899.00, 'rackets/yonex_astrox_100zz.jpg', 2, 1),
+(2, 'racket', 'Yonex Nanflare 800', 'Ultra light, head light balance', 799.00, 'rackets/yonex_nanoflare_800.jpg', 5, 1),
+(3, 'racket', 'Li-Ning Axforce 80', 'Powerful smash, stiff shaft', 699.00, 'rackets/li-ning_axforce_80.jpg', 5, 1),
+(4, 'racket', 'Victor Thruster F', 'Enhanced power, box frame', 649.00, 'rackets/victor_thruster_f.jpg', 1, 1),
+(5, 'racket', 'Yonex Arcsaber 11', 'All-round performance', 599.00, 'rackets/yonex_arcsaber_11.jpg', 4, 1),
+(6, 'racket', 'Apacs Z-Ziggler', 'High speed, affordable', 299.00, 'rackets/apacs_z_ziggler.jpg', 3, 1),
+(7, 'racket', 'Protech Classic', 'Entry level, good for beginners', 199.00, 'rackets/protech_classic.jpg', 3, 1),
+(8, 'racket', 'Yonex Astrox 99', 'Extreme power for advanced', 899.00, 'rackets/yonex_astrox_99.jpg', 2, 1),
+(9, 'racket', 'Victor Auraspeed 90S', 'Fast swing, aerodynamic frame', 749.00, 'rackets/victor_auraspeed_90s.jpg', 2, 1),
+(10, 'racket', 'Li-Ning 3D Calibar 900', '3D frame design, powerful', 799.00, 'rackets/li-ning_3d_calibar_900.jpg', 5, 1),
+(11, 'string', 'Yonex BG-65', 'Durable, all-round performance', 35.00, 'strings/yonex_bg-65.png', 28, 1),
+(12, 'string', 'Yonex BG-66 Ultimax', 'Repulsive power, thin gauge', 40.00, 'strings/yonex_bg-66_ultimax.png', 35, 1),
+(13, 'string', 'Yonex BG-80 Power', 'Rough surface for spin', 45.00, 'strings/yonex_bg-80_power.png', 43, 1),
+(14, 'string', 'Li-Ning No.1', 'High repulsion, durable', 42.00, 'strings/li-ning_no.1.png', 17, 1),
+(15, 'string', 'Victor VBS-66N', 'Excellent control', 38.00, 'strings/victor_vbs-66n.png', 29, 1),
+(16, 'string', 'Apacs L66', 'Affordable performance', 28.00, 'strings/apacs_l66.png', 43, 1),
+(17, 'shuttlecock', 'Aeroplane EG1130 (Speed 77)', 'Tournament grade, goose feather', 85.00, 'shuttlecocks/aeroplane_eg1130_(speed_77).jpg', 21, 1),
+(18, 'shuttlecock', 'Protech Masterpiece', 'High durability, consistent flight', 75.00, 'shuttlecocks/protech_masterpiece.jpg', 25, 1),
+(19, 'shuttlecock', 'Yonex Aerosensa 30', 'Official tournament shuttle', 95.00, 'shuttlecocks/yonex_aerosensa_30.jpg', 6, 1),
+(20, 'shuttlecock', 'RSL Classic Tourney', 'Premium quality, good speed', 78.00, 'shuttlecocks/rsl_classic_tourney.jpg', 27, 1),
+(21, 'shuttlecock', 'Apacs 900 Feather Shuttlecock', 'Good for training', 55.00, 'shuttlecocks/apacs_900_feather_shuttlecock.jpg', 10, 1),
+(22, 'grip', 'Yonex Super Grap (Red)', 'Tacky feel, absorbs sweat', 12.00, 'grips/yonex_super_grap_(red).jpg', 29, 1),
+(23, 'grip', 'Yonex Super Grap (Yellow)', 'Tacky feel, absorbs sweat', 12.00, 'grips/yonex_super_grap_(yellow).jpg', 38, 1),
+(24, 'grip', 'Yonex Super Grap (Black)', 'Tacky feel, absorbs sweat', 12.00, 'grips/yonex_super_grap_(black).jpg', 11, 1),
+(25, 'grip', 'Li-Ning GP1000', 'Cushioning, anti-slip', 15.00, 'grips/li_ning_gp1000.jpg', 15, 1),
+(26, 'grip', 'Victor GR233', 'Excellent absorption', 14.00, 'grips/victor_gr233.jpg', 32, 1),
+(27, 'grip', 'Apacs Cushion Grip', 'Affordable, comfortable', 8.00, 'grips/apacs_cushion_grip.jpg', 25, 1),
+(28, 'snack', 'KitKat Chocolate', 'Crispy wafer chocolate bar', 4.50, 'snacks/kitkat_chocolate.jpg', 3, 1),
+(29, 'snack', 'Oreo Biscuits', 'Original flavor', 3.50, 'snacks/oreo_biscuits.jpg', 10, 1),
+(30, 'snack', 'Pringles Original', 'Potato chips', 6.50, 'snacks/pringles_original.jpg', 2, 1),
+(31, 'snack', 'Mister Potato', 'Crispy potato snack', 4.00, 'snacks/mister_potato.jpg', 7, 1),
+(32, 'snack', 'Cadbury Dairy Milk', 'Milk chocolate bar', 5.00, 'snacks/cadbury_dairy_milk.jpg', 1, 1),
+(33, 'drink', '100 Plus Isotonic', 'Replenish energy, 500ml', 3.50, 'drinks/100_plus_isotonic.jpg', 5, 1),
+(34, 'drink', 'Mineral Water', '500ml', 1.50, 'drinks/mineral_water.jpg', 8, 1),
+(35, 'drink', 'Coca Cola', '330ml can', 2.50, 'drinks/coca_cola.jpg', 7, 1),
+(36, 'drink', 'Sprite', '330ml can', 2.50, 'drinks/sprite.jpg', 9, 1),
+(37, 'drink', 'Revive Isotonic', 'Sports drink, 500ml', 3.00, 'drinks/revive_isotonic.jpg', 6, 1),
+(38, 'drink', 'Milo', 'Chocolate malt drink', 3.00, 'drinks/milo.jpg', 1, 1);
 
 -- --------------------------------------------------------
 
@@ -881,7 +923,7 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
 
 --
 -- AUTO_INCREMENT for table `booking_addons`
@@ -905,13 +947,13 @@ ALTER TABLE `coaches`
 -- AUTO_INCREMENT for table `coach_availability`
 --
 ALTER TABLE `coach_availability`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `coach_availability_log`
 --
 ALTER TABLE `coach_availability_log`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `contact_messages`
@@ -935,7 +977,7 @@ ALTER TABLE `court_availability`
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `otp_codes`
@@ -1038,13 +1080,6 @@ ALTER TABLE `court_availability`
 --
 ALTER TABLE `payments`
   ADD CONSTRAINT `fk_payments_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE;
-
--- 1. 添加 cancellation_count 字段到 users 表
-ALTER TABLE users ADD COLUMN cancellation_count INT DEFAULT 0 AFTER wallet_balance;
-
--- 2. 添加 reschedule_count 字段到 bookings 表
-ALTER TABLE bookings ADD COLUMN reschedule_count INT DEFAULT 0 AFTER status;
-
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
