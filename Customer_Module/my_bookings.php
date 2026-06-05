@@ -5,6 +5,10 @@ if(!isLoggedIn()) redirect('homepage.php');
 
 $user_id = $_SESSION['user_id'];
 
+// 直接使用 functions.php 中的 getSetting() 函数
+$cancellation_hours = getSetting('cancellation_hours', '2');
+$cancellation_fee = getSetting('cancellation_fee', '10.00');
+
 // 获取用户所有预订记录
 $stmt = $pdo->prepare("
     SELECT b.*, c.court_name, c.court_type, c.location,
@@ -726,7 +730,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
                     $booking_timestamp = strtotime($booking_datetime);
                     $current_timestamp = time();
                     $hours_until_booking = ($booking_timestamp - $current_timestamp) / 3600;
-                    $can_cancel = ($b['status'] == 'Pending' || $b['status'] == 'Confirmed') && $hours_until_booking >= 2;
+                    $can_cancel = ($b['status'] == 'Pending' || $b['status'] == 'Confirmed') && $hours_until_booking >= $cancellation_hours;
                 ?>
                 <tr data-status="<?php echo $b['status']; ?>">
                     <td><strong><?php echo htmlspecialchars($b['court_name']); ?></strong><div class="court-badge"><?php echo htmlspecialchars($b['court_type']); ?></div></td>
@@ -745,7 +749,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
                             <?php if($can_cancel): ?>
                                 <button class="btn-cancel" onclick="cancelBooking(<?php echo $b['id']; ?>)"><i class="fas fa-times"></i> Cancel</button>
                             <?php else: ?>
-                                <button class="btn-cancel-disabled" disabled><i class="fas fa-times"></i> Need 2h notice</button>
+                                <button class="btn-cancel-disabled" disabled title="Need <?php echo $cancellation_hours; ?> hours notice to cancel"><i class="fas fa-times"></i> Need <?php echo $cancellation_hours; ?>h notice</button>
                             <?php endif; ?>
                         <?php endif; ?>
                     </td>
@@ -758,8 +762,58 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
     <div class="empty-state"><i class="fas fa-calendar-alt"></i><h3>No Bookings Yet</h3><p>You haven't made any court bookings.</p><a href="dashboard.php" class="btn-book">Book Your First Court</a></div>
     <?php endif; ?>
 </div>
-<div id="receiptModal" class="modal"><div class="modal-content"><div class="modal-header"><h3><i class="fas fa-receipt"></i> Booking Receipt</h3><button class="modal-close" onclick="closeModal()">&times;</button></div><div class="modal-body" id="receiptBody"></div></div></div>
-<footer class="footer">...</footer>
+
+<div id="receiptModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-receipt"></i> Booking Receipt</h3>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body" id="receiptBody"></div>
+    </div>
+</div>
+
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-col">
+            <h3>Smash Arena</h3>
+            <p><i class="fas fa-map-marker-alt"></i> 123 Jalan Badminton, Kuala Lumpur</p>
+            <p><i class="fas fa-phone-alt"></i> +603-1234 5678</p>
+            <p><i class="fas fa-envelope"></i> smasharenabadminton@gmail.com</p>
+            <div class="social-icons">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-whatsapp"></i></a>
+            </div>
+        </div>
+        <div class="footer-col">
+            <h4>Quick Links</h4>
+            <a href="dashboard.php">Find a Court</a>
+            <a href="my_bookings.php">My Bookings</a>
+            <a href="../Payment_Module/wallet.php">Wallet</a>
+        </div>
+        <div class="footer-col">
+            <h4>Support</h4>
+            <a href="faq.php">FAQs</a>
+            <a href="cancellation_policy.php">Cancellation Policy</a>
+            <a href="privacy_policy.php">Privacy Policy</a>
+            <a href="terms_of_use.php">Terms of Use</a>
+            <a href="contact_us.php">Contact Us</a>
+        </div>
+        <div class="footer-col">
+            <h4>Operating Hours</h4>
+            <p><i class="fas fa-clock"></i> Monday - Sunday: 8:00 AM - 1:00 AM</p>
+            <p><i class="fas fa-tag"></i> 8am - 3pm: RM10/hour</p>
+            <p><i class="fas fa-tag"></i> 3pm - 1am: RM15/hour</p>
+            <p><i class="fas fa-calendar-alt"></i> Open daily including public holidays</p>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2025 Smash Arena – Your Game, Our Court. All rights reserved.</p>
+    </div>
+</footer>
+
 <script>
     const filterBtns = document.querySelectorAll('.filter-btn');
     const tableRows = document.querySelectorAll('#bookingsTable tbody tr');
@@ -773,6 +827,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             });
         });
     });
+    
     async function viewReceipt(bookingId) {
         try {
             const response = await fetch(`get_booking_details.php?id=${bookingId}`);
@@ -780,7 +835,11 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             if(data.success) {
                 const b = data.booking;
                 document.getElementById('receiptBody').innerHTML = `
-                    <div style="text-align:center; margin-bottom:1rem;"><img src="../Pictures/Admin_Module/logo.png" style="height:40px;"><h2 style="color:#2b7e3a;">Smash Arena</h2><p>Official Booking Receipt</p></div>
+                    <div style="text-align:center; margin-bottom:1rem;">
+                        <img src="../Pictures/Admin_Module/logo.png" style="height:40px;">
+                        <h2 style="color:#2b7e3a;">Smash Arena</h2>
+                        <p>Official Booking Receipt</p>
+                    </div>
                     <div class="receipt-row"><span>Receipt No.</span><span>#${String(b.id).padStart(6,'0')}</span></div>
                     <div class="receipt-row"><span>Court</span><span>${b.court_name} (${b.court_type})</span></div>
                     <div class="receipt-row"><span>Date</span><span>${b.booking_date}</span></div>
@@ -792,13 +851,84 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
                     <button class="print-btn" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
                 `;
                 document.getElementById('receiptModal').style.display = 'block';
-            } else alert('Failed to load receipt');
-        } catch(e) { alert('Error loading receipt'); }
+            } else {
+                alert('Failed to load receipt details');
+            }
+        } catch(e) {
+            console.error(e);
+            alert('Error loading receipt');
+        }
     }
-    function closeModal() { document.getElementById('receiptModal').style.display = 'none'; }
-    window.onclick = (e) => { if(e.target === document.getElementById('receiptModal')) closeModal(); };
-    async function cancelBooking(bookingId) { /* 保持原逻辑 */ }
-    async function proceedCancel(bookingId) { /* 保持原逻辑 */ }
+    
+    function closeModal() { 
+        document.getElementById('receiptModal').style.display = 'none'; 
+    }
+    
+    window.onclick = (e) => { 
+        if(e.target === document.getElementById('receiptModal')) closeModal(); 
+    };
+    
+    async function cancelBooking(bookingId) {
+        try {
+            const response = await fetch(`get_booking_details.php?id=${bookingId}`);
+            const data = await response.json();
+            if(data.success) {
+                const booking = data.booking;
+                const bookingDateTime = new Date(booking.booking_date + ' ' + booking.start_time);
+                const now = new Date();
+                const hoursDiff = (bookingDateTime - now) / (1000 * 60 * 60);
+                const cancellationHours = <?php echo $cancellation_hours; ?>;
+                const cancellationFee = <?php echo $cancellation_fee; ?>;
+                
+                if (hoursDiff < cancellationHours) {
+                    alert(`⚠️ Cannot cancel booking!\n\nYour booking starts in ${hoursDiff.toFixed(1)} hours.\nYou need to cancel at least ${cancellationHours} hours before your booking time.\n\nNote: RM${cancellationFee} cancellation fee applies for late cancellation.`);
+                    return;
+                }
+                
+                const confirmMessage = `⚠️ CANCELLATION POLICY ⚠️\n\n` +
+                    `Booking: ${booking.court_name}\n` +
+                    `Date: ${booking.booking_date}\n` +
+                    `Time: ${booking.start_time} - ${booking.end_time}\n\n` +
+                    `📌 Cancellation Fee: RM ${cancellationFee.toFixed(2)}\n` +
+                    `💰 Refund Amount: RM ${(parseFloat(booking.total_price) - cancellationFee).toFixed(2)}\n\n` +
+                    `The remaining amount will be refunded to your wallet.\n\n` +
+                    `Do you want to proceed with cancellation?`;
+                
+                if(confirm(confirmMessage)) {
+                    await proceedCancel(bookingId);
+                }
+            } else {
+                if(confirm('Are you sure you want to cancel this booking?')) {
+                    await proceedCancel(bookingId);
+                }
+            }
+        } catch(e) {
+            console.error(e);
+            if(confirm('Are you sure you want to cancel this booking?')) {
+                await proceedCancel(bookingId);
+            }
+        }
+    }
+    
+    async function proceedCancel(bookingId) {
+        try {
+            const response = await fetch(`cancel_booking.php`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ booking_id: bookingId })
+            });
+            const data = await response.json();
+            if(data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert(data.message || 'Failed to cancel booking');
+            }
+        } catch(e) {
+            console.error(e);
+            alert('Error cancelling booking');
+        }
+    }
 </script>
 </body>
 </html>
