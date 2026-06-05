@@ -10,6 +10,7 @@ require_once __DIR__ . '/../Admin_Module/Email_System/phpmailer/src/Exception.ph
 
 $isLoggedIn = isset($_SESSION['user_id']);
 $back_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
+$home_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
 
 // 从 settings 表获取动态配置
 function getSetting($key, $default = '') {
@@ -96,7 +97,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $mail->addReplyTo($email, $name);
                 $mail->isHTML(true);
                 $mail->Subject = "[Contact Form] $subject";
-                $mail->Body = "<html><body><h2>New Contact Form Submission</h2></table><tr><td><strong>Name:</strong></td><td>$name</td></tr><tr><td><strong>Email:</strong></td><td>$email</td></tr><tr><td><strong>Subject:</strong></td><td>$subject</td></tr><tr><td><strong>Message:</strong></td><td>" . nl2br(htmlspecialchars($message)) . "</td></tr></table></body></html>";
+                $mail->Body = "
+                <html>
+                <body style='font-family: Arial, sans-serif;'>
+                    <h2>New Contact Form Submission</h2>
+                    <table style='border-collapse: collapse; width: 100%;'>
+                        <tr><td style='padding: 8px; background: #f0f0f0;'><strong>Name:</strong></td><td style='padding: 8px;'>$name</td></tr>
+                        <tr><td style='padding: 8px; background: #f0f0f0;'><strong>Email:</strong></td><td style='padding: 8px;'>$email</td></tr>
+                        <tr><td style='padding: 8px; background: #f0f0f0;'><strong>Subject:</strong></td><td style='padding: 8px;'>$subject</td></tr>
+                        <tr><td style='padding: 8px; background: #f0f0f0;'><strong>Message:</strong></td><td style='padding: 8px;'>" . nl2br(htmlspecialchars($message)) . "</td></tr>
+                    </table>
+                    <hr>
+                    <p style='font-size: 12px; color: #888;'>Sent via Smash Arena Contact Form</p>
+                </body>
+                </html>
+                ";
                 $mail->AltBody = "New Contact Form Submission\n\nName: $name\nEmail: $email\nSubject: $subject\nMessage: $message";
                 $mail->send();
                 
@@ -113,8 +128,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $userMail->addAddress($email, $name);
                 $userMail->isHTML(true);
                 $userMail->Subject = "We've received your message - Smash Arena";
-                $userMail->Body = "<html><body><h2>Thank you for contacting us, $name!</h2><p>We have received your message and will get back to you within <strong>24 hours</strong>.</p><hr><p><strong>Your message:</strong></p><p style='background:#f5f9f0;padding:10px;border-radius:8px;'>" . nl2br(htmlspecialchars($message)) . "</p></body></html>";
-                $userMail->AltBody = "Thank you for contacting us, $name!\n\nWe have received your message and will get back to you within 24 hours.\n\nYour message:\n$message";
+                $userMail->Body = "
+                <html>
+                <body style='font-family: Arial, sans-serif;'>
+                    <h2>Thank you for contacting us, $name!</h2>
+                    <p>We have received your message and will get back to you within <strong>24 hours</strong>.</p>
+                    <hr>
+                    <p><strong>Your message:</strong></p>
+                    <p style='background: #f5f9f0; padding: 10px; border-radius: 8px;'>" . nl2br(htmlspecialchars($message)) . "</p>
+                    <hr>
+                    <p style='font-size: 12px; color: #888;'>Smash Arena - Your Game, Our Court</p>
+                </body>
+                </html>
+                ";
+                $userMail->AltBody = "Thank you for contacting us, $name!\n\nWe have received your message and will get back to you within 24 hours.\n\nYour message:\n$message\n\nSmash Arena";
                 $userMail->send();
                 
                 $message_sent = 'Thank you for your message! We will get back to you within 24 hours. A confirmation email has been sent to your inbox.';
@@ -525,12 +552,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 <body>
 <nav class="navbar">
-    <a href="<?php echo $back_link; ?>" class="logo-area">
+    <a href="<?php echo $home_link; ?>" class="logo-area">
         <img src="../Pictures/Admin_Module/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
         <div class="logo-text">Smash <span>Arena</span></div>
     </a>
     <div class="nav-links">
-        <a href="homepage.php">Home</a>
+        <a href="<?php echo $home_link; ?>">Home</a>
         <a href="dashboard.php">Courts</a>
         <a href="my_bookings.php">My Bookings</a>
         <a href="coaches.php">Coaches</a>
@@ -589,12 +616,43 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <footer class="footer">
     <div class="footer-container">
-        <div class="footer-col"><h3>Smash Arena</h3><p><i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($address); ?></p><p><i class="fas fa-phone-alt"></i> <?php echo htmlspecialchars($contact_phone); ?></p><p><i class="fas fa-envelope"></i> <?php echo htmlspecialchars($contact_email); ?></p><div class="social-icons"><a href="#"><i class="fab fa-facebook-f"></i></a><a href="#"><i class="fab fa-instagram"></i></a><a href="#"><i class="fab fa-twitter"></i></a><a href="#"><i class="fab fa-whatsapp"></i></a></div></div>
-        <div class="footer-col"><h4>Quick Links</h4><a href="dashboard.php">Find a Court</a><a href="my_bookings.php">My Bookings</a><a href="../Payment_Module/wallet.php">Wallet</a></div>
-        <div class="footer-col"><h4>Support</h4><a href="faq.php">FAQs</a><a href="cancellation_policy.php">Cancellation Policy</a><a href="privacy_policy.php">Privacy Policy</a><a href="terms_of_use.php">Terms of Use</a><a href="contact_us.php">Contact Us</a></div>
-        <div class="footer-col"><h4>Operating Hours</h4><p><i class="fas fa-clock"></i> Monday - Sunday: <?php echo $open_time_display; ?> - <?php echo $close_time_display; ?></p><p><i class="fas fa-tag"></i> <?php echo $open_time_display; ?> - <?php echo $peak_start_display; ?>: RM <?php echo $off_peak_price; ?>/hour</p><p><i class="fas fa-tag"></i> <?php echo $peak_start_display; ?> - <?php echo $close_time_display; ?>: RM <?php echo $peak_price; ?>/hour</p><p><i class="fas fa-calendar-alt"></i> Open daily including public holidays</p></div>
+        <div class="footer-col">
+            <h3>Smash Arena</h3>
+            <p><i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($address); ?></p>
+            <p><i class="fas fa-phone-alt"></i> <?php echo htmlspecialchars($contact_phone); ?></p>
+            <p><i class="fas fa-envelope"></i> <?php echo htmlspecialchars($contact_email); ?></p>
+            <div class="social-icons">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-whatsapp"></i></a>
+            </div>
+        </div>
+        <div class="footer-col">
+            <h4>Quick Links</h4>
+            <a href="dashboard.php">Find a Court</a>
+            <a href="my_bookings.php">My Bookings</a>
+            <a href="../Payment_Module/wallet.php">Wallet</a>
+        </div>
+        <div class="footer-col">
+            <h4>Support</h4>
+            <a href="faq.php">FAQs</a>
+            <a href="cancellation_policy.php">Cancellation Policy</a>
+            <a href="privacy_policy.php">Privacy Policy</a>
+            <a href="terms_of_use.php">Terms of Use</a>
+            <a href="contact_us.php">Contact Us</a>
+        </div>
+        <div class="footer-col">
+            <h4>Operating Hours</h4>
+            <p><i class="fas fa-clock"></i> Monday - Sunday: <?php echo $open_time_display; ?> - <?php echo $close_time_display; ?></p>
+            <p><i class="fas fa-tag"></i> <?php echo $open_time_display; ?> - <?php echo $peak_start_display; ?>: RM <?php echo $off_peak_price; ?>/hour</p>
+            <p><i class="fas fa-tag"></i> <?php echo $peak_start_display; ?> - <?php echo $close_time_display; ?>: RM <?php echo $peak_price; ?>/hour</p>
+            <p><i class="fas fa-calendar-alt"></i> Open daily including public holidays</p>
+        </div>
     </div>
-    <div class="footer-bottom"><p>&copy; 2025 Smash Arena – Your Game, Our Court. All rights reserved.</p></div>
+    <div class="footer-bottom">
+        <p>&copy; 2025 Smash Arena – Your Game, Our Court. All rights reserved.</p>
+    </div>
 </footer>
 </body>
 </html>

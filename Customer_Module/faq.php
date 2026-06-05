@@ -2,8 +2,9 @@
 require_once __DIR__ . '/../config.php';
 $isLoggedIn = isset($_SESSION['user_id']);
 $back_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
+$home_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
 
-// 从 settings 表获取动态配置（这些 Admin 需要修改）
+// 从 settings 表获取动态配置
 function getSetting($key, $default = '') {
     global $pdo;
     $stmt = $pdo->prepare("SELECT setting_value FROM settings WHERE setting_key = ?");
@@ -12,7 +13,7 @@ function getSetting($key, $default = '') {
     return $row ? $row['setting_value'] : $default;
 }
 
-// 获取各种设置（从 database 读取）
+// 获取各种设置
 $open_time = getSetting('open_time', '08:00');
 $close_time = getSetting('close_time', '01:00');
 $peak_start = getSetting('peak_start', '15:00');
@@ -30,35 +31,35 @@ $open_time_display = date('h:i A', strtotime($open_time));
 $close_time_display = date('h:i A', strtotime($close_time));
 $peak_start_display = date('h:i A', strtotime($peak_start));
 
-// ========== FAQ 内容（写死在代码里，不需要 database） ==========
+// ========== FAQ 内容 ==========
 $faqs = [
     [
         'question' => 'How do I book a court?',
-        'answer' => 'To book a court, simply login to your account, go to the Dashboard, select your preferred court, choose date and time, select any optional add-ons, and proceed to payment. You\'ll receive a confirmation email once your booking is complete.'
+        'answer' => 'To book a court, simply login to your account, go to the Dashboard, select your preferred court, choose date and time, select any optional add-ons (rackets, shuttlecocks, grips, snacks, drinks), and proceed to payment. You\'ll receive a confirmation email once your booking is complete.'
     ],
     [
         'question' => 'What are the operating hours?',
-        'answer' => 'Smash Arena is open daily from ' . $open_time_display . ' to ' . $close_time_display . '. We operate every day including public holidays.'
+        'answer' => 'Smash Arena is open daily from ' . $open_time_display . ' to ' . $close_time_display . '. We operate every day including public holidays. Last booking is at 12:00 AM for 1-hour sessions.'
     ],
     [
         'question' => 'What are the different pricing rates?',
-        'answer' => '<strong>Off-Peak Hours (' . $open_time_display . ' - ' . $peak_start_display . '):</strong> RM ' . $off_peak_price . ' per hour<br><strong>Peak Hours (' . $peak_start_display . ' - ' . $close_time_display . '):</strong> RM ' . $peak_price . ' per hour'
+        'answer' => '<strong>Off-Peak Hours (' . $open_time_display . ' - ' . $peak_start_display . '):</strong> RM ' . $off_peak_price . ' per hour<br><strong>Peak Hours (' . $peak_start_display . ' - ' . $close_time_display . '):</strong> RM ' . $peak_price . ' per hour<br><br>Training courts have the same pricing but include optional coach services (RM20-50 per hour).'
     ],
     [
         'question' => 'Can I cancel my booking?',
-        'answer' => 'Yes, you can cancel your booking up to ' . $cancellation_hours . ' hours before the scheduled time. A cancellation fee of RM ' . $cancellation_fee . ' applies. The remaining amount will be refunded to your wallet.'
+        'answer' => 'Yes, you can cancel your booking up to ' . $cancellation_hours . ' hours before the scheduled time. A cancellation fee of RM ' . $cancellation_fee . ' applies. The remaining amount will be refunded to your Smash Arena wallet. Cancellations within ' . $cancellation_hours . ' hours of booking time are not allowed.'
     ],
     [
         'question' => 'How do I get a refund?',
-        'answer' => 'Refunds for eligible cancellations will be automatically credited to your Smash Arena wallet. You can use the wallet balance for future bookings or request a withdrawal by contacting our support team.'
+        'answer' => 'Refunds for eligible cancellations will be automatically credited to your Smash Arena wallet within minutes. You can use the wallet balance for future bookings or request a withdrawal by contacting our support team.'
     ],
     [
         'question' => 'Can I book a coach?',
-        'answer' => 'Yes! Training courts (Court H, I, J) come with optional coach services. You can select Coach Lim (RM50/hr), Coach Wong (RM20/hr), or Coach Tan (RM30/hr) during the booking process.'
+        'answer' => 'Yes! Training courts (Court H, I, J) come with optional coach services. You can select:<br>🏆 Coach Lim - Singles Coaching (RM50/hr)<br>🎯 Coach Wong - Doubles Coaching (RM20/hr)<br>⭐ Coach Tan - Junior Development (RM30/hr)'
     ],
     [
         'question' => 'What equipment can I purchase?',
-        'answer' => 'We offer rackets (RM199-899), shuttlecocks (RM55-95 per tube), grips (RM8-15), strings (RM28-45), snacks (RM3.50-6.50), and drinks (RM1.50-3.50). You can add these items during the booking process.'
+        'answer' => 'We offer a wide range of products:<br>🏸 Badminton Rackets: RM199 - RM899<br>🏸 Shuttlecocks: RM55 - RM95 per tube<br>🎾 Grips: RM8 - RM15<br>🧵 Badminton Strings: RM28 - RM45<br>🍪 Snacks: RM3.50 - RM6.50<br>🥤 Drinks: RM1.50 - RM3.50<br><br>You can add these items during the booking process.'
     ],
     [
         'question' => 'How do I top up my wallet?',
@@ -66,7 +67,7 @@ $faqs = [
     ],
     [
         'question' => 'Is there a reward points program?',
-        'answer' => 'Yes! Every RM1 spent earns you 1 reward point. Points can be redeemed for discounts on future bookings.'
+        'answer' => 'Yes! Every RM1 spent earns you 1 reward point. Points can be redeemed for discounts on future bookings.<br>⭐ 50 points = RM5 off<br>⭐ 100 points = RM10 off<br>⭐ 180 points = RM20 off'
     ],
     [
         'question' => 'How do I contact customer support?',
@@ -74,11 +75,23 @@ $faqs = [
     ],
     [
         'question' => 'Do you offer stringing services?',
-        'answer' => 'Yes! We offer professional stringing services. You can purchase strings from our Add-ons page and our staff will string your racket for you.'
+        'answer' => 'Yes! We offer professional stringing services. You can purchase strings from our Add-ons page (Yonex BG-65, BG-66 Ultimax, BG-80 Power, Li-Ning No.1, Victor VBS-66N, Apacs L66) and our staff will string your racket for you. Prices range from RM28 to RM45 per string.'
     ],
     [
         'question' => 'What facilities are available?',
-        'answer' => 'All courts come with shower facilities, locker rooms, free parking, and a pro shop. Training courts also feature video analysis equipment.'
+        'answer' => 'All courts come with shower facilities, locker rooms, free parking, and a pro shop. Training courts also feature video analysis equipment and dedicated coaching areas.'
+    ],
+    [
+        'question' => 'Can I bring my own equipment?',
+        'answer' => 'Absolutely! You are welcome to bring your own rackets, shuttlecocks, and grip tape. We also have rental rackets and shuttlecocks available for purchase if you need them.'
+    ],
+    [
+        'question' => 'Is there parking available?',
+        'answer' => 'Yes! We have a large free parking lot available for all customers. Parking is secure and well-lit for evening sessions.'
+    ],
+    [
+        'question' => 'Can I book a court for a tournament or event?',
+        'answer' => 'Yes! For tournament bookings, corporate events, or birthday parties, please contact our support team directly. We offer special rates for bulk bookings and event packages.'
     ]
 ];
 ?>
@@ -143,6 +156,12 @@ $faqs = [
             border-radius: 80px;
             box-shadow: 0 8px 32px rgba(0,0,0,0.05);
             border: 1px solid rgba(255,255,255,0.3);
+            animation: fadeInDown 0.6s ease-out;
+        }
+        
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .logo-area { 
@@ -275,6 +294,12 @@ $faqs = [
             padding: 2.5rem; 
             box-shadow: 0 12px 28px rgba(0,0,0,0.08);
             border: 1px solid rgba(255,255,255,0.3);
+            animation: fadeInScale 0.5s ease-out 0.1s both;
+        }
+        
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
         }
         
         .page-header { text-align: center; margin-bottom: 2rem; }
@@ -421,12 +446,12 @@ $faqs = [
 </head>
 <body>
 <nav class="navbar">
-    <a href="<?php echo $back_link; ?>" class="logo-area">
+    <a href="<?php echo $home_link; ?>" class="logo-area">
         <img src="../Pictures/Admin_Module/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
         <div class="logo-text">Smash <span>Arena</span></div>
     </a>
     <div class="nav-links">
-        <a href="homepage.php">Home</a>
+        <a href="<?php echo $home_link; ?>">Home</a>
         <a href="dashboard.php">Courts</a>
         <a href="my_bookings.php">My Bookings</a>
         <a href="coaches.php">Coaches</a>
@@ -444,7 +469,7 @@ $faqs = [
         
         <?php foreach ($faqs as $faq): ?>
         <div class="faq-item">
-            <div class="faq-question" onclick="this.nextElementSibling.classList.toggle('open'); this.querySelector('i').style.transform = this.nextElementSibling.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0deg)'">
+            <div class="faq-question" onclick="toggleFAQ(this)">
                 <span><?php echo $faq['question']; ?></span>
                 <i class="fas fa-chevron-down"></i>
             </div>
@@ -497,5 +522,19 @@ $faqs = [
     </div>
 </footer>
 
+<script>
+    function toggleFAQ(element) {
+        var answer = element.nextElementSibling;
+        var icon = element.querySelector('i');
+        
+        if (answer.classList.contains('open')) {
+            answer.classList.remove('open');
+            icon.style.transform = 'rotate(0deg)';
+        } else {
+            answer.classList.add('open');
+            icon.style.transform = 'rotate(180deg)';
+        }
+    }
+</script>
 </body>
 </html>

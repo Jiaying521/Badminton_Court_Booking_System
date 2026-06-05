@@ -27,6 +27,21 @@ $userStmt = $pdo->prepare("SELECT name FROM users WHERE id = ?");
 $userStmt->execute([$user_id]);
 $user = $userStmt->fetch();
 
+// 获取取消次数（兼容旧数据库）
+$cancellation_count = 0;
+try {
+    $checkCol = $pdo->query("SHOW COLUMNS FROM users LIKE 'cancellation_count'");
+    if($checkCol->rowCount() > 0) {
+        $stmt_cancel = $pdo->prepare("SELECT cancellation_count FROM users WHERE id = ?");
+        $stmt_cancel->execute([$user_id]);
+        $cancel_data = $stmt_cancel->fetch();
+        $cancellation_count = $cancel_data['cancellation_count'] ?? 0;
+    }
+} catch(PDOException $e) {
+    $cancellation_count = 0;
+}
+$user['cancellation_count'] = $cancellation_count;
+
 // 获取钱包余额
 $stmt_bal = $pdo->prepare("SELECT wallet_balance FROM users WHERE id = ?");
 $stmt_bal->execute([$user_id]);
@@ -141,7 +156,6 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             background-clip: text; 
             color: transparent;
             letter-spacing: -1px;
-            transition: transform 0.3s ease;
             text-transform: uppercase;
         }
         .logo-text span { 
@@ -273,6 +287,37 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         .btn-book:hover { 
             transform: translateY(-3px);
             box-shadow: 0 12px 25px rgba(43,126,58,0.4);
+        }
+        
+        /* Warning Banner */
+        .warning-banner {
+            background: linear-gradient(135deg, #fff3cd, #ffe69e);
+            border-left: 5px solid #e67e22;
+            padding: 0.8rem 1.2rem;
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            animation: fadeInScale 0.5s ease-out;
+        }
+        .warning-banner i {
+            font-size: 1.5rem;
+            color: #e67e22;
+        }
+        .warning-banner .text {
+            flex: 1;
+            color: #856404;
+            font-size: 0.9rem;
+        }
+        .warning-banner .badge {
+            background: #e67e22;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 0.8rem;
         }
         
         /* Wallet Card */
@@ -437,9 +482,12 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             font-weight: 600;
         }
         
-        .action-btns { gap: 0.6rem; vertical-align: middle; white-space: nowrap; }
-        .action-btns > * { display: inline-flex; align-items: center; vertical-align: middle; margin-right: 0.6rem; }
-        .action-btns > *:last-child { margin-right: 0; }
+        .action-btns { 
+            display: flex; 
+            gap: 0.6rem; 
+            flex-wrap: wrap;
+            align-items: center;
+        }
         .btn-view { 
             background: rgba(232,240,229,0.8);
             color: #2c4a2e; 
@@ -545,6 +593,40 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             font-family: 'Montserrat', sans-serif;
         }
         
+        .btn-reschedule { 
+            background: #e8f0e5; 
+            color: #2b7e3a; 
+            border: none; 
+            padding: 0.4rem 1rem; 
+            border-radius: 50px; 
+            cursor: pointer; 
+            font-size: 0.75rem; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 0.3rem; 
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-reschedule:hover { 
+            background: #2b7e3a; 
+            color: white; 
+            transform: translateY(-2px);
+        }
+        .btn-reschedule-disabled { 
+            background: #e0e0e0; 
+            color: #888; 
+            border: none; 
+            padding: 0.4rem 1rem; 
+            border-radius: 50px; 
+            cursor: not-allowed; 
+            font-size: 0.75rem; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 0.3rem;
+            font-family: 'Montserrat', sans-serif;
+        }
+        
         /* Modal */
         .modal { 
             display: none; 
@@ -615,6 +697,57 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         .print-btn:hover::before { left: 100%; }
         .print-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(43,126,58,0.3); }
         
+        /* Reschedule Modal specific */
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { 
+            display: block; 
+            font-weight: 600; 
+            margin-bottom: 0.5rem; 
+            color: #1e3a2a;
+            font-size: 0.85rem;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border: 2px solid rgba(224,232,220,0.8);
+            border-radius: 16px;
+            background: rgba(254,253,248,0.9);
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-save {
+            background: linear-gradient(135deg, #2b7e3a, #1f5a2a);
+            color: white;
+            border: none;
+            padding: 0.8rem;
+            border-radius: 50px;
+            width: 100%;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(43,126,58,0.3);
+        }
+        .message {
+            padding: 0.8rem;
+            border-radius: 16px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #2b7e3a;
+        }
+        .message.error {
+            background: #fee2dd;
+            color: #b45f1b;
+            border-left: 4px solid #e67e22;
+        }
+        
         /* Empty State */
         .empty-state { 
             text-align: center; 
@@ -649,7 +782,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         @media (max-width: 768px) { 
             body { padding: 1rem; } 
             th, td { padding: 0.5rem; font-size: 0.8rem; } 
-            .action-btns > * { display: block; margin-right: 0; margin-bottom: 0.4rem; }
+            .action-btns { flex-direction: column; align-items: flex-start; gap: 0.4rem; }
             .stats-grid { grid-template-columns: repeat(2, 1fr); } 
             .navbar { flex-direction: column; border-radius: 28px; }
             .logo-area img { height: 40px; }
@@ -682,6 +815,21 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         <h1><i class="fas fa-bookmark"></i> My Bookings</h1>
         <a href="dashboard.php" class="btn-book"><i class="fas fa-plus"></i> Book New Court</a>
     </div>
+    
+    <!-- Warning Banner for Cancellation Count -->
+    <?php if($cancellation_count >= 1): ?>
+    <div class="warning-banner">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div class="text">
+            <strong>⚠️ Cancellation Notice:</strong> 
+            You have made <?php echo $cancellation_count; ?> cancellation<?php echo $cancellation_count > 1 ? 's' : ''; ?>.
+            <?php if($cancellation_count >= 1): ?>
+            Your next cancellation will incur an additional <strong>RM 5.00 penalty</strong> on top of the standard cancellation fee.
+            <?php endif; ?>
+        </div>
+        <div class="badge"><?php echo $cancellation_count; ?>/2+</div>
+    </div>
+    <?php endif; ?>
     
     <div class="wallet-card">
         <i class="fas fa-wallet"></i>
@@ -720,7 +868,9 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
     <?php if(count($bookings) > 0): ?>
     <div class="bookings-table">
         <table id="bookingsTable">
-            <thead><tr><th>Court</th><th>Date & Time</th><th>Duration</th><th>Coach</th><th>Total</th><th>Status</th><th>Action</th></tr></thead>
+            <thead>
+                <tr><th>Court</th><th>Date & Time</th><th>Duration</th><th>Coach</th><th>Total</th><th>Status</th><th>Action</th></tr>
+            </thead>
             <tbody>
                 <?php foreach($bookings as $b): 
                     $booking_date = date('M j, Y', strtotime($b['booking_date']));
@@ -730,7 +880,10 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
                     $booking_timestamp = strtotime($booking_datetime);
                     $current_timestamp = time();
                     $hours_until_booking = ($booking_timestamp - $current_timestamp) / 3600;
-                    $can_cancel = ($b['status'] == 'Pending' || $b['status'] == 'Confirmed') && $hours_until_booking >= $cancellation_hours;
+                    $can_cancel = ($b['status'] == 'Pending' || $b['status'] == 'Confirmed') && $hours_until_booking >= 2;
+                    $can_reschedule = ($b['status'] == 'Pending' || $b['status'] == 'Confirmed') && $hours_until_booking >= 1;
+                    $reschedule_count = $b['reschedule_count'] ?? 0;
+                    $has_rescheduled = $reschedule_count >= 1;
                 ?>
                 <tr data-status="<?php echo $b['status']; ?>">
                     <td><strong><?php echo htmlspecialchars($b['court_name']); ?></strong><div class="court-badge"><?php echo htmlspecialchars($b['court_type']); ?></div></td>
@@ -745,11 +898,30 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
                         <?php else: ?>
                             <button class="btn-view" onclick="viewReceipt(<?php echo $b['id']; ?>)"><i class="fas fa-receipt"></i> Receipt</button>
                         <?php endif; ?>
+                        
                         <?php if($b['status'] == 'Pending' || $b['status'] == 'Confirmed'): ?>
-                            <?php if($can_cancel): ?>
-                                <button class="btn-cancel" onclick="cancelBooking(<?php echo $b['id']; ?>)"><i class="fas fa-times"></i> Cancel</button>
+                            <?php if($can_reschedule && !$has_rescheduled): ?>
+                                <button class="btn-reschedule" onclick="openRescheduleModal(<?php echo $b['id']; ?>, <?php echo $b['court_id']; ?>, '<?php echo $b['booking_date']; ?>', '<?php echo $b['start_time']; ?>', <?php echo $b['total_hours']; ?>, <?php echo $reschedule_count; ?>)">
+                                    <i class="fas fa-calendar-alt"></i> Reschedule
+                                </button>
+                            <?php elseif($has_rescheduled): ?>
+                                <button class="btn-reschedule-disabled" disabled title="This booking has already been rescheduled. Each booking can only be rescheduled once.">
+                                    <i class="fas fa-calendar-alt"></i> Rescheduled
+                                </button>
                             <?php else: ?>
-                                <button class="btn-cancel-disabled" disabled title="Need <?php echo $cancellation_hours; ?> hours notice to cancel"><i class="fas fa-times"></i> Need <?php echo $cancellation_hours; ?>h notice</button>
+                                <button class="btn-reschedule-disabled" disabled title="Cannot reschedule within 1 hour of booking time">
+                                    <i class="fas fa-calendar-alt"></i> Reschedule (Need 1h)
+                                </button>
+                            <?php endif; ?>
+                            
+                            <?php if($can_cancel): ?>
+                                <button class="btn-cancel" onclick="cancelBooking(<?php echo $b['id']; ?>, <?php echo $cancellation_count; ?>)">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                            <?php else: ?>
+                                <button class="btn-cancel-disabled" disabled title="Need <?php echo $cancellation_hours; ?> hours notice to cancel">
+                                    <i class="fas fa-times"></i> Cancel (Need <?php echo $cancellation_hours; ?>h)
+                                </button>
                             <?php endif; ?>
                         <?php endif; ?>
                     </td>
@@ -770,6 +942,33 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             <button class="modal-close" onclick="closeModal()">&times;</button>
         </div>
         <div class="modal-body" id="receiptBody"></div>
+    </div>
+</div>
+
+<!-- Reschedule Modal -->
+<div id="rescheduleModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-calendar-alt"></i> Reschedule Booking</h3>
+            <button class="modal-close" onclick="closeRescheduleModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="reschedule_booking_id">
+            <input type="hidden" id="reschedule_court_id">
+            <input type="hidden" id="reschedule_hours">
+            <div class="form-group">
+                <label>Select New Date</label>
+                <input type="date" id="reschedule_date" class="form-control" min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>">
+            </div>
+            <div class="form-group">
+                <label>Select New Time</label>
+                <select id="reschedule_time" class="form-control">
+                    <option value="">Select date first</option>
+                </select>
+            </div>
+            <div id="rescheduleMessage" class="message"></div>
+            <button class="btn-save" onclick="confirmReschedule()">Confirm Reschedule</button>
+        </div>
     </div>
 </div>
 
@@ -834,6 +1033,9 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             const data = await response.json();
             if(data.success) {
                 const b = data.booking;
+                const isRefund = b.status === 'Cancelled' && b.cancellation_fee > 0;
+                const refundAmount = isRefund ? (parseFloat(b.total_price) - parseFloat(b.cancellation_fee)) : 0;
+                
                 document.getElementById('receiptBody').innerHTML = `
                     <div style="text-align:center; margin-bottom:1rem;">
                         <img src="../Pictures/Admin_Module/logo.png" style="height:40px;">
@@ -841,14 +1043,23 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
                         <p>Official Booking Receipt</p>
                     </div>
                     <div class="receipt-row"><span>Receipt No.</span><span>#${String(b.id).padStart(6,'0')}</span></div>
+                    <div class="receipt-row"><span>Transaction ID</span><span>${b.transaction_id || 'N/A'}</span></div>
                     <div class="receipt-row"><span>Court</span><span>${b.court_name} (${b.court_type})</span></div>
                     <div class="receipt-row"><span>Date</span><span>${b.booking_date}</span></div>
                     <div class="receipt-row"><span>Time</span><span>${b.start_time} - ${b.end_time}</span></div>
                     <div class="receipt-row"><span>Duration</span><span>${b.total_hours} hour(s)</span></div>
                     ${b.coach_name ? `<div class="receipt-row"><span>Coach</span><span>${b.coach_name} (${b.coach_hours} hour(s))</span></div>` : ''}
+                    <div class="receipt-row"><span>Payment Method</span><span><i class="fas fa-wallet"></i> ${b.payment_method || 'Wallet'}</span></div>
+                    <div class="receipt-row"><span>Payment Date</span><span>${b.payment_date || 'N/A'}</span></div>
                     <div class="receipt-row"><span>Status</span><span class="status status-${b.status}">${b.status}</span></div>
-                    <div class="receipt-total"><span>Total Paid</span><span>RM ${parseFloat(b.total_price).toFixed(2)}</span></div>
-                    <button class="print-btn" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
+                    ${b.reschedule_count > 0 ? `<div class="receipt-row"><span>Reschedule Count</span><span>${b.reschedule_count} time(s)</span></div>` : ''}
+                    ${b.cancellation_fee > 0 ? `<div class="receipt-row" style="color:#e67e22;"><span>Cancellation Fee</span><span>- RM ${parseFloat(b.cancellation_fee).toFixed(2)}</span></div>` : ''}
+                    <div class="receipt-total">
+                        <span>${isRefund ? 'Refund Amount' : 'Total Paid'}</span>
+                        <span>${isRefund ? 'RM ' + refundAmount.toFixed(2) : 'RM ' + parseFloat(b.total_price).toFixed(2)}</span>
+                    </div>
+                    ${isRefund ? `<div class="receipt-row" style="font-size:0.8rem; color:#666;"><span>Note</span><span>Amount refunded to wallet</span></div>` : ''}
+                    <button class="print-btn" onclick="window.print()"><i class="fas fa-print"></i> Print Receipt</button>
                 `;
                 document.getElementById('receiptModal').style.display = 'block';
             } else {
@@ -865,10 +1076,129 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
     }
     
     window.onclick = (e) => { 
-        if(e.target === document.getElementById('receiptModal')) closeModal(); 
+        if(e.target === document.getElementById('receiptModal')) closeModal();
+        if(e.target === document.getElementById('rescheduleModal')) closeRescheduleModal();
     };
     
-    async function cancelBooking(bookingId) {
+    // Reschedule functions
+    let currentBookingId = null;
+    let currentCourtId = null;
+    let currentHours = null;
+    let currentDate = null;
+    let currentTime = null;
+    
+    function openRescheduleModal(bookingId, courtId, date, time, hours, rescheduleCount) {
+        // 检查是否已经改期过
+        if (rescheduleCount >= 1) {
+            alert('⚠️ This booking has already been rescheduled.\n\nEach booking can only be rescheduled once.\n\nPlease make a new booking if you need a different time.');
+            return;
+        }
+        
+        currentBookingId = bookingId;
+        currentCourtId = courtId;
+        currentHours = hours;
+        currentDate = date;
+        currentTime = time;
+        
+        document.getElementById('reschedule_booking_id').value = bookingId;
+        document.getElementById('reschedule_court_id').value = courtId;
+        document.getElementById('reschedule_hours').value = hours;
+        document.getElementById('reschedule_date').value = '';
+        document.getElementById('reschedule_time').innerHTML = '<option value="">Select date first</option>';
+        document.getElementById('rescheduleMessage').style.display = 'none';
+        document.getElementById('rescheduleMessage').className = 'message';
+        
+        document.getElementById('rescheduleModal').style.display = 'block';
+    }
+    
+    function closeRescheduleModal() {
+        document.getElementById('rescheduleModal').style.display = 'none';
+    }
+    
+    document.getElementById('reschedule_date').addEventListener('change', async function() {
+        const date = this.value;
+        const courtId = document.getElementById('reschedule_court_id').value;
+        const timeSelect = document.getElementById('reschedule_time');
+        
+        if (!date) {
+            timeSelect.innerHTML = '<option value="">Select date first</option>';
+            return;
+        }
+        
+        timeSelect.innerHTML = '<option value="">Loading...</option>';
+        
+        try {
+            const response = await fetch(`ajax_get_available_slots.php?court_id=${courtId}&date=${date}`);
+            const slots = await response.json();
+            
+            timeSelect.innerHTML = '<option value="">Select time</option>';
+            
+            if (slots && slots.length > 0) {
+                slots.forEach(slot => {
+                    const option = document.createElement('option');
+                    option.value = slot.time;
+                    option.textContent = slot.display;
+                    timeSelect.appendChild(option);
+                });
+            } else {
+                timeSelect.innerHTML = '<option value="">No available slots</option>';
+            }
+        } catch(e) {
+            console.error(e);
+            timeSelect.innerHTML = '<option value="">Error loading slots</option>';
+        }
+    });
+    
+    async function confirmReschedule() {
+        const bookingId = document.getElementById('reschedule_booking_id').value;
+        const newDate = document.getElementById('reschedule_date').value;
+        const newTime = document.getElementById('reschedule_time').value;
+        const messageDiv = document.getElementById('rescheduleMessage');
+        
+        if (!newDate || !newTime) {
+            messageDiv.style.display = 'block';
+            messageDiv.className = 'message error';
+            messageDiv.innerHTML = 'Please select new date and time';
+            return;
+        }
+        
+        messageDiv.style.display = 'block';
+        messageDiv.className = 'message';
+        messageDiv.innerHTML = 'Processing...';
+        
+        try {
+            const response = await fetch('reschedule_booking.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    booking_id: bookingId, 
+                    new_date: newDate, 
+                    new_time: newTime 
+                })
+            });
+            const data = await response.json();
+            
+            console.log('Response:', data);
+            
+            if (data.success) {
+                messageDiv.className = 'message success';
+                messageDiv.innerHTML = data.message.replace(/\n/g, '<br>');
+                setTimeout(() => {
+                    location.reload();
+                }, 3000);
+            } else {
+                messageDiv.className = 'message error';
+                messageDiv.innerHTML = data.message.replace(/\n/g, '<br>');
+            }
+        } catch(e) {
+            console.error('Error:', e);
+            messageDiv.className = 'message error';
+            messageDiv.innerHTML = 'Error: ' + e.message;
+        }
+    }
+    
+    // Cancel Booking - Updated with tiered policy and second cancellation penalty
+    async function cancelBooking(bookingId, currentCancellationCount) {
         try {
             const response = await fetch(`get_booking_details.php?id=${bookingId}`);
             const data = await response.json();
@@ -877,22 +1207,64 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
                 const bookingDateTime = new Date(booking.booking_date + ' ' + booking.start_time);
                 const now = new Date();
                 const hoursDiff = (bookingDateTime - now) / (1000 * 60 * 60);
-                const cancellationHours = <?php echo $cancellation_hours; ?>;
-                const cancellationFee = <?php echo $cancellation_fee; ?>;
+                const isSecondOrMore = currentCancellationCount >= 1;
                 
-                if (hoursDiff < cancellationHours) {
-                    alert(`⚠️ Cannot cancel booking!\n\nYour booking starts in ${hoursDiff.toFixed(1)} hours.\nYou need to cancel at least ${cancellationHours} hours before your booking time.\n\nNote: RM${cancellationFee} cancellation fee applies for late cancellation.`);
+                let confirmMessage = '';
+                let cancellationFee = 0;
+                let extraPenalty = 0;
+                let refundAmount = 0;
+                
+                if (hoursDiff >= 48) {
+                    cancellationFee = 0;
+                    extraPenalty = isSecondOrMore ? 5.00 : 0;
+                    refundAmount = parseFloat(booking.total_price) - extraPenalty;
+                    confirmMessage = `⚠️ CANCELLATION POLICY ⚠️\n\n` +
+                        `Booking: ${booking.court_name}\n` +
+                        `Date: ${booking.booking_date}\n` +
+                        `Time: ${booking.start_time} - ${booking.end_time}\n\n` +
+                        `📌 You are cancelling ${hoursDiff.toFixed(1)} hours before your booking.\n` +
+                        `📌 Time buffer: 48+ hours\n` +
+                        `💰 Standard Fee: RM ${cancellationFee.toFixed(2)}\n` +
+                        (extraPenalty > 0 ? `⚠️ 2nd+ Cancellation Penalty: RM ${extraPenalty.toFixed(2)}\n` : '') +
+                        `💰 Refund Amount: RM ${refundAmount.toFixed(2)}\n\n` +
+                        `The amount will be refunded to your wallet.\n\n` +
+                        `Do you want to proceed with cancellation?`;
+                } else if (hoursDiff >= 24) {
+                    cancellationFee = 10.00;
+                    extraPenalty = isSecondOrMore ? 5.00 : 0;
+                    refundAmount = parseFloat(booking.total_price) - cancellationFee - extraPenalty;
+                    confirmMessage = `⚠️ CANCELLATION POLICY ⚠️\n\n` +
+                        `Booking: ${booking.court_name}\n` +
+                        `Date: ${booking.booking_date}\n` +
+                        `Time: ${booking.start_time} - ${booking.end_time}\n\n` +
+                        `📌 You are cancelling ${hoursDiff.toFixed(1)} hours before your booking.\n` +
+                        `📌 Time buffer: 24-48 hours\n` +
+                        `💰 Standard Fee: RM ${cancellationFee.toFixed(2)}\n` +
+                        (extraPenalty > 0 ? `⚠️ 2nd+ Cancellation Penalty: RM ${extraPenalty.toFixed(2)}\n` : '') +
+                        `💰 Refund Amount: RM ${refundAmount.toFixed(2)}\n\n` +
+                        `The amount will be refunded to your wallet.\n\n` +
+                        `Do you want to proceed with cancellation?`;
+                } else if (hoursDiff >= 2) {
+                    cancellationFee = 10.00;
+                    extraPenalty = isSecondOrMore ? 5.00 : 0;
+                    refundAmount = parseFloat(booking.total_price) - cancellationFee - extraPenalty;
+                    confirmMessage = `⚠️ CANCELLATION POLICY ⚠️\n\n` +
+                        `Booking: ${booking.court_name}\n` +
+                        `Date: ${booking.booking_date}\n` +
+                        `Time: ${booking.start_time} - ${booking.end_time}\n\n` +
+                        `📌 You are cancelling ${hoursDiff.toFixed(1)} hours before your booking.\n` +
+                        `📌 Time buffer: 2-24 hours\n` +
+                        `💰 Standard Fee: RM ${cancellationFee.toFixed(2)}\n` +
+                        (extraPenalty > 0 ? `⚠️ 2nd+ Cancellation Penalty: RM ${extraPenalty.toFixed(2)}\n` : '') +
+                        `💰 Refund Amount: RM ${refundAmount.toFixed(2)}\n\n` +
+                        `The amount will be refunded to your wallet.\n\n` +
+                        `Do you want to proceed with cancellation?`;
+                } else {
+                    alert(`⚠️ Cannot cancel booking!\n\nYour booking starts in ${hoursDiff.toFixed(1)} hours.\n\n` +
+                        `You need to cancel at least 2 hours before your booking time.\n\n` +
+                        `Note: Court fee will not be refunded.`);
                     return;
                 }
-                
-                const confirmMessage = `⚠️ CANCELLATION POLICY ⚠️\n\n` +
-                    `Booking: ${booking.court_name}\n` +
-                    `Date: ${booking.booking_date}\n` +
-                    `Time: ${booking.start_time} - ${booking.end_time}\n\n` +
-                    `📌 Cancellation Fee: RM ${cancellationFee.toFixed(2)}\n` +
-                    `💰 Refund Amount: RM ${(parseFloat(booking.total_price) - cancellationFee).toFixed(2)}\n\n` +
-                    `The remaining amount will be refunded to your wallet.\n\n` +
-                    `Do you want to proceed with cancellation?`;
                 
                 if(confirm(confirmMessage)) {
                     await proceedCancel(bookingId);
