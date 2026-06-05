@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 27, 2026 at 05:53 AM
+-- Generation Time: Jun 05, 2026 at 09:58 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -47,7 +47,7 @@ CREATE TABLE `admins` (
 --
 
 INSERT INTO `admins` (`id`, `username`, `email`, `password`, `role`, `status`, `specialisation`, `is_coach`, `coach_price_per_hour`, `reset_token`, `token_expiry`, `created_at`) VALUES
-(1, 'superadmin', 'chinzx1814@gmail.com', '$2y$10$x5NsQGVwkkp5f4oivtMd..D9tsrJLMICxeSDnSe0peEwVN77QeFGu', 'Superadmin', 'Active', NULL, 0, 0.00, '6f7215969454a243bffe4f847c58375ca1a0e4dc2157e02a1757c75020bfa0c7', '2026-04-30 18:48:36', '2026-04-30 16:17:09'),
+(1, 'superadmin', 'chinzx1814@gmail.com', '$2y$10$x5NsQGVwkkp5f4oivtMd..D9tsrJLMICxeSDnSe0peEwVN77QeFGu', 'Superadmin', 'Active', NULL, 0, 0.00, '6e65f2df57e2231428b98e31d6b08f18c8d1acfb3326db32d903e640866bb7fe', '2026-06-05 06:43:54', '2026-04-30 16:17:09'),
 (2, 'Coach Lim', 'coach.lim@smasharena.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Singles Coaching', 1, 50.00, NULL, NULL, '2026-04-30 16:17:09'),
 (3, 'Coach Wong', 'coach.wong@smasharena.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Doubles Coaching', 1, 20.00, NULL, NULL, '2026-04-30 16:17:09'),
 (4, 'Coach Tan', 'coach.tan@smasharena.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Junior Development', 1, 30.00, NULL, NULL, '2026-04-30 16:17:09'),
@@ -159,7 +159,9 @@ INSERT INTO `bookings` (`id`, `user_id`, `court_id`, `booking_date`, `start_time
 (48, 1, 8, '2026-05-21', '15:00:00', '16:00:00', 1, 1, 1, 25.00, 'Casual Play', 40.00, 'Pending', 0.00, '', '2026-05-21 06:43:43'),
 (49, 1, 8, '2026-05-21', '16:00:00', '17:00:00', 1, 1, 1, 25.00, 'Casual Play', 40.00, 'Confirmed', 0.00, '', '2026-05-21 06:44:20'),
 (50, 1, 2, '2026-05-29', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-21 15:28:45'),
-(51, 1, 2, '2026-05-27', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-26 17:05:37');
+(51, 1, 2, '2026-05-27', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-26 17:05:37'),
+(52, 11, 2, '2026-06-10', '08:45:00', '11:42:00', 3, 1, 3, 150.00, 'Casual Play', 180.00, 'Cancelled', 0.00, '', '2026-06-05 00:42:35'),
+(53, 1, 2, '2026-06-24', '09:00:00', '18:00:00', 9, 0, 0, 0.00, 'Casual Play', 110.00, 'Pending', 0.00, '', '2026-06-05 03:28:27');
 
 -- --------------------------------------------------------
 
@@ -223,17 +225,62 @@ CREATE TABLE `coaches` (
   `gender` enum('Male','Female') DEFAULT NULL,
   `age` int(11) DEFAULT NULL,
   `profile_img` varchar(255) DEFAULT NULL,
-  `availability_status` enum('Available','On Leave','Sick','Off Day') DEFAULT 'Available'
+  `availability_status` enum('Available','On Leave','Sick','Off Day') DEFAULT 'Available',
+  `available_from` time DEFAULT NULL,
+  `available_to` time DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `coaches`
 --
 
-INSERT INTO `coaches` (`id`, `admin_id`, `name`, `specialty`, `phone`, `price_per_hour`, `is_active`, `gender`, `age`, `profile_img`, `availability_status`) VALUES
-(1, 2, 'Coach Lim', 'Singles Coaching', '', 50.00, 1, '', 40, '1779345778_coach.png', 'Available'),
-(2, 3, 'Coach Wong', 'Doubles Coaching', '', 20.00, 1, '', 0, NULL, 'Available'),
-(3, 4, 'Coach Tan', 'Junior Development', '', 30.00, 1, 'Male', NULL, NULL, 'Available');
+INSERT INTO `coaches` (`id`, `admin_id`, `name`, `specialty`, `phone`, `price_per_hour`, `is_active`, `gender`, `age`, `profile_img`, `availability_status`, `available_from`, `available_to`) VALUES
+(1, 2, 'Coach Lim', 'Singles Coaching', '', 50.00, 1, '', 40, '1779345778_coach.png', 'Available', NULL, NULL),
+(2, 3, 'Coach Wong', 'Doubles Coaching', '', 20.00, 1, '', 0, NULL, 'Available', NULL, NULL),
+(3, 4, 'Coach Tan', 'Junior Development', '', 30.00, 1, 'Male', NULL, NULL, 'Available', NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `coach_availability`
+--
+
+CREATE TABLE `coach_availability` (
+  `id` int(11) NOT NULL,
+  `coach_id` int(11) NOT NULL,
+  `date` date NOT NULL,
+  `status` enum('On Leave','Sick','Off Day','Custom Hours') NOT NULL,
+  `start_time` time DEFAULT NULL,
+  `end_time` time DEFAULT NULL,
+  `reason` varchar(255) DEFAULT NULL,
+  `created_by` int(11) DEFAULT NULL,
+  `created_by_role` varchar(20) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `coach_availability_log`
+--
+
+CREATE TABLE `coach_availability_log` (
+  `id` int(11) NOT NULL,
+  `coach_id` int(11) NOT NULL,
+  `date` date NOT NULL,
+  `action` enum('created','updated','deleted') NOT NULL,
+  `old_status` varchar(50) DEFAULT NULL,
+  `new_status` varchar(50) DEFAULT NULL,
+  `old_start_time` time DEFAULT NULL,
+  `old_end_time` time DEFAULT NULL,
+  `new_start_time` time DEFAULT NULL,
+  `new_end_time` time DEFAULT NULL,
+  `reason` varchar(255) DEFAULT NULL,
+  `changed_by` int(11) DEFAULT NULL,
+  `changed_by_role` varchar(20) DEFAULT NULL,
+  `changed_by_name` varchar(100) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -405,7 +452,11 @@ INSERT INTO `notifications` (`id`, `recipient_role`, `recipient_id`, `type`, `ti
 (1, 'Admin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #32 for wz at Court B on 23 May 2026 09:00 AM has been confirmed.', 32, 'booking', 1, '2026-05-26 14:55:05'),
 (2, 'Superadmin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #32 for wz at Court B on 23 May 2026 09:00 AM has been confirmed.', 32, 'booking', 1, '2026-05-26 14:55:05'),
 (3, 'Admin', NULL, 'new_booking', 'New Booking Pending', 'Booking #44 from John Doe for Court A on 29 May 2026 is waiting for confirmation.', 44, 'booking', 1, '2026-05-26 14:55:08'),
-(4, 'Superadmin', NULL, 'new_booking', 'New Booking Pending', 'Booking #44 from John Doe for Court A on 29 May 2026 is waiting for confirmation.', 44, 'booking', 1, '2026-05-26 14:55:08');
+(4, 'Superadmin', NULL, 'new_booking', 'New Booking Pending', 'Booking #44 from John Doe for Court A on 29 May 2026 is waiting for confirmation.', 44, 'booking', 1, '2026-05-26 14:55:08'),
+(5, 'Coach', 2, 'booking', 'New Session Assigned', 'You have a new coaching session on 2026-06-10 at 08:45.', 52, 'booking', 1, '2026-06-05 00:42:35'),
+(6, 'Admin', NULL, 'cancelled', 'Booking Cancelled', 'Booking #52 for wz at Court B on 10 Jun 2026 has been cancelled.', 52, 'booking', 0, '2026-06-05 04:00:39'),
+(7, 'Superadmin', NULL, 'cancelled', 'Booking Cancelled', 'Booking #52 for wz at Court B on 10 Jun 2026 has been cancelled.', 52, 'booking', 1, '2026-06-05 04:00:39'),
+(8, 'Coach', 2, 'cancelled', 'Session Cancelled', 'Your coaching session at Court B on 10 Jun 2026 08:45 AM has been cancelled.', 52, 'booking', 1, '2026-06-05 04:00:39');
 
 -- --------------------------------------------------------
 
@@ -569,7 +620,15 @@ INSERT INTO `settings` (`id`, `setting_key`, `setting_value`, `updated_at`) VALU
 (1, 'open_time', '08:00', '2026-05-09 11:20:24'),
 (2, 'close_time', '20:00', '2026-05-09 11:26:35'),
 (3, 'peak_start', '16:00', '2026-05-09 11:27:15'),
-(4, 'peak_end', '20:00', '2026-05-09 11:27:23');
+(4, 'peak_end', '20:00', '2026-05-09 11:27:23'),
+(5, 'off_peak_price', '10', '2026-06-04 16:47:16'),
+(6, 'peak_price', '15', '2026-06-04 16:47:16'),
+(7, 'cancellation_hours', '2', '2026-06-04 15:54:37'),
+(8, 'cancellation_fee', '10', '2026-06-04 16:47:16'),
+(9, 'contact_phone', '+603-1234 5678', '2026-06-04 15:54:37'),
+(10, 'contact_email', 'smasharenabadminton@gmail.com', '2026-06-04 15:54:37'),
+(11, 'contact_whatsapp', '+60 12-345 6789', '2026-06-04 15:54:37'),
+(12, 'address', '123 Jalan Badminton, Kuala Lumpur, Malaysia', '2026-06-04 15:54:37');
 
 -- --------------------------------------------------------
 
@@ -621,7 +680,7 @@ INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `gender`, `crea
 (8, 'Priya Kumar', 'priya@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60188990011', NULL, '2026-04-30 16:34:47', 0.00, 0, NULL),
 (9, 'Jason Teh', 'jason@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60199001122', NULL, '2026-04-30 16:34:47', 0.00, 0, NULL),
 (10, 'Nurul Huda', 'nurul@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60110101010', NULL, '2026-04-30 16:34:47', 0.00, 0, NULL),
-(11, 'wz', 'zhefurry@gmail.com', '$2y$10$ti8t5iVME5.hWJhMY0cE5ukBX67z0z4xPn8HL0pskzUS9Kn0PL9iS', '+60123456789', NULL, '2026-05-07 03:28:20', 70.00, 0, '');
+(11, 'wz', 'zhefurry@gmail.com', '$2y$10$ti8t5iVME5.hWJhMY0cE5ukBX67z0z4xPn8HL0pskzUS9Kn0PL9iS', '+60123456789', NULL, '2026-04-14 03:28:20', 70.00, 0, '');
 
 -- --------------------------------------------------------
 
@@ -708,6 +767,20 @@ ALTER TABLE `closed_days`
 ALTER TABLE `coaches`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `admin_id` (`admin_id`);
+
+--
+-- Indexes for table `coach_availability`
+--
+ALTER TABLE `coach_availability`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `coach_id` (`coach_id`);
+
+--
+-- Indexes for table `coach_availability_log`
+--
+ALTER TABLE `coach_availability_log`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `coach_id` (`coach_id`);
 
 --
 -- Indexes for table `contact_messages`
@@ -802,13 +875,13 @@ ALTER TABLE `voucher`
 -- AUTO_INCREMENT for table `admins`
 --
 ALTER TABLE `admins`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
 
 --
 -- AUTO_INCREMENT for table `booking_addons`
@@ -827,6 +900,18 @@ ALTER TABLE `closed_days`
 --
 ALTER TABLE `coaches`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `coach_availability`
+--
+ALTER TABLE `coach_availability`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `coach_availability_log`
+--
+ALTER TABLE `coach_availability_log`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `contact_messages`
@@ -850,7 +935,7 @@ ALTER TABLE `court_availability`
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `otp_codes`
@@ -880,7 +965,7 @@ ALTER TABLE `promo_codes`
 -- AUTO_INCREMENT for table `settings`
 --
 ALTER TABLE `settings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `tasks`
@@ -931,6 +1016,18 @@ ALTER TABLE `coaches`
   ADD CONSTRAINT `fk_coaches_admin` FOREIGN KEY (`admin_id`) REFERENCES `admins` (`id`) ON DELETE SET NULL;
 
 --
+-- Constraints for table `coach_availability`
+--
+ALTER TABLE `coach_availability`
+  ADD CONSTRAINT `coach_availability_ibfk_1` FOREIGN KEY (`coach_id`) REFERENCES `coaches` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `coach_availability_log`
+--
+ALTER TABLE `coach_availability_log`
+  ADD CONSTRAINT `coach_availability_log_ibfk_1` FOREIGN KEY (`coach_id`) REFERENCES `coaches` (`id`) ON DELETE CASCADE;
+
+--
 -- Constraints for table `court_availability`
 --
 ALTER TABLE `court_availability`
@@ -941,19 +1038,6 @@ ALTER TABLE `court_availability`
 --
 ALTER TABLE `payments`
   ADD CONSTRAINT `fk_payments_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE;
-  
--- 插入缺失的设置记录（如果不存在）
-INSERT INTO `settings` (`setting_key`, `setting_value`) VALUES 
-('off_peak_price', '10.00'),
-('peak_price', '15.00'),
-('cancellation_hours', '2'),
-('cancellation_fee', '10.00'),
-('contact_phone', '+603-1234 5678'),
-('contact_email', 'smasharenabadminton@gmail.com'),
-('contact_whatsapp', '+60 12-345 6789'),
-('address', '123 Jalan Badminton, Kuala Lumpur, Malaysia')
-ON DUPLICATE KEY UPDATE `setting_value` = VALUES(`setting_value`);
-
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

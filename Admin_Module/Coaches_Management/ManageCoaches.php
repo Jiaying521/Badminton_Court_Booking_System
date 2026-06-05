@@ -290,6 +290,9 @@
                     <button class="btn-filter-toggle" onclick="toggleFilter()">
                         <i class="fas fa-filter"></i> Filter
                     </button>
+                    <a href="CoachSchedule.php" class="btn-filter-toggle" style="text-decoration:none;">
+                        <i class="fas fa-calendar-days"></i> Coach Schedule
+                    </a>
                     <button class="btn-add-account" type="button" onclick="openAddCoachModal()">
                         <i class="fas fa-plus"></i> Add Coach
                     </button>
@@ -398,11 +401,12 @@
                             ?>
                             <select class="status-select <?php echo $avail_class; ?>"
                                 onclick="event.stopPropagation()"
-                                onchange="location.href='ManageCoaches.php?avail_id=<?php echo $row['id']; ?>&avail_status=' + this.value">
+                                onchange="handleAvailChange(this, <?php echo $row['id']; ?>)">
                                 <option value="Available" <?php echo $avail === 'Available' ? 'selected' : ''; ?>>Available</option>
                                 <option value="On Leave"  <?php echo $avail === 'On Leave'  ? 'selected' : ''; ?>>On Leave</option>
                                 <option value="Sick"      <?php echo $avail === 'Sick'      ? 'selected' : ''; ?>>Sick</option>
                                 <option value="Off Day"   <?php echo $avail === 'Off Day'   ? 'selected' : ''; ?>>Off Day</option>
+                                <option value="customize">Customize Schedule...</option>
                             </select>
                         </td>
 

@@ -46,6 +46,18 @@ if (!$coach) {
 $success = '';
 $error   = '';
 
+if (isset($_POST['save_working_hours'])) {
+    $avail_from = !empty($_POST['available_from']) ? "'" . mysqli_real_escape_string($conn, $_POST['available_from']) . "'" : 'NULL';
+    $avail_to   = !empty($_POST['available_to'])   ? "'" . mysqli_real_escape_string($conn, $_POST['available_to'])   . "'" : 'NULL';
+
+    mysqli_query($conn, "UPDATE coaches SET available_from = $avail_from, available_to = $avail_to WHERE admin_id = $admin_id");
+
+    $coach['available_from'] = $_POST['available_from'] ?? null;
+    $coach['available_to']   = $_POST['available_to']   ?? null;
+
+    $success = 'Working hours saved.';
+}
+
 if (isset($_POST['update_profile'])) {
     $name      = mysqli_real_escape_string($conn, trim($_POST['name']));
     $specialty = mysqli_real_escape_string($conn, $_POST['specialty']);
@@ -209,13 +221,18 @@ $ac = $avail_colors[$avail] ?? $avail_colors['Available'];
                 <!-- Availability -->
                 <div class="cp-field">
                     <label><i class="fas fa-circle-dot"></i> Availability Status</label>
-                    <select name="availability_status">
-                        <?php foreach (['Available','On Leave','Sick','Off Day'] as $opt): ?>
-                            <option value="<?php echo $opt; ?>" <?php echo ($avail === $opt) ? 'selected' : ''; ?>>
-                                <?php echo $opt; ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
+                    <div class="cp-avail-row">
+                        <select name="availability_status">
+                            <?php foreach (['Available','On Leave','Sick','Off Day'] as $opt): ?>
+                                <option value="<?php echo $opt; ?>" <?php echo ($avail === $opt) ? 'selected' : ''; ?>>
+                                    <?php echo $opt; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <button type="button" class="cp-btn-cal-icon" onclick="openScheduleModal()" title="Customize Schedule">
+                            <i class="fas fa-calendar-days"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Gender -->
@@ -258,6 +275,122 @@ $ac = $avail_colors[$avail] ?? $avail_colors['Available'];
 
 </main>
 
+<!-- Schedule Modal -->
+<div class="modal-overlay" id="scheduleModal">
+    <div class="modal-card sched-modal-card">
+
+        <div class="sched-modal-header">
+            <h2><i class="fas fa-calendar-days"></i> My Schedule</h2>
+            <button class="modal-close" type="button" onclick="closeScheduleModal()">&times;</button>
+        </div>
+
+        <div class="sched-body">
+
+            <!-- Left: Calendar + Upcoming Bookings -->
+            <div class="sched-calendar-col">
+                <div class="sched-cal-nav">
+                    <button type="button" onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+                    <span id="sched-month-label"></span>
+                    <button type="button" onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
+                </div>
+                <div class="sched-cal-grid">
+                    <div class="sched-cal-dow">Sun</div>
+                    <div class="sched-cal-dow">Mon</div>
+                    <div class="sched-cal-dow">Tue</div>
+                    <div class="sched-cal-dow">Wed</div>
+                    <div class="sched-cal-dow">Thu</div>
+                    <div class="sched-cal-dow">Fri</div>
+                    <div class="sched-cal-dow">Sat</div>
+                </div>
+                <div class="sched-cal-days" id="sched-cal-days"></div>
+
+                <!-- Bookings section -->
+                <div class="sched-upcoming-wrap">
+                    <div class="sched-upcoming-label">
+                        <i class="fas fa-calendar-check"></i>
+                        <span id="sched-booking-section-label">Upcoming Bookings</span>
+                    </div>
+                    <div class="sched-upcoming-scroll" id="sched-upcoming-list">
+                        <div class="sched-upcoming-loading">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Always-visible form -->
+            <div class="sched-detail-col">
+
+                <!-- Selected date label -->
+                <div class="sched-form-date-row">
+                    <span class="sched-form-date-label" id="sched-form-date-label">Today</span>
+                </div>
+
+                <!-- Current schedule chips for selected date -->
+                <div id="sched-current-chips" class="sched-current-chips"></div>
+
+                <!-- Section 1: Working Hours (daily default schedule) -->
+                <div class="sched-form-section">
+                    <div class="sched-form-section-title">
+                        <i class="fas fa-clock"></i> Daily Working Hours
+                    </div>
+                    <p class="sched-form-hint">Set your default available hours. Applied automatically every day unless you are on leave.</p>
+                    <div class="sched-two-col">
+                        <div class="cp-field">
+                            <label>Available From</label>
+                            <input type="time" id="sched-block-start" value="<?php echo htmlspecialchars($coach['available_from'] ?? ''); ?>">
+                        </div>
+                        <div class="cp-field">
+                            <label>Until</label>
+                            <input type="time" id="sched-block-end" value="<?php echo htmlspecialchars($coach['available_to'] ?? ''); ?>">
+                        </div>
+                    </div>
+                    <button type="button" class="sched-action-btn" onclick="saveWorkingHours()" style="margin-top:12px;">
+                        <i class="fas fa-floppy-disk"></i> Save Working Hours
+                    </button>
+                </div>
+
+                <!-- Section 2: Leave / Day Off (full day, date range) -->
+                <div class="sched-form-section">
+                    <div class="sched-form-section-title">
+                        <i class="fas fa-calendar-xmark"></i> Leave / Day Off
+                    </div>
+                    <div class="sched-two-col">
+                        <div class="cp-field">
+                            <label>From</label>
+                            <input type="date" id="sched-leave-from">
+                        </div>
+                        <div class="cp-field">
+                            <label>To</label>
+                            <input type="date" id="sched-leave-to">
+                        </div>
+                    </div>
+                    <div class="cp-field" style="margin-top:10px;">
+                        <label>Type</label>
+                        <select id="sched-leave-type">
+                            <option value="On Leave">On Leave</option>
+                            <option value="Sick">Sick</option>
+                            <option value="Off Day">Off Day</option>
+                        </select>
+                    </div>
+                    <div class="cp-field" style="margin-top:10px;">
+                        <label>Reason <span class="cp-readonly-tag">Optional</span></label>
+                        <input type="text" id="sched-leave-reason" placeholder="e.g. Medical appointment">
+                    </div>
+                    <div id="sched-leave-conflict" class="sched-conflict-warn" style="display:none;margin-top:8px;">
+                        <i class="fas fa-triangle-exclamation"></i>
+                        <span id="sched-leave-conflict-msg"></span>
+                    </div>
+                    <button type="button" class="sched-action-btn sched-action-leave" onclick="saveLeave()" style="margin-top:12px;">
+                        <i class="fas fa-calendar-xmark"></i> Set Leave
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
 <!-- Crop Modal -->
 <div class="modal-overlay" id="cropModal">
     <div class="modal-card" id="cropPanel" style="max-width:680px;">
@@ -276,6 +409,12 @@ $ac = $avail_colors[$avail] ?? $avail_colors['Available'];
 
 <!-- Cropper library (loads first so CoachProfile.js can use the Cropper class) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+
+<script>
+    const COACH_ID   = <?php echo (int)$coach['id']; ?>;
+    const AJAX_URL   = 'coach_availability_ajax.php';
+</script>
+
 <!-- All page-specific JS lives in CoachProfile.js -->
 <script src="CoachProfile.js"></script>
 

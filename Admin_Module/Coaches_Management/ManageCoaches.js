@@ -1,5 +1,17 @@
 ﻿let cropperInstance = null;
 
+function handleAvailChange(select, coachId) {
+    const val = select.value;
+    if (val === 'customize') {
+        /* reset the dropdown back to its current saved value */
+        const opts = select.querySelectorAll('option');
+        opts.forEach(o => { if (o.value !== 'customize') o.selected = o.defaultSelected; });
+        window.location.href = 'CoachSchedule.php';
+        return;
+    }
+    window.location.href = 'ManageCoaches.php?avail_id=' + coachId + '&avail_status=' + encodeURIComponent(val);
+}
+
 // Add Coach modal
 function openAddCoachModal() {
     var m = document.getElementById('coachAddModal');
