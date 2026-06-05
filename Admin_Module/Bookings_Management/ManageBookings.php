@@ -440,19 +440,17 @@
                                 <label>Notes</label>
                                 <span><?php echo htmlspecialchars($row['notes'] ?: '—'); ?></span>
                             </div>
-                            <?php if(in_array($role, ['Admin','Superadmin']) && $row['coach_id']): ?>
+                            <?php if($row['coach_id']): ?>
                             <div class="details-item">
                                 <label>Proof Photo</label>
-                                <?php if($row['status'] === 'Completed'): ?>
-                                    <?php if(!empty($row['completion_photo'])): ?>
-                                    <button type="button" class="btn-view-proof" onclick="event.stopPropagation(); openProofView('<?php echo htmlspecialchars($row['completion_photo']); ?>', <?php echo $row['id']; ?>)">
+                                <?php if($row['status'] === 'Completed' && !empty($row['completion_photo'])): ?>
+                                    <button type="button" class="btn-view-proof" onclick="event.stopPropagation(); openProofView('<?php echo htmlspecialchars($row['completion_photo']); ?>', <?php echo $row['id']; ?>, <?php echo $role === 'Coach' ? 'true' : 'false'; ?>)">
                                         <i class="fas fa-image"></i> Show Photo
                                     </button>
-                                    <?php else: ?>
+                                <?php elseif($row['status'] === 'Completed'): ?>
                                     <span class="proof-missing"><i class="fas fa-clock"></i> Waiting</span>
-                                    <?php endif; ?>
                                 <?php else: ?>
-                                <span style="font-size:13px; color:#94a3b8;">—</span>
+                                    <span style="font-size:13px; color:#94a3b8;">—</span>
                                 <?php endif; ?>
                             </div>
                             <?php endif; ?>
@@ -543,23 +541,34 @@
         </div>
     </div>
 
-    <!-- View Proof Photo Modal (Admin / Superadmin) -->
+    <!-- View Proof Photo Modal -->
     <div class="modal-overlay" id="proofViewModal">
         <div class="modal-card" style="max-width:560px;">
             <div class="modal-header">
                 <h2><i class="fas fa-image"></i> Completion Proof — Booking #<span id="proof-view-id"></span></h2>
-                <button class="modal-close" onclick="closeProofView()">✕</button>
+                <button class="modal-close" onclick="closeProofView()">&#x2715;</button>
             </div>
             <div style="padding:0 18px 18px; text-align:center;">
                 <img id="proofViewImg" src="" alt="Proof Photo" style="max-width:100%; max-height:420px; border-radius:10px; object-fit:contain; border:1px solid #e5e7eb;">
-                <div style="margin-top:12px;">
+                <div style="margin-top:12px; display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
                     <a id="proofDownloadLink" href="" download target="_blank" class="btn-modal-save" style="display:inline-flex; align-items:center; gap:6px; text-decoration:none;">
                         <i class="fas fa-download"></i> Download
                     </a>
+                    <button id="proofChangeBtn" type="button" class="btn-modal-save" style="display:none; background:#f59e0b;" onclick="openChangeProof()">
+                        <i class="fas fa-camera"></i> Change Photo
+                    </button>
+                    <button id="proofDeleteBtn" type="button" class="btn-modal-cancel" style="display:none;" onclick="confirmDeleteProof()">
+                        <i class="fas fa-trash"></i> Delete Photo
+                    </button>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Hidden form for delete proof -->
+    <form id="deleteProofForm" action="DeleteCompletionProof.php" method="POST" style="display:none;">
+        <input type="hidden" name="booking_id" id="deleteProofBookingId">
+    </form>
 
     <!-- Edit Booking Modal -->
     <div class="modal-overlay" id="editModal">

@@ -226,14 +226,35 @@ function previewProof(input) {
     reader.readAsDataURL(input.files[0]);
 }
 
-function openProofView(filename, bookingId) {
+function openProofView(filename, bookingId, isCoach) {
     const base = '../../Pictures/Admin_Module/booking_proofs/';
     document.getElementById('proofViewImg').src = base + filename;
     document.getElementById('proofDownloadLink').href = base + filename;
     document.getElementById('proof-view-id').textContent = bookingId;
+
+    const changeBtn = document.getElementById('proofChangeBtn');
+    const deleteBtn = document.getElementById('proofDeleteBtn');
+    changeBtn.style.display = isCoach ? 'inline-flex' : 'none';
+    deleteBtn.style.display = isCoach ? 'inline-flex' : 'none';
+
+    if (isCoach) {
+        document.getElementById('deleteProofBookingId').value = bookingId;
+    }
+
     const m = document.getElementById('proofViewModal');
     m.classList.add('active');
     m.style.display = 'flex';
+}
+
+function openChangeProof() {
+    const bookingId = document.getElementById('deleteProofBookingId').value;
+    closeProofView();
+    openProofModal(bookingId);
+}
+
+function confirmDeleteProof() {
+    if (!confirm('Delete this proof photo? The booking will revert to Confirmed.')) return;
+    document.getElementById('deleteProofForm').submit();
 }
 
 function closeProofView() {
