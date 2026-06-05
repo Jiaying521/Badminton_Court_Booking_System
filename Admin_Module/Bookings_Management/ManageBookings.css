@@ -107,9 +107,17 @@
     font-size: 13px;
     font-family: 'Outfit', sans-serif;
     outline: none;
-    background: #fff;
+    background-color: #fff;
     color: #1f2937;
     transition: border-color 0.2s;
+}
+
+.filter-field select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 11px center;
+    padding-right: 32px;
 }
 
 .filter-field input:focus,
@@ -316,59 +324,67 @@
     align-items: center;
     justify-content: center;
     padding: 20px;
-    overflow-y: auto;
 }
 
 .modal-overlay.active {
     display: flex;
+    animation: overlayFadeIn 0.18s ease;
+}
+
+.modal-overlay.active .modal-card {
+    animation: cardSlideIn 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .modal-card {
     background: #fff;
-    border-radius: 12px;
-    padding: 10px;
+    border-radius: 16px;
     width: 100%;
     max-width: 520px;
-    max-height: 82vh;
+    max-height: 90vh;
+    overflow-y: auto;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
+    scrollbar-width: none;
+}
+
+.modal-card::-webkit-scrollbar {
+    display: none;
 }
 
 .modal-card form {
-    overflow-y: auto;
-    padding: 4px 10px 10px;
-    scrollbar-width: thin;
+    padding: 0 18px 18px;
 }
 
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    padding: 18px 18px 14px;
 }
 
 .modal-header h2 {
     margin: 0;
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 700;
     color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .modal-close {
     background: #f1f5f9;
     border: none;
     border-radius: 50%;
-    width: 32px;
-    height: 32px;
-    font-size: 15px;
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #64748b;
     transition: all 0.2s;
+    flex-shrink: 0;
 }
 
 .modal-close:hover {
@@ -379,13 +395,13 @@
 .modal-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 14px;
+    gap: 12px;
 }
 
 .modal-field {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 4px;
 }
 
 .modal-field.full-width {
@@ -403,22 +419,30 @@
 .modal-field input,
 .modal-field select,
 .modal-field textarea {
-    padding: 10px 12px;
-    border: 1.5px solid #e5e7eb;
-    border-radius: 8px;
-    font-size: 14px;
+    padding: 9px 13px;
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
+    font-size: 13px;
     font-family: 'Outfit', sans-serif;
     outline: none;
-    background: #fafafa;
+    background-color: #fff;
     color: #1f2937;
     transition: border-color 0.2s;
+}
+
+.modal-field select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 11px center;
+    padding-right: 32px;
 }
 
 .modal-field input:focus,
 .modal-field select:focus,
 .modal-field textarea:focus {
-    border-color: #6366f1;
-    background: #fff;
+    border-color: var(--primary);
+    background-color: #fff;
 }
 
 .modal-field textarea {
@@ -430,7 +454,7 @@
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-    margin-top: 20px;
+    margin-top: 14px;
 }
 
 .btn-modal-cancel {
@@ -706,5 +730,77 @@
 
 .bulk-delete:hover {
     background: #dc2626;
+    color: #fff;
+}
+
+.btn-view-proof {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1.5px solid #6366f1;
+    background: #fff;
+    color: #6366f1;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.btn-view-proof:hover {
+    background: #6366f1;
+    color: #fff;
+}
+
+.proof-missing {
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+
+.proof-drop-zone {
+    border: 2px dashed #cbd5e1;
+    border-radius: 10px;
+    padding: 24px 16px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s, background 0.2s;
+    min-height: 120px;
+    margin-top: 6px;
+    background: #fafafa;
+}
+
+.proof-drop-zone:hover {
+    border-color: var(--primary);
+    background: #fffbeb;
+}
+
+.btn-proof-icon {
+    background: #f0fdf4;
+    border: 1.5px solid #16a34a;
+    color: #16a34a;
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.btn-proof-icon:hover {
+    background: #16a34a;
     color: #fff;
 }

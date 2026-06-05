@@ -268,8 +268,35 @@ if ($action === 'save_working_hours') {
         exit();
     }
 
-    $from = !empty($_POST['available_from']) ? "'" . mysqli_real_escape_string($conn, $_POST['available_from']) . "'" : 'NULL';
-    $to   = !empty($_POST['available_to'])   ? "'" . mysqli_real_escape_string($conn, $_POST['available_to'])   . "'" : 'NULL';
+    $from_val = trim($_POST['available_from'] ?? '');
+    $to_val   = trim($_POST['available_to']   ?? '');
+
+    if (!$from_val || !$to_val) {
+        echo json_encode(['success' => false, 'message' => 'Both start and end time are required.']);
+        exit();
+    }
+
+    if ($from_val >= $to_val) {
+        echo json_encode(['success' => false, 'message' => 'End time must be later than start time.']);
+        exit();
+    }
+
+    $biz_res  = mysqli_query($conn, "SELECT setting_key, setting_value FROM settings WHERE setting_key IN ('open_time','close_time')");
+    $biz      = ['open_time' => '00:00', 'close_time' => '23:59'];
+    while ($br = mysqli_fetch_assoc($biz_res)) $biz[$br['setting_key']] = $br['setting_value'];
+
+    if ($from_val < $biz['open_time']) {
+        echo json_encode(['success' => false, 'message' => "Start time cannot be before business open time ({$biz['open_time']})."]);
+        exit();
+    }
+
+    if ($to_val > $biz['close_time']) {
+        echo json_encode(['success' => false, 'message' => "End time cannot be after business close time ({$biz['close_time']})."]);
+        exit();
+    }
+
+    $from = "'" . mysqli_real_escape_string($conn, $from_val) . "'";
+    $to   = "'" . mysqli_real_escape_string($conn, $to_val)   . "'";
 
     $coach_id = getCoachIdFromSession($conn, $admin_id);
     if (!$coach_id) {
@@ -321,23 +348,26 @@ if ($action === 'save_range') {
         $existing_res = mysqli_query($conn, "
             SELECT id, status FROM coach_availability
             WHERE coach_id = $coach_id AND date = '$date' AND start_time IS NULL
-            LIMIT 1
         ");
-        $existing = mysqli_fetch_assoc($existing_res);
 
-        if ($existing) {
-            $old = ['status' => $existing['status']];
-            mysqli_query($conn, "
-                UPDATE coach_availability
-                SET status = '$status', reason = $reason_sql, created_by = $admin_id, created_by_role = '$role'
-                WHERE id = {$existing['id']}
-            ");
-            logChange($conn, $coach_id, $date, 'updated', $old, ['status' => $status, 'reason' => $reason], $admin_id, $role, $_SESSION['username']);
+        $old_status = null;
+        while ($ex = mysqli_fetch_assoc($existing_res)) {
+            if (!$old_status) $old_status = $ex['status'];
+        }
+
+        mysqli_query($conn, "
+            DELETE FROM coach_availability
+            WHERE coach_id = $coach_id AND date = '$date' AND start_time IS NULL
+        ");
+
+        mysqli_query($conn, "
+            INSERT INTO coach_availability (coach_id, date, status, reason, created_by, created_by_role)
+            VALUES ($coach_id, '$date', '$status', $reason_sql, $admin_id, '$role')
+        ");
+
+        if ($old_status) {
+            logChange($conn, $coach_id, $date, 'updated', ['status' => $old_status], ['status' => $status, 'reason' => $reason], $admin_id, $role, $_SESSION['username']);
         } else {
-            mysqli_query($conn, "
-                INSERT INTO coach_availability (coach_id, date, status, reason, created_by, created_by_role)
-                VALUES ($coach_id, '$date', '$status', $reason_sql, $admin_id, '$role')
-            ");
             logChange($conn, $coach_id, $date, 'created', [], ['status' => $status, 'reason' => $reason], $admin_id, $role, $_SESSION['username']);
         }
 

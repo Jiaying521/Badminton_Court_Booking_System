@@ -191,16 +191,31 @@
 .cp-field input,
 .cp-field select {
     width: 100%;
-    padding: 11px 14px;
+    padding: 9px 13px;
     border: 1.5px solid var(--border);
-    border-radius: 12px;
-    font-size: 14px;
+    border-radius: 9px;
+    font-size: 13px;
     font-family: 'Outfit', sans-serif;
     color: var(--text-dark);
-    background: #fff;
+    background-color: #fff;
     outline: none;
     transition: border-color 0.25s, box-shadow 0.25s;
     box-sizing: border-box;
+}
+
+.cp-field select,
+.cp-avail-row select {
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    background-color: #fff !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 11px center !important;
+    background-size: 11px 11px !important;
+    padding-right: 32px !important;
+    border: 1.5px solid var(--border) !important;
+    border-radius: 9px !important;
 }
 
 .cp-field input:focus,
@@ -292,7 +307,9 @@
     overflow: hidden !important;
     display: flex;
     flex-direction: column;
-    max-height: 88vh;
+    max-height: 90vh;
+    border-radius: 16px;
+    animation: cardSlideIn 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .sched-modal-header {
@@ -429,6 +446,16 @@
     outline-offset: 1px;
 }
 
+.sched-day-tag {
+    font-size: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    opacity: 0.85;
+    line-height: 1;
+    margin-top: 2px;
+}
+
 .sched-booking-dot {
     width: 5px;
     height: 5px;
@@ -469,7 +496,7 @@
 }
 
 .sched-upcoming-card {
-    background: #fff;
+    background-color: #fff;
     border: 1px solid var(--border);
     border-radius: 9px;
     padding: 8px 12px;

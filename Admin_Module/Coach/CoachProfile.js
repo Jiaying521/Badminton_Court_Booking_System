@@ -150,7 +150,12 @@ function renderCalendar() {
 
         const dot = bookCount > 0 ? '<div class="sched-booking-dot"></div>' : '';
 
-        html += `<div class="${classes}" onclick="selectDay('${dateStr}')">${d}${dot}</div>`;
+        const SHORT = { 'On Leave':'Leave', 'Sick':'Sick', 'Off Day':'Off', 'Custom Hours':'Custom' };
+        const statusTag = fullDay
+            ? `<div class="sched-day-tag">${SHORT[fullDay.status] || fullDay.status}</div>`
+            : '';
+
+        html += `<div class="${classes}" onclick="selectDay('${dateStr}')">${d}${statusTag}${dot}</div>`;
     }
 
     document.getElementById('sched-cal-days').innerHTML = html;
@@ -270,7 +275,22 @@ function saveWorkingHours() {
     const to   = document.getElementById('sched-block-end').value;
 
     if (!from || !to) {
-        alert('Please set both available from and until time.');
+        alert('Please set both start and end time.');
+        return;
+    }
+
+    if (from >= to) {
+        alert('End time must be later than start time.');
+        return;
+    }
+
+    if (from < BIZ_OPEN) {
+        alert(`Start time cannot be earlier than business open time (${BIZ_OPEN}).`);
+        return;
+    }
+
+    if (to > BIZ_CLOSE) {
+        alert(`End time cannot be later than business close time (${BIZ_CLOSE}).`);
         return;
     }
 

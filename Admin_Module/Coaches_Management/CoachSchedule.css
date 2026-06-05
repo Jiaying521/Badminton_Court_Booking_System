@@ -131,13 +131,20 @@
 .cs-cal-filter label i { color: var(--primary); }
 
 .cs-cal-filter select {
-    padding: 8px 12px;
+    padding: 9px 13px;
     border: 1.5px solid var(--border);
     border-radius: 9px;
     font-size: 13px;
     font-family: 'Outfit', sans-serif;
     outline: none;
+    background-color: #fff;
+    color: #1f2937;
     transition: border-color 0.2s;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 11px center;
+    padding-right: 32px;
 }
 
 .cs-cal-filter select:focus { border-color: var(--primary); }
@@ -173,7 +180,7 @@
     padding: 8px;
     cursor: pointer;
     transition: border-color 0.2s, background 0.15s;
-    background: #fff;
+    background-color: #fff;
 }
 
 .cs-day-cell:hover { border-color: var(--primary); background: #fffbeb; }
@@ -319,15 +326,16 @@
 
 /* Day Detail Modal */
 .dd-modal-card {
-    background: #fff;
-    border-radius: 12px;
+    background-color: #fff;
+    border-radius: 16px;
     width: 100%;
-    max-width: 560px;
-    max-height: 86vh;
+    max-width: 540px;
+    max-height: 90vh;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    animation: cardSlideIn 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .dd-header {
@@ -559,22 +567,36 @@
 .dd-form-grid .modal-field input,
 .dd-form-grid .modal-field select {
     width: 100%;
-    padding: 10px 12px;
-    border: 1.5px solid #e5e7eb;
-    border-radius: 8px;
-    font-size: 14px;
+    padding: 9px 13px;
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
+    font-size: 13px;
     font-family: 'Outfit', sans-serif;
     outline: none;
-    background: #fafafa;
+    background-color: #fff;
     color: #1f2937;
     box-sizing: border-box;
     transition: border-color 0.2s;
 }
 
+.dd-form-grid .modal-field select {
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    background-color: #fff !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 11px center !important;
+    background-size: 11px 11px !important;
+    padding-right: 32px !important;
+    border: 1.5px solid var(--border) !important;
+    border-radius: 9px !important;
+}
+
 .dd-form-grid .modal-field input:focus,
 .dd-form-grid .modal-field select:focus {
-    border-color: #6366f1;
-    background: #fff;
+    border-color: var(--primary);
+    background-color: #fff;
 }
 
 .dd-optional-tag {
@@ -640,7 +662,7 @@
 
 .cs-search-wrap input[type="text"]:focus {
     border-color: #6366f1;
-    background: #fff;
+    background-color: #fff;
 }
 
 .cs-search-list {
@@ -652,7 +674,7 @@
     overflow-y: auto;
     border: 1px solid #e5e7eb;
     border-radius: 10px;
-    background: #fff;
+    background-color: #fff;
     box-shadow: 0 8px 24px rgba(15,23,42,0.12);
     z-index: 100;
     display: none;
@@ -703,20 +725,28 @@
 .cs-history-filter .modal-field input,
 .cs-history-filter .modal-field select {
     width: 100%;
-    padding: 9px 12px;
-    border: 1.5px solid #e5e7eb;
-    border-radius: 8px;
+    padding: 9px 13px;
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
     font-size: 13px;
     font-family: 'Outfit', sans-serif;
     outline: none;
-    background: #fafafa;
+    background-color: #fff;
     color: #1f2937;
     box-sizing: border-box;
     transition: border-color 0.2s;
 }
 
+.cs-history-filter .modal-field select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 11px center;
+    padding-right: 32px;
+}
+
 .cs-history-filter .modal-field input:focus,
-.cs-history-filter .modal-field select:focus { border-color: #6366f1; }
+.cs-history-filter .modal-field select:focus { border-color: var(--primary); }
 
 .hist-log-item {
     display: flex;
@@ -764,15 +794,16 @@
 
 /* History modal card */
 .cs-history-modal-card {
-    background: #fff;
-    border-radius: 12px;
+    background-color: #fff;
+    border-radius: 16px;
     width: 100%;
-    max-width: 680px;
-    max-height: 86vh;
+    max-width: 660px;
+    max-height: 90vh;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    animation: cardSlideIn 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .cs-history-modal-header {

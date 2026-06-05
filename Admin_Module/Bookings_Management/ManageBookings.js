@@ -197,3 +197,47 @@ function submitBulk(action) {
     document.getElementById('bulkIds').value = ids.join(',');
     document.getElementById('bulkForm').submit();
 }
+
+function openProofModal(bookingId) {
+    document.getElementById('proof-booking-id').value = bookingId;
+    document.getElementById('proof-booking-label').textContent = 'Booking #' + bookingId;
+    document.getElementById('proofPreviewWrap').style.display = 'none';
+    document.getElementById('proofDropPrompt').style.display = 'block';
+    document.getElementById('proofFileInput').value = '';
+    const m = document.getElementById('proofUploadModal');
+    m.classList.add('active');
+    m.style.display = 'flex';
+}
+
+function closeProofModal() {
+    const m = document.getElementById('proofUploadModal');
+    m.classList.remove('active');
+    m.style.display = 'none';
+}
+
+function previewProof(input) {
+    if (!input.files || !input.files[0]) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        document.getElementById('proofPreviewImg').src = e.target.result;
+        document.getElementById('proofPreviewWrap').style.display = 'block';
+        document.getElementById('proofDropPrompt').style.display = 'none';
+    };
+    reader.readAsDataURL(input.files[0]);
+}
+
+function openProofView(filename, bookingId) {
+    const base = '../../Pictures/Admin_Module/booking_proofs/';
+    document.getElementById('proofViewImg').src = base + filename;
+    document.getElementById('proofDownloadLink').href = base + filename;
+    document.getElementById('proof-view-id').textContent = bookingId;
+    const m = document.getElementById('proofViewModal');
+    m.classList.add('active');
+    m.style.display = 'flex';
+}
+
+function closeProofView() {
+    const m = document.getElementById('proofViewModal');
+    m.classList.remove('active');
+    m.style.display = 'none';
+}

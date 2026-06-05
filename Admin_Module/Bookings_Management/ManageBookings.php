@@ -18,10 +18,11 @@
     header("Expires: 0");
 
     // Toast notifications from URL params (redirects from AddBooking / edit / bulk actions)
-    if (isset($_GET['updated']))  { $toasts[] = ['text' => 'Booking status updated successfully!', 'type' => 'success']; }
-    if (isset($_GET['edited']))   { $toasts[] = ['text' => 'Booking updated successfully!',        'type' => 'success']; }
-    if (isset($_GET['added']))    { $toasts[] = ['text' => 'Booking added successfully!',          'type' => 'success']; }
-    if (isset($_GET['conflict'])) { $toasts[] = ['text' => 'This time slot is already booked. Please choose another time.', 'type' => 'pending']; }
+    if (isset($_GET['updated']))     { $toasts[] = ['text' => 'Booking status updated successfully!', 'type' => 'success']; }
+    if (isset($_GET['edited']))      { $toasts[] = ['text' => 'Booking updated successfully!',        'type' => 'success']; }
+    if (isset($_GET['added']))       { $toasts[] = ['text' => 'Booking added successfully!',          'type' => 'success']; }
+    if (isset($_GET['conflict']))    { $toasts[] = ['text' => 'This time slot is already booked. Please choose another time.', 'type' => 'pending']; }
+    if (isset($_GET['proof_error'])) { $toasts[] = ['text' => 'Photo upload failed. Please use JPG/PNG under 5MB.', 'type' => 'error']; }
 
     // Handle bulk action
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['ids'])) {
@@ -172,6 +173,7 @@
             bookings.session_type,
             bookings.notes,
             bookings.cancellation_fee,
+            bookings.completion_photo,
             COALESCE(coaches.name, 'No Coach') AS coach_name,
             payments.payment_method,
             payments.payment_status,
@@ -438,6 +440,22 @@
                                 <label>Notes</label>
                                 <span><?php echo htmlspecialchars($row['notes'] ?: '—'); ?></span>
                             </div>
+                            <?php if(in_array($role, ['Admin','Superadmin']) && $row['coach_id']): ?>
+                            <div class="details-item">
+                                <label>Proof Photo</label>
+                                <?php if($row['status'] === 'Completed'): ?>
+                                    <?php if(!empty($row['completion_photo'])): ?>
+                                    <button type="button" class="btn-view-proof" onclick="event.stopPropagation(); openProofView('<?php echo htmlspecialchars($row['completion_photo']); ?>', <?php echo $row['id']; ?>)">
+                                        <i class="fas fa-image"></i> Show Photo
+                                    </button>
+                                    <?php else: ?>
+                                    <span class="proof-missing"><i class="fas fa-clock"></i> Waiting</span>
+                                    <?php endif; ?>
+                                <?php else: ?>
+                                <span style="font-size:13px; color:#94a3b8;">—</span>
+                                <?php endif; ?>
+                            </div>
+                            <?php endif; ?>
                         </div>
 
                                 <!-- Edit button — stopPropagation so clicking it doesn't collapse the row -->
@@ -461,13 +479,11 @@
 
                                     <?php if($row['status'] === 'Confirmed'): ?>
                                     <div style="display:flex; flex-direction:column; gap:8px; flex-shrink:0;">
-                                        <!-- Mark as Completed -->
-                                        <a href="UpdateBookingsStatus.php?id=<?php echo $row['id']; ?>&status=Completed"
+                                        <button type="button"
                                            class="btn-coach-action btn-coach-complete"
-                                           onclick="event.stopPropagation(); return confirm('Mark this session as Completed?');">
-                                            <i class="fas fa-check"></i> Mark as Completed
-                                        </a>
-                                        <!-- Decline -->
+                                           onclick="event.stopPropagation(); openProofModal(<?php echo $row['id']; ?>)">
+                                            <i class="fas fa-camera"></i> Mark as Completed
+                                        </button>
                                         <a href="UpdateBookingsStatus.php?id=<?php echo $row['id']; ?>&status=Cancelled"
                                            class="btn-coach-action btn-coach-decline"
                                            onclick="event.stopPropagation(); return confirm('Decline this session?');">
@@ -492,6 +508,58 @@
             <i class="fas fa-chevron-up"></i>
         </button>
     </main>
+
+    <!-- Upload Completion Proof Modal (Coach only) -->
+    <div class="modal-overlay" id="proofUploadModal">
+        <div class="modal-card" style="max-width:420px;">
+            <div class="modal-header">
+                <h2><i class="fas fa-camera"></i> Upload Completion Proof</h2>
+                <button class="modal-close" onclick="closeProofModal()">✕</button>
+            </div>
+            <form action="UploadCompletionProof.php" method="POST" enctype="multipart/form-data" style="padding:0 18px 18px;">
+                <input type="hidden" name="booking_id" id="proof-booking-id">
+                <div class="modal-field" style="margin-bottom:14px;">
+                    <label>Booking</label>
+                    <div id="proof-booking-label" style="font-size:14px; font-weight:600; color:#1f2937; padding:8px 0;"></div>
+                </div>
+                <div class="modal-field proof-upload-area" id="proofDropArea">
+                    <label>Proof Photo <span style="font-weight:400; text-transform:none; letter-spacing:0; color:#94a3b8;">(JPG / PNG / GIF, max 5MB)</span></label>
+                    <div class="proof-drop-zone" onclick="document.getElementById('proofFileInput').click()">
+                        <div id="proofPreviewWrap" style="display:none;">
+                            <img id="proofPreviewImg" alt="preview" style="max-height:180px; max-width:100%; border-radius:8px; object-fit:contain;">
+                        </div>
+                        <div id="proofDropPrompt">
+                            <i class="fas fa-cloud-upload-alt" style="font-size:32px; color:#cbd5e1; margin-bottom:8px;"></i>
+                            <div style="font-size:13px; color:#64748b;">Click to choose photo</div>
+                        </div>
+                        <input type="file" id="proofFileInput" name="proof_photo" accept="image/*" required style="display:none;" onchange="previewProof(this)">
+                    </div>
+                </div>
+                <div class="modal-actions" style="margin-top:16px;">
+                    <button type="button" class="btn-modal-cancel" onclick="closeProofModal()">Cancel</button>
+                    <button type="submit" class="btn-modal-save"><i class="fas fa-check"></i> Submit & Complete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- View Proof Photo Modal (Admin / Superadmin) -->
+    <div class="modal-overlay" id="proofViewModal">
+        <div class="modal-card" style="max-width:560px;">
+            <div class="modal-header">
+                <h2><i class="fas fa-image"></i> Completion Proof — Booking #<span id="proof-view-id"></span></h2>
+                <button class="modal-close" onclick="closeProofView()">✕</button>
+            </div>
+            <div style="padding:0 18px 18px; text-align:center;">
+                <img id="proofViewImg" src="" alt="Proof Photo" style="max-width:100%; max-height:420px; border-radius:10px; object-fit:contain; border:1px solid #e5e7eb;">
+                <div style="margin-top:12px;">
+                    <a id="proofDownloadLink" href="" download target="_blank" class="btn-modal-save" style="display:inline-flex; align-items:center; gap:6px; text-decoration:none;">
+                        <i class="fas fa-download"></i> Download
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Edit Booking Modal -->
     <div class="modal-overlay" id="editModal">

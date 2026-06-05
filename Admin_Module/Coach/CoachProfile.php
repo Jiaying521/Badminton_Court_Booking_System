@@ -29,6 +29,13 @@ $display_name = $username;
 // This page lives inside Admin_Module/Coach/, so navbar links need to step up one level.
 $base_path = '../';
 
+// Fetch business hours from settings
+$settings_res = mysqli_query($conn, "SELECT setting_key, setting_value FROM settings WHERE setting_key IN ('open_time','close_time')");
+$biz_hours = ['open_time' => '08:00', 'close_time' => '22:00'];
+while ($sr = mysqli_fetch_assoc($settings_res)) {
+    $biz_hours[$sr['setting_key']] = $sr['setting_value'];
+}
+
 // Fetch coach record
 $coach = mysqli_fetch_assoc(mysqli_query($conn, "
     SELECT c.*, a.email, a.username
@@ -411,8 +418,10 @@ $ac = $avail_colors[$avail] ?? $avail_colors['Available'];
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 
 <script>
-    const COACH_ID   = <?php echo (int)$coach['id']; ?>;
-    const AJAX_URL   = 'coach_availability_ajax.php';
+    const COACH_ID    = <?php echo (int)$coach['id']; ?>;
+    const AJAX_URL    = 'coach_availability_ajax.php';
+    const BIZ_OPEN    = '<?php echo $biz_hours['open_time']; ?>';
+    const BIZ_CLOSE   = '<?php echo $biz_hours['close_time']; ?>';
 </script>
 
 <!-- All page-specific JS lives in CoachProfile.js -->

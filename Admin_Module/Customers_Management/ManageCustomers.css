@@ -41,7 +41,7 @@
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s ease, padding 0.3s ease;
-    background: #fff;
+    background-color: #fff;
     border-radius: 14px;
     margin-bottom: 0;
 }
@@ -85,9 +85,17 @@
     font-size: 13px;
     font-family: 'Outfit', sans-serif;
     outline: none;
-    background: #fff;
+    background-color: #fff;
     color: #1f2937;
     transition: border-color 0.2s;
+}
+
+.filter-field select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 11px center;
+    padding-right: 32px;
 }
 
 .filter-field input:focus,
@@ -126,7 +134,7 @@
     padding: 9px 14px;
     border-radius: 9px;
     border: 1.5px solid var(--border);
-    background: #fff;
+    background-color: #fff;
     color: #64748b;
     font-size: 13px;
     font-weight: 600;
@@ -152,7 +160,7 @@
     display: flex;
     align-items: center;
     gap: 14px;
-    background: #fff;
+    background-color: #fff;
     border: 1px solid var(--border);
     border-radius: 14px;
     padding: 16px 22px;
@@ -363,55 +371,75 @@
 
 .modal-overlay.active {
     display: flex;
+    animation: overlayFadeIn 0.18s ease;
+}
+
+.modal-overlay.active .modal-card {
+    animation: cardSlideIn 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .modal-card {
-    background: #fff;
-    border-radius: 20px;
+    background-color: #fff;
+    border-radius: 16px;
     width: 100%;
-    max-width: 560px;
-    max-height: 85vh;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
+    max-width: 540px;
+    max-height: 90vh;
+    overflow-y: auto;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    scrollbar-width: none;
 }
 
-.modal-card > form,
-.modal-card > #detailsModalBody {
-    overflow-y: auto;
-    flex: 1;
+.modal-card::-webkit-scrollbar {
+    display: none;
+}
+
+.modal-card > form {
+    padding: 0 22px 18px;
 }
 
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 24px 28px 0;
-    flex-shrink: 0;
+    padding: 18px 22px 0;
 }
 
 .modal-header h2 {
     margin: 0;
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 800;
     color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .modal-close {
-    background: none;
+    background: #f1f5f9;
     border: none;
-    font-size: 20px;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
     cursor: pointer;
-    color: var(--text-muted);
-    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.modal-close:hover {
+    background: #fee2e2;
+    color: #dc2626;
 }
 
 .modal-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    padding: 24px 28px;
+    gap: 12px;
+    padding: 16px 0;
 }
 
 .modal-field label {
@@ -427,14 +455,30 @@
 .modal-field input,
 .modal-field select {
     width: 100%;
-    padding: 10px 14px;
+    padding: 9px 13px;
     border: 1.5px solid var(--border);
-    border-radius: 10px;
-    font-size: 14px;
+    border-radius: 9px;
+    font-size: 13px;
     font-family: 'Outfit', sans-serif;
     outline: none;
+    background-color: #fff;
+    color: #1f2937;
     box-sizing: border-box;
     transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.modal-field select {
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    background-color: #fff !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 11px center !important;
+    background-size: 11px 11px !important;
+    padding-right: 32px !important;
+    border: 1.5px solid var(--border) !important;
+    border-radius: 9px !important;
 }
 
 .modal-field input:focus,
@@ -450,9 +494,8 @@
 .modal-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 12px;
-    padding: 0 28px 24px;
-    flex-shrink: 0;
+    gap: 10px;
+    margin-top: 14px;
 }
 
 .btn-modal-save {
@@ -534,7 +577,7 @@
     font-size: 13px;
     font-weight: 600;
     color: #475569;
-    background: #fff;
+    background-color: #fff;
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 6px 12px;
@@ -572,7 +615,7 @@
     color: #64748b;
     cursor: pointer;
     transition: all 0.2s;
-    background: #fff;
+    background-color: #fff;
 }
 
 .wallet-radio input[type="radio"]:checked + span {
