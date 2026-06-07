@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     labels: {
                         generateLabels: () => [
                             { text: 'Off-Peak', fillStyle: '#93c5fd', strokeStyle: '#93c5fd', lineWidth: 0 },
-                            { text: 'Peak (3PM+)', fillStyle: '#f59e0b', strokeStyle: '#f59e0b', lineWidth: 0 }
+                            { text: 'Peak', fillStyle: '#f59e0b', strokeStyle: '#f59e0b', lineWidth: 0 }
                         ],
                         boxWidth: 12,
                         font: { size: 12 }

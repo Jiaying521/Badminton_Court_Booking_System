@@ -33,6 +33,34 @@ if (isset($_GET['action']) && $_GET['action'] === 'redeem') {
     
     // If the voucher exists in our shop setup
     if ($v_item) {
+        $now = date('Y-m-d H:i:s');
+
+        // Availability window: must be started and not expired
+        $not_started = !empty($v_item['valid_from'])  && $now < $v_item['valid_from'];
+        $expired     = !empty($v_item['valid_until']) && $now > $v_item['valid_until'];
+
+        // Stock: count how many have already been claimed (empty quantity = unlimited)
+        $sold_out = false;
+        if ($v_item['quantity'] !== null && $v_item['quantity'] !== '') {
+            $cntStmt = $pdo->prepare("SELECT COUNT(*) FROM user_vouchers WHERE voucher_id = ?");
+            $cntStmt->execute([$voucher_id]);
+            $claimed  = (int)$cntStmt->fetchColumn();
+            $sold_out = $claimed >= (int)$v_item['quantity'];
+        }
+
+        if ($not_started) {
+            echo "<script>alert('This voucher is not available yet.'); window.location.href='redeem_voucher.php';</script>";
+            exit;
+        }
+        if ($expired) {
+            echo "<script>alert('This voucher has expired.'); window.location.href='redeem_voucher.php';</script>";
+            exit;
+        }
+        if ($sold_out) {
+            echo "<script>alert('This voucher is out of stock.'); window.location.href='redeem_voucher.php';</script>";
+            exit;
+        }
+
         // Make sure the user's current points balance is high enough to afford it
         if ($current_points >= $v_item['points_required']) {
             // Success: Insert a new voucher entry row into their personal inventory wallet
@@ -42,7 +70,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'redeem') {
             // Deduct points from users.loyalty_points
             $deduct = $pdo->prepare("UPDATE users SET loyalty_points = loyalty_points - ? WHERE id = ?");
             $deduct->execute([(int)$v_item['points_required'], $user_id]);
-            
+
             // Pop up a clean success alert box and refresh the shop interface page
             echo "<script>alert('Successfully redeemed " . $v_item['title'] . "!'); window.location.href='redeem_voucher.php';</script>";
             exit;
@@ -56,7 +84,14 @@ if (isset($_GET['action']) && $_GET['action'] === 'redeem') {
 
 // 5. 从数据库里拉取所有可在商店里兑换的优惠券货架列表
 // Pull all our standard shop vouchers, sorting them from cheapest to most expensive
-$vouchers_shop_list = $pdo->query("SELECT * FROM voucher ORDER BY points_required ASC")->fetchAll();
+$vouchers_shop_list = $pdo->query("
+    SELECT v.*, (SELECT COUNT(*) FROM user_vouchers uv WHERE uv.voucher_id = v.id) AS claimed_count
+    FROM voucher v
+    ORDER BY v.points_required ASC
+")->fetchAll();
+
+// Used to check each voucher's availability window while rendering the shelf
+$now = date('Y-m-d H:i:s');
 ?>
 <!DOCTYPE html>
 <html>
@@ -114,14 +149,39 @@ $vouchers_shop_list = $pdo->query("SELECT * FROM voucher ORDER BY points_require
     </div>
 
     <div class="voucher-list">
-        <?php foreach($vouchers_shop_list as $v): ?>
+        <?php foreach($vouchers_shop_list as $v):
+            // Work out this voucher's availability for the current customer
+            $not_started = !empty($v['valid_from'])  && $now < $v['valid_from'];
+            $expired     = !empty($v['valid_until']) && $now > $v['valid_until'];
+            $has_qty     = $v['quantity'] !== null && $v['quantity'] !== '';
+            $remaining   = $has_qty ? max(0, (int)$v['quantity'] - (int)$v['claimed_count']) : null;
+            $sold_out    = $has_qty && $remaining <= 0;
+            $available   = !$not_started && !$expired && !$sold_out;
+            $affordable  = $current_points >= $v['points_required'];
+        ?>
             <div class="voucher-row">
                 <div class="voucher-details">
                     <h3><i class="fas fa-ticket-alt" style="color: #e67e22;"></i> <?php echo htmlspecialchars($v['title']); ?></h3>
                     <p><?php echo htmlspecialchars($v['description']); ?> • Deducts <?php echo $v['points_required']; ?> points</p>
+
+                    <?php if ($v['valid_until']): ?>
+                        <p style="color:#9aa59b; font-size:0.78rem; margin-top:3px;">
+                            <i class="fas fa-clock"></i> Available until <?php echo date('d M Y g:i A', strtotime($v['valid_until'])); ?>
+                        </p>
+                    <?php endif; ?>
+                    <?php if ($has_qty && $available): ?>
+                        <p style="color:#9aa59b; font-size:0.78rem; margin-top:3px;">
+                            <i class="fas fa-box"></i> <?php echo $remaining; ?> left
+                        </p>
+                    <?php endif; ?>
                 </div>
                 <div>
-                    <?php if ($current_points >= $v['points_required']): ?>
+                    <?php if (!$available): ?>
+                        <button class="btn-redeem btn-locked" disabled>
+                            <i class="fas fa-lock" style="margin-right: 5px;"></i>
+                            <?php echo $sold_out ? 'Out of Stock' : ($expired ? 'Expired' : 'Not Available Yet'); ?>
+                        </button>
+                    <?php elseif ($affordable): ?>
                         <a href="redeem_voucher.php?action=redeem&voucher_id=<?php echo $v['id']; ?>" class="btn-redeem" onclick="return confirm('Confirm spending <?php echo $v['points_required']; ?> points to redeem this voucher?')">
                             <i class="fas fa-shopping-cart" style="margin-right: 5px;"></i> Redeem
                         </a>

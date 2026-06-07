@@ -573,6 +573,83 @@
 .search-select-list::-webkit-scrollbar { width: 6px; }
 .search-select-list::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
 
+/* Clickable total in booking details — styled as an amber chip so it clearly reads as a button */
+.price-breakdown-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border: 1px solid #fed7aa;
+    border-radius: 8px;
+    background: #fff7ed;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #b45309;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.price-breakdown-btn:hover {
+    background: #ffedd5;
+    border-color: #fdba74;
+    box-shadow: 0 2px 8px rgba(245,158,11,0.18);
+}
+
+.price-breakdown-btn i {
+    font-size: 11px;
+    color: #f59e0b;
+}
+
+/* Price breakdown modal body — padding matches the other modals */
+.bd-body {
+    padding: 4px 18px 20px;
+}
+
+.bd-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 11px 0;
+    font-size: 14px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.bd-row span:first-child {
+    color: #64748b;
+}
+
+.bd-row span:last-child {
+    color: #1f2937;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.bd-section {
+    margin-top: 16px;
+    margin-bottom: 2px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #94a3b8;
+}
+
+.bd-total .bd-row {
+    border-bottom: none;
+    border-top: 2px solid #e5e7eb;
+    margin-top: 8px;
+    padding-top: 13px;
+}
+
+.bd-total .bd-row span:first-child,
+.bd-total .bd-row span:last-child {
+    color: #0f172a;
+    font-weight: 800;
+    font-size: 15px;
+}
+
 /*  Scroll To Top Button */
 #scrollTopBtn {
     position: fixed;

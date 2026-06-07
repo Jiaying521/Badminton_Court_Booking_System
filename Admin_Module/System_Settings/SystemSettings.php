@@ -150,9 +150,41 @@ if (isset($_POST['add_voucher'])) {
     $points_required = intval($_POST['points_required']);
     $description     = mysqli_real_escape_string($conn, trim($_POST['description']));
 
-    mysqli_query($conn, "INSERT INTO voucher (title, discount_amount, points_required, description) 
-        VALUES ('$title', $discount_amount, $points_required, '$description')");
+    /* Optional availability window (datetime-local sends "Y-m-dTH:i", swap T for a space) */
+    $valid_from  = !empty($_POST['valid_from'])  ? "'" . mysqli_real_escape_string($conn, str_replace('T', ' ', $_POST['valid_from']))  . "'" : "NULL";
+    $valid_until = !empty($_POST['valid_until']) ? "'" . mysqli_real_escape_string($conn, str_replace('T', ' ', $_POST['valid_until'])) . "'" : "NULL";
+
+    /* Optional stock — empty means unlimited */
+    $quantity = ($_POST['quantity'] !== '' && (int)$_POST['quantity'] >= 0) ? (int)$_POST['quantity'] : "NULL";
+
+    mysqli_query($conn, "INSERT INTO voucher (title, discount_amount, points_required, description, valid_from, valid_until, quantity)
+        VALUES ('$title', $discount_amount, $points_required, '$description', $valid_from, $valid_until, $quantity)");
     $toasts[] = ['text' => 'Voucher created!', 'type' => 'success'];
+}
+
+/* Action G2: Edit Voucher */
+if (isset($_POST['edit_voucher'])) {
+    $vid             = intval($_POST['voucher_id']);
+    $title           = mysqli_real_escape_string($conn, trim($_POST['voucher_title']));
+    $discount_amount = floatval($_POST['discount_amount']);
+    $points_required = intval($_POST['points_required']);
+    $description     = mysqli_real_escape_string($conn, trim($_POST['description']));
+
+    $valid_from  = !empty($_POST['valid_from'])  ? "'" . mysqli_real_escape_string($conn, str_replace('T', ' ', $_POST['valid_from']))  . "'" : "NULL";
+    $valid_until = !empty($_POST['valid_until']) ? "'" . mysqli_real_escape_string($conn, str_replace('T', ' ', $_POST['valid_until'])) . "'" : "NULL";
+    $quantity    = ($_POST['quantity'] !== '' && (int)$_POST['quantity'] >= 0) ? (int)$_POST['quantity'] : "NULL";
+
+    mysqli_query($conn, "UPDATE voucher SET
+        title           = '$title',
+        discount_amount = $discount_amount,
+        points_required = $points_required,
+        description     = '$description',
+        valid_from      = $valid_from,
+        valid_until     = $valid_until,
+        quantity        = $quantity
+        WHERE id = $vid");
+
+    $toasts[] = ['text' => 'Voucher updated!', 'type' => 'success'];
 }
 
 /* Action H: Delete Voucher (blocks delete if any customer has already claimed it) */
@@ -234,8 +266,13 @@ $closed_days = mysqli_query($conn, "SELECT * FROM closed_days ORDER BY closed_da
 // Load all promo codes, newest first.
 $promo_codes = mysqli_query($conn, "SELECT * FROM promo_codes ORDER BY created_at DESC");
 
-// Load all vouchers
-$vouchers = mysqli_query($conn, "SELECT * FROM voucher ORDER BY points_required ASC");
+// Load all vouchers with how many have been claimed (used count comes from user_vouchers)
+$vouchers = mysqli_query($conn, "
+    SELECT v.*,
+           (SELECT COUNT(*) FROM user_vouchers uv WHERE uv.voucher_id = v.id) AS claimed_count
+    FROM voucher v
+    ORDER BY v.points_required ASC
+");
 ?>
 
 <!DOCTYPE html>
@@ -615,6 +652,22 @@ $vouchers = mysqli_query($conn, "SELECT * FROM voucher ORDER BY points_required 
                                 placeholder="e.g. Redeem with 50 points">
                         </div>
 
+                        <div class="settings-field">
+                            <label>Available From <span class="ss-optional">Optional</span></label>
+                            <input type="datetime-local" name="valid_from" class="form-control">
+                        </div>
+
+                        <div class="settings-field">
+                            <label>Available Until <span class="ss-optional">Optional</span></label>
+                            <input type="datetime-local" name="valid_until" class="form-control">
+                        </div>
+
+                        <div class="settings-field">
+                            <label>Quantity <span class="ss-optional">Empty = unlimited</span></label>
+                            <input type="number" name="quantity" class="form-control"
+                                placeholder="e.g. 100" min="0">
+                        </div>
+
                     </div>
 
                     <button type="submit" name="add_voucher" class="btn-add-account">
@@ -629,20 +682,59 @@ $vouchers = mysqli_query($conn, "SELECT * FROM voucher ORDER BY points_required 
                             <th>Title</th>
                             <th>Discount</th>
                             <th>Points Required</th>
+                            <th>Valid Period</th>
+                            <th>Stock</th>
                             <th>Description</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($v = mysqli_fetch_assoc($vouchers)): ?>
-                        <tr>
+                        <?php while ($v = mysqli_fetch_assoc($vouchers)):
+                            $claimed   = (int)($v['claimed_count'] ?? 0);
+                            $has_qty   = $v['quantity'] !== null && $v['quantity'] !== '';
+                            $remaining = $has_qty ? max(0, (int)$v['quantity'] - $claimed) : null;
+                        ?>
+                        <tr class="voucher-row"
+                            data-id="<?php echo $v['id']; ?>"
+                            data-title="<?php echo htmlspecialchars($v['title'], ENT_QUOTES); ?>"
+                            data-discount="<?php echo $v['discount_amount']; ?>"
+                            data-points="<?php echo $v['points_required']; ?>"
+                            data-description="<?php echo htmlspecialchars($v['description'] ?? '', ENT_QUOTES); ?>"
+                            data-from="<?php echo $v['valid_from']  ? date('Y-m-d\TH:i', strtotime($v['valid_from']))  : ''; ?>"
+                            data-until="<?php echo $v['valid_until'] ? date('Y-m-d\TH:i', strtotime($v['valid_until'])) : ''; ?>"
+                            data-quantity="<?php echo $has_qty ? (int)$v['quantity'] : ''; ?>"
+                            onclick="openEditVoucher(this)" style="cursor:pointer;">
                             <td><strong><?php echo htmlspecialchars($v['title']); ?></strong></td>
                             <td>RM <?php echo number_format($v['discount_amount'], 2); ?></td>
                             <td><?php echo $v['points_required']; ?> pts</td>
-                            <td><?php echo htmlspecialchars($v['description']); ?></td>
+
+                            <!-- Valid period: dash means always available -->
                             <td>
+                                <?php if ($v['valid_from'] || $v['valid_until']): ?>
+                                    <?php echo $v['valid_from']  ? date('d M Y g:i A', strtotime($v['valid_from']))  : 'Any'; ?>
+                                    –
+                                    <?php echo $v['valid_until'] ? date('d M Y g:i A', strtotime($v['valid_until'])) : 'Any'; ?>
+                                <?php else: ?>
+                                    <span style="color:#94a3b8;">Always</span>
+                                <?php endif; ?>
+                            </td>
+
+                            <!-- Stock: remaining left of total, or unlimited -->
+                            <td>
+                                <?php if ($has_qty): ?>
+                                    <span class="badge <?php echo $remaining > 0 ? 'success' : 'pending'; ?>">
+                                        <?php echo $remaining; ?> left
+                                    </span>
+                                    <div style="font-size:11px; color:#94a3b8; margin-top:2px;"><?php echo $claimed; ?> / <?php echo (int)$v['quantity']; ?> used</div>
+                                <?php else: ?>
+                                    <span style="color:#94a3b8;">Unlimited</span>
+                                <?php endif; ?>
+                            </td>
+
+                            <td><?php echo htmlspecialchars($v['description']); ?></td>
+                            <td onclick="event.stopPropagation()">
                                 <a href="SystemSettings.php?delete_voucher=<?php echo $v['id']; ?>"
-                                onclick="return confirm('Delete this voucher?');">
+                                onclick="return confirm('Delete this voucher?');" title="Delete">
                                     <i class="fas fa-trash-alt" style="color:#ef4444; font-size:16px;"></i>
                                 </a>
                             </td>
@@ -655,6 +747,67 @@ $vouchers = mysqli_query($conn, "SELECT * FROM voucher ORDER BY points_required 
         </div> <!-- end manage-container -->
     </main>
 
+    <!-- Edit Voucher Modal -->
+    <div class="modal-overlay" id="editVoucherModal">
+        <div class="modal-card" style="max-width:560px;">
+            <div class="modal-header">
+                <h2><i class="fas fa-pen"></i> Edit Voucher</h2>
+                <button class="modal-close" type="button" onclick="closeEditVoucher()">&times;</button>
+            </div>
+
+            <form method="POST" action="">
+                <input type="hidden" name="voucher_id" id="ev-id">
+
+                <div class="modal-grid">
+
+                    <div class="modal-field full-width">
+                        <label>Voucher Title</label>
+                        <input type="text" name="voucher_title" id="ev-title" required>
+                    </div>
+
+                    <div class="modal-field">
+                        <label>Discount Amount (RM)</label>
+                        <input type="number" name="discount_amount" id="ev-discount" step="0.01" min="0" required>
+                    </div>
+
+                    <div class="modal-field">
+                        <label>Points Required</label>
+                        <input type="number" name="points_required" id="ev-points" min="1" required>
+                    </div>
+
+                    <div class="modal-field">
+                        <label>Available From</label>
+                        <input type="datetime-local" name="valid_from" id="ev-from">
+                    </div>
+
+                    <div class="modal-field">
+                        <label>Available Until</label>
+                        <input type="datetime-local" name="valid_until" id="ev-until">
+                    </div>
+
+                    <div class="modal-field">
+                        <label>Quantity <span class="ss-optional">Empty = unlimited</span></label>
+                        <input type="number" name="quantity" id="ev-quantity" min="0">
+                    </div>
+
+                    <div class="modal-field full-width">
+                        <label>Description</label>
+                        <input type="text" name="description" id="ev-description">
+                    </div>
+
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-modal-cancel" onclick="closeEditVoucher()">Cancel</button>
+                    <button type="submit" name="edit_voucher" class="btn-modal-save">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal styling -->
+    <?php include __DIR__ . '/../modal.php'; ?>
+
     <!-- Scroll-to-top -->
     <?php include __DIR__ . '/../scroll_top.php'; ?>
 
@@ -663,6 +816,25 @@ $vouchers = mysqli_query($conn, "SELECT * FROM voucher ORDER BY points_required 
 
     <!-- JavaScript file -->
     <script src="../Dashboard/Dashboard.js"></script>
+
+    <script>
+    /* Fill the edit modal from the clicked row's data attributes, then open it */
+    function openEditVoucher(el) {
+        document.getElementById('ev-id').value          = el.dataset.id;
+        document.getElementById('ev-title').value       = el.dataset.title;
+        document.getElementById('ev-discount').value    = el.dataset.discount;
+        document.getElementById('ev-points').value      = el.dataset.points;
+        document.getElementById('ev-description').value = el.dataset.description;
+        document.getElementById('ev-from').value        = el.dataset.from;
+        document.getElementById('ev-until').value        = el.dataset.until;
+        document.getElementById('ev-quantity').value    = el.dataset.quantity;
+        document.getElementById('editVoucherModal').classList.add('active');
+    }
+
+    function closeEditVoucher() {
+        document.getElementById('editVoucherModal').classList.remove('active');
+    }
+    </script>
 
     <script>
     /* Tab bar — animated slider glides to whichever tab is active, and the active tab

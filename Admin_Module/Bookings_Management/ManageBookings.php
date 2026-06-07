@@ -216,6 +216,22 @@
         ORDER BY $order_col $sort_dir
     ");
 
+    // Load add-on line items per booking for the price breakdown modal
+    $addons_by_booking = [];
+    $addon_res = mysqli_query($conn, "
+        SELECT ba.booking_id, ba.quantity, ba.price, p.name
+        FROM booking_addons ba
+        JOIN products p ON ba.product_id = p.id
+    ");
+    if ($addon_res) {
+        while ($a = mysqli_fetch_assoc($addon_res)) {
+            $addons_by_booking[$a['booking_id']][] = $a;
+        }
+    }
+
+    // Collected during the row loop, then output as JSON for the breakdown modal
+    $breakdowns = [];
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -388,6 +404,25 @@
                         /* Coach declining < 24h before the session counts as a late cancellation (penalty applies) */
                         $session_ts     = strtotime($row['booking_date'] . ' ' . $row['start_time']);
                         $is_late_cancel = (($session_ts - time()) / 3600) < 24;
+
+                        /* Build the price breakdown for this booking (court / coach / add-ons) */
+                        $bk_addons   = $addons_by_booking[$row['id']] ?? [];
+                        $addon_items = [];
+                        $addon_sum   = 0;
+                        foreach ($bk_addons as $a) {
+                            $sub        = $a['quantity'] * $a['price'];
+                            $addon_sum += $sub;
+                            $addon_items[] = ['name' => $a['name'], 'qty' => (int)$a['quantity'], 'subtotal' => (float)$sub];
+                        }
+                        $coach_fee = (float)$row['coach_price_total'];
+                        $breakdowns[$row['id']] = [
+                            'court'            => (float)$row['total_price'] - $coach_fee - $addon_sum,
+                            'coach'            => $coach_fee,
+                            'addons'           => $addon_items,
+                            'total'            => (float)$row['total_price'],
+                            'status'           => $row['status'],
+                            'cancellation_fee' => (float)($row['cancellation_fee'] ?? 0),
+                        ];
                     ?>
 
                     <!-- Main row — click to expand details -->
@@ -471,24 +506,16 @@
                                 <label>Your Coaching Fee</label>
                                 <span>RM <?php echo number_format($row['coach_price_total'], 2); ?></span>
                             </div>
-                            <div class="details-item">
-                                <label>Court Fee</label>
-                                <span>RM <?php echo number_format($row['total_price'] - $row['coach_price_total'], 2); ?></span>
-                            </div>
-                            <div class="details-item">
-                                <label>Booking Total</label>
-                                <span>RM <?php echo number_format($row['total_price'], 2); ?></span>
-                            </div>
                             <?php else: ?>
                             <div class="details-item">
                                 <label>Total Price</label>
-                                <span>RM <?php echo number_format($row['total_price'], 2); ?></span>
-                            </div>
-                            <?php endif; ?>
-                            <?php if ($row['status'] === 'Cancelled' && ($row['cancellation_fee'] ?? 0) > 0): ?>
-                            <div class="details-item">
-                                <label>Cancellation Fee</label>
-                                <span>RM <?php echo number_format($row['cancellation_fee'], 2); ?></span>
+                                <span>
+                                    <button type="button" class="price-breakdown-btn"
+                                            onclick="event.stopPropagation(); openBreakdown(<?php echo $row['id']; ?>)">
+                                        RM <?php echo number_format($row['total_price'], 2); ?>
+                                        <i class="fas fa-circle-info"></i>
+                                    </button>
+                                </span>
                             </div>
                             <?php endif; ?>
                             <div class="details-item">
@@ -833,6 +860,17 @@
         </div>
     </div>
 
+    <!-- Price Breakdown Modal (Admin / Superadmin) -->
+    <div class="modal-overlay" id="breakdownModal">
+        <div class="modal-card" style="max-width:420px;">
+            <div class="modal-header">
+                <h2><i class="fas fa-receipt"></i> Price Breakdown — Booking #<span id="bd-id"></span></h2>
+                <button class="modal-close" onclick="closeBreakdown()">✕</button>
+            </div>
+            <div id="bd-body" class="bd-body"></div>
+        </div>
+    </div>
+
     <script src="ManageBookings.js"></script>
     <script src="../Dashboard/Dashboard.js"></script>
 
@@ -845,6 +883,48 @@
         });
     });
     </script>
+
+    <?php if ($role !== 'Coach'): ?>
+    <script>
+    /* Price breakdown modal — clicking a booking's total shows court / coach / add-on details */
+    const bookingBreakdowns = <?php echo json_encode($breakdowns); ?>;
+
+    function rmRow(label, amount, negative) {
+        const sign = negative ? '−RM ' : 'RM ';
+        return '<div class="bd-row"><span>' + label + '</span><span>' + sign + Number(amount).toFixed(2) + '</span></div>';
+    }
+
+    function openBreakdown(id) {
+        const b = bookingBreakdowns[id];
+        if (!b) return;
+
+        document.getElementById('bd-id').textContent = id;
+
+        let html = rmRow('Court Fee', b.court);
+        if (b.coach > 0) html += rmRow('Coach Fee', b.coach);
+
+        if (b.addons.length) {
+            html += '<div class="bd-section">Add-ons</div>';
+            b.addons.forEach(function (a) {
+                html += rmRow(a.name + ' × ' + a.qty, a.subtotal);
+            });
+        }
+
+        html += '<div class="bd-total">' + rmRow('Total', b.total) + '</div>';
+
+        if (b.status === 'Cancelled' && b.cancellation_fee > 0) {
+            html += rmRow('Cancellation Fee', b.cancellation_fee, true);
+        }
+
+        document.getElementById('bd-body').innerHTML = html;
+        document.getElementById('breakdownModal').classList.add('active');
+    }
+
+    function closeBreakdown() {
+        document.getElementById('breakdownModal').classList.remove('active');
+    }
+    </script>
+    <?php endif; ?>
 
     <?php if ($role === 'Coach'): ?>
     <script>

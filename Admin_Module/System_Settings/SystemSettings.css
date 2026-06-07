@@ -161,3 +161,11 @@ select.form-control {
 html { scroll-behavior: smooth; }
 .settings-card { scroll-margin-top: 90px; }
 
+/* "Optional" / hint tag next to a field label */
+.ss-optional {
+    font-size: 11px;
+    font-weight: 400;
+    color: #94a3b8;
+    margin-left: 6px;
+}
+

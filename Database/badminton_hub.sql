@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 07, 2026 at 01:16 PM
+-- Generation Time: Jun 07, 2026 at 06:00 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -50,7 +50,7 @@ CREATE TABLE `admins` (
 INSERT INTO `admins` (`id`, `username`, `email`, `password`, `role`, `status`, `specialisation`, `is_coach`, `coach_price_per_hour`, `reset_token`, `token_expiry`, `created_at`, `suspended_until`) VALUES
 (1, 'superadmin', 'chinzx1814@gmail.com', '$2y$10$x5NsQGVwkkp5f4oivtMd..D9tsrJLMICxeSDnSe0peEwVN77QeFGu', 'Superadmin', 'Active', NULL, 0, 0.00, '6e65f2df57e2231428b98e31d6b08f18c8d1acfb3326db32d903e640866bb7fe', '2026-06-05 06:43:54', '2026-04-30 16:17:09', NULL),
 (2, 'Coach Lim', 'coach.lim@smasharena.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Singles Coaching', 1, 50.00, NULL, NULL, '2026-04-30 16:17:09', NULL),
-(3, 'Coach Wong', 'coach.wong@smasharena.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Doubles Coaching', 1, 20.00, NULL, NULL, '2026-04-30 16:17:09', NULL),
+(3, 'Coach Wong', 'coach.wong@smasharena.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Doubles Coaching', 1, 30.00, NULL, NULL, '2026-04-30 16:17:09', NULL),
 (4, 'Coach Tan', 'coach.tan@smasharena.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Junior Development', 1, 30.00, NULL, NULL, '2026-04-30 16:17:09', NULL),
 (5, 'admin', '', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Admin', 'Active', NULL, 0, 0.00, NULL, NULL, '2026-04-30 16:37:03', NULL);
 
@@ -164,7 +164,9 @@ INSERT INTO `bookings` (`id`, `user_id`, `court_id`, `booking_date`, `start_time
 (51, 1, 2, '2026-05-27', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-26 17:05:37', NULL),
 (52, 11, 2, '2026-06-10', '08:45:00', '11:42:00', 3, 1, 3, 150.00, 'Casual Play', 180.00, 'Pending', 0.00, '', '2026-06-05 00:42:35', NULL),
 (53, 1, 2, '2026-06-24', '09:00:00', '18:00:00', 9, 0, 0, 0.00, 'Casual Play', 110.00, 'Pending', 0.00, '', '2026-06-05 03:28:27', NULL),
-(54, 1, 2, '2026-06-17', '13:00:00', '18:00:00', 5, 0, 0, 0.00, 'Casual Play', 70.00, 'Pending', 0.00, '', '2026-06-05 13:27:19', NULL);
+(54, 1, 2, '2026-06-17', '13:00:00', '18:00:00', 5, 0, 0, 0.00, 'Casual Play', 70.00, 'Pending', 0.00, '', '2026-06-05 13:27:19', NULL),
+(55, 12, 10, '2026-06-09', '17:00:00', '18:00:00', 1, 2, 1, 20.00, 'Casual Play', 298.00, 'Confirmed', 0.00, '', '2026-06-07 14:11:32', NULL),
+(56, 12, 1, '2026-06-08', '08:00:00', '10:00:00', 2, 0, 0, 0.00, 'Casual Play', 719.00, 'Pending', 0.00, '', '2026-06-07 15:14:10', NULL);
 
 -- --------------------------------------------------------
 
@@ -187,7 +189,11 @@ CREATE TABLE `booking_addons` (
 INSERT INTO `booking_addons` (`id`, `booking_id`, `product_id`, `quantity`, `price`) VALUES
 (1, 34, 7, 1, 199.00),
 (2, 39, 6, 1, 299.00),
-(3, 40, 7, 1, 199.00);
+(3, 40, 7, 1, 199.00),
+(4, 55, 7, 1, 199.00),
+(5, 55, 21, 1, 55.00),
+(6, 55, 26, 1, 14.00),
+(7, 56, 3, 1, 699.00);
 
 -- --------------------------------------------------------
 
@@ -240,7 +246,7 @@ CREATE TABLE `coaches` (
 
 INSERT INTO `coaches` (`id`, `admin_id`, `name`, `specialty`, `phone`, `price_per_hour`, `is_active`, `gender`, `age`, `profile_img`, `availability_status`, `available_from`, `available_to`, `late_cancel_strikes`) VALUES
 (1, 2, 'Coach Lim', 'Singles Coaching', '', 50.00, 1, '', 40, '1779345778_coach.png', 'Available', '20:47:00', '20:45:00', 0),
-(2, 3, 'Coach Wong', 'Doubles Coaching', '', 20.00, 1, '', 0, NULL, 'Available', NULL, NULL, 0),
+(2, 3, 'Coach Wong', 'Doubles Coaching', '', 30.00, 1, '', NULL, NULL, 'Available', NULL, NULL, 0),
 (3, 4, 'Coach Tan', 'Junior Development', '', 30.00, 1, 'Male', NULL, NULL, 'Available', NULL, NULL, 0);
 
 -- --------------------------------------------------------
@@ -333,6 +339,13 @@ CREATE TABLE `contact_messages` (
   `created_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `contact_messages`
+--
+
+INSERT INTO `contact_messages` (`id`, `name`, `email`, `subject`, `message`, `user_id`, `status`, `created_at`) VALUES
+(1, 'CHIN ZHEN XIN', 'chinzx1814@gmail.com', 'Other', 'Testing send a message', NULL, 'unread', '2026-06-07 20:19:54');
+
 -- --------------------------------------------------------
 
 --
@@ -388,76 +401,76 @@ CREATE TABLE `court_availability` (
 --
 
 INSERT INTO `court_availability` (`id`, `court_id`, `day_of_week`, `start_time`, `end_time`, `slot_duration`) VALUES
-(1, 1, 1, '08:00:00', '20:00:00', 60),
-(2, 2, 1, '08:00:00', '20:00:00', 60),
-(3, 3, 1, '08:00:00', '20:00:00', 60),
-(4, 4, 1, '08:00:00', '20:00:00', 60),
-(5, 5, 1, '08:00:00', '20:00:00', 60),
-(6, 6, 1, '08:00:00', '20:00:00', 60),
-(7, 7, 1, '08:00:00', '20:00:00', 60),
-(8, 8, 1, '08:00:00', '20:00:00', 60),
-(9, 9, 1, '08:00:00', '20:00:00', 60),
-(10, 10, 1, '08:00:00', '20:00:00', 60),
-(11, 1, 2, '08:00:00', '20:00:00', 60),
-(12, 2, 2, '08:00:00', '20:00:00', 60),
-(13, 3, 2, '08:00:00', '20:00:00', 60),
-(14, 4, 2, '08:00:00', '20:00:00', 60),
-(15, 5, 2, '08:00:00', '20:00:00', 60),
-(16, 6, 2, '08:00:00', '20:00:00', 60),
-(17, 7, 2, '08:00:00', '20:00:00', 60),
-(18, 8, 2, '08:00:00', '20:00:00', 60),
-(19, 9, 2, '08:00:00', '20:00:00', 60),
-(20, 10, 2, '08:00:00', '20:00:00', 60),
-(21, 1, 3, '08:00:00', '20:00:00', 60),
-(22, 2, 3, '08:00:00', '20:00:00', 60),
-(23, 3, 3, '08:00:00', '20:00:00', 60),
-(24, 4, 3, '08:00:00', '20:00:00', 60),
-(25, 5, 3, '08:00:00', '20:00:00', 60),
-(26, 6, 3, '08:00:00', '20:00:00', 60),
-(27, 7, 3, '08:00:00', '20:00:00', 60),
-(28, 8, 3, '08:00:00', '20:00:00', 60),
-(29, 9, 3, '08:00:00', '20:00:00', 60),
-(30, 10, 3, '08:00:00', '20:00:00', 60),
-(31, 1, 4, '08:00:00', '20:00:00', 60),
-(32, 2, 4, '08:00:00', '20:00:00', 60),
-(33, 3, 4, '08:00:00', '20:00:00', 60),
-(34, 4, 4, '08:00:00', '20:00:00', 60),
-(35, 5, 4, '08:00:00', '20:00:00', 60),
-(36, 6, 4, '08:00:00', '20:00:00', 60),
-(37, 7, 4, '08:00:00', '20:00:00', 60),
-(38, 8, 4, '08:00:00', '20:00:00', 60),
-(39, 9, 4, '08:00:00', '20:00:00', 60),
-(40, 10, 4, '08:00:00', '20:00:00', 60),
-(41, 1, 5, '08:00:00', '20:00:00', 60),
-(42, 2, 5, '08:00:00', '20:00:00', 60),
-(43, 3, 5, '08:00:00', '20:00:00', 60),
-(44, 4, 5, '08:00:00', '20:00:00', 60),
-(45, 5, 5, '08:00:00', '20:00:00', 60),
-(46, 6, 5, '08:00:00', '20:00:00', 60),
-(47, 7, 5, '08:00:00', '20:00:00', 60),
-(48, 8, 5, '08:00:00', '20:00:00', 60),
-(49, 9, 5, '08:00:00', '20:00:00', 60),
-(50, 10, 5, '08:00:00', '20:00:00', 60),
-(51, 1, 6, '08:00:00', '20:00:00', 60),
-(52, 2, 6, '08:00:00', '20:00:00', 60),
-(53, 3, 6, '08:00:00', '20:00:00', 60),
-(54, 4, 6, '08:00:00', '20:00:00', 60),
-(55, 5, 6, '08:00:00', '20:00:00', 60),
-(56, 6, 6, '08:00:00', '20:00:00', 60),
-(57, 7, 6, '08:00:00', '20:00:00', 60),
-(58, 8, 6, '08:00:00', '20:00:00', 60),
-(59, 9, 6, '08:00:00', '20:00:00', 60),
-(60, 10, 6, '08:00:00', '20:00:00', 60),
-(61, 1, 7, '08:00:00', '20:00:00', 60),
-(62, 2, 7, '08:00:00', '20:00:00', 60),
-(63, 3, 7, '08:00:00', '20:00:00', 60),
-(64, 4, 7, '08:00:00', '20:00:00', 60),
-(65, 5, 7, '08:00:00', '20:00:00', 60),
-(66, 6, 7, '08:00:00', '20:00:00', 60),
-(67, 7, 7, '08:00:00', '20:00:00', 60),
-(68, 8, 7, '08:00:00', '20:00:00', 60),
-(69, 9, 7, '08:00:00', '20:00:00', 60),
-(70, 10, 7, '08:00:00', '20:00:00', 60);
+(1, 1, 1, '08:00:00', '22:00:00', 60),
+(2, 2, 1, '08:00:00', '22:00:00', 60),
+(3, 3, 1, '08:00:00', '22:00:00', 60),
+(4, 4, 1, '08:00:00', '22:00:00', 60),
+(5, 5, 1, '08:00:00', '22:00:00', 60),
+(6, 6, 1, '08:00:00', '22:00:00', 60),
+(7, 7, 1, '08:00:00', '22:00:00', 60),
+(8, 8, 1, '08:00:00', '22:00:00', 60),
+(9, 9, 1, '08:00:00', '22:00:00', 60),
+(10, 10, 1, '08:00:00', '22:00:00', 60),
+(11, 1, 2, '08:00:00', '22:00:00', 60),
+(12, 2, 2, '08:00:00', '22:00:00', 60),
+(13, 3, 2, '08:00:00', '22:00:00', 60),
+(14, 4, 2, '08:00:00', '22:00:00', 60),
+(15, 5, 2, '08:00:00', '22:00:00', 60),
+(16, 6, 2, '08:00:00', '22:00:00', 60),
+(17, 7, 2, '08:00:00', '22:00:00', 60),
+(18, 8, 2, '08:00:00', '22:00:00', 60),
+(19, 9, 2, '08:00:00', '22:00:00', 60),
+(20, 10, 2, '08:00:00', '22:00:00', 60),
+(21, 1, 3, '08:00:00', '22:00:00', 60),
+(22, 2, 3, '08:00:00', '22:00:00', 60),
+(23, 3, 3, '08:00:00', '22:00:00', 60),
+(24, 4, 3, '08:00:00', '22:00:00', 60),
+(25, 5, 3, '08:00:00', '22:00:00', 60),
+(26, 6, 3, '08:00:00', '22:00:00', 60),
+(27, 7, 3, '08:00:00', '22:00:00', 60),
+(28, 8, 3, '08:00:00', '22:00:00', 60),
+(29, 9, 3, '08:00:00', '22:00:00', 60),
+(30, 10, 3, '08:00:00', '22:00:00', 60),
+(31, 1, 4, '08:00:00', '22:00:00', 60),
+(32, 2, 4, '08:00:00', '22:00:00', 60),
+(33, 3, 4, '08:00:00', '22:00:00', 60),
+(34, 4, 4, '08:00:00', '22:00:00', 60),
+(35, 5, 4, '08:00:00', '22:00:00', 60),
+(36, 6, 4, '08:00:00', '22:00:00', 60),
+(37, 7, 4, '08:00:00', '22:00:00', 60),
+(38, 8, 4, '08:00:00', '22:00:00', 60),
+(39, 9, 4, '08:00:00', '22:00:00', 60),
+(40, 10, 4, '08:00:00', '22:00:00', 60),
+(41, 1, 5, '08:00:00', '22:00:00', 60),
+(42, 2, 5, '08:00:00', '22:00:00', 60),
+(43, 3, 5, '08:00:00', '22:00:00', 60),
+(44, 4, 5, '08:00:00', '22:00:00', 60),
+(45, 5, 5, '08:00:00', '22:00:00', 60),
+(46, 6, 5, '08:00:00', '22:00:00', 60),
+(47, 7, 5, '08:00:00', '22:00:00', 60),
+(48, 8, 5, '08:00:00', '22:00:00', 60),
+(49, 9, 5, '08:00:00', '22:00:00', 60),
+(50, 10, 5, '08:00:00', '22:00:00', 60),
+(51, 1, 6, '08:00:00', '22:00:00', 60),
+(52, 2, 6, '08:00:00', '22:00:00', 60),
+(53, 3, 6, '08:00:00', '22:00:00', 60),
+(54, 4, 6, '08:00:00', '22:00:00', 60),
+(55, 5, 6, '08:00:00', '22:00:00', 60),
+(56, 6, 6, '08:00:00', '22:00:00', 60),
+(57, 7, 6, '08:00:00', '22:00:00', 60),
+(58, 8, 6, '08:00:00', '22:00:00', 60),
+(59, 9, 6, '08:00:00', '22:00:00', 60),
+(60, 10, 6, '08:00:00', '22:00:00', 60),
+(61, 1, 7, '08:00:00', '22:00:00', 60),
+(62, 2, 7, '08:00:00', '22:00:00', 60),
+(63, 3, 7, '08:00:00', '22:00:00', 60),
+(64, 4, 7, '08:00:00', '22:00:00', 60),
+(65, 5, 7, '08:00:00', '22:00:00', 60),
+(66, 6, 7, '08:00:00', '22:00:00', 60),
+(67, 7, 7, '08:00:00', '22:00:00', 60),
+(68, 8, 7, '08:00:00', '22:00:00', 60),
+(69, 9, 7, '08:00:00', '22:00:00', 60),
+(70, 10, 7, '08:00:00', '22:00:00', 60);
 
 -- --------------------------------------------------------
 
@@ -506,10 +519,10 @@ INSERT INTO `notifications` (`id`, `recipient_role`, `recipient_id`, `type`, `ti
 (35, 'Admin', NULL, 'cancelled', 'Coach No-Show', 'Booking #48 for John Doe at Court H on 21 May 2026 03:00 PM was marked as a coach no-show (coach never responded). Customer refunded RM 50.00 (incl. compensation). Coach has been suspended for 3 days (strike #1).', 48, 'booking', 0, '2026-06-07 08:54:19'),
 (36, 'Superadmin', NULL, 'cancelled', 'Coach No-Show', 'Booking #48 for John Doe at Court H on 21 May 2026 03:00 PM was marked as a coach no-show (coach never responded). Customer refunded RM 50.00 (incl. compensation). Coach has been suspended for 3 days (strike #1).', 48, 'booking', 1, '2026-06-07 08:54:19'),
 (37, 'Admin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #52 for wz at Court B on 10 Jun 2026 08:45 AM has been confirmed.', 52, 'booking', 0, '2026-06-07 10:53:14'),
-(38, 'Superadmin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #52 for wz at Court B on 10 Jun 2026 08:45 AM has been confirmed.', 52, 'booking', 0, '2026-06-07 10:53:14'),
+(38, 'Superadmin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #52 for wz at Court B on 10 Jun 2026 08:45 AM has been confirmed.', 52, 'booking', 1, '2026-06-07 10:53:14'),
 (39, 'Coach', 2, 'confirmed', 'Session Confirmed', 'Your coaching session at Court B on 10 Jun 2026 08:45 AM has been confirmed.', 52, 'booking', 1, '2026-06-07 10:53:14'),
 (40, 'Admin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #49 for John Doe at Court H on 21 May 2026 04:00 PM has been confirmed.', 49, 'booking', 0, '2026-06-07 10:53:18'),
-(41, 'Superadmin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #49 for John Doe at Court H on 21 May 2026 04:00 PM has been confirmed.', 49, 'booking', 0, '2026-06-07 10:53:18'),
+(41, 'Superadmin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #49 for John Doe at Court H on 21 May 2026 04:00 PM has been confirmed.', 49, 'booking', 1, '2026-06-07 10:53:18'),
 (42, 'Coach', 2, 'confirmed', 'Session Confirmed', 'Your coaching session at Court H on 21 May 2026 04:00 PM has been confirmed.', 49, 'booking', 1, '2026-06-07 10:53:18'),
 (43, 'Admin', NULL, 'new_booking', 'New Booking Pending', 'Booking #52 from wz for Court B on 10 Jun 2026 is waiting for confirmation.', 52, 'booking', 0, '2026-06-07 11:11:42'),
 (44, 'Superadmin', NULL, 'new_booking', 'New Booking Pending', 'Booking #52 from wz for Court B on 10 Jun 2026 is waiting for confirmation.', 52, 'booking', 1, '2026-06-07 11:11:42'),
@@ -579,7 +592,9 @@ INSERT INTO `payments` (`payment_id`, `booking_id`, `amount`, `discount_applied`
 (26, 33, 15.00, 0.00, 15.00, 'App Wallet', 'success', NULL, '2026-05-21 03:35:12'),
 (27, 46, 20.00, 5.00, 15.00, 'App Wallet', 'success', NULL, '2026-05-21 04:49:31'),
 (28, 43, 20.00, 0.00, 20.00, 'App Wallet', 'success', NULL, '2026-05-21 04:50:23'),
-(29, 49, 40.00, 0.00, 40.00, 'App Wallet', 'success', NULL, '2026-05-21 06:45:34');
+(29, 49, 40.00, 0.00, 40.00, 'App Wallet', 'success', NULL, '2026-05-21 06:45:34'),
+(30, 55, 298.00, 20.00, 278.00, 'Online Payment', 'failed', NULL, '2026-06-07 14:14:13'),
+(31, 55, 298.00, 0.00, 298.00, 'App Wallet', 'success', NULL, '2026-06-07 14:14:29');
 
 -- --------------------------------------------------------
 
@@ -678,14 +693,14 @@ CREATE TABLE `settings` (
 
 INSERT INTO `settings` (`id`, `setting_key`, `setting_value`, `updated_at`) VALUES
 (1, 'open_time', '08:00', '2026-05-09 11:20:24'),
-(2, 'close_time', '20:00', '2026-05-09 11:26:35'),
+(2, 'close_time', '22:00', '2026-06-07 12:08:13'),
 (3, 'peak_start', '16:00', '2026-05-09 11:27:15'),
-(4, 'peak_end', '20:00', '2026-05-09 11:27:23'),
+(4, 'peak_end', '21:00', '2026-06-07 12:09:13'),
 (5, 'off_peak_price', '10', '2026-06-04 16:47:16'),
-(6, 'peak_price', '15', '2026-06-04 16:47:16'),
+(6, 'peak_price', '15', '2026-06-07 11:40:26'),
 (7, 'cancellation_hours', '2', '2026-06-04 15:54:37'),
 (8, 'cancellation_fee', '10', '2026-06-04 16:47:16'),
-(9, 'contact_phone', '+603-1234 5678', '2026-06-04 15:54:37'),
+(9, 'contact_phone', '+603-112121212', '2026-06-07 12:17:03'),
 (10, 'contact_email', 'smasharenabadminton@gmail.com', '2026-06-04 15:54:37'),
 (11, 'contact_whatsapp', '+60 12-345 6789', '2026-06-04 15:54:37'),
 (12, 'address', '123 Jalan Badminton, Kuala Lumpur, Malaysia', '2026-06-04 15:54:37');
@@ -740,7 +755,8 @@ INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `gender`, `crea
 (8, 'Priya Kumar', 'priya@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60188990011', NULL, '2026-04-30 16:34:47', 0.00, 0, NULL),
 (9, 'Jason Teh', 'jason@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60199001122', NULL, '2026-04-30 16:34:47', 0.00, 0, NULL),
 (10, 'Nurul Huda', 'nurul@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60110101010', NULL, '2026-04-30 16:34:47', 0.00, 0, NULL),
-(11, 'wz', 'zhefurry@gmail.com', '$2y$10$ti8t5iVME5.hWJhMY0cE5ukBX67z0z4xPn8HL0pskzUS9Kn0PL9iS', '+60123456789', NULL, '2026-04-14 03:28:20', 70.00, 0, '');
+(11, 'wz', 'zhefurry@gmail.com', '$2y$10$ti8t5iVME5.hWJhMY0cE5ukBX67z0z4xPn8HL0pskzUS9Kn0PL9iS', '+60123456789', NULL, '2026-04-14 03:28:20', 70.00, 0, ''),
+(12, 'CHIN ZHEN XIN', 'chinzx1814@gmail.com', '$2y$10$JCc6Tn0hxcgIcqRxr6q5AeLo071m.WGAWVi6gegpajbaHHmdQid/6', '+60136973118', NULL, '2026-06-07 11:59:31', 702.00, 1068, NULL);
 
 -- --------------------------------------------------------
 
@@ -761,7 +777,9 @@ CREATE TABLE `user_vouchers` (
 --
 
 INSERT INTO `user_vouchers` (`id`, `user_id`, `voucher_id`, `is_used`, `redeemed_at`) VALUES
-(1, 1, 1, 1, '2026-05-21 04:42:19');
+(1, 1, 1, 1, '2026-05-21 04:42:19'),
+(2, 12, 1, 0, '2026-06-07 13:57:04'),
+(3, 12, 3, 0, '2026-06-07 13:57:43');
 
 -- --------------------------------------------------------
 
@@ -774,17 +792,20 @@ CREATE TABLE `voucher` (
   `title` varchar(100) NOT NULL,
   `discount_amount` decimal(10,2) NOT NULL,
   `points_required` int(11) NOT NULL,
-  `description` varchar(255) DEFAULT NULL
+  `description` varchar(255) DEFAULT NULL,
+  `valid_from` datetime DEFAULT NULL,
+  `valid_until` datetime DEFAULT NULL,
+  `quantity` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `voucher`
 --
 
-INSERT INTO `voucher` (`id`, `title`, `discount_amount`, `points_required`, `description`) VALUES
-(1, 'RM 5.00 Court Discount', 5.00, 50, 'Redeem with 50 points'),
-(2, 'RM 10.00 Court Discount', 10.00, 100, 'Redeem with 100 points'),
-(3, 'RM 20.00 Mega Saver', 20.00, 180, 'Redeem with 180 points');
+INSERT INTO `voucher` (`id`, `title`, `discount_amount`, `points_required`, `description`, `valid_from`, `valid_until`, `quantity`) VALUES
+(1, 'RM 5.00 Court Discount', 5.00, 50, 'Redeem with 50 points', NULL, NULL, NULL),
+(2, 'RM 10.00 Court Discount', 10.00, 100, 'Redeem with 100 points', NULL, NULL, NULL),
+(3, 'RM 20.00 Mega Saver', 20.00, 180, 'Redeem with 180 points', NULL, NULL, NULL);
 
 --
 -- Indexes for dumped tables
@@ -941,13 +962,13 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
 
 --
 -- AUTO_INCREMENT for table `booking_addons`
 --
 ALTER TABLE `booking_addons`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `closed_days`
@@ -977,7 +998,7 @@ ALTER TABLE `coach_availability_log`
 -- AUTO_INCREMENT for table `contact_messages`
 --
 ALTER TABLE `contact_messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `courts`
@@ -1001,13 +1022,13 @@ ALTER TABLE `notifications`
 -- AUTO_INCREMENT for table `otp_codes`
 --
 ALTER TABLE `otp_codes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `products`
@@ -1037,13 +1058,13 @@ ALTER TABLE `tasks`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `user_vouchers`
 --
 ALTER TABLE `user_vouchers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `voucher`
