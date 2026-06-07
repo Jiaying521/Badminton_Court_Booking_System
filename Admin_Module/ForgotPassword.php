@@ -12,6 +12,7 @@
     <title>Forgot Password - Badminton Hub</title>
     <link rel="stylesheet" href="LoginPage.css">
     <link rel="stylesheet" href="ForgotPassword.css">
+    <link rel="stylesheet" href="responsive.css">
 </head>
 <body>
     <h1>🏸 Badminton Hub</h1>

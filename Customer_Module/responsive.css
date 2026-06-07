@@ -1,0 +1,173 @@
+/* ── Customer Module — Responsive Overrides ── */
+/* 只用 media query 覆盖，不改原有 CSS 文件 */
+
+/* ── 平板横屏 (≤ 1024px) ── */
+@media (max-width: 1024px) {
+    body {
+        padding: 1.2rem !important;
+    }
+
+    /* 场地卡片网格：减小 minmax */
+    .courts-grid {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
+    }
+}
+
+/* ── 平板竖屏 / 大屏手机 (≤ 768px) ── */
+@media (max-width: 768px) {
+    body {
+        padding: 0.8rem !important;
+    }
+
+    /* 顶部导航 */
+    .navbar {
+        border-radius: 20px !important;
+        padding: 0.7rem 1.2rem !important;
+        gap: 0.5rem !important;
+    }
+
+    .nav-links {
+        gap: 0.25rem !important;
+        flex-wrap: wrap !important;
+    }
+
+    .nav-links a {
+        padding: 0.4rem 0.9rem !important;
+        font-size: 0.8rem !important;
+    }
+
+    .user-greeting {
+        font-size: 0.8rem !important;
+        padding: 0.3rem 0.8rem !important;
+    }
+
+    .btn-logout {
+        font-size: 0.78rem !important;
+        padding: 0.4rem 0.9rem !important;
+    }
+
+    /* 欢迎横幅：堆叠 */
+    .welcome-banner {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        padding: 1.5rem !important;
+    }
+
+    .welcome-banner h1 {
+        font-size: 1.5rem !important;
+    }
+
+    /* 页面标题区：堆叠 */
+    .page-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.8rem !important;
+    }
+
+    .page-header h1 {
+        font-size: 1.5rem !important;
+    }
+
+    /* 场地卡片网格 */
+    .courts-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+        gap: 1rem !important;
+    }
+
+    /* 统计卡片 */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.8rem !important;
+    }
+
+    /* 筛选表单 */
+    .filter-form {
+        grid-template-columns: 1fr !important;
+        border-radius: 16px !important;
+        padding: 1rem !important;
+    }
+
+    /* 表格横向滚动 */
+    .bookings-table,
+    table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+    }
+
+    /* 钱包卡片 */
+    .wallet-card {
+        max-width: 100% !important;
+        padding: 1.5rem !important;
+    }
+
+    /* 警告横幅 */
+    .warning-banner {
+        flex-direction: column !important;
+        border-radius: 12px !important;
+    }
+}
+
+/* ── 手机 (≤ 480px) ── */
+@media (max-width: 480px) {
+    body {
+        padding: 0.5rem !important;
+    }
+
+    .navbar {
+        border-radius: 14px !important;
+        padding: 0.6rem 0.9rem !important;
+        flex-wrap: wrap !important;
+    }
+
+    .logo-text {
+        font-size: 1.1rem !important;
+    }
+
+    .logo-area img {
+        height: 34px !important;
+    }
+
+    /* 场地卡片：1 列 */
+    .courts-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* 统计卡片：2 列保留或 1 列 */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .stat-info h3,
+    .stat-number {
+        font-size: 1.4rem !important;
+    }
+
+    /* 欢迎横幅 */
+    .welcome-banner {
+        border-radius: 16px !important;
+    }
+
+    .welcome-banner h1 {
+        font-size: 1.2rem !important;
+    }
+
+    /* 用户问候隐藏（省空间） */
+    .user-greeting {
+        display: none !important;
+    }
+
+    /* 隐藏导航中不必要的链接文字 */
+    .nav-links a {
+        font-size: 0.75rem !important;
+        padding: 0.35rem 0.7rem !important;
+    }
+
+    /* 按钮调整 */
+    .btn-book,
+    .btn-my-bookings {
+        font-size: 0.85rem !important;
+        padding: 0.6rem 1rem !important;
+    }
+}

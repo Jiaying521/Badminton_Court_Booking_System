@@ -1,0 +1,70 @@
+/* ── Payment Module — Responsive Overrides ── */
+/* 只用 media query 覆盖，不改原有 CSS 文件 */
+
+/* ── 平板竖屏 / 大屏手机 (≤ 768px) ── */
+@media (max-width: 768px) {
+    body {
+        padding: 1rem !important;
+        align-items: flex-start !important;
+    }
+
+    /* 钱包 / 支付卡片 */
+    .wallet-card,
+    .checkout-card,
+    .gateway-card {
+        max-width: 100% !important;
+        padding: 1.8rem 1.4rem !important;
+        border-radius: 20px !important;
+    }
+
+    /* 快捷金额网格 */
+    .quick-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* 历史记录表格横向滚动 */
+    table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+    }
+
+    /* 导航返回链接 */
+    .navbar,
+    .page-header {
+        flex-wrap: wrap !important;
+    }
+}
+
+/* ── 手机 (≤ 480px) ── */
+@media (max-width: 480px) {
+    body {
+        padding: 0.5rem !important;
+    }
+
+    .wallet-card,
+    .checkout-card,
+    .gateway-card {
+        border-radius: 14px !important;
+        padding: 1.2rem 1rem !important;
+    }
+
+    .balance-box {
+        padding: 1.2rem !important;
+        border-radius: 16px !important;
+    }
+
+    .balance-box h1 {
+        font-size: 2rem !important;
+    }
+
+    .quick-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* 充值输入框 */
+    .topup-input {
+        font-size: 1.3rem !important;
+    }
+}

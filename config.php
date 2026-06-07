@@ -20,4 +20,16 @@ function redirect($url) {
     header("Location: $url");
     exit;
 }
+
+/* 自动向所有 HTML 页面注入 responsive.css（只对含 </head> 的 HTML 响应生效） */
+ob_start(function ($html) {
+    if (strpos($html, '</head>') !== false) {
+        return str_replace(
+            '</head>',
+            '    <link rel="stylesheet" href="responsive.css">' . "\n" . '</head>',
+            $html
+        );
+    }
+    return $html;
+});
 ?>

@@ -5,6 +5,7 @@ if (!isset($base_path)) {
 ?>
 
 <link rel="stylesheet" href="<?php echo $base_path; ?>navbar.css">
+<link rel="stylesheet" href="<?php echo $base_path; ?>responsive.css">
 
 <nav class="nav-bar">
     <div class="nav-left">

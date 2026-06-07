@@ -1,0 +1,146 @@
+/* ── Admin Module — Responsive Overrides ── */
+/* 只用 media query 覆盖，不改原有 CSS 文件 */
+
+/* ── 平板横屏 (≤ 1024px) ── */
+@media (max-width: 1024px) {
+    .content {
+        padding: 24px 20px;
+    }
+
+    .dashboard-layout,
+    .charts-row {
+        grid-template-columns: 1fr !important;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+/* ── 平板竖屏 / 大屏手机 (≤ 768px) ── */
+@media (max-width: 768px) {
+    .content {
+        padding: 16px 12px;
+    }
+
+    /* 页面标题区域：flex 行 → 列 */
+    .dashboard-header,
+    .management-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .dashboard-header h1,
+    .management-header h1 {
+        font-size: 22px !important;
+    }
+
+    .btn-add-group {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    /* 统计卡片：2 列 */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* 筛选网格：堆叠 */
+    .filter-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .filter-panel.open {
+        max-height: 1200px !important;
+        overflow: visible;
+    }
+
+    /* 设置卡片：1 列 */
+    .settings-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* 报表筛选栏 */
+    .filter-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    /* 表格横向滚动（无需改 HTML） */
+    .data-table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+    }
+
+    /* 模态框 */
+    .modal-overlay {
+        padding: 12px !important;
+        align-items: flex-end !important;
+    }
+
+    .modal-card,
+    .modal-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        border-radius: 20px 20px 0 0 !important;
+        max-height: 90vh;
+    }
+
+    .modal-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* 通知下拉 */
+    .notif-dropdown {
+        width: 92vw !important;
+        right: -50px !important;
+    }
+
+    /* 登录页面专用 */
+    .login-box {
+        width: calc(100vw - 32px) !important;
+        max-width: 420px;
+        margin: 20px auto !important;
+    }
+}
+
+/* ── 手机 (≤ 480px) ── */
+@media (max-width: 480px) {
+    .content {
+        padding: 12px 8px;
+    }
+
+    /* 统计卡片：1 列 */
+    .stats-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* 登录页大标题 */
+    body > h1 {
+        font-size: 34px !important;
+        margin-top: 28px;
+    }
+
+    /* 内容标题字号缩小 */
+    .dashboard-header h1,
+    .management-header h1 {
+        font-size: 19px !important;
+    }
+
+    /* 按钮组 */
+    .btn-add-account,
+    .btn-filter-toggle,
+    .action-btn {
+        font-size: 13px !important;
+        padding: 9px 16px !important;
+    }
+
+    /* 通知下拉全宽 */
+    .notif-dropdown {
+        width: 96vw !important;
+        right: -60px !important;
+    }
+}
