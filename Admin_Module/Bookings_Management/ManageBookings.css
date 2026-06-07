@@ -68,6 +68,7 @@
     margin-bottom: 22px;
     border: 1px solid var(--border);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    overflow: visible;
 }
 
 /* Grid: 3 columns per row, actions on new line */
@@ -123,6 +124,22 @@
 .filter-field input:focus,
 .filter-field select:focus {
     border-color: var(--primary);
+}
+
+/* Searchable Court / Coach filters: match the look of the native filter fields */
+.filter-field .search-select-input {
+    padding: 9px 32px 9px 13px;
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
+    font-size: 13px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 11px center;
+}
+
+.filter-field .search-select-input:focus {
+    border-color: var(--primary);
+    box-shadow: none;
 }
 
 .btn-filter-apply {

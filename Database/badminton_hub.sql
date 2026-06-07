@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 05, 2026 at 03:56 PM
+-- Generation Time: Jun 07, 2026 at 01:16 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -39,19 +39,20 @@ CREATE TABLE `admins` (
   `coach_price_per_hour` decimal(10,2) DEFAULT NULL,
   `reset_token` varchar(255) DEFAULT NULL,
   `token_expiry` datetime DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `suspended_until` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `admins`
 --
 
-INSERT INTO `admins` (`id`, `username`, `email`, `password`, `role`, `status`, `specialisation`, `is_coach`, `coach_price_per_hour`, `reset_token`, `token_expiry`, `created_at`) VALUES
-(1, 'superadmin', 'chinzx1814@gmail.com', '$2y$10$x5NsQGVwkkp5f4oivtMd..D9tsrJLMICxeSDnSe0peEwVN77QeFGu', 'Superadmin', 'Active', NULL, 0, 0.00, '6e65f2df57e2231428b98e31d6b08f18c8d1acfb3326db32d903e640866bb7fe', '2026-06-05 06:43:54', '2026-04-30 16:17:09'),
-(2, 'Coach Lim', 'coach.lim@smasharena.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Singles Coaching', 1, 50.00, NULL, NULL, '2026-04-30 16:17:09'),
-(3, 'Coach Wong', 'coach.wong@smasharena.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Doubles Coaching', 1, 20.00, NULL, NULL, '2026-04-30 16:17:09'),
-(4, 'Coach Tan', 'coach.tan@smasharena.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Junior Development', 1, 30.00, NULL, NULL, '2026-04-30 16:17:09'),
-(5, 'admin', '', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Admin', 'Active', NULL, 0, 0.00, NULL, NULL, '2026-04-30 16:37:03');
+INSERT INTO `admins` (`id`, `username`, `email`, `password`, `role`, `status`, `specialisation`, `is_coach`, `coach_price_per_hour`, `reset_token`, `token_expiry`, `created_at`, `suspended_until`) VALUES
+(1, 'superadmin', 'chinzx1814@gmail.com', '$2y$10$x5NsQGVwkkp5f4oivtMd..D9tsrJLMICxeSDnSe0peEwVN77QeFGu', 'Superadmin', 'Active', NULL, 0, 0.00, '6e65f2df57e2231428b98e31d6b08f18c8d1acfb3326db32d903e640866bb7fe', '2026-06-05 06:43:54', '2026-04-30 16:17:09', NULL),
+(2, 'Coach Lim', 'coach.lim@smasharena.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Singles Coaching', 1, 50.00, NULL, NULL, '2026-04-30 16:17:09', NULL),
+(3, 'Coach Wong', 'coach.wong@smasharena.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Doubles Coaching', 1, 20.00, NULL, NULL, '2026-04-30 16:17:09', NULL),
+(4, 'Coach Tan', 'coach.tan@smasharena.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Junior Development', 1, 30.00, NULL, NULL, '2026-04-30 16:17:09', NULL),
+(5, 'admin', '', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Admin', 'Active', NULL, 0, 0.00, NULL, NULL, '2026-04-30 16:37:03', NULL);
 
 --
 -- Triggers `admins`
@@ -157,11 +158,11 @@ INSERT INTO `bookings` (`id`, `user_id`, `court_id`, `booking_date`, `start_time
 (45, 1, 1, '2026-05-21', '13:00:00', '15:00:00', 2, 0, 0, 0.00, 'Casual Play', 25.00, 'Confirmed', 0.00, '', '2026-05-20 12:21:58', NULL),
 (46, 1, 1, '2026-05-22', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Confirmed', 0.00, '', '2026-05-21 04:36:43', NULL),
 (47, 1, 2, '2026-05-28', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-21 06:43:16', NULL),
-(48, 1, 8, '2026-05-21', '15:00:00', '16:00:00', 1, 1, 1, 25.00, 'Casual Play', 40.00, 'Pending', 0.00, '', '2026-05-21 06:43:43', NULL),
-(49, 1, 8, '2026-05-21', '16:00:00', '17:00:00', 1, 1, 1, 25.00, 'Casual Play', 40.00, 'Confirmed', 0.00, '', '2026-05-21 06:44:20', NULL),
+(48, 1, 8, '2026-05-21', '15:00:00', '16:00:00', 1, 1, 1, 25.00, 'Casual Play', 40.00, 'Cancelled', 0.00, '', '2026-05-21 06:43:43', NULL),
+(49, 1, 8, '2026-05-21', '16:00:00', '17:00:00', 1, 1, 1, 25.00, 'Casual Play', 40.00, 'Cancelled', 0.00, '', '2026-05-21 06:44:20', NULL),
 (50, 1, 2, '2026-05-29', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-21 15:28:45', NULL),
 (51, 1, 2, '2026-05-27', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-26 17:05:37', NULL),
-(52, 11, 2, '2026-06-10', '08:45:00', '11:42:00', 3, 1, 3, 150.00, 'Casual Play', 180.00, 'Cancelled', 0.00, '', '2026-06-05 00:42:35', NULL),
+(52, 11, 2, '2026-06-10', '08:45:00', '11:42:00', 3, 1, 3, 150.00, 'Casual Play', 180.00, 'Pending', 0.00, '', '2026-06-05 00:42:35', NULL),
 (53, 1, 2, '2026-06-24', '09:00:00', '18:00:00', 9, 0, 0, 0.00, 'Casual Play', 110.00, 'Pending', 0.00, '', '2026-06-05 03:28:27', NULL),
 (54, 1, 2, '2026-06-17', '13:00:00', '18:00:00', 5, 0, 0, 0.00, 'Casual Play', 70.00, 'Pending', 0.00, '', '2026-06-05 13:27:19', NULL);
 
@@ -229,17 +230,18 @@ CREATE TABLE `coaches` (
   `profile_img` varchar(255) DEFAULT NULL,
   `availability_status` enum('Available','On Leave','Sick','Off Day') DEFAULT 'Available',
   `available_from` time DEFAULT NULL,
-  `available_to` time DEFAULT NULL
+  `available_to` time DEFAULT NULL,
+  `late_cancel_strikes` int(11) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `coaches`
 --
 
-INSERT INTO `coaches` (`id`, `admin_id`, `name`, `specialty`, `phone`, `price_per_hour`, `is_active`, `gender`, `age`, `profile_img`, `availability_status`, `available_from`, `available_to`) VALUES
-(1, 2, 'Coach Lim', 'Singles Coaching', '', 50.00, 1, '', 40, '1779345778_coach.png', 'Available', '20:47:00', '20:45:00'),
-(2, 3, 'Coach Wong', 'Doubles Coaching', '', 20.00, 1, '', 0, NULL, 'Available', NULL, NULL),
-(3, 4, 'Coach Tan', 'Junior Development', '', 30.00, 1, 'Male', NULL, NULL, 'Available', NULL, NULL);
+INSERT INTO `coaches` (`id`, `admin_id`, `name`, `specialty`, `phone`, `price_per_hour`, `is_active`, `gender`, `age`, `profile_img`, `availability_status`, `available_from`, `available_to`, `late_cancel_strikes`) VALUES
+(1, 2, 'Coach Lim', 'Singles Coaching', '', 50.00, 1, '', 40, '1779345778_coach.png', 'Available', '20:47:00', '20:45:00', 0),
+(2, 3, 'Coach Wong', 'Doubles Coaching', '', 20.00, 1, '', 0, NULL, 'Available', NULL, NULL, 0),
+(3, 4, 'Coach Tan', 'Junior Development', '', 30.00, 1, 'Male', NULL, NULL, 'Available', NULL, NULL, 0);
 
 -- --------------------------------------------------------
 
@@ -498,7 +500,23 @@ INSERT INTO `notifications` (`id`, `recipient_role`, `recipient_id`, `type`, `ti
 (15, 'Superadmin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #49 for John Doe at Court H on 21 May 2026 04:00 PM has been confirmed.', 49, 'booking', 1, '2026-06-05 13:08:52'),
 (16, 'Coach', 2, 'confirmed', 'Session Confirmed', 'Your coaching session at Court H on 21 May 2026 04:00 PM has been confirmed.', 49, 'booking', 1, '2026-06-05 13:08:52'),
 (17, 'Admin', NULL, 'completed', 'Session Completed', 'Booking #49 for John Doe at Court H on 21 May 2026 04:00 PM has been marked completed by coach.', 49, 'booking', 0, '2026-06-05 13:19:19'),
-(18, 'Superadmin', NULL, 'completed', 'Session Completed', 'Booking #49 for John Doe at Court H on 21 May 2026 04:00 PM has been marked completed by coach.', 49, 'booking', 1, '2026-06-05 13:19:19');
+(18, 'Superadmin', NULL, 'completed', 'Session Completed', 'Booking #49 for John Doe at Court H on 21 May 2026 04:00 PM has been marked completed by coach.', 49, 'booking', 1, '2026-06-05 13:19:19'),
+(19, 'Admin', NULL, 'cancelled', 'Session Declined by Coach', 'Coach declined booking #49 for John Doe at Court H on 21 May 2026 04:00 PM. Refund of RM 50.00 has been issued.', 49, 'booking', 1, '2026-06-07 06:45:37'),
+(20, 'Superadmin', NULL, 'cancelled', 'Session Declined by Coach', 'Coach declined booking #49 for John Doe at Court H on 21 May 2026 04:00 PM. Refund of RM 50.00 has been issued.', 49, 'booking', 1, '2026-06-07 06:45:37'),
+(35, 'Admin', NULL, 'cancelled', 'Coach No-Show', 'Booking #48 for John Doe at Court H on 21 May 2026 03:00 PM was marked as a coach no-show (coach never responded). Customer refunded RM 50.00 (incl. compensation). Coach has been suspended for 3 days (strike #1).', 48, 'booking', 0, '2026-06-07 08:54:19'),
+(36, 'Superadmin', NULL, 'cancelled', 'Coach No-Show', 'Booking #48 for John Doe at Court H on 21 May 2026 03:00 PM was marked as a coach no-show (coach never responded). Customer refunded RM 50.00 (incl. compensation). Coach has been suspended for 3 days (strike #1).', 48, 'booking', 1, '2026-06-07 08:54:19'),
+(37, 'Admin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #52 for wz at Court B on 10 Jun 2026 08:45 AM has been confirmed.', 52, 'booking', 0, '2026-06-07 10:53:14'),
+(38, 'Superadmin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #52 for wz at Court B on 10 Jun 2026 08:45 AM has been confirmed.', 52, 'booking', 0, '2026-06-07 10:53:14'),
+(39, 'Coach', 2, 'confirmed', 'Session Confirmed', 'Your coaching session at Court B on 10 Jun 2026 08:45 AM has been confirmed.', 52, 'booking', 1, '2026-06-07 10:53:14'),
+(40, 'Admin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #49 for John Doe at Court H on 21 May 2026 04:00 PM has been confirmed.', 49, 'booking', 0, '2026-06-07 10:53:18'),
+(41, 'Superadmin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #49 for John Doe at Court H on 21 May 2026 04:00 PM has been confirmed.', 49, 'booking', 0, '2026-06-07 10:53:18'),
+(42, 'Coach', 2, 'confirmed', 'Session Confirmed', 'Your coaching session at Court H on 21 May 2026 04:00 PM has been confirmed.', 49, 'booking', 1, '2026-06-07 10:53:18'),
+(43, 'Admin', NULL, 'new_booking', 'New Booking Pending', 'Booking #52 from wz for Court B on 10 Jun 2026 is waiting for confirmation.', 52, 'booking', 0, '2026-06-07 11:11:42'),
+(44, 'Superadmin', NULL, 'new_booking', 'New Booking Pending', 'Booking #52 from wz for Court B on 10 Jun 2026 is waiting for confirmation.', 52, 'booking', 1, '2026-06-07 11:11:42'),
+(45, 'Admin', NULL, 'new_booking', 'New Booking Pending', 'Booking #49 from John Doe for Court H on 21 May 2026 is waiting for confirmation.', 49, 'booking', 0, '2026-06-07 11:12:50'),
+(46, 'Superadmin', NULL, 'new_booking', 'New Booking Pending', 'Booking #49 from John Doe for Court H on 21 May 2026 is waiting for confirmation.', 49, 'booking', 1, '2026-06-07 11:12:50'),
+(47, 'Admin', NULL, 'cancelled', 'Coach No-Show', 'Booking #49 for John Doe at Court H on 21 May 2026 04:00 PM was marked as a coach no-show (coach never responded). Customer refunded RM 50.00 (incl. compensation). Coach has been suspended for 3 days (strike #1).', 49, 'booking', 0, '2026-06-07 11:12:50'),
+(48, 'Superadmin', NULL, 'cancelled', 'Coach No-Show', 'Booking #49 for John Doe at Court H on 21 May 2026 04:00 PM was marked as a coach no-show (coach never responded). Customer refunded RM 50.00 (incl. compensation). Coach has been suspended for 3 days (strike #1).', 49, 'booking', 1, '2026-06-07 11:12:50');
 
 -- --------------------------------------------------------
 
@@ -712,7 +730,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `gender`, `created_at`, `wallet_balance`, `loyalty_points`, `profile_picture`) VALUES
-(1, 'John Doe', 'john@example.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', '+60123456789', NULL, '2026-04-30 16:17:09', 209.00, 0, NULL),
+(1, 'John Doe', 'john@example.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', '+60123456789', NULL, '2026-04-30 16:17:09', 359.00, 0, NULL),
 (2, 'Alice Tan', 'alice@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60111222333', NULL, '2026-04-30 16:34:47', 0.00, 0, NULL),
 (3, 'Michael Lee', 'michael@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60199888777', NULL, '2026-04-30 16:34:47', 0.00, 0, NULL),
 (4, 'Siti Aminah', 'siti@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60122334455', NULL, '2026-04-30 16:34:47', 0.00, 0, NULL),
@@ -977,7 +995,7 @@ ALTER TABLE `court_availability`
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
 -- AUTO_INCREMENT for table `otp_codes`

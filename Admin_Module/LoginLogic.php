@@ -19,18 +19,38 @@ $user = $input['username'] ?? '';
 $pass = $input['password'] ?? '';
 
 // Selected 'status' only, 'first_login' is removed
-$stmt = $conn->prepare("SELECT id, username, password, role, status FROM admins WHERE username = ?");
+$stmt = $conn->prepare("SELECT id, username, password, role, status, suspended_until FROM admins WHERE username = ?");
 $stmt->bind_param("s", $user);
 $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows === 1) {
     $row = $result->fetch_assoc();
-    
-    // Check if the account status is Suspended (Complete block)
+
+    // Suspended accounts: auto-unban once the suspension date has passed, otherwise block
     if ($row['status'] === 'Suspended') {
-        echo json_encode(['success' => false, 'message' => 'This account has been suspended. Please contact Superadmin.']);
-        exit;
+        $until = $row['suspended_until'];
+
+        if ($until === null) {
+            // No date = permanent ban
+            echo json_encode(['success' => false, 'message' => 'This account has been permanently suspended. Please contact Superadmin.']);
+            exit;
+        }
+
+        $today = date('Y-m-d');
+
+        if ($today >= $until) {
+            // Suspension served — reactivate the account and let them in
+            $aid = (int)$row['id'];
+            $conn->query("UPDATE admins SET status = 'Active', suspended_until = NULL WHERE id = $aid");
+            $conn->query("UPDATE coaches SET is_active = 1 WHERE admin_id = $aid");
+            $row['status'] = 'Active';
+        } else {
+            // Still suspended — show how many days are left
+            $days_left = (int) ceil((strtotime($until) - strtotime($today)) / 86400);
+            echo json_encode(['success' => false, 'message' => "Your account is suspended until " . date('d M Y', strtotime($until)) . " ($days_left day(s) left)."]);
+            exit;
+        }
     }
 
     // Verify the password hash

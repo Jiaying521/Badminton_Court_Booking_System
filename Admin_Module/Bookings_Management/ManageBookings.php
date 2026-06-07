@@ -18,6 +18,17 @@
     header("Expires: 0");
 
     // Toast notifications from URL params (redirects from AddBooking / edit / bulk actions)
+    if (isset($_GET['declined'])) {
+        if ($_GET['declined'] === 'late') {
+            $ban = $_GET['ban'] ?? '';
+            $ban_msg = ($ban === 'perm') ? 'Your account has been permanently suspended.' : "Your account has been suspended for {$ban} days.";
+            $toasts[] = ['text' => 'Late cancellation. The customer was fully refunded with compensation. ' . $ban_msg, 'type' => 'error'];
+        } elseif ($_GET['declined'] === 'ontime') {
+            $toasts[] = ['text' => 'Session declined. The customer has been fully refunded. No penalty applied.', 'type' => 'success'];
+        } else {
+            $toasts[] = ['text' => 'Session declined. The customer has been refunded.', 'type' => 'success'];
+        }
+    }
     if (isset($_GET['updated']))     { $toasts[] = ['text' => 'Booking status updated successfully!', 'type' => 'success']; }
     if (isset($_GET['edited']))      { $toasts[] = ['text' => 'Booking updated successfully!',        'type' => 'success']; }
     if (isset($_GET['added']))       { $toasts[] = ['text' => 'Booking added successfully!',          'type' => 'success']; }
@@ -68,6 +79,10 @@
     // Database Connection
     $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
 
+    // Mark coach no-shows: pending coach bookings whose session time has already passed
+    require_once __DIR__ . '/coach_no_show_check.php';
+    handleCoachNoShows($conn);
+
     $username     = $_SESSION['username'];
     $role         = $_SESSION['role'];
     $display_name = $username;
@@ -84,6 +99,11 @@
     $coaches_result = mysqli_query($conn, "SELECT id, name FROM coaches WHERE is_active = 1 ORDER BY name ASC");
     $coaches_list   = [];
     while($c = mysqli_fetch_assoc($coaches_result)) $coaches_list[] = $c;
+
+    // All coaches (incl. inactive/suspended) for the filter so past bookings stay filterable
+    $all_coaches_result = mysqli_query($conn, "SELECT id, name FROM coaches ORDER BY name ASC");
+    $all_coaches_list   = [];
+    while($c = mysqli_fetch_assoc($all_coaches_result)) $all_coaches_list[] = $c;
 
     // Fetch all users for add booking modal dropdown
     $users_result = mysqli_query($conn, "SELECT id, name FROM users ORDER BY name ASC");
@@ -104,7 +124,9 @@
     // Filter values from GET
     $filter_status    = isset($_GET['status'])    ? $_GET['status']                                      : '';
     $filter_court     = isset($_GET['court'])     ? intval($_GET['court'])                               : 0;
-    $filter_coach     = isset($_GET['coach'])     ? intval($_GET['coach'])                               : 0;
+    // Coach filter: '' / '0' = all, 'none' = no coach assigned, a number = that coach
+    $filter_coach        = isset($_GET['coach']) ? trim($_GET['coach']) : '';
+    $coach_filter_active = ($filter_coach === 'none') || (intval($filter_coach) > 0);
     // ?date= comes from "View All Bookings" calendar link; ?booking_date= from the filter form
     $filter_booking_date = isset($_GET['booking_date']) ? mysqli_real_escape_string($conn, $_GET['booking_date'])
                          : (isset($_GET['date'])         ? mysqli_real_escape_string($conn, $_GET['date']) : '');
@@ -138,7 +160,7 @@
     }
     
     // Check if any filter is active
-    $has_filter = $filter_status || $filter_court || $filter_coach || $filter_booking_date || $filter_search;
+    $has_filter = $filter_status || $filter_court || $coach_filter_active || $filter_booking_date || $filter_search;
 
     // Build WHERE clause
     $where_parts = [];
@@ -151,15 +173,16 @@
     if($role === 'Coach'){
         $where_parts[] = "bookings.coach_id = $my_coach_id";
     } else {
-        // Admin/Superadmin: allow coach filter
-        if($filter_coach > 0) $where_parts[] = "bookings.coach_id = $filter_coach";
+        // Admin/Superadmin: allow coach filter ('none' = bookings with no coach)
+        if($filter_coach === 'none')      $where_parts[] = "bookings.coach_id IS NULL";
+        elseif(intval($filter_coach) > 0) $where_parts[] = "bookings.coach_id = " . intval($filter_coach);
     }
 
     $where_sql = count($where_parts) > 0 ? "WHERE " . implode(" AND ", $where_parts) : "";
 
     // Fetch booking data with player name, court name, coach name, session type and notes
     $result = mysqli_query($conn, "
-        SELECT 
+        SELECT
             bookings.id,
             bookings.court_id,
             bookings.coach_id,
@@ -170,6 +193,7 @@
             bookings.end_time,
             bookings.status,
             bookings.total_price,
+            bookings.coach_price_total,
             bookings.session_type,
             bookings.notes,
             bookings.cancellation_fee,
@@ -260,26 +284,48 @@
                     </div>
                     <div class="filter-field">
                         <label>Court</label>
-                        <select name="court">
-                            <option value="0">All Courts</option>
-                            <?php foreach($courts_list as $court): ?>
-                                <option value="<?php echo $court['id']; ?>" <?php echo ($filter_court === $court['id']) ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($court['court_name']); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
+                        <div class="search-select filter-search">
+                            <input type="text" class="search-select-input" placeholder="Search court..." autocomplete="off"
+                                   value="<?php
+                                       if ($filter_court > 0) {
+                                           foreach ($courts_list as $c) { if ((int)$c['id'] === $filter_court) echo htmlspecialchars($c['court_name']); }
+                                       }
+                                   ?>">
+                            <input type="hidden" name="court" class="search-select-value" value="<?php echo $filter_court ?: '0'; ?>">
+                            <div class="search-select-list">
+                                <div class="search-select-item" data-id="0" data-name="All Courts">All Courts</div>
+                                <?php foreach($courts_list as $court): ?>
+                                    <div class="search-select-item" data-id="<?php echo $court['id']; ?>" data-name="<?php echo htmlspecialchars($court['court_name']); ?>">
+                                        <?php echo htmlspecialchars($court['court_name']); ?>
+                                    </div>
+                                <?php endforeach; ?>
+                                <div class="search-select-empty" style="display:none;">No courts match.</div>
+                            </div>
+                        </div>
                     </div>
                     <?php if($role !== 'Coach'): ?>
                     <div class="filter-field">
                         <label>Coach</label>
-                        <select name="coach">
-                            <option value="0">All Coaches</option>
-                            <?php foreach($coaches_list as $coach): ?>
-                                <option value="<?php echo $coach['id']; ?>" <?php echo ($filter_coach === $coach['id']) ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($coach['name']); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
+                        <div class="search-select filter-search">
+                            <input type="text" class="search-select-input" placeholder="Search coach..." autocomplete="off"
+                                   value="<?php
+                                       if ($filter_coach === 'none') echo 'No Coach';
+                                       elseif (intval($filter_coach) > 0) {
+                                           foreach ($all_coaches_list as $c) { if ((int)$c['id'] === intval($filter_coach)) echo htmlspecialchars($c['name']); }
+                                       }
+                                   ?>">
+                            <input type="hidden" name="coach" class="search-select-value" value="<?php echo htmlspecialchars($filter_coach !== '' ? $filter_coach : '0'); ?>">
+                            <div class="search-select-list">
+                                <div class="search-select-item" data-id="none" data-name="No Coach">No Coach</div>
+                                <div class="search-select-item" data-id="0" data-name="All Coaches">All Coaches</div>
+                                <?php foreach($all_coaches_list as $coach): ?>
+                                    <div class="search-select-item" data-id="<?php echo $coach['id']; ?>" data-name="<?php echo htmlspecialchars($coach['name']); ?>">
+                                        <?php echo htmlspecialchars($coach['name']); ?>
+                                    </div>
+                                <?php endforeach; ?>
+                                <div class="search-select-empty" style="display:none;">No coaches match.</div>
+                            </div>
+                        </div>
                     </div>
                     <?php endif; ?>
                     <div class="filter-field">
@@ -331,12 +377,18 @@
                         <th><?php echo bookingSortLink('Booking Date', 'booking_date', $sort_col, $sort_dir, $next_dir, $extra); ?></th>
                         <th><?php echo bookingSortLink('Start Time',   'start_time',   $sort_col, $sort_dir, $next_dir, $extra); ?></th>
                         <th><?php echo bookingSortLink('End Time',     'end_time',     $sort_col, $sort_dir, $next_dir, $extra); ?></th>
-                        <th><?php echo bookingSortLink('Total Price',  'total_price',  $sort_col, $sort_dir, $next_dir, $extra); ?></th>
+                        <th><?php echo ($role === 'Coach')
+                                ? bookingSortLink('Your Fee', 'total_price', $sort_col, $sort_dir, $next_dir, $extra)
+                                : bookingSortLink('Total Price', 'total_price', $sort_col, $sort_dir, $next_dir, $extra); ?></th>
                         <th><?php echo bookingSortLink('Status',       'status',       $sort_col, $sort_dir, $next_dir, $extra); ?></th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php while($row = mysqli_fetch_assoc($result)): ?>
+                    <?php while($row = mysqli_fetch_assoc($result)):
+                        /* Coach declining < 24h before the session counts as a late cancellation (penalty applies) */
+                        $session_ts     = strtotime($row['booking_date'] . ' ' . $row['start_time']);
+                        $is_late_cancel = (($session_ts - time()) / 3600) < 24;
+                    ?>
 
                     <!-- Main row — click to expand details -->
                     <tr id="booking-row-<?php echo $row['id']; ?>"
@@ -349,12 +401,14 @@
                         <td><?php echo date("d-m-Y", strtotime($row['booking_date'])); ?></td>
                         <td><?php echo date("h:i A", strtotime($row['start_time'])); ?></td>
                         <td><?php echo date("h:i A", strtotime($row['end_time'])); ?></td>
-                        <td>RM <?php echo number_format($row['total_price'], 2); ?></td>
+                        <td>RM <?php echo ($role === 'Coach')
+                                ? number_format($row['coach_price_total'], 2)
+                                : number_format($row['total_price'], 2); ?></td>
                         <td onclick="event.stopPropagation()">
                             <?php if($role === 'Coach'): ?>
                                 <!-- Coach: only show dropdown if Pending, else show static badge -->
                                 <?php if($row['status'] === 'Pending'): ?>
-                                    <select class="status-select status-inactive" onchange="location.href='UpdateBookingsStatus.php?id=<?php echo $row['id']; ?>&status=' + this.value">
+                                    <select class="status-select status-inactive" onchange="handleCoachStatusChange(this, <?php echo $row['id']; ?>, <?php echo $is_late_cancel ? 'true' : 'false'; ?>)">
                                         <option value="Pending"   selected>Pending</option>
                                         <option value="Confirmed">Accept</option>
                                         <option value="Cancelled">Decline</option>
@@ -412,14 +466,31 @@
                                 <label>Session Type</label>
                                 <span><?php echo htmlspecialchars($row['session_type'] ?: '—'); ?></span>
                             </div>
+                            <?php if ($role === 'Coach'): ?>
+                            <div class="details-item">
+                                <label>Your Coaching Fee</label>
+                                <span>RM <?php echo number_format($row['coach_price_total'], 2); ?></span>
+                            </div>
+                            <div class="details-item">
+                                <label>Court Fee</label>
+                                <span>RM <?php echo number_format($row['total_price'] - $row['coach_price_total'], 2); ?></span>
+                            </div>
+                            <div class="details-item">
+                                <label>Booking Total</label>
+                                <span>RM <?php echo number_format($row['total_price'], 2); ?></span>
+                            </div>
+                            <?php else: ?>
                             <div class="details-item">
                                 <label>Total Price</label>
                                 <span>RM <?php echo number_format($row['total_price'], 2); ?></span>
                             </div>
+                            <?php endif; ?>
+                            <?php if ($row['status'] === 'Cancelled' && ($row['cancellation_fee'] ?? 0) > 0): ?>
                             <div class="details-item">
                                 <label>Cancellation Fee</label>
-                                <span>RM <?php echo number_format($row['cancellation_fee'] ?? 0, 2); ?></span>
+                                <span>RM <?php echo number_format($row['cancellation_fee'], 2); ?></span>
                             </div>
+                            <?php endif; ?>
                             <div class="details-item">
                                 <label>Payment Method</label>
                                 <span><?php echo htmlspecialchars($row['payment_method'] ?: '—'); ?></span>
@@ -482,9 +553,9 @@
                                            onclick="event.stopPropagation(); openProofModal(<?php echo $row['id']; ?>)">
                                             <i class="fas fa-camera"></i> Mark as Completed
                                         </button>
-                                        <a href="UpdateBookingsStatus.php?id=<?php echo $row['id']; ?>&status=Cancelled"
+                                        <a href="coach_decline.php?id=<?php echo $row['id']; ?>"
                                            class="btn-coach-action btn-coach-decline"
-                                           onclick="event.stopPropagation(); return confirm('Decline this session?');">
+                                           onclick="event.stopPropagation(); return confirmCoachDecline(<?php echo $is_late_cancel ? 'true' : 'false'; ?>);">
                                             <i class="fas fa-times"></i> Decline Session
                                         </a>
                                     </div>
@@ -764,6 +835,41 @@
 
     <script src="ManageBookings.js"></script>
     <script src="../Dashboard/Dashboard.js"></script>
+
+    <script>
+    /* Filter search-selects (Court / Coach): apply the filter as soon as an option is picked */
+    document.querySelectorAll('.filter-panel .filter-search .search-select-item').forEach(function (item) {
+        item.addEventListener('click', function () {
+            var form = item.closest('form');
+            if (form) form.submit();
+        });
+    });
+    </script>
+
+    <?php if ($role === 'Coach'): ?>
+    <script>
+    /* Confirmation text differs depending on how close the session is */
+    function confirmCoachDecline(isLate) {
+        if (isLate) {
+            return confirm('This is a LATE cancellation (less than 24 hours before the session).\n\nThe customer will be fully refunded plus compensation, and your account will be suspended (escalating: 3 days, then 7 days, then permanent).\n\nDecline anyway?');
+        }
+        return confirm('Decline this session? The customer will receive a full refund. Since you are giving enough notice, there is no penalty.');
+    }
+
+    function handleCoachStatusChange(sel, bookingId, isLate) {
+        const val = sel.value;
+        if (val === 'Confirmed') {
+            location.href = 'UpdateBookingsStatus.php?id=' + bookingId + '&status=Confirmed';
+        } else if (val === 'Cancelled') {
+            if (confirmCoachDecline(isLate)) {
+                location.href = 'coach_decline.php?id=' + bookingId;
+            } else {
+                sel.value = 'Pending';
+            }
+        }
+    }
+    </script>
+    <?php endif; ?>
 
     <?php if ($highlight_id): ?>
     <script>

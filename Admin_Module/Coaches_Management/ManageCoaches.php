@@ -183,14 +183,19 @@
         exit();
     }
 
-    //Handle toggle account status
+    //Handle account status change (Active / Inactive / Suspended)
     if(isset($_GET['toggle_id']) && isset($_GET['status'])){
-        $toggle_id    = intval($_GET['toggle_id']);
-        $new_status   = intval($_GET['status']);
-        $admin_status = ($new_status == 1) ? 'Active' : 'Inactive';
+        $toggle_id  = intval($_GET['toggle_id']);
+        $new_status = $_GET['status'];
 
-        mysqli_query($conn, "UPDATE coaches SET is_active = $new_status WHERE id = $toggle_id");
-        mysqli_query($conn, "UPDATE admins SET status = '$admin_status' WHERE id = (SELECT admin_id FROM coaches WHERE id = $toggle_id)");
+        if(in_array($new_status, ['Active', 'Inactive', 'Suspended'])){
+            // Only an Active account can take bookings
+            $is_active = ($new_status === 'Active') ? 1 : 0;
+
+            // A manual change clears the auto-unban date; manual Suspended = no end date (until admin reactivates)
+            mysqli_query($conn, "UPDATE coaches SET is_active = $is_active WHERE id = $toggle_id");
+            mysqli_query($conn, "UPDATE admins SET status = '$new_status', suspended_until = NULL WHERE id = (SELECT admin_id FROM coaches WHERE id = $toggle_id)");
+        }
 
         header("Location: ManageCoaches.php?updated=1");
         exit();
@@ -250,7 +255,8 @@
         SELECT coaches.id, coaches.name, coaches.specialty,
             coaches.phone, coaches.price_per_hour, coaches.is_active,
             coaches.availability_status, coaches.gender, coaches.age,
-            coaches.profile_img, admins.email
+            coaches.profile_img, admins.email,
+            admins.status AS account_status, admins.suspended_until
         FROM coaches
         JOIN admins ON coaches.admin_id = admins.id
         ORDER BY coaches.$sort_col $sort_dir
@@ -412,11 +418,24 @@
 
                         <!-- Account status -->
                         <td onclick="event.stopPropagation()">
-                            <select class="status-select <?php echo $row['is_active'] == 1 ? 'status-active' : 'status-inactive'; ?>"
+                            <?php
+                                $acc_status = $row['account_status'] ?? ($row['is_active'] == 1 ? 'Active' : 'Inactive');
+                                $acc_class  = match($acc_status) {
+                                    'Active'    => 'status-active',
+                                    'Suspended' => 'status-suspended',
+                                    default     => 'status-inactive'
+                                };
+                                $susp_title = ($acc_status === 'Suspended' && !empty($row['suspended_until']))
+                                    ? 'Suspended until ' . date('d M Y', strtotime($row['suspended_until']))
+                                    : '';
+                            ?>
+                            <select class="status-select <?php echo $acc_class; ?>"
                                 onclick="event.stopPropagation()"
-                                onchange="location.href='ManageCoaches.php?toggle_id=<?php echo $row['id']; ?>&status=' + (this.value === 'Active' ? 1 : 0)">
-                                <option value="Active"   <?php echo $row['is_active'] == 1 ? 'selected' : ''; ?>>Active</option>
-                                <option value="Inactive" <?php echo $row['is_active'] == 0 ? 'selected' : ''; ?>>Inactive</option>
+                                title="<?php echo htmlspecialchars($susp_title); ?>"
+                                onchange="location.href='ManageCoaches.php?toggle_id=<?php echo $row['id']; ?>&status=' + this.value">
+                                <option value="Active"    <?php echo $acc_status === 'Active'    ? 'selected' : ''; ?>>Active</option>
+                                <option value="Inactive"  <?php echo $acc_status === 'Inactive'  ? 'selected' : ''; ?>>Inactive</option>
+                                <option value="Suspended" <?php echo $acc_status === 'Suspended' ? 'selected' : ''; ?>>Suspended</option>
                             </select>
                         </td>
                     </tr>

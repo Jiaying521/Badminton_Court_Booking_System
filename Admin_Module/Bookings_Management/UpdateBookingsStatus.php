@@ -5,8 +5,8 @@
         exit();
     }
 
-    //Check role only Superadmin and Admin can access
-    if(!in_array($_SESSION['role'],['Superadmin','Admin'])){
+    /* Coach can only accept (Confirmed) their own bookings; decline goes via coach_decline.php */
+    if(!in_array($_SESSION['role'],['Superadmin','Admin','Coach'])){
         header("Location: ../LoginPage.php");
         exit();
     }
@@ -26,6 +26,12 @@
         $allowed = ['Pending', 'Confirmed', 'Completed', 'Cancelled'];
 
         if(!in_array($new_status, $allowed) || $booking_id <= 0){
+            header("Location: ManageBookings.php");
+            exit();
+        }
+
+        /* Coach can only set Confirmed on their own bookings via this file */
+        if($_SESSION['role'] === 'Coach' && $new_status !== 'Confirmed'){
             header("Location: ManageBookings.php");
             exit();
         }

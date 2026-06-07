@@ -175,22 +175,16 @@ if (isset($_GET['delete_voucher'])) {
 }
 
 
-/* Action I: Save Pricing & Cancellation Policy (off_peak_price, peak_price, cancellation_hours, cancellation_fee) */
+/* Action I: Save Court Pricing (off_peak_price, peak_price) */
 if (isset($_POST['save_pricing'])) {
 
-    /* floatval/intval lock the values to numbers so nobody can sneak SQL in */
-    $off_peak_price     = floatval($_POST['off_peak_price']);
-    $peak_price         = floatval($_POST['peak_price']);
-    $cancellation_hours = intval($_POST['cancellation_hours']);
-    $cancellation_fee   = floatval($_POST['cancellation_fee']);
+    $off_peak_price = floatval($_POST['off_peak_price']);
+    $peak_price     = floatval($_POST['peak_price']);
 
-    /* Update each pricing/cancellation row in the settings table */
-    mysqli_query($conn, "UPDATE settings SET setting_value = '$off_peak_price'     WHERE setting_key = 'off_peak_price'");
-    mysqli_query($conn, "UPDATE settings SET setting_value = '$peak_price'         WHERE setting_key = 'peak_price'");
-    mysqli_query($conn, "UPDATE settings SET setting_value = '$cancellation_hours' WHERE setting_key = 'cancellation_hours'");
-    mysqli_query($conn, "UPDATE settings SET setting_value = '$cancellation_fee'   WHERE setting_key = 'cancellation_fee'");
+    mysqli_query($conn, "UPDATE settings SET setting_value = '$off_peak_price' WHERE setting_key = 'off_peak_price'");
+    mysqli_query($conn, "UPDATE settings SET setting_value = '$peak_price'     WHERE setting_key = 'peak_price'");
 
-    $toasts[] = ['text' => 'Pricing & cancellation settings updated!', 'type' => 'success'];
+    $toasts[] = ['text' => 'Pricing updated!', 'type' => 'success'];
 }
 
 
@@ -283,7 +277,7 @@ $vouchers = mysqli_query($conn, "SELECT * FROM voucher ORDER BY points_required 
             <nav class="settings-tabs" id="settingsTabs">
                 <span class="settings-tab-slider" id="settingsTabSlider"></span>
                 <a href="#sec-hours"   class="settings-tab"><i class="fas fa-clock"></i> Business Hours</a>
-                <a href="#sec-pricing" class="settings-tab"><i class="fas fa-tag"></i> Pricing & Cancellation</a>
+                <a href="#sec-pricing" class="settings-tab"><i class="fas fa-tag"></i> Court Pricing</a>
                 <a href="#sec-closed"  class="settings-tab"><i class="fas fa-calendar-times"></i> Closed Days</a>
                 <a href="#sec-promo"   class="settings-tab"><i class="fas fa-percent"></i> Promo Codes</a>
                 <a href="#sec-voucher" class="settings-tab"><i class="fas fa-ticket-alt"></i> Vouchers</a>
@@ -338,10 +332,10 @@ $vouchers = mysqli_query($conn, "SELECT * FROM voucher ORDER BY points_required 
             </div>
 
 
-            <!-- Section 1.5: Pricing & Cancellation Policy -->
+            <!-- Section 1.5: Court Pricing -->
             <div class="settings-card" id="sec-pricing">
-                <h3><i class="fas fa-tag"></i> Pricing & Cancellation Policy</h3>
-                <p class="settings-desc">Court hourly rates and the cancellation rule shown to customers.</p>
+                <h3><i class="fas fa-tag"></i> Court Pricing</h3>
+                <p class="settings-desc">Court hourly rates for off-peak and peak hours.</p>
 
                 <form method="POST" action="">
                     <div class="settings-grid">
@@ -358,22 +352,10 @@ $vouchers = mysqli_query($conn, "SELECT * FROM voucher ORDER BY points_required 
                                    value="<?php echo htmlspecialchars($settings['peak_price'] ?? '15.00'); ?>" required>
                         </div>
 
-                        <div class="settings-field">
-                            <label>Cancellation Notice<br>(hours before booking)</label>
-                            <input type="number" min="0" name="cancellation_hours" class="form-control"
-                                   value="<?php echo htmlspecialchars($settings['cancellation_hours'] ?? '2'); ?>" required>
-                        </div>
-
-                        <div class="settings-field">
-                            <label>Cancellation Fee (RM)</label>
-                            <input type="number" step="0.01" min="0" name="cancellation_fee" class="form-control"
-                                   value="<?php echo htmlspecialchars($settings['cancellation_fee'] ?? '10.00'); ?>" required>
-                        </div>
-
                     </div>
 
                     <button type="submit" name="save_pricing" class="btn-add-account">
-                        <i class="fas fa-save"></i> Save Pricing & Cancellation
+                        <i class="fas fa-save"></i> Save Pricing
                     </button>
                 </form>
             </div>

@@ -1,10 +1,4 @@
 <?php
-// Shared top navigation bar for all admin / superadmin / coach pages.
-// Pages that include this file must set $base_path before include:
-//   - all pages now live one level deep, so always use $ase_path = '../';
-
-
-// This way the links keep working no matter which folder the page sits in.
 if (!isset($base_path)) {
     $base_path = '';
 }
@@ -99,8 +93,6 @@ if (!isset($base_path)) {
 <div id="overlay" class="overlay"></div>
 
 <script>
-    // Tell the JS code where the project root is so fetch() URLs work
-    // from pages inside subfolders (Superadmin/, Coach/) too.
     const NAV_BASE = "<?php echo $base_path; ?>";
 </script>
 
