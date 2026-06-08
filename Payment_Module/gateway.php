@@ -31,7 +31,7 @@ if ($user_id > 0) {
     }
 }
 
-// 🟢 LOOKUP VOUCHER WORTH AND CALCULATE ADJUSTED DISPLAY PRICE
+// LOOKUP VOUCHER WORTH AND CALCULATE ADJUSTED DISPLAY PRICE
 $gateway_discount = 0.00;
 // If the user selected a coupon in checkout, let's calculate the value discount visually
 if (!empty($user_voucher_id) && $user_id > 0) {
@@ -70,7 +70,7 @@ if ($display_amount < 0) {
     margin: 0; 
     padding: 0; 
     box-sizing: border-box; 
-} /* Baseline structural resets to remove default spacing anomalies */
+} /* Reset browser spacing */
 
 body { 
     font-family: 'Inter', sans-serif; 
@@ -90,7 +90,7 @@ body {
     background: white; 
     padding: 1rem 2rem; 
     border-radius: 60px; 
-} /* Top multi-step tracking timeline wrapper styling */
+} /* Stepper wrapper card bar */
 
 .progress-step { 
     text-align: center; 
@@ -136,7 +136,7 @@ body {
     border: 1px solid #e0e0e0; 
     margin-top: 15px; 
     text-align: left; 
-} /* General dashboard panel frames and box sizing designs */
+} /* Input forms placeholder wrapper box */
 
 .container { 
     max-width: 500px; 
@@ -174,11 +174,11 @@ body {
     background: #fafdf7; 
     text-align: left; 
     margin-top: 15px; 
-}
+} /* Dashed receipt design container */
 
 .form-group { 
     margin-bottom: 15px; 
-} /* Mock credentials form input layouts definitions */
+}
 
 .form-group label { 
     display: block; 
@@ -224,7 +224,7 @@ body {
     display: flex; 
     align-items: center; 
     width: 100%; 
-} /* Password lock fields eye utility styles */
+}
 
 .toggle-password-eye { 
     position: absolute; 
@@ -247,7 +247,7 @@ body {
     display: flex; 
     align-items: center; 
     justify-content: space-between; 
-} /* Bank badges headers styles grids */
+}
 
 .secure-notice { 
     font-size: 11px; 
@@ -273,7 +273,7 @@ body {
     margin-top: 10px; 
     transition: 0.2s; 
     font-size: 13px; 
-} /* Blue Touch n Go interface framework components styling elements */
+}
 
 .tng-btn:hover { 
     background: #004487; 
@@ -484,6 +484,7 @@ body {
                 <p style="color:#5a6e5c; margin-bottom:20px; font-size:14px;">Your transaction has completed secure authentication.</p>
 
                 <?php
+                    // Calculate points earned from the transaction cost baseline parameters data
                     $points_earned = (int) floor((float)$amount);
                     $available_points = 0;
                     if ($user_id > 0) {
@@ -492,11 +493,22 @@ body {
                         $stmt_pts->execute();
                         $available_points = (int)($stmt_pts->get_result()->fetch_row()[0] ?? 0);
                     }
+
+                    // 🟢 EASY HUMAN COMMENT: Figure out the exact name of the payment method to print on the receipt
+                    if ($method === 'App Wallet') {
+                        $invoice_method = 'Smash Arena Wallet';
+                    } else {
+                        // If it's online payment, use the sub-method (like Bank, Card, TNG)
+                        $invoice_method = !empty($sub_method) ? $sub_method : $method;
+                    }
                 ?>
                 <div class="receipt-box">
                     <h4 style="text-align:center; margin-top:0; border-bottom: 1px solid #ddd; padding-bottom:8px; font-weight:700; color:#1a2930; letter-spacing:1px;">TRANSACTION RECEIPT</h4>
                     <p style="margin:8px 0; font-size:14px;"><strong>Merchant:</strong> Smash Arena Hub</p>
                     <p style="margin:8px 0; font-size:14px;"><strong>Booking Reference:</strong> #<?php echo htmlspecialchars($booking_id); ?></p>
+                    
+                    <p style="margin:8px 0; font-size:14px;"><strong>Payment Method:</strong> <span style="color:#666; font-weight:600;"><?php echo htmlspecialchars($invoice_method); ?></span></p>
+                    
                     <p style="margin:8px 0; font-size:14px;"><strong>Amount Credited:</strong> <span style="color:#2b7e3a; font-weight:bold;">RM <?php echo number_format($amount, 2); ?></span></p>
                     <p style="margin:8px 0; font-size:14px;"><strong>Status:</strong> <span style="color:#2b7e3a; font-weight:bold;">Approved / Settled</span></p>
                     <hr style="border:0; border-top:1px dashed #ccc; margin:10px 0;">
@@ -573,8 +585,12 @@ function simulateTngScan() {
     document.getElementById('tngLoadingView').style.display = 'block';
     document.getElementById('tngMainContainer').style.background = '#004487';
 
+    //After the short loading animation finishes, redirect to step 3 success
     setTimeout(function() {
-        document.getElementById('gatewayForm').submit();
+        // We append payment_method and sub_method directly into this window redirection string
+        window.location.href = 'gateway.php?step=3&status=success&booking_id=<?php echo $booking_id; 
+        ?>&amount=<?php echo $amount; 
+        ?>&payment_method=Online+Payment&sub_method=TNG';
     }, 2200);
 }
 <?php endif; ?>

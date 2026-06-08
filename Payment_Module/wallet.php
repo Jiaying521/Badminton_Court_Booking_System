@@ -41,7 +41,7 @@ if ($return_to === 'checkout') {
     $back_label = "Back to Dashboard";
 }
 
-// 🟢 FIXED RELATION QUERY: Maps payments back to the users table via bookings link row maps safely
+// FIXED RELATION QUERY: Maps payments back to the users table via bookings link row maps safely
 $wallet_logs = [];
 $log_stmt = $conn->prepare("
     SELECT p.amount, p.payment_method, p.payment_status, p.payment_date 
@@ -83,16 +83,23 @@ body {
     min-height: 100vh; 
 }
 
+.wallet-container { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 2rem; 
+    width: 100%; 
+    max-width: 1000px; 
+    align-items: start; 
+} /* Splits up main display layer frames side-by-side balanced horizontally */
+
 .wallet-card { 
     background: white; 
     padding: 2.5rem; 
     border-radius: 32px; 
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05); 
-    width: 100%; 
-    max-width: 480px; 
-    text-align: center; 
     border: 1px solid #eaf5e6; 
-} /* Central layout panel wallet card design traits blueprint definitions */
+    text-align: center; 
+} /* Left operations control panel grid wrapper cards blueprints components */
 
 .balance-box { 
     background: linear-gradient(135deg, #2b7e3a, #113f19); 
@@ -214,24 +221,32 @@ body {
 }
 
 .history-section { 
-    margin-top: 2rem; 
+    background: white; 
+    padding: 2.5rem; 
+    border-radius: 32px; 
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05); 
+    border: 1px solid #eaf5e6; 
     text-align: left; 
-    border-top: 1px solid #e0e8dc; 
-    padding-top: 1.5rem; 
-} /* History logs section template layout rules */
+    height: 100%; 
+    min-height: 590px; 
+    display: flex; 
+    flex-direction: column; 
+} /* Shifted to stand-alone right grid box container panel */
 
 .history-title { 
-    font-size: 1rem; 
-    font-weight: 700; 
+    font-size: 1.2rem; 
+    font-weight: 800; 
     color: #1e3a2a; 
-    margin-bottom: 1rem; 
+    margin-bottom: 1.5rem; 
     display: flex; 
     align-items: center; 
-    gap: 6px; 
+    gap: 8px; 
+    border-bottom: 2px solid #eaf5e6; 
+    padding-bottom: 0.8rem; 
 }
 
 .history-list { 
-    max-height: 220px; 
+    flex: 1; 
     overflow-y: auto; 
     padding-right: 5px; 
 }
@@ -240,25 +255,25 @@ body {
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
-    padding: 12px; 
+    padding: 16px; 
     background: #fafdfa; 
     border: 1px solid #e0e8dc; 
-    border-radius: 12px; 
-    margin-bottom: 8px; 
-    font-size: 0.85rem; 
+    border-radius: 16px; 
+    margin-bottom: 12px; 
+    font-size: 0.9rem; 
 }
 
 .log-date { 
     font-size: 0.75rem; 
     color: #888; 
     display: block; 
-    margin-top: 2px; 
+    margin-top: 4px; 
 }
 
 .status-badge { 
     font-size: 0.7rem; 
     font-weight: 700; 
-    padding: 2px 8px; 
+    padding: 4px 10px; 
     border-radius: 20px; 
     text-transform: uppercase; 
     margin-left: 6px; 
@@ -273,50 +288,65 @@ body {
     background: #f8d7da; 
     color: #721c24; 
 }
+
+@media (max-width: 850px) { 
+    .wallet-container { 
+        grid-template-columns: 1fr; 
+    } 
+    .history-section { 
+        min-height: auto; 
+    } 
+} /* Fluid mobile layout breakdown parameters context rules triggers map stacking */
     </style>
 </head>
 <body>
-    <div class="wallet-card">
-        <h2 style="color: #2b7e3a; font-weight: 800; font-size: 1.6rem;"><i class="fas fa-wallet"></i> Smash Wallet</h2>
+    
+    <div class="wallet-container">
         
-        <div class="balance-box">
-            <p style="opacity: 0.85; font-size: 0.9rem; font-weight: 500; letter-spacing: 0.5px;">Current Balance</p>
-            <h1 style="font-size: 2.8rem; margin: 5px 0; font-weight: 800; letter-spacing: -0.5px;">RM <?php echo number_format($current_balance, 2); ?></h1>
+        <div class="wallet-card">
+            <h2 style="color: #2b7e3a; font-weight: 800; font-size: 1.6rem;"><i class="fas fa-wallet"></i> Smash Wallet</h2>
+            
+            <div class="balance-box">
+                <p style="opacity: 0.85; font-size: 0.9rem; font-weight: 500; letter-spacing: 0.5px;">Current Balance</p>
+                <h1 style="font-size: 2.8rem; margin: 5px 0; font-weight: 800; letter-spacing: -0.5px;">RM <?php echo number_format($current_balance, 2); ?></h1>
+            </div>
+
+            <p style="text-align: left; font-weight: 700; font-size: 0.9rem; color: #1e3a2a; margin-bottom: 10px;">Quick Select:</p>
+            <div class="quick-grid">
+                <button type="button" class="amt-btn" onclick="selectAmt(10, this)">RM 10</button>
+                <button type="button" class="amt-btn" onclick="selectAmt(20, this)">RM 20</button>
+                <button type="button" class="amt-btn" onclick="selectAmt(50, this)">RM 50</button>
+            </div>
+
+            <form action="wallet_gateway.php" method="POST" onsubmit="return validateReload()">
+                <input type="hidden" name="return_to" value="<?php echo $return_to; ?>">
+                <input type="hidden" name="booking_id" value="<?php echo $b_id; ?>">
+                <input type="hidden" name="amount" value="<?php echo $b_amt; ?>">
+
+                <input type="number" name="reload_amount" id="reload_amt" class="topup-input" placeholder="0.00" min="1" max="1000" step="0.01" oninput="this.value = this.value.replace(/[^0-9.]/g, '');">
+                
+                <p style="text-align: left; font-weight: 700; font-size: 0.9rem; color: #1e3a2a; margin: 5px 0 10px;">Payment Method:</p>
+                
+                <label class="method-card">
+                    <input type="radio" name="pay_method" value="Bank" checked>
+                    <span style="margin-left:12px; font-weight: 600; color: #333; font-size: 0.95rem;">Online Banking (FPX)</span>
+                </label>
+
+                <label class="method-card">
+                    <input type="radio" name="pay_method" value="Card">
+                    <span style="margin-left:12px; font-weight: 600; color: #333; font-size: 0.95rem;">Credit / Debit Card</span>
+                </label>
+                
+                <label class="method-card">
+                    <input type="radio" name="pay_method" value="TNG">
+                    <span style="margin-left:12px; font-weight: 600; color: #333; font-size: 0.95rem;">Touch 'n Go eWallet</span>
+                </label>
+
+                <button type="submit" class="btn-reload" style="margin-top: 15px;">Next Step →</button>
+            </form>
+            
+            <a href="<?php echo $back_url; ?>" class="back-link">← <?php echo $back_label; ?></a>
         </div>
-
-        <p style="text-align: left; font-weight: 700; font-size: 0.9rem; color: #1e3a2a; margin-bottom: 10px;">Quick Select:</p>
-        <div class="quick-grid">
-            <button type="button" class="amt-btn" onclick="selectAmt(10, this)">RM 10</button>
-            <button type="button" class="amt-btn" onclick="selectAmt(20, this)">RM 20</button>
-            <button type="button" class="amt-btn" onclick="selectAmt(50, this)">RM 50</button>
-        </div>
-
-        <form action="wallet_gateway.php" method="POST" onsubmit="return validateReload()">
-            <input type="hidden" name="return_to" value="<?php echo $return_to; ?>">
-            <input type="hidden" name="booking_id" value="<?php echo $b_id; ?>">
-            <input type="hidden" name="amount" value="<?php echo $b_amt; ?>">
-
-            <input type="number" name="reload_amount" id="reload_amt" class="topup-input" placeholder="0.00" min="1" max="1000" step="0.01" oninput="this.value = this.value.replace(/[^0-9.]/g, '');">
-            
-            <p style="text-align: left; font-weight: 700; font-size: 0.9rem; color: #1e3a2a; margin: 5px 0 10px;">Payment Method:</p>
-            
-            <label class="method-card">
-                <input type="radio" name="pay_method" value="Bank" checked>
-                <span style="margin-left:12px; font-weight: 600; color: #333; font-size: 0.95rem;">Online Banking (FPX)</span>
-            </label>
-
-            <label class="method-card">
-                <input type="radio" name="pay_method" value="Card">
-                <span style="margin-left:12px; font-weight: 600; color: #333; font-size: 0.95rem;">Credit / Debit Card</span>
-            </label>
-            
-            <label class="method-card">
-                <input type="radio" name="pay_method" value="TNG">
-                <span style="margin-left:12px; font-weight: 600; color: #333; font-size: 0.95rem;">Touch 'n Go eWallet</span>
-            </label>
-
-            <button type="submit" class="btn-reload" style="margin-top: 15px;">Next Step →</button>
-        </form>
 
         <div class="history-section">
             <div class="history-title">
@@ -349,12 +379,11 @@ body {
                         </div>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <p style="color: #888; font-size: 0.85rem; padding: 1rem 0;">No top-up transaction records found.</p>
+                    <p style="color: #888; font-size: 0.85rem; padding: 2rem 0; text-align: center;">No top-up transaction records found.</p>
                 <?php endif; ?>
             </div>
         </div>
-        
-        <a href="<?php echo $back_url; ?>" class="back-link">← <?php echo $back_label; ?></a>
+
     </div>
 
     <script>

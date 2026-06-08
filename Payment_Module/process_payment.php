@@ -12,6 +12,7 @@ $method = $_POST['payment_method'] ?? 'Not Specified'; // Wallet or Online Payme
 $promo = $_POST['promo_code'] ?? '';           // Any manual text coupon code typed
 $user_id = $_SESSION['user_id'] ?? 0;          // Unique ID of the current player
 $user_voucher_id = $_POST['user_voucher_id'] ?? ''; // The database ID of the chosen rewards voucher
+$sub_method = $_POST['sub_method'] ?? '';      // Tracks if they used Bank, Card, or TNG
 
 // Start our running discount counter at 0
 $discount_applied = 0.00;
@@ -28,7 +29,7 @@ if (!empty($promo)) {
     }
 }
 
-// 🎫 VOUCHER DEDUCTION LOOKUP VALIDATION ENGINE
+// VOUCHER DEDUCTION LOOKUP VALIDATION ENGINE
 // If a user selected a claimed voucher from their dropdown inventory
 if (!empty($user_voucher_id) && $user_id > 0) {
     // Check if the voucher actually belongs to this user and hasn't been used yet
@@ -49,7 +50,7 @@ if (!empty($user_voucher_id) && $user_id > 0) {
     }
 }
 
-// 3. Final Math
+// 3. Final Math Calculations
 // Subtract whatever discount they got from the original court price tag
 $final_amount = $amount - $discount_applied;
 // If the discount is huge and makes the price negative, lock it to RM 0 so it's free
@@ -91,6 +92,10 @@ $stmt_pay->bind_param("idddss", $booking_id, $amount, $discount_applied, $final_
 // If the log was written successfully into our database
 if ($stmt_pay->execute()) {
     
+    // Prepare url-safe strings for redirection parameters to avoid broken url link bugs
+    $encoded_method = urlencode($method);
+    $encoded_sub = urlencode($sub_method);
+    
     // If the payment actually passed validation or was approved by the bank simulation
     if ($status === "Success") {
         
@@ -131,13 +136,14 @@ if ($stmt_pay->execute()) {
             $burn_stmt->execute();
         }
 
-        // Redirect over to gateway.php Step 3 and show the green "Success" receipt panel
-        header("Location: gateway.php?step=3&status=success&booking_id=$booking_id&amount=$final_amount");
+        // SIMPLE HUMAN COMMENT: We added the method variables directly into the redirection URL below
+        // This stops the invoice from showing "Unknown" and displays the real payment channel used
+        header("Location: gateway.php?step=3&status=success&booking_id=$booking_id&amount=$final_amount&payment_method=$encoded_method&sub_method=$encoded_sub");
         exit();
         
     } else {
-        // If the wallet was short on cash or bank declined, redirect to Step 3 with the red "Fail" card
-        header("Location: gateway.php?step=3&status=fail&booking_id=$booking_id&amount=$amount");
+        // If the transaction failed, send them to step 3 with a fail status flag while carrying the parameters
+        header("Location: gateway.php?step=3&status=fail&booking_id=$booking_id&amount=$amount&payment_method=$encoded_method&sub_method=$encoded_sub");
         exit();
     }
 
