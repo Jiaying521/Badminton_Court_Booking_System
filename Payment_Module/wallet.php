@@ -10,7 +10,10 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Get the user ID from the active login session
-$user_id = $_SESSION['user_id'];
+$user_id = $_SESSION['user_id'] ?? 0;
+if ($user_id == 0) {
+    die("<script>window.location.href='../Customer_Module/homepage.php';</script>");
+}
 
 // Fetch REAL balance from database
 // Prepare an SQL statement to look up the user's cash balance securely
@@ -37,6 +40,23 @@ if ($return_to === 'checkout') {
     $back_url = "../Customer_Module/dashboard.php";
     $back_label = "Back to Dashboard";
 }
+
+// 🟢 FIXED RELATION QUERY: Maps payments back to the users table via bookings link row maps safely
+$wallet_logs = [];
+$log_stmt = $conn->prepare("
+    SELECT p.amount, p.payment_method, p.payment_status, p.payment_date 
+    FROM payments p
+    JOIN bookings b ON p.booking_id = b.id
+    WHERE b.user_id = ? AND p.amount > 0 
+    ORDER BY p.payment_date DESC 
+    LIMIT 10
+");
+$log_stmt->bind_param("i", $user_id);
+$log_stmt->execute();
+$log_res = $log_stmt->get_result();
+while ($log_row = $log_res->fetch_assoc()) {
+    $wallet_logs[] = $log_row;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -47,39 +67,212 @@ if ($return_to === 'checkout') {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* Baseline structural resets to remove default spacing anomalies */
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Inter',sans-serif; background:#f5f9f0; padding:2rem; display:flex; justify-content:center; align-items:center; min-height:100vh; }
-        
-        /* Central layout panel wallet card design traits blueprint definitions */
-        .wallet-card { background: white; padding: 2.5rem; border-radius: 32px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); width: 100%; max-width: 480px; text-align: center; border: 1px solid #eaf5e6; }
-        
-        /* Gradient balance indicator box context properties styles template layout rules */
-        .balance-box { background: linear-gradient(135deg,#2b7e3a,#113f19); color: white; padding: 2rem; border-radius: 24px; margin: 1.5rem 0; box-shadow: 0 8px 20px rgba(43,126,58,0.15); }
-        
-        /* Quick select grids mapping layout spacing definitions metrics */
-        .quick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
-        
-        /* Quick choose amounts shortcut selection buttons aesthetics styles definitions blocks */
-        .amt-btn { background: #f8faf5; border: 1.5px solid #e0e8dc; padding: 14px; border-radius: 14px; cursor: pointer; font-weight: 700; color: #2b7e3a; transition: 0.2s; font-size: 0.95rem; }
-        .amt-btn:hover { background: #eaf5e6; color: #1f5a2a; border-color: #2b7e3a; }
-        .amt-btn.active { background: #2b7e3a; color: white; border-color: #2b7e3a; box-shadow: 0 4px 10px rgba(43,126,58,0.2); }
-        
-        /* External reload funding channel selector button option wrapper row card layout characteristics */
-        .method-card { border: 1.5px solid #e0e0e0; padding: 16px; border-radius: 14px; margin-bottom: 12px; display: flex; align-items: center; cursor: pointer; text-align: left; background: white; transition: 0.2s; }
-        .method-card:hover { border-color: #2b7e3a; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-        .method-card input[type="radio"] { accent-color: #2b7e3a; transform: scale(1.1); }
-        
-        /* Large numerical custom deposit text field container block parameters layouts styling properties */
-        .topup-input { width: 100%; padding: 1rem; border-radius: 16px; border: 2px solid #e0e8dc; margin-bottom: 15px; text-align: center; font-size: 1.6rem; font-weight: 800; color: #2b7e3a; background: #fafdfa; outline: none; transition: 0.2s; }
-        .topup-input:focus { border-color: #2b7e3a; background: white; box-shadow: 0 0 0 4px rgba(43,126,58,0.08); }
-        
-        /* Main confirmation continuation action button element attributes template styling scripts rules */
-        .btn-reload { background: #2b7e3a; color: white; border: none; padding: 1.1rem; border-radius: 50px; width: 100%; font-weight: 700; cursor: pointer; font-size: 1rem; transition: 0.2s; box-shadow: 0 4px 12px rgba(43,126,58,0.15); }
-        .btn-reload:hover { background: #1f5a2a; transform: translateY(-1px); }
-        
-        .back-link { display: inline-block; margin-top: 1.5rem; color: #666; text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: 0.2s; }
-        .back-link:hover { color: #ff4d4d; text-decoration: underline; }
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+} /* Baseline structural resets to remove default spacing anomalies */
+
+body { 
+    font-family: 'Inter', sans-serif; 
+    background: #f5f9f0; 
+    padding: 2rem; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    min-height: 100vh; 
+}
+
+.wallet-card { 
+    background: white; 
+    padding: 2.5rem; 
+    border-radius: 32px; 
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05); 
+    width: 100%; 
+    max-width: 480px; 
+    text-align: center; 
+    border: 1px solid #eaf5e6; 
+} /* Central layout panel wallet card design traits blueprint definitions */
+
+.balance-box { 
+    background: linear-gradient(135deg, #2b7e3a, #113f19); 
+    color: white; 
+    padding: 2rem; 
+    border-radius: 24px; 
+    margin: 1.5rem 0; 
+    box-shadow: 0 8px 20px rgba(43, 126, 58, 0.15); 
+} /* Gradient balance indicator box context properties styles template layout rules */
+
+.quick-grid { 
+    display: grid; 
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 12px; 
+    margin-bottom: 20px; 
+} /* Quick select grids mapping layout spacing definitions metrics */
+
+.amt-btn { 
+    background: #f8faf5; 
+    border: 1.5px solid #e0e8dc; 
+    padding: 14px; 
+    border-radius: 14px; 
+    cursor: pointer; 
+    font-weight: 700; 
+    color: #2b7e3a; 
+    transition: 0.2s; 
+    font-size: 0.95rem; 
+} /* Quick choose amounts shortcut selection buttons aesthetics styles definitions blocks */
+
+.amt-btn:hover { 
+    background: #eaf5e6; 
+    color: #1f5a2a; 
+    border-color: #2b7e3a; 
+}
+
+.amt-btn.active { 
+    background: #2b7e3a; 
+    color: white; 
+    border-color: #2b7e3a; 
+    box-shadow: 0 4px 10px rgba(43, 126, 58, 0.2); 
+}
+
+.method-card { 
+    border: 1.5px solid #e0e0e0; 
+    padding: 16px; 
+    border-radius: 14px; 
+    margin-bottom: 12px; 
+    display: flex; 
+    align-items: center; 
+    cursor: pointer; 
+    text-align: left; 
+    background: white; 
+    transition: 0.2s; 
+} /* External reload funding channel selector button option wrapper row card layout characteristics */
+
+.method-card:hover { 
+    border-color: #2b7e3a; 
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03); 
+}
+
+.method-card input[type="radio"] { 
+    accent-color: #2b7e3a; 
+    transform: scale(1.1); 
+}
+
+.topup-input { 
+    width: 100%; 
+    padding: 1rem; 
+    border-radius: 16px; 
+    border: 2px solid #e0e8dc; 
+    margin-bottom: 15px; 
+    text-align: center; 
+    font-size: 1.6rem; 
+    font-weight: 800; 
+    color: #2b7e3a; 
+    background: #fafdfa; 
+    outline: none; 
+    transition: 0.2s; 
+} /* Large numerical custom deposit text field container block parameters layouts styling properties */
+
+.topup-input:focus { 
+    border-color: #2b7e3a; 
+    background: white; 
+    box-shadow: 0 0 0 4px rgba(43, 126, 58, 0.08); 
+}
+
+.btn-reload { 
+    background: #2b7e3a; 
+    color: white; 
+    border: none; 
+    padding: 1.1rem; 
+    border-radius: 50px; 
+    width: 100%; 
+    font-weight: 700; 
+    cursor: pointer; 
+    font-size: 1rem; 
+    transition: 0.2s; 
+    box-shadow: 0 4px 12px rgba(43, 126, 58, 0.15); 
+} /* Main confirmation continuation action button element attributes template styling scripts rules */
+
+.btn-reload:hover { 
+    background: #1f5a2a; 
+    transform: translateY(-1px); 
+}
+
+.back-link { 
+    display: inline-block; 
+    margin-top: 1.5rem; 
+    color: #666; 
+    text-decoration: none; 
+    font-size: 0.9rem; 
+    font-weight: 600; 
+    transition: 0.2s; 
+}
+
+.back-link:hover { 
+    color: #ff4d4d; 
+    text-decoration: underline; 
+}
+
+.history-section { 
+    margin-top: 2rem; 
+    text-align: left; 
+    border-top: 1px solid #e0e8dc; 
+    padding-top: 1.5rem; 
+} /* History logs section template layout rules */
+
+.history-title { 
+    font-size: 1rem; 
+    font-weight: 700; 
+    color: #1e3a2a; 
+    margin-bottom: 1rem; 
+    display: flex; 
+    align-items: center; 
+    gap: 6px; 
+}
+
+.history-list { 
+    max-height: 220px; 
+    overflow-y: auto; 
+    padding-right: 5px; 
+}
+
+.history-item { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 12px; 
+    background: #fafdfa; 
+    border: 1px solid #e0e8dc; 
+    border-radius: 12px; 
+    margin-bottom: 8px; 
+    font-size: 0.85rem; 
+}
+
+.log-date { 
+    font-size: 0.75rem; 
+    color: #888; 
+    display: block; 
+    margin-top: 2px; 
+}
+
+.status-badge { 
+    font-size: 0.7rem; 
+    font-weight: 700; 
+    padding: 2px 8px; 
+    border-radius: 20px; 
+    text-transform: uppercase; 
+    margin-left: 6px; 
+}
+
+.badge-success { 
+    background: #d4edda; 
+    color: #155724; 
+}
+
+.badge-failed { 
+    background: #f8d7da; 
+    color: #721c24; 
+}
     </style>
 </head>
 <body>
@@ -124,6 +317,42 @@ if ($return_to === 'checkout') {
 
             <button type="submit" class="btn-reload" style="margin-top: 15px;">Next Step →</button>
         </form>
+
+        <div class="history-section">
+            <div class="history-title">
+                <i class="fas fa-history" style="color: #2b7e3a;"></i> Recent Wallet Transactions
+            </div>
+            
+            <div class="history-list">
+                <?php if (count($wallet_logs) > 0): ?>
+                    <?php foreach ($wallet_logs as $log): ?>
+                        <div class="history-item">
+                            <div>
+                                <span style="font-weight: 600; color: #333;">
+                                    Loaded via <?php echo htmlspecialchars($log['payment_method']); ?>
+                                </span>
+                                <small class="log-date">
+                                    <?php echo date('M j, Y • h:i A', strtotime($log['payment_date'])); ?>
+                                </small>
+                            </div>
+                            <div style="text-align: right;">
+                                <strong style="color: #2b7e3a; font-size: 0.95rem;">
+                                    +RM <?php echo number_format($log['amount'], 2); ?>
+                                </strong>
+                                <br>
+                                <?php if (strtolower($log['payment_status']) === 'success'): ?>
+                                    <span class="status-badge badge-success">Success</span>
+                                <?php else: ?>
+                                    <span class="status-badge badge-failed">Failed</span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p style="color: #888; font-size: 0.85rem; padding: 1rem 0;">No top-up transaction records found.</p>
+                <?php endif; ?>
+            </div>
+        </div>
         
         <a href="<?php echo $back_url; ?>" class="back-link">← <?php echo $back_label; ?></a>
     </div>
@@ -143,7 +372,6 @@ if ($return_to === 'checkout') {
             document.querySelectorAll('.amt-btn').forEach(btn => btn.classList.remove('active'));
         });
 
-        // 🟢 JAVASCRIPT VALIDATION ENGINE: Strictly forces positive numbers
         // Verification function triggered on submit to catch empty rows, zero, or negative money manipulation inputs hacks instantly before moving forward
         function validateReload() {
             const a = parseFloat(document.getElementById('reload_amt').value);

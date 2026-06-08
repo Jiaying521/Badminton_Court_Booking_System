@@ -66,48 +66,227 @@ if ($display_amount < 0) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* Baseline structural resets to remove default spacing anomalies */
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Inter',sans-serif; background:#f5f9f0; padding:2rem; }
-        .main-container { max-width:1400px; margin:0 auto; }
-        
-        /* Top multi-step tracking timeline wrapper styling */
-        .progress-bar { display:flex; justify-content:space-between; margin-bottom:2rem; background:white; padding:1rem 2rem; border-radius:60px; }
-        .progress-step { text-align:center; flex:1; }
-        .progress-step .step-number { width:32px; height:32px; background:#e0e0e0; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:0.3rem; color: #333; }
-        .progress-step.active .step-number { background:#2b7e3a; color:white; }
-        .progress-step.completed .step-number { background:#2b7e3a; color:white; }
-        .progress-step .step-label { font-size:0.75rem; color:#888; }
-        .progress-step.active .step-label { color:#2b7e3a; font-weight:600; }
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+} /* Baseline structural resets to remove default spacing anomalies */
 
-        /* General dashboard panel frames and box sizing designs */
-        .clone-container { background: white; padding: 25px; border-radius: 16px; border: 1px solid #e0e0e0; margin-top: 15px; text-align: left;}
-        .container { max-width: 500px; margin: 30px auto; padding: 30px; background: white; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        .btn-green { width: 100%; padding: 15px; margin-top: 20px; background-color: #2b7e3a; color: white; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; font-size: 1rem; text-decoration:none; display:inline-block; box-sizing: border-box;}
-        .btn-green:hover { background-color: #1f5a2a; }
-        .receipt-box { border: 2px dashed #cbd5c0; padding: 20px; border-radius: 12px; background: #fafdf7; text-align: left; margin-top: 15px; }
-        
-        /* Mock credentials form input layouts definitions */
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 12px; font-weight: 700; color: #444; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .gateway-input { width: 100%; padding: 12px 14px; border-radius: 8px; border: 1px solid #ccc; outline: none; font-size: 14px; font-family: inherit; color: #333; background: #fafafa; transition: 0.2s; }
-        .gateway-input:focus { border-color: #2b7e3a; background: #fff; box-shadow: 0 0 0 3px rgba(43,126,58,0.1); }
-        .input-row { display: flex; gap: 12px; }
-        .input-row .form-group { flex: 1; margin-bottom: 0; }
-        
-        /* Password lock fields eye utility styles */
-        .password-wrapper { position: relative; display: flex; align-items: center; width: 100%; }
-        .toggle-password-eye { position: absolute; right: 15px; color: #666; cursor: pointer; transition: 0.2s; font-size: 16px; z-index: 10; }
-        .toggle-password-eye:hover { color: #2b7e3a; }
-        
-        /* Bank badges headers styles grids */
-        .bank-badge-header { border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; }
-        .secure-notice { font-size: 11px; color: #666; display: flex; align-items: center; gap: 5px; margin-top: 10px; background: #f9f9f9; padding: 8px 12px; border-radius: 6px; }
+body { 
+    font-family: 'Inter', sans-serif; 
+    background: #f5f9f0; 
+    padding: 2rem; 
+}
 
-        /* Blue Touch n Go interface framework components styling elements */
-        .tng-btn { background: #005eb8; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; transition: 0.2s; font-size: 13px; }
-        .tng-btn:hover { background: #004487; }
-        .countdown-text { font-size: 12px; color: #ffeb3b; font-weight: bold; margin-top: 5px; display: block; letter-spacing: 0.5px; }
+.main-container { 
+    max-width: 1400px; 
+    margin: 0 auto; 
+}
+
+.progress-bar { 
+    display: flex; 
+    justify-content: space-between; 
+    margin-bottom: 2rem; 
+    background: white; 
+    padding: 1rem 2rem; 
+    border-radius: 60px; 
+} /* Top multi-step tracking timeline wrapper styling */
+
+.progress-step { 
+    text-align: center; 
+    flex: 1; 
+}
+
+.progress-step .step-number { 
+    width: 32px; 
+    height: 32px; 
+    background: #e0e0e0; 
+    border-radius: 50%; 
+    display: inline-flex; 
+    align-items: center; 
+    justify-content: center; 
+    margin-bottom: 0.3rem; 
+    color: #333; 
+}
+
+.progress-step.active .step-number { 
+    background: #2b7e3a; 
+    color: white; 
+}
+
+.progress-step.completed .step-number { 
+    background: #2b7e3a; 
+    color: white; 
+}
+
+.progress-step .step-label { 
+    font-size: 0.75rem; 
+    color: #888; 
+}
+
+.progress-step.active .step-label { 
+    color: #2b7e3a; 
+    font-weight: 600; 
+}
+
+.clone-container { 
+    background: white; 
+    padding: 25px; 
+    border-radius: 16px; 
+    border: 1px solid #e0e0e0; 
+    margin-top: 15px; 
+    text-align: left; 
+} /* General dashboard panel frames and box sizing designs */
+
+.container { 
+    max-width: 500px; 
+    margin: 30px auto; 
+    padding: 30px; 
+    background: white; 
+    border-radius: 24px; 
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); 
+}
+
+.btn-green { 
+    width: 100%; 
+    padding: 15px; 
+    margin-top: 20px; 
+    background-color: #2b7e3a; 
+    color: white; 
+    border: none; 
+    border-radius: 50px; 
+    font-weight: bold; 
+    cursor: pointer; 
+    font-size: 1rem; 
+    text-decoration: none; 
+    display: inline-block; 
+    box-sizing: border-box; 
+}
+
+.btn-green:hover { 
+    background-color: #1f5a2a; 
+}
+
+.receipt-box { 
+    border: 2px dashed #cbd5c0; 
+    padding: 20px; 
+    border-radius: 12px; 
+    background: #fafdf7; 
+    text-align: left; 
+    margin-top: 15px; 
+}
+
+.form-group { 
+    margin-bottom: 15px; 
+} /* Mock credentials form input layouts definitions */
+
+.form-group label { 
+    display: block; 
+    font-size: 12px; 
+    font-weight: 700; 
+    color: #444; 
+    margin-bottom: 6px; 
+    text-transform: uppercase; 
+    letter-spacing: 0.5px; 
+}
+
+.gateway-input { 
+    width: 100%; 
+    padding: 12px 14px; 
+    border-radius: 8px; 
+    border: 1px solid #ccc; 
+    outline: none; 
+    font-size: 14px; 
+    font-family: inherit; 
+    color: #333; 
+    background: #fafafa; 
+    transition: 0.2s; 
+}
+
+.gateway-input:focus { 
+    border-color: #2b7e3a; 
+    background: #fff; 
+    box-shadow: 0 0 0 3px rgba(43, 126, 58, 0.1); 
+}
+
+.input-row { 
+    display: flex; 
+    gap: 12px; 
+}
+
+.input-row .form-group { 
+    flex: 1; 
+    margin-bottom: 0; 
+}
+
+.password-wrapper { 
+    position: relative; 
+    display: flex; 
+    align-items: center; 
+    width: 100%; 
+} /* Password lock fields eye utility styles */
+
+.toggle-password-eye { 
+    position: absolute; 
+    right: 15px; 
+    color: #666; 
+    cursor: pointer; 
+    transition: 0.2s; 
+    font-size: 16px; 
+    z-index: 10; 
+}
+
+.toggle-password-eye:hover { 
+    color: #2b7e3a; 
+}
+
+.bank-badge-header { 
+    border-bottom: 1px solid #eee; 
+    padding-bottom: 15px; 
+    margin-bottom: 15px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+} /* Bank badges headers styles grids */
+
+.secure-notice { 
+    font-size: 11px; 
+    color: #666; 
+    display: flex; 
+    align-items: center; 
+    gap: 5px; 
+    margin-top: 10px; 
+    background: #f9f9f9; 
+    padding: 8px 12px; 
+    border-radius: 6px; 
+}
+
+.tng-btn { 
+    background: #005eb8; 
+    color: white; 
+    border: none; 
+    padding: 12px; 
+    border-radius: 8px; 
+    font-weight: bold; 
+    cursor: pointer; 
+    width: 100%; 
+    margin-top: 10px; 
+    transition: 0.2s; 
+    font-size: 13px; 
+} /* Blue Touch n Go interface framework components styling elements */
+
+.tng-btn:hover { 
+    background: #004487; 
+}
+
+.countdown-text { 
+    font-size: 12px; 
+    color: #ffeb3b; 
+    font-weight: bold; 
+    margin-top: 5px; 
+    display: block; 
+    letter-spacing: 0.5px; 
+}
     </style>
 </head>
 <body>
@@ -239,10 +418,8 @@ if ($display_amount < 0) {
                                 
                                 <div style="background: white; padding: 12px; display: inline-block; border-radius: 12px; margin: 15px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
                                     <?php
-                                        // Auto-fetch your current laptop local IP address dynamically to build a real mobile gateway bridge route
                                         $laptop_ip = gethostbyname(gethostname()); 
                                         $mobile_url = "http://$laptop_ip/fyp/Payment_Module/tng_mobile.php?booking_id=$booking_id&amount=$amount&user_voucher_id=$user_voucher_id";
-                                        // Request a dynamic QR code matrix using a secure online rendering API channel
                                         $qr_api_link = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=" . urlencode($mobile_url);
                                     ?>
                                     <img src="<?php echo $qr_api_link; ?>" alt="Live Smart QR Channel" style="display: block;">
@@ -265,7 +442,6 @@ if ($display_amount < 0) {
 
                 <?php elseif ($step == 2): ?>
                     <script>
-                        // Intercept and swap form submit target action path over to process_payment.php engine script instantly on load
                         window.onload = function() {
                             const forms = document.getElementsByTagName('form');
                             if(forms.length > 0) {
@@ -339,7 +515,6 @@ if ($display_amount < 0) {
 </div>
 
 <script>
-// Interactive password utility swapping text input type values back and forth dynamically
 function togglePasswordVisibility(inputId, iconElement) {
     const passwordInput = document.getElementById(inputId);
     if (passwordInput.type === "password") {
@@ -353,7 +528,6 @@ function togglePasswordVisibility(inputId, iconElement) {
     }
 }
 
-// Active scanning timer calculation thread execution block for mobile apps simulation channels
 <?php if ($sub_method === 'TNG' && $step == 1): ?>
 let duration = 300; 
 const timerElement = document.getElementById('tngTimer');
@@ -370,23 +544,19 @@ const interval = setInterval(function() {
     }
 }, 1000);
 
-// Live loop interval querying background database status to capture real-time remote phone authentication approvals actions
 const liveDatabaseCheck = setInterval(function() {
     fetch('../Customer_Module/get_booking_details.php?id=<?php echo $booking_id; ?>')
         .then(response => response.json())
         .then(data => {
-            // If phone user confirms payment transaction via API channel link lines triggers metrics row updates
             if (data.success && data.booking.status === 'Confirmed') {
                 clearInterval(interval);
                 clearInterval(liveDatabaseCheck);
                 
-                // Swap layout containers visibility views live
                 document.getElementById('tngScanningView').style.display = 'none';
                 document.getElementById('cancelReturnLink').style.display = 'none';
-                document.getElementById('tngLoadingView').style.block;
+                document.getElementById('tngLoadingView').style.display = 'block';
                 document.getElementById('tngMainContainer').style.background = '#2b7e3a'; 
                 
-                // Force interface reload forward onto confirmation step ticket view automatically
                 setTimeout(function() {
                     window.location.href = 'gateway.php?step=3&status=success&booking_id=<?php echo $booking_id; ?>&amount=<?php echo $amount; ?>';
                 }, 1800);
@@ -395,7 +565,6 @@ const liveDatabaseCheck = setInterval(function() {
         .catch(err => console.log('Polling server link ping...'));
 }, 2000);
 
-// Simulation override bypass route handler for desktop testing layouts
 function simulateTngScan() {
     clearInterval(interval);
     clearInterval(liveDatabaseCheck);
@@ -404,7 +573,6 @@ function simulateTngScan() {
     document.getElementById('tngLoadingView').style.display = 'block';
     document.getElementById('tngMainContainer').style.background = '#004487';
 
-    // Submit form properties down forward onto process validation engines manually
     setTimeout(function() {
         document.getElementById('gatewayForm').submit();
     }, 2200);

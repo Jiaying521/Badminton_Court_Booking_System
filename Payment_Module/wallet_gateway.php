@@ -24,38 +24,166 @@ if ($reload_amt < 1) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* Base universal padding resets to eliminate default browser layout spaces bugs */
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Inter',sans-serif; background:#f5f9f0; padding:2rem; display:flex; justify-content:center; align-items:center; min-height:100vh; }
-        
-        /* Center panel credentials card layout formatting configurations blueprint definitions */
-        .gateway-card { background:white; padding:40px; border-radius:24px; width:100%; max-width:440px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.04); border-top: 6px solid #2b7e3a; }
-        
-        .form-group { margin-bottom: 16px; text-align: left; }
-        .form-group label { display: block; font-size: 11px; font-weight: 700; color: #555; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-        
-        /* Clean text field input forms aesthetics layout templates styling parameters */
-        .gateway-input { width: 100%; padding: 12px 14px; border-radius: 8px; border: 1px solid #ccc; outline: none; font-size: 14px; font-family: inherit; color: #333; background: #fafafa; transition: 0.2s; }
-        .gateway-input:focus { border-color: #2b7e3a; background: #fff; box-shadow: 0 0 0 3px rgba(43,126,58,0.1); }
-        
-        /* Hide password visibility text fields eye utility formatting characteristics blueprint design */
-        .password-wrapper { position: relative; display: flex; align-items: center; width: 100%; }
-        .toggle-password-eye { position: absolute; right: 15px; color: #666; cursor: pointer; transition: 0.2s; font-size: 16px; z-index: 10; }
-        .toggle-password-eye:hover { color: #2b7e3a; }
-        
-        /* Master green operation continuation button layout properties configuration definitions template */
-        .btn-green { width: 100%; padding: 15px; margin-top: 20px; background-color: #2b7e3a; color: white; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; font-size: 1rem; text-decoration:none; display:inline-block; transition: 0.2s; }
-        .btn-green:hover { background-color: #1f5a2a; }
-        
-        .bank-badge-header { border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
-        .secure-notice { font-size: 11px; color: #666; display: flex; align-items: center; gap: 5px; margin-top: 15px; background: #f9f9f9; padding: 10px 12px; border-radius: 6px; text-align: left; }
-        .input-row { display: flex; gap: 12px; }
-        .input-row .form-group { flex: 1; margin-bottom: 0; }
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+} /* Base universal padding resets to eliminate default browser layout spaces bugs */
 
-        /* Custom blue Touch n Go branding design attributes styling layouts context components */
-        .tng-btn { background: #005eb8; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 12px; transition: 0.2s; font-size: 13px; }
-        .tng-btn:hover { background: #004487; }
-        .countdown-text { font-size: 12px; color: #ffeb3b; font-weight: bold; margin-top: 5px; display: block; letter-spacing: 0.5px; }
+body { 
+    font-family: 'Inter', sans-serif; 
+    background: #f5f9f0; 
+    padding: 2rem; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    min-height: 100vh; 
+}
+
+.gateway-card { 
+    background: white; 
+    padding: 40px; 
+    border-radius: 24px; 
+    width: 100%; 
+    max-width: 440px; 
+    text-align: center; 
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04); 
+    border-top: 6px solid #2b7e3a; 
+} /* Center panel credentials card layout formatting configurations blueprint definitions */
+
+.form-group { 
+    margin-bottom: 16px; 
+    text-align: left; 
+}
+
+.form-group label { 
+    display: block; 
+    font-size: 11px; 
+    font-weight: 700; 
+    color: #555; 
+    margin-bottom: 6px; 
+    text-transform: uppercase; 
+    letter-spacing: 0.5px; 
+}
+
+.gateway-input { 
+    width: 100%; 
+    padding: 12px 14px; 
+    border-radius: 8px; 
+    border: 1px solid #ccc; 
+    outline: none; 
+    font-size: 14px; 
+    font-family: inherit; 
+    color: #333; 
+    background: #fafafa; 
+    transition: 0.2s; 
+} /* Clean text field input forms aesthetics layout templates styling parameters */
+
+.gateway-input:focus { 
+    border-color: #2b7e3a; 
+    background: #fff; 
+    box-shadow: 0 0 0 3px rgba(43, 126, 58, 0.1); 
+}
+
+.password-wrapper { 
+    position: relative; 
+    display: flex; 
+    align-items: center; 
+    width: 100%; 
+} /* Hide password visibility text fields eye utility formatting characteristics blueprint design */
+
+.toggle-password-eye { 
+    position: absolute; 
+    right: 15px; 
+    color: #666; 
+    cursor: pointer; 
+    transition: 0.2s; 
+    font-size: 16px; 
+    z-index: 10; 
+}
+
+.toggle-password-eye:hover { 
+    color: #2b7e3a; 
+}
+
+.btn-green { 
+    width: 100%; 
+    padding: 15px; 
+    margin-top: 20px; 
+    background-color: #2b7e3a; 
+    color: white; 
+    border: none; 
+    border-radius: 50px; 
+    font-weight: bold; 
+    cursor: pointer; 
+    font-size: 1rem; 
+    text-decoration: none; 
+    display: inline-block; 
+    transition: 0.2s; 
+} /* Master green operation continuation button layout properties configuration definitions template */
+
+.btn-green:hover { 
+    background-color: #1f5a2a; 
+}
+
+.bank-badge-header { 
+    border-bottom: 1px solid #eee; 
+    padding-bottom: 15px; 
+    margin-bottom: 20px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+}
+
+.secure-notice { 
+    font-size: 11px; 
+    color: #666; 
+    display: flex; 
+    align-items: center; 
+    gap: 5px; 
+    margin-top: 15px; 
+    background: #f9f9f9; 
+    padding: 10px 12px; 
+    border-radius: 6px; 
+    text-align: left; 
+}
+
+.input-row { 
+    display: flex; 
+    gap: 12px; 
+}
+
+.input-row .form-group { 
+    flex: 1; 
+    margin-bottom: 0; 
+}
+
+.tng-btn { 
+    background: #005eb8; 
+    color: white; 
+    border: none; 
+    padding: 12px; 
+    border-radius: 8px; 
+    font-weight: bold; 
+    cursor: pointer; 
+    width: 100%; 
+    margin-top: 12px; 
+    transition: 0.2s; 
+    font-size: 13px; 
+} /* Custom blue Touch n Go branding design attributes styling layouts context components */
+
+.tng-btn:hover { 
+    background: #004487; 
+}
+
+.countdown-text { 
+    font-size: 12px; 
+    color: #ffeb3b; 
+    font-weight: bold; 
+    margin-top: 5px; 
+    display: block; 
+    letter-spacing: 0.5px; 
+}
     </style>
 </head>
 <body>
@@ -172,7 +300,6 @@ if ($reload_amt < 1) {
     </div>
 
 <script>
-// Interactive password utility swapping string input characters type parameters back and forth on eye icon clicks triggers
 function togglePasswordVisibility(inputId, iconElement) {
     const passwordInput = document.getElementById(inputId);
     if (passwordInput.type === "password") {
@@ -186,7 +313,6 @@ function togglePasswordVisibility(inputId, iconElement) {
     }
 }
 
-// Background thread sequence tracking TNG QR ticker expiration clocks live inside active screen viewport templates rules
 <?php if ($pay_method == 'TNG'): ?>
 let duration = 300; 
 const timerElement = document.getElementById('reloadTngTimer');
@@ -203,20 +329,16 @@ const interval = setInterval(function() {
     }
 }, 1000);
 
-// Automation click simulator processing background redirection logic to pass wallet parameters over to database update processing files
 function simulateReloadTngScan() {
     clearInterval(interval);
-    // Hide default text choice elements out of sight
     document.getElementById('tngScanningView').style.display = 'none';
     document.getElementById('cancelBtnLink').style.display = 'none';
-    // Throw up the blue processing animation view fields blocks layers components
     document.getElementById('tngLoadingView').style.display = 'block';
     
     const container = document.getElementById('gatewayMainContainer');
     container.style.background = '#005eb8';
     container.style.borderColor = '#005eb8';
 
-    // Submit forms datasets payload downstream to process_reload.php safely after brief processing animations delay frames loops
     setTimeout(function() {
         document.getElementById('reloadForm').submit();
     }, 2000);
