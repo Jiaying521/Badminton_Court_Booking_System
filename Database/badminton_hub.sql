@@ -1119,6 +1119,29 @@ ALTER TABLE `court_availability`
 --
 ALTER TABLE `payments`
   ADD CONSTRAINT `fk_payments_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE;
+-- ============================================
+-- Smash Arena - Database Migration
+-- 只添加缺少的字段
+-- ============================================
+
+-- 1. 添加 reschedule_count 字段（如果不存在）
+SET @exists = (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_NAME = 'bookings' AND COLUMN_NAME = 'reschedule_count');
+SET @sql = IF(@exists = 0, 'ALTER TABLE bookings ADD COLUMN reschedule_count INT DEFAULT 0 AFTER status', 'SELECT "reschedule_count already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- 2. 添加 cancellation_count 字段（如果不存在）
+SET @exists2 = (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_NAME = 'users' AND COLUMN_NAME = 'cancellation_count');
+SET @sql2 = IF(@exists2 = 0, 'ALTER TABLE users ADD COLUMN cancellation_count INT DEFAULT 0 AFTER wallet_balance', 'SELECT "cancellation_count already exists"');
+PREPARE stmt2 FROM @sql2;
+EXECUTE stmt2;
+DEALLOCATE PREPARE stmt2;
+
+-- 验证字段是否添加成功
+SELECT 
+    (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_NAME = 'bookings' AND COLUMN_NAME = 'reschedule_count') AS bookings_reschedule_count,
+    (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_NAME = 'users' AND COLUMN_NAME = 'cancellation_count') AS users_cancellation_count;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

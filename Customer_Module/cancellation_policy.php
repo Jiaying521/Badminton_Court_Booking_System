@@ -13,7 +13,7 @@ function getSetting($key, $default = '') {
     return $row ? $row['setting_value'] : $default;
 }
 
-// 获取取消政策相关设置
+// 获取各种设置
 $cancellation_hours = getSetting('cancellation_hours', '2');
 $cancellation_fee = getSetting('cancellation_fee', '10.00');
 $contact_phone = getSetting('contact_phone', '+603-1234 5678');
@@ -34,7 +34,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cancellation Policy | Smash Arena</title>
+    <title>Cancellation & Reschedule Policy | Smash Arena</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -77,7 +77,6 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         ::-webkit-scrollbar-thumb { background: #2b7e3a; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #1f5a2a; }
         
-        /* Glassmorphism Navbar */
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -262,6 +261,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             margin-bottom: 1rem; 
             padding-bottom: 0.5rem; 
             border-bottom: 2px solid rgba(234,245,230,0.8);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
         }
         .section p { 
             font-family: 'DM Sans', sans-serif;
@@ -279,16 +281,23 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         .notice { 
             background: rgba(255,248,225,0.8);
             backdrop-filter: blur(5px);
-            padding: 1rem; 
+            padding: 1rem;
             border-radius: 16px; 
             margin: 1rem 0; 
             border-left: 4px solid #e67e22;
+        }
+        
+        .notice-success {
+            background: rgba(212,237,218,0.8);
+            border-left-color: #2b7e3a;
         }
         
         .refund-table { 
             width: 100%; 
             border-collapse: collapse; 
             margin: 1rem 0; 
+            border-radius: 16px;
+            overflow: hidden;
         }
         .refund-table th, .refund-table td { 
             padding: 0.8rem; 
@@ -299,8 +308,29 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             background: rgba(234,245,230,0.6);
             font-family: 'Montserrat', sans-serif;
             color: #1e3a2a; 
+            font-weight: 700;
         }
         .refund-table td { font-family: 'DM Sans', sans-serif; }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
         
         .footer { 
             background: #0f1f12; 
@@ -401,68 +431,164 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         <a href="<?php echo $back_link; ?>" class="btn-back"><i class="fas fa-arrow-left"></i> Back to <?php echo $isLoggedIn ? 'Dashboard' : 'Homepage'; ?></a>
         
         <div class="page-header">
-            <h1>Cancellation Policy</h1>
-            <p>Understanding our cancellation and refund process</p>
+            <h1><i class="fas fa-file-alt"></i> Cancellation & Reschedule Policy</h1>
+            <p>Last updated: June 2025</p>
         </div>
         
+        <!-- 取消政策总览表 -->
         <div class="section">
-            <h2>1. Cancellation Timeline</h2>
-            <p>You may cancel your booking up to <?php echo $cancellation_hours; ?> hours before the scheduled start time. Cancellations made less than <?php echo $cancellation_hours; ?> hours before the booking time will not be accepted.</p>
-            <div class="notice">
-                <i class="fas fa-clock"></i> <strong>Cancellation Deadline:</strong> <?php echo $cancellation_hours; ?> hours before your booking time
-            </div>
-        </div>
-        
-        <div class="section">
-            <h2>2. Cancellation Fees</h2>
-            <p>A standard cancellation fee of <strong>RM <?php echo number_format($cancellation_fee, 2); ?></strong> applies to all cancellations. The remaining amount will be refunded to your Smash Arena wallet.</p>
+            <h2><i class="fas fa-table"></i> Cancellation Policy Overview</h2>
             <table class="refund-table">
-                <thead><tr><th>Cancellation Time</th><th>Cancellation Fee</th><th>Refund Amount</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th>Time Before Booking</th>
+                        <th>Play Only Mode</th>
+                        <th>Training Mode (with Coach)</th>
+                        <th>Add-ons</th>
+                        <th>Reschedule Allowed?</th>
+                    </tr>
+                </thead>
                 <tbody>
-                    <tr><td>More than <?php echo $cancellation_hours; ?> hours before booking</td><td>RM <?php echo number_format($cancellation_fee, 2); ?></td><td>Total Price - RM <?php echo number_format($cancellation_fee, 2); ?></td></tr>
-                    <tr><td>Less than <?php echo $cancellation_hours; ?> hours before booking</td><td>Full amount</td><td>RM 0 (No cancellation allowed)</td></tr>
+                    <tr>
+                        <td><span class="badge badge-success">≥ 48 hours</span></td>
+                        <td>✅ Full Refund</td>
+                        <td>✅ Full Refund</td>
+                        <td>✅ Full Refund</td>
+                        <td><span class="badge badge-success">✓ Allowed (No fee)</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-warning">24 - 48 hours</span></td>
+                        <td>⚠️ RM10 fee, rest refunded</td>
+                        <td>✅ Full Refund</td>
+                        <td>✅ Full Refund</td>
+                        <td><span class="badge badge-success">✓ Allowed (No fee)</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-warning">2 - 24 hours</span></td>
+                        <td>❌ Court fee NOT refunded<br>✅ Add-ons refunded</td>
+                        <td>❌ Court fee NOT refunded<br>⚠️ 50% coach fee refunded<br>✅ Add-ons refunded</td>
+                        <td>✅ Full Refund</td>
+                        <td><span class="badge badge-danger">✗ Not Allowed (Locked)</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-danger">1 - 2 hours</span></td>
+                        <td>❌ No Refund</td>
+                        <td>❌ Court fee NOT refunded<br>❌ Coach fee NOT refunded<br>✅ Add-ons refunded</td>
+                        <td>✅ Full Refund</td>
+                        <td><span class="badge badge-danger">✗ Not Allowed (Locked)</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-danger">&lt; 1 hour</span></td>
+                        <td>❌ No Refund</td>
+                        <td>❌ No Refund</td>
+                        <td>❌ No Refund</td>
+                        <td><span class="badge badge-danger">✗ Not Allowed (Locked)</span></td>
+                    </tr>
                 </tbody>
             </table>
         </div>
         
+        <!-- 改期政策 -->
         <div class="section">
-            <h2>3. How to Cancel</h2>
+            <h2><i class="fas fa-calendar-alt"></i> Reschedule Policy</h2>
+            <p>You may reschedule your booking under the following conditions:</p>
+            <ul>
+                <li><strong>≥ 24 hours before booking</strong> - Reschedule allowed with <strong>NO additional fee</strong></li>
+                <li><strong>&lt; 24 hours before booking</strong> - Reschedule <strong>NOT allowed</strong> (Locked)</li>
+                <li>Each booking can only be rescheduled <strong>once</strong></li>
+            </ul>
+            <div class="notice notice-success">
+                <i class="fas fa-info-circle"></i> <strong>Note:</strong> Rescheduling is free of charge. Your booking status and price remain the same.
+            </div>
+        </div>
+        
+        <!-- 教练取消 -->
+        <div class="section">
+            <h2><i class="fas fa-chalkboard-user"></i> Coach Cancellation Policy</h2>
+            <table class="refund-table">
+                <thead>
+                    <tr>
+                        <th>Coach Cancellation Time</th>
+                        <th>Customer Compensation</th>
+                        <th>Coach Penalty</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>≥ 24 hours</td>
+                        <td>Full refund + System auto-cancel, customer can rebook</td>
+                        <td>No penalty</td>
+                    </tr>
+                    <tr>
+                        <td>&lt; 24 hours (Late cancel / No-show)</td>
+                        <td>Full refund + <strong>RM 10 compensation</strong> OR continue court without coach</td>
+                        <td>Severe penalty (deduction from next month's salary)</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="notice">
+                <i class="fas fa-exclamation-triangle"></i> <strong>Coach Penalty System:</strong>
+                <ul style="margin-top: 0.5rem;">
+                    <li>1st late cancel / no-show: Account suspended for <strong>3 days</strong></li>
+                    <li>2nd late cancel / no-show: Account suspended for <strong>7 days</strong></li>
+                    <li>3rd late cancel / no-show: Account <strong>permanently banned</strong></li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- 取消费用详情 -->
+        <div class="section">
+            <h2><i class="fas fa-receipt"></i> Cancellation Fee Details</h2>
+            <ul>
+                <li><strong>Standard Cancellation Fee:</strong> RM 10.00 (applies for 24-48 hours notice on Play Only mode)</li>
+                <li><strong>2nd Cancellation Penalty:</strong> Additional RM 5.00 for second cancellation</li>
+                <li><strong>No-Show:</strong> Full amount charged, no refund</li>
+            </ul>
+        </div>
+        
+        <!-- Add-on 处理 -->
+        <div class="section">
+            <h2><i class="fas fa-shopping-cart"></i> Add-ons Refund Policy</h2>
+            <p>Add-on items (rackets, shuttlecocks, grips, strings, snacks, drinks) follow this refund policy:</p>
+            <ul>
+                <li><strong>≥ 2 hours before booking:</strong> Add-ons are <strong>FULLY refunded</strong></li>
+                <li><strong>1-2 hours before booking:</strong> Add-ons are <strong>FULLY refunded</strong> (except Play Only mode where no refund)</li>
+                <li><strong>&lt; 1 hour before booking:</strong> Add-ons are <strong>NOT refunded</strong> (except Training mode where add-ons are refunded up to 1 hour)</li>
+            </ul>
+        </div>
+        
+        <!-- 如何取消 -->
+        <div class="section">
+            <h2><i class="fas fa-times-circle"></i> How to Cancel</h2>
             <p>To cancel a booking:</p>
             <ol style="margin-left:1.5rem; color:#5a6e5c;">
-                <li>Go to "My Bookings" from your dashboard</li>
+                <li>Go to <strong>"My Bookings"</strong> from your dashboard</li>
                 <li>Find the booking you wish to cancel</li>
-                <li>Click the "Cancel" button</li>
-                <li>Confirm the cancellation</li>
+                <li>Click the <strong>"Cancel"</strong> button</li>
+                <li>Review the cancellation policy and confirm</li>
+                <li>Refund will be automatically credited to your wallet</li>
             </ol>
         </div>
         
+        <!-- 退款流程 -->
         <div class="section">
-            <h2>4. Refund Process</h2>
-            <p>When you cancel a booking:</p>
+            <h2><i class="fas fa-credit-card"></i> Refund Process</h2>
             <ul>
-                <li>Refunds are credited to your Smash Arena wallet</li>
-                <li>Processing time is immediate upon cancellation</li>
+                <li>Refunds are credited to your <strong>Smash Arena wallet</strong> instantly upon cancellation</li>
                 <li>Wallet balance can be used for future bookings</li>
                 <li>To withdraw wallet balance to bank account, please contact customer support</li>
             </ul>
         </div>
         
+        <!-- 联系支持 -->
         <div class="section">
-            <h2>5. No-Show Policy</h2>
-            <p>If you do not show up for your booking without prior cancellation:</p>
-            <ul>
-                <li>Full booking amount will be charged</li>
-                <li>No refund will be provided</li>
-                <li>The booking will be marked as "Completed"</li>
-            </ul>
-        </div>
-        
-        <div class="section">
-            <h2>6. Exceptions</h2>
-            <p>In case of emergencies or unforeseen circumstances, please contact our support team. We may consider waiving the cancellation fee on a case-by-case basis.</p>
+            <h2><i class="fas fa-headset"></i> Need Help?</h2>
             <div class="notice">
-                <i class="fas fa-phone-alt"></i> Contact us immediately for any urgent cancellation requests: <strong><?php echo htmlspecialchars($contact_phone); ?></strong>
+                <i class="fas fa-phone-alt"></i> Phone: <strong><?php echo htmlspecialchars($contact_phone); ?></strong><br>
+                <i class="fas fa-envelope"></i> Email: <strong><?php echo htmlspecialchars($contact_email); ?></strong><br>
+                <i class="fas fa-clock"></i> Support Hours: Daily 9:00 AM - 9:00 PM
             </div>
+            <p>For urgent cancellation requests or special circumstances, please contact us immediately.</p>
         </div>
     </div>
 </div>

@@ -9,20 +9,32 @@ if(!isLoggedIn()) {
 
 $court_id = $_GET['court_id'] ?? 0;
 $date = $_GET['date'] ?? '';
+$exclude_booking_id = $_GET['exclude_booking_id'] ?? 0;
 
 if(!$court_id || !$date) {
     echo json_encode([]);
     exit;
 }
 
-// 获取该球场当天已有的预订
-$stmt = $pdo->prepare("
-    SELECT start_time, end_time 
-    FROM bookings 
-    WHERE court_id = ? AND booking_date = ? 
-    AND status != 'Cancelled'
-");
-$stmt->execute([$court_id, $date]);
+// 获取该球场当天已有的预订（排除当前预订）
+if ($exclude_booking_id && $exclude_booking_id > 0) {
+    $stmt = $pdo->prepare("
+        SELECT start_time, end_time 
+        FROM bookings 
+        WHERE court_id = ? AND booking_date = ? 
+        AND status != 'Cancelled'
+        AND id != ?
+    ");
+    $stmt->execute([$court_id, $date, $exclude_booking_id]);
+} else {
+    $stmt = $pdo->prepare("
+        SELECT start_time, end_time 
+        FROM bookings 
+        WHERE court_id = ? AND booking_date = ? 
+        AND status != 'Cancelled'
+    ");
+    $stmt->execute([$court_id, $date]);
+}
 $booked_slots = $stmt->fetchAll();
 
 // 获取已预订的时间段

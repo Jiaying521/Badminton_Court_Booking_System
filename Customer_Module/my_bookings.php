@@ -96,7 +96,6 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         ::-webkit-scrollbar-thumb { background: #2b7e3a; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #1f5a2a; }
         
-        /* Glassmorphism Navbar */
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -229,7 +228,6 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             box-shadow: 0 4px 12px rgba(230,126,34,0.3);
         }
         
-        /* Page Header */
         .page-header { 
             display: flex; 
             justify-content: space-between; 
@@ -289,7 +287,6 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             box-shadow: 0 12px 25px rgba(43,126,58,0.4);
         }
         
-        /* Warning Banner */
         .warning-banner {
             background: linear-gradient(135deg, #fff3cd, #ffe69e);
             border-left: 5px solid #e67e22;
@@ -320,7 +317,6 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             font-size: 0.8rem;
         }
         
-        /* Wallet Card */
         .wallet-card { 
             background: linear-gradient(135deg, #2b7e3a, #1b5e2a);
             color: white; 
@@ -363,7 +359,6 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         .wallet-card a { color: #aaffaa; text-decoration: underline; font-size: 0.8rem; margin-left: 0.5rem; font-weight: 600; transition: color 0.3s; }
         .wallet-card a:hover { color: white; }
         
-        /* Stats Cards */
         .stats-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
@@ -404,7 +399,6 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             font-weight: 500;
         }
         
-        /* Filter Tabs */
         .filter-tabs { 
             display: flex; 
             gap: 0.6rem; 
@@ -432,7 +426,6 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             box-shadow: 0 4px 12px rgba(43,126,58,0.3);
         }
         
-        /* Bookings Table */
         .bookings-table { 
             background: rgba(255,255,255,0.7);
             backdrop-filter: blur(10px);
@@ -627,7 +620,6 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             font-family: 'Montserrat', sans-serif;
         }
         
-        /* Modal */
         .modal { 
             display: none; 
             position: fixed; 
@@ -697,7 +689,6 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         .print-btn:hover::before { left: 100%; }
         .print-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(43,126,58,0.3); }
         
-        /* Reschedule Modal specific */
         .form-group { margin-bottom: 1rem; }
         .form-group label { 
             display: block; 
@@ -748,7 +739,6 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             border-left: 4px solid #e67e22;
         }
         
-        /* Empty State */
         .empty-state { 
             text-align: center; 
             padding: 4rem; 
@@ -761,7 +751,6 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         .empty-state h3 { color: #5a6e5c; margin-bottom: 0.5rem; }
         .empty-state p { color: #888; margin-bottom: 1.5rem; }
         
-        /* Footer */
         .footer { 
             background: #0f1f12; 
             color: #cbd5c0; 
@@ -816,7 +805,6 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         <a href="dashboard.php" class="btn-book"><i class="fas fa-plus"></i> Book New Court</a>
     </div>
     
-    <!-- Warning Banner for Cancellation Count -->
     <?php if($cancellation_count >= 1): ?>
     <div class="warning-banner">
         <i class="fas fa-exclamation-triangle"></i>
@@ -881,7 +869,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
                     $current_timestamp = time();
                     $hours_until_booking = ($booking_timestamp - $current_timestamp) / 3600;
                     $can_cancel = ($b['status'] == 'Pending' || $b['status'] == 'Confirmed') && $hours_until_booking >= 2;
-                    $can_reschedule = ($b['status'] == 'Pending' || $b['status'] == 'Confirmed') && $hours_until_booking >= 1;
+                    $can_reschedule = ($b['status'] == 'Pending' || $b['status'] == 'Confirmed') && $hours_until_booking >= 24;
                     $reschedule_count = $b['reschedule_count'] ?? 0;
                     $has_rescheduled = $reschedule_count >= 1;
                 ?>
@@ -909,8 +897,8 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
                                     <i class="fas fa-calendar-alt"></i> Rescheduled
                                 </button>
                             <?php else: ?>
-                                <button class="btn-reschedule-disabled" disabled title="Cannot reschedule within 1 hour of booking time">
-                                    <i class="fas fa-calendar-alt"></i> Reschedule (Need 1h)
+                                <button class="btn-reschedule-disabled" disabled title="Reschedule requires at least 24 hours notice">
+                                    <i class="fas fa-calendar-alt"></i> Need 24h notice
                                 </button>
                             <?php endif; ?>
                             
@@ -945,7 +933,6 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
     </div>
 </div>
 
-<!-- Reschedule Modal -->
 <div id="rescheduleModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -1080,7 +1067,6 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         if(e.target === document.getElementById('rescheduleModal')) closeRescheduleModal();
     };
     
-    // Reschedule functions
     let currentBookingId = null;
     let currentCourtId = null;
     let currentHours = null;
@@ -1088,7 +1074,6 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
     let currentTime = null;
     
     function openRescheduleModal(bookingId, courtId, date, time, hours, rescheduleCount) {
-        // 检查是否已经改期过
         if (rescheduleCount >= 1) {
             alert('⚠️ This booking has already been rescheduled.\n\nEach booking can only be rescheduled once.\n\nPlease make a new booking if you need a different time.');
             return;
@@ -1118,6 +1103,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
     document.getElementById('reschedule_date').addEventListener('change', async function() {
         const date = this.value;
         const courtId = document.getElementById('reschedule_court_id').value;
+        const bookingId = document.getElementById('reschedule_booking_id').value;
         const timeSelect = document.getElementById('reschedule_time');
         
         if (!date) {
@@ -1128,7 +1114,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         timeSelect.innerHTML = '<option value="">Loading...</option>';
         
         try {
-            const response = await fetch(`ajax_get_available_slots.php?court_id=${courtId}&date=${date}`);
+            const response = await fetch(`ajax_get_available_slots.php?court_id=${courtId}&date=${date}&exclude_booking_id=${bookingId}`);
             const slots = await response.json();
             
             timeSelect.innerHTML = '<option value="">Select time</option>';
@@ -1197,7 +1183,6 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         }
     }
     
-    // Cancel Booking - Updated with tiered policy and second cancellation penalty
     async function cancelBooking(bookingId, currentCancellationCount) {
         try {
             const response = await fetch(`get_booking_details.php?id=${bookingId}`);
@@ -1207,63 +1192,85 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
                 const bookingDateTime = new Date(booking.booking_date + ' ' + booking.start_time);
                 const now = new Date();
                 const hoursDiff = (bookingDateTime - now) / (1000 * 60 * 60);
-                const isSecondOrMore = currentCancellationCount >= 1;
+                const hasCoach = booking.coach_name && booking.coach_name !== '';
+                const addonsTotal = booking.addons_total || 0;
                 
                 let confirmMessage = '';
-                let cancellationFee = 0;
-                let extraPenalty = 0;
-                let refundAmount = 0;
                 
                 if (hoursDiff >= 48) {
-                    cancellationFee = 0;
-                    extraPenalty = isSecondOrMore ? 5.00 : 0;
-                    refundAmount = parseFloat(booking.total_price) - extraPenalty;
-                    confirmMessage = `⚠️ CANCELLATION POLICY ⚠️\n\n` +
+                    confirmMessage = `🏸 CANCELLATION POLICY (≥48 hours notice)\n\n` +
                         `Booking: ${booking.court_name}\n` +
                         `Date: ${booking.booking_date}\n` +
                         `Time: ${booking.start_time} - ${booking.end_time}\n\n` +
-                        `📌 You are cancelling ${hoursDiff.toFixed(1)} hours before your booking.\n` +
-                        `📌 Time buffer: 48+ hours\n` +
-                        `💰 Standard Fee: RM ${cancellationFee.toFixed(2)}\n` +
-                        (extraPenalty > 0 ? `⚠️ 2nd+ Cancellation Penalty: RM ${extraPenalty.toFixed(2)}\n` : '') +
-                        `💰 Refund Amount: RM ${refundAmount.toFixed(2)}\n\n` +
-                        `The amount will be refunded to your wallet.\n\n` +
+                        `✅ Full Refund: RM ${booking.total_price}\n\n` +
                         `Do you want to proceed with cancellation?`;
                 } else if (hoursDiff >= 24) {
-                    cancellationFee = 10.00;
-                    extraPenalty = isSecondOrMore ? 5.00 : 0;
-                    refundAmount = parseFloat(booking.total_price) - cancellationFee - extraPenalty;
-                    confirmMessage = `⚠️ CANCELLATION POLICY ⚠️\n\n` +
-                        `Booking: ${booking.court_name}\n` +
-                        `Date: ${booking.booking_date}\n` +
-                        `Time: ${booking.start_time} - ${booking.end_time}\n\n` +
-                        `📌 You are cancelling ${hoursDiff.toFixed(1)} hours before your booking.\n` +
-                        `📌 Time buffer: 24-48 hours\n` +
-                        `💰 Standard Fee: RM ${cancellationFee.toFixed(2)}\n` +
-                        (extraPenalty > 0 ? `⚠️ 2nd+ Cancellation Penalty: RM ${extraPenalty.toFixed(2)}\n` : '') +
-                        `💰 Refund Amount: RM ${refundAmount.toFixed(2)}\n\n` +
-                        `The amount will be refunded to your wallet.\n\n` +
-                        `Do you want to proceed with cancellation?`;
+                    if (hasCoach) {
+                        confirmMessage = `🏸 CANCELLATION POLICY (24-48 hours notice) - Training Mode\n\n` +
+                            `Booking: ${booking.court_name}\n` +
+                            `Date: ${booking.booking_date}\n` +
+                            `Time: ${booking.start_time} - ${booking.end_time}\n\n` +
+                            `✅ Full Refund: RM ${booking.total_price}\n\n` +
+                            `Do you want to proceed with cancellation?`;
+                    } else {
+                        confirmMessage = `🏸 CANCELLATION POLICY (24-48 hours notice) - Play Only\n\n` +
+                            `Booking: ${booking.court_name}\n` +
+                            `Date: ${booking.booking_date}\n` +
+                            `Time: ${booking.start_time} - ${booking.end_time}\n\n` +
+                            `📌 RM 10.00 cancellation fee applies\n` +
+                            `💰 Refund: RM ${(parseFloat(booking.total_price) - 10).toFixed(2)}\n\n` +
+                            `Do you want to proceed with cancellation?`;
+                    }
                 } else if (hoursDiff >= 2) {
-                    cancellationFee = 10.00;
-                    extraPenalty = isSecondOrMore ? 5.00 : 0;
-                    refundAmount = parseFloat(booking.total_price) - cancellationFee - extraPenalty;
-                    confirmMessage = `⚠️ CANCELLATION POLICY ⚠️\n\n` +
+                    if (hasCoach) {
+                        const coachFee = parseFloat(booking.coach_price_total || 0);
+                        const coachRefund = coachFee * 0.5;
+                        const refundAmount = coachRefund + addonsTotal;
+                        confirmMessage = `🏸 CANCELLATION POLICY (2-24 hours notice) - Training Mode\n\n` +
+                            `Booking: ${booking.court_name}\n` +
+                            `Date: ${booking.booking_date}\n` +
+                            `Time: ${booking.start_time} - ${booking.end_time}\n\n` +
+                            `📌 Court fee: NOT refunded\n` +
+                            `📌 Coach fee: 50% refunded (RM ${coachRefund.toFixed(2)})\n` +
+                            `📌 Add-ons: FULLY refunded (RM ${addonsTotal.toFixed(2)})\n` +
+                            `💰 Total refund: RM ${refundAmount.toFixed(2)}\n\n` +
+                            `Do you want to proceed with cancellation?`;
+                    } else {
+                        confirmMessage = `🏸 CANCELLATION POLICY (2-24 hours notice) - Play Only\n\n` +
+                            `Booking: ${booking.court_name}\n` +
+                            `Date: ${booking.booking_date}\n` +
+                            `Time: ${booking.start_time} - ${booking.end_time}\n\n` +
+                            `📌 Court fee: NOT refunded\n` +
+                            `📌 Add-ons: FULLY refunded (RM ${addonsTotal.toFixed(2)})\n` +
+                            `💰 Total refund: RM ${addonsTotal.toFixed(2)}\n\n` +
+                            `Do you want to proceed with cancellation?`;
+                    }
+                } else if (hoursDiff >= 1) {
+                    if (hasCoach) {
+                        confirmMessage = `🏸 CANCELLATION POLICY (1-2 hours notice) - Training Mode\n\n` +
+                            `Booking: ${booking.court_name}\n` +
+                            `Date: ${booking.booking_date}\n` +
+                            `Time: ${booking.start_time} - ${booking.end_time}\n\n` +
+                            `❌ Court fee: NOT refunded\n` +
+                            `❌ Coach fee: NOT refunded (already paid to coach)\n` +
+                            `✅ Add-ons: FULLY refunded (RM ${addonsTotal.toFixed(2)})\n\n` +
+                            `💰 Refund: RM ${addonsTotal.toFixed(2)}\n\n` +
+                            `Do you want to proceed with cancellation?`;
+                    } else {
+                        confirmMessage = `🏸 CANCELLATION POLICY (1-2 hours notice) - Play Only\n\n` +
+                            `Booking: ${booking.court_name}\n` +
+                            `Date: ${booking.booking_date}\n` +
+                            `Time: ${booking.start_time} - ${booking.end_time}\n\n` +
+                            `❌ NO REFUND will be issued\n\n` +
+                            `Do you want to proceed with cancellation?`;
+                    }
+                } else {
+                    confirmMessage = `🏸 CANCELLATION POLICY (<1 hour notice)\n\n` +
                         `Booking: ${booking.court_name}\n` +
                         `Date: ${booking.booking_date}\n` +
                         `Time: ${booking.start_time} - ${booking.end_time}\n\n` +
-                        `📌 You are cancelling ${hoursDiff.toFixed(1)} hours before your booking.\n` +
-                        `📌 Time buffer: 2-24 hours\n` +
-                        `💰 Standard Fee: RM ${cancellationFee.toFixed(2)}\n` +
-                        (extraPenalty > 0 ? `⚠️ 2nd+ Cancellation Penalty: RM ${extraPenalty.toFixed(2)}\n` : '') +
-                        `💰 Refund Amount: RM ${refundAmount.toFixed(2)}\n\n` +
-                        `The amount will be refunded to your wallet.\n\n` +
+                        `❌ NO REFUND will be issued\n\n` +
                         `Do you want to proceed with cancellation?`;
-                } else {
-                    alert(`⚠️ Cannot cancel booking!\n\nYour booking starts in ${hoursDiff.toFixed(1)} hours.\n\n` +
-                        `You need to cancel at least 2 hours before your booking time.\n\n` +
-                        `Note: Court fee will not be refunded.`);
-                    return;
                 }
                 
                 if(confirm(confirmMessage)) {

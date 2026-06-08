@@ -26,40 +26,54 @@ $contact_email = getSetting('contact_email', 'smasharenabadminton@gmail.com');
 $contact_whatsapp = getSetting('contact_whatsapp', '+60 12-345 6789');
 $address = getSetting('address', '123 Jalan Badminton, Kuala Lumpur, Malaysia');
 
+// 获取教练总数
+$coach_count = 0;
+$stmt_coach = $pdo->query("SELECT COUNT(*) FROM coaches WHERE is_active = 1");
+if ($stmt_coach) {
+    $coach_count = $stmt_coach->fetchColumn();
+}
+
+// 获取产品总数
+$product_count = 0;
+$stmt_product = $pdo->query("SELECT COUNT(*) FROM products WHERE is_active = 1");
+if ($stmt_product) {
+    $product_count = $stmt_product->fetchColumn();
+}
+
 // 格式化时间显示
 $open_time_display = date('h:i A', strtotime($open_time));
 $close_time_display = date('h:i A', strtotime($close_time));
 $peak_start_display = date('h:i A', strtotime($peak_start));
 
-// ========== FAQ 内容 ==========
+// ========== FAQ 内容（简化版）==========
 $faqs = [
     [
         'question' => 'How do I book a court?',
-        'answer' => 'To book a court, simply login to your account, go to the Dashboard, select your preferred court, choose date and time, select any optional add-ons (rackets, shuttlecocks, grips, snacks, drinks), and proceed to payment. You\'ll receive a confirmation email once your booking is complete.'
+        'answer' => 'Login to your account, go to Dashboard, select your preferred court, choose date and time, add optional items, and proceed to payment. You\'ll receive a confirmation email once done.'
     ],
     [
         'question' => 'What are the operating hours?',
-        'answer' => 'Smash Arena is open daily from ' . $open_time_display . ' to ' . $close_time_display . '. We operate every day including public holidays. Last booking is at 12:00 AM for 1-hour sessions.'
+        'answer' => 'Smash Arena is open daily from ' . $open_time_display . ' to ' . $close_time_display . '. We operate every day including public holidays.'
     ],
     [
         'question' => 'What are the different pricing rates?',
-        'answer' => '<strong>Off-Peak Hours (' . $open_time_display . ' - ' . $peak_start_display . '):</strong> RM ' . $off_peak_price . ' per hour<br><strong>Peak Hours (' . $peak_start_display . ' - ' . $close_time_display . '):</strong> RM ' . $peak_price . ' per hour<br><br>Training courts have the same pricing but include optional coach services (RM20-50 per hour).'
+        'answer' => '<strong>Off-Peak Hours (' . $open_time_display . ' - ' . $peak_start_display . '):</strong> RM ' . $off_peak_price . ' per hour<br><strong>Peak Hours (' . $peak_start_display . ' - ' . $close_time_display . '):</strong> RM ' . $peak_price . ' per hour<br><br>Training courts have the same pricing with optional coach services available.'
     ],
     [
         'question' => 'Can I cancel my booking?',
-        'answer' => 'Yes, you can cancel your booking up to ' . $cancellation_hours . ' hours before the scheduled time. A cancellation fee of RM ' . $cancellation_fee . ' applies. The remaining amount will be refunded to your Smash Arena wallet. Cancellations within ' . $cancellation_hours . ' hours of booking time are not allowed.'
+        'answer' => 'Yes, you can cancel your booking up to ' . $cancellation_hours . ' hours before the scheduled time. Refund amount depends on the cancellation notice period. <a href="cancellation_policy.php" style="color:#2b7e3a; font-weight:600;">View full cancellation policy →</a>'
     ],
     [
         'question' => 'How do I get a refund?',
-        'answer' => 'Refunds for eligible cancellations will be automatically credited to your Smash Arena wallet within minutes. You can use the wallet balance for future bookings or request a withdrawal by contacting our support team.'
+        'answer' => 'Refunds for eligible cancellations will be automatically credited to your Smash Arena wallet. You can use the wallet balance for future bookings.'
     ],
     [
         'question' => 'Can I book a coach?',
-        'answer' => 'Yes! Training courts (Court H, I, J) come with optional coach services. You can select:<br>🏆 Coach Lim - Singles Coaching (RM50/hr)<br>🎯 Coach Wong - Doubles Coaching (RM20/hr)<br>⭐ Coach Tan - Junior Development (RM30/hr)'
+        'answer' => 'Yes! We have ' . $coach_count . ' professional coaches available for training courts. Coaches specialize in singles, doubles, and junior development training. Prices start from RM20 per hour.'
     ],
     [
         'question' => 'What equipment can I purchase?',
-        'answer' => 'We offer a wide range of products:<br>🏸 Badminton Rackets: RM199 - RM899<br>🏸 Shuttlecocks: RM55 - RM95 per tube<br>🎾 Grips: RM8 - RM15<br>🧵 Badminton Strings: RM28 - RM45<br>🍪 Snacks: RM3.50 - RM6.50<br>🥤 Drinks: RM1.50 - RM3.50<br><br>You can add these items during the booking process.'
+        'answer' => 'We offer a variety of badminton equipment including rackets, shuttlecocks, grips, strings, snacks, and drinks. Browse our Add-ons page during booking to see available products.'
     ],
     [
         'question' => 'How do I top up my wallet?',
@@ -67,7 +81,7 @@ $faqs = [
     ],
     [
         'question' => 'Is there a reward points program?',
-        'answer' => 'Yes! Every RM1 spent earns you 1 reward point. Points can be redeemed for discounts on future bookings.<br>⭐ 50 points = RM5 off<br>⭐ 100 points = RM10 off<br>⭐ 180 points = RM20 off'
+        'answer' => 'Yes! Every RM1 spent earns you 1 reward point. Points can be redeemed for discounts on future bookings (50 points = RM5 off, 100 points = RM10 off, 180 points = RM20 off).'
     ],
     [
         'question' => 'How do I contact customer support?',
@@ -75,23 +89,23 @@ $faqs = [
     ],
     [
         'question' => 'Do you offer stringing services?',
-        'answer' => 'Yes! We offer professional stringing services. You can purchase strings from our Add-ons page (Yonex BG-65, BG-66 Ultimax, BG-80 Power, Li-Ning No.1, Victor VBS-66N, Apacs L66) and our staff will string your racket for you. Prices range from RM28 to RM45 per string.'
+        'answer' => 'Yes! We offer professional racket stringing services. You can purchase strings from our Add-ons page, and our staff will string your racket for you.'
     ],
     [
         'question' => 'What facilities are available?',
-        'answer' => 'All courts come with shower facilities, locker rooms, free parking, and a pro shop. Training courts also feature video analysis equipment and dedicated coaching areas.'
+        'answer' => 'All courts come with shower facilities, locker rooms, free parking, and a pro shop. Training courts also feature video analysis equipment.'
     ],
     [
         'question' => 'Can I bring my own equipment?',
-        'answer' => 'Absolutely! You are welcome to bring your own rackets, shuttlecocks, and grip tape. We also have rental rackets and shuttlecocks available for purchase if you need them.'
+        'answer' => 'Absolutely! You are welcome to bring your own rackets and shuttlecocks. Rental rackets and shuttlecocks are also available for purchase.'
     ],
     [
         'question' => 'Is there parking available?',
-        'answer' => 'Yes! We have a large free parking lot available for all customers. Parking is secure and well-lit for evening sessions.'
+        'answer' => 'Yes! We have a large free parking lot available for all customers, secure and well-lit for evening sessions.'
     ],
     [
         'question' => 'Can I book a court for a tournament or event?',
-        'answer' => 'Yes! For tournament bookings, corporate events, or birthday parties, please contact our support team directly. We offer special rates for bulk bookings and event packages.'
+        'answer' => 'Yes! For tournament bookings, corporate events, or birthday parties, please contact our support team directly for special rates and packages.'
     ]
 ];
 ?>
@@ -363,6 +377,14 @@ $faqs = [
             font-family: 'DM Sans', sans-serif;
             color: #5a6e5c; 
             line-height: 1.6; 
+        }
+        .faq-answer p a {
+            color: #2b7e3a;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .faq-answer p a:hover {
+            text-decoration: underline;
         }
         
         .footer { 
