@@ -299,6 +299,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             border-radius: 50px;
             position: relative;
             overflow: hidden;
+            display: inline-block;
         }
         
         .nav-links a::before {
@@ -325,10 +326,10 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         .user-profile {
             display: flex;
             align-items: center;
-            gap: 0.8rem;
+            gap: 0.6rem;
             cursor: pointer;
             background: rgba(234,245,230,0.6);
-            padding: 0.3rem 1rem 0.3rem 0.5rem;
+            padding: 0.2rem 0.8rem 0.2rem 0.3rem;
             border-radius: 50px;
             transition: all 0.3s ease;
             text-decoration: none;
@@ -339,8 +340,8 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             border-radius: 50px;
         }
         .user-avatar {
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             overflow: hidden;
             background: #2b7e3a;
@@ -355,15 +356,15 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         }
         .user-name {
             font-family: 'Montserrat', sans-serif;
-            font-weight: 700;
-            font-size: 0.85rem;
+            font-weight: 600;
+            font-size: 0.75rem;
             color: #1e3a2a;
         }
         .user-balance {
             font-family: 'DM Sans', sans-serif;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: #2b7e3a;
-            font-weight: 600;
+            font-weight: 500;
         }
         
         .btn-logout { 
@@ -507,6 +508,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         }
         .stat-card:hover .stat-icon {
             transform: scale(1.05) rotate(3deg);
+            border-radius: 20px;
         }
         .stat-info h3 { 
             font-family: 'Montserrat', 'Inter', sans-serif;
@@ -613,7 +615,8 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             height: 180px; 
             overflow: hidden; 
             background: linear-gradient(135deg, #2b7e3a, #1a5c2a); 
-            position: relative; 
+            position: relative;
+            border-radius: 24px 24px 0 0;
         }
         .court-image img { 
             width: 100%; 
@@ -849,11 +852,15 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             .footer-col p { justify-content: center; }
             .social-icons { justify-content: center; }
             .stat-card { padding: 0.8rem; }
-            .stat-icon { width: 40px; height: 40px; font-size: 1.2rem; }
+            .stat-icon { width: 40px; height: 40px; font-size: 1.2rem; border-radius: 16px; }
             .stat-info h3 { font-size: 1.2rem; }
             .user-profile { padding: 0.2rem 0.8rem 0.2rem 0.3rem; }
-            .user-avatar { width: 32px; height: 32px; }
-            .user-name { font-size: 0.75rem; }
+            .user-avatar { width: 28px; height: 28px; }
+            .user-name { font-size: 0.7rem; }
+            .user-balance { font-size: 0.6rem; }
+            .court-image { border-radius: 20px 20px 0 0; }
+            .court-card { border-radius: 20px; }
+            .court-card:hover { border-radius: 20px; }
         }
     </style>
 </head>

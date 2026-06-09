@@ -391,16 +391,54 @@ if ($verified) {
             color: white; 
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(43,126,58,0.3);
-        }
-        
-        .user-greeting { 
-            font-family: 'Montserrat', 'Inter', sans-serif;
-            font-weight: 600;
-            color: #2b7e3a; 
-            background: #eaf5e6;
-            padding: 0.4rem 1rem;
             border-radius: 50px;
         }
+        
+        /* 用户头像区域 - 可点击跳转 profile */
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            cursor: pointer;
+            background: rgba(234,245,230,0.6);
+            padding: 0.3rem 1rem 0.3rem 0.5rem;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        .user-profile:hover {
+            background: rgba(43,126,58,0.15);
+            transform: translateY(-2px);
+            border-radius: 50px;
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #2b7e3a;
+        }
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .user-info {
+            text-align: left;
+        }
+        .user-name {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #1e3a2a;
+        }
+        .user-balance {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.7rem;
+            color: #2b7e3a;
+            font-weight: 600;
+        }
+        
         .btn-logout { 
             background: #fee2e2; 
             color: #e67e22; 
@@ -417,6 +455,7 @@ if ($verified) {
             color: white;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(230,126,34,0.3);
+            border-radius: 50px;
         }
         
         /* Profile Card - 玻璃态，宽度与 dashboard 卡片一致 */
@@ -775,6 +814,9 @@ if ($verified) {
             .navbar { flex-direction: column; border-radius: 28px; }
             .nav-links { gap: 0.8rem; }
             .profile-header .avatar { width: 90px; height: 90px; }
+            .user-profile { padding: 0.2rem 0.8rem 0.2rem 0.3rem; }
+            .user-avatar { width: 32px; height: 32px; }
+            .user-name { font-size: 0.75rem; }
         }
     </style>
 </head>
@@ -791,8 +833,16 @@ if ($verified) {
             <a href="my_bookings.php"><i class="fas fa-bookmark"></i> My Bookings</a>
             <a href="../Payment_Module/wallet.php"><i class="fas fa-wallet"></i> Wallet</a>
             <a href="coaches.php"><i class="fas fa-user-tie"></i> Coaches</a>
-            <span class="user-greeting">🏸 <?php echo htmlspecialchars($user['name'] ?? 'Player'); ?></span>
-            <a href="edit_profile.php" class="active"><i class="fas fa-user-edit"></i> Profile</a>
+            <!-- 用户头像 + 名字区域（点击跳转 Edit Profile） -->
+            <a href="edit_profile.php" class="user-profile">
+                <div class="user-avatar">
+                    <img src="<?php echo htmlspecialchars($avatarPath); ?>" alt="Avatar">
+                </div>
+                <div class="user-info">
+                    <div class="user-name"><?php echo htmlspecialchars($user['name'] ?? 'Player'); ?></div>
+                    <div class="user-balance">💰 RM <?php echo number_format($real_balance, 2); ?></div>
+                </div>
+            </a>
             <a href="logout.php" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
     </div>

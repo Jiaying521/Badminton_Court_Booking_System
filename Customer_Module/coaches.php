@@ -4,9 +4,44 @@ require_once __DIR__ . '/functions.php';
 if (!isLoggedIn()) redirect('homepage.php');
 
 $user_id = $_SESSION['user_id'];
-$stmt = $pdo->prepare("SELECT name FROM users WHERE id = ?");
+
+// 获取用户信息（包含头像字段）
+$stmt = $pdo->prepare("SELECT name, profile_picture, wallet_balance FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch();
+
+if (!$user) {
+    session_destroy();
+    redirect('homepage.php');
+}
+
+// 获取用户头像
+$profile_picture = isset($user['profile_picture']) ? $user['profile_picture'] : '';
+$defaultAvatarPath = '../image/default_image.png';
+$avatarPath = $defaultAvatarPath;
+
+if (!empty($profile_picture)) {
+    $fullPath = __DIR__ . '/../' . $profile_picture;
+    if (file_exists($fullPath)) {
+        $fileTime = filemtime($fullPath);
+        $avatarPath = '../' . $profile_picture . '?v=' . $fileTime;
+    }
+}
+
+// 确保默认头像存在
+$defaultAvatarFullPath = __DIR__ . '/../image/default_image.png';
+if (!file_exists($defaultAvatarFullPath)) {
+    $imageDir = __DIR__ . '/../image/';
+    if (!file_exists($imageDir)) {
+        mkdir($imageDir, 0777, true);
+    }
+    $sourcePath = __DIR__ . '/../Pictures/Admin_Module/coaches/default.png';
+    if (file_exists($sourcePath)) {
+        copy($sourcePath, $defaultAvatarFullPath);
+    }
+}
+
+$real_balance = $user['wallet_balance'] ?? 0.00;
 
 // 获取系统设置用于 footer 显示
 $open_time = getSetting('open_time', '08:00');
@@ -48,7 +83,6 @@ $avail_map = [
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* 样式保持不变，与之前相同 */
         * { margin:0; padding:0; box-sizing:border-box; }
         
         body { 
@@ -158,7 +192,7 @@ $avail_map = [
         .nav-links { 
             display: flex; 
             align-items: center; 
-            gap: 0.5rem; 
+            gap: 0.8rem; 
             flex-wrap: wrap; 
         }
         .nav-links a { 
@@ -191,16 +225,54 @@ $avail_map = [
             color: white; 
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(43,126,58,0.3);
-        }
-        
-        .user-greeting { 
-            font-family: 'Montserrat', 'Inter', sans-serif;
-            font-weight: 600;
-            color: #2b7e3a; 
-            background: #eaf5e6;
-            padding: 0.4rem 1rem;
             border-radius: 50px;
         }
+        
+        /* 用户头像区域 - 可点击跳转 profile */
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            cursor: pointer;
+            background: rgba(234,245,230,0.6);
+            padding: 0.3rem 1rem 0.3rem 0.5rem;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        .user-profile:hover {
+            background: rgba(43,126,58,0.15);
+            transform: translateY(-2px);
+            border-radius: 50px;
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #2b7e3a;
+        }
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .user-info {
+            text-align: left;
+        }
+        .user-name {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #1e3a2a;
+        }
+        .user-balance {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.7rem;
+            color: #2b7e3a;
+            font-weight: 600;
+        }
+        
         .btn-logout { 
             background: #fee2e2; 
             color: #e67e22; 
@@ -217,6 +289,7 @@ $avail_map = [
             color: white;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(230,126,34,0.3);
+            border-radius: 50px;
         }
         
         /* Page Header */
@@ -542,6 +615,9 @@ $avail_map = [
             .footer-container { text-align: center; }
             .footer-col p { justify-content: center; }
             .social-icons { justify-content: center; }
+            .user-profile { padding: 0.2rem 0.8rem 0.2rem 0.3rem; }
+            .user-avatar { width: 32px; height: 32px; }
+            .user-name { font-size: 0.75rem; }
         }
     </style>
 </head>
@@ -558,8 +634,16 @@ $avail_map = [
             <a href="my_bookings.php"><i class="fas fa-bookmark"></i> My Bookings</a>
             <a href="../Payment_Module/wallet.php"><i class="fas fa-wallet"></i> Wallet</a>
             <a href="coaches.php" class="active"><i class="fas fa-user-tie"></i> Coaches</a>
-            <span class="user-greeting">🏸 <?php echo htmlspecialchars($user['name'] ?? 'Player'); ?></span>
-            <a href="edit_profile.php" style="color:#2b7e3a;font-size:0.85rem; background:#eaf5e6; padding:0.4rem 1rem; border-radius:50px;"><i class="fas fa-user-edit"></i> Profile</a>
+            <!-- 用户头像 + 名字区域（点击跳转 Edit Profile） -->
+            <a href="edit_profile.php" class="user-profile">
+                <div class="user-avatar">
+                    <img src="<?php echo htmlspecialchars($avatarPath); ?>" alt="Avatar">
+                </div>
+                <div class="user-info">
+                    <div class="user-name"><?php echo htmlspecialchars($user['name'] ?? 'Player'); ?></div>
+                    <div class="user-balance">💰 RM <?php echo number_format($real_balance, 2); ?></div>
+                </div>
+            </a>
             <a href="logout.php" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
     </div>
