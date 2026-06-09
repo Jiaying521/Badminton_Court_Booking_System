@@ -22,10 +22,36 @@ $stmt = $pdo->prepare("
 $stmt->execute([$user_id]);
 $bookings = $stmt->fetchAll();
 
-// 获取用户信息
-$userStmt = $pdo->prepare("SELECT name FROM users WHERE id = ?");
+// 获取用户信息（包含头像字段）
+$userStmt = $pdo->prepare("SELECT name, profile_picture FROM users WHERE id = ?");
 $userStmt->execute([$user_id]);
 $user = $userStmt->fetch();
+
+// 获取用户头像
+$profile_picture = isset($user['profile_picture']) ? $user['profile_picture'] : '';
+$defaultAvatarPath = '../image/default_image.png';
+$avatarPath = $defaultAvatarPath;
+
+if (!empty($profile_picture)) {
+    $fullPath = __DIR__ . '/../' . $profile_picture;
+    if (file_exists($fullPath)) {
+        $fileTime = filemtime($fullPath);
+        $avatarPath = '../' . $profile_picture . '?v=' . $fileTime;
+    }
+}
+
+// 确保默认头像存在
+$defaultAvatarFullPath = __DIR__ . '/../image/default_image.png';
+if (!file_exists($defaultAvatarFullPath)) {
+    $imageDir = __DIR__ . '/../image/';
+    if (!file_exists($imageDir)) {
+        mkdir($imageDir, 0777, true);
+    }
+    $sourcePath = __DIR__ . '/../Pictures/Admin_Module/coaches/default.png';
+    if (file_exists($sourcePath)) {
+        copy($sourcePath, $defaultAvatarFullPath);
+    }
+}
 
 // 获取取消次数（兼容旧数据库）
 $cancellation_count = 0;
@@ -47,6 +73,18 @@ $stmt_bal = $pdo->prepare("SELECT wallet_balance FROM users WHERE id = ?");
 $stmt_bal->execute([$user_id]);
 $balance_row = $stmt_bal->fetch();
 $real_balance = $balance_row['wallet_balance'] ?? 0.00;
+
+// 获取系统设置用于 footer 显示
+$open_time = getSetting('open_time', '08:00');
+$close_time = getSetting('close_time', '01:00');
+$peak_start = getSetting('peak_start', '15:00');
+$off_peak_price = getSetting('off_peak_price', '10');
+$peak_price = getSetting('peak_price', '15');
+
+// 格式化时间显示
+$open_time_display = date('h:i A', strtotime($open_time));
+$close_time_display = date('h:i A', strtotime($close_time));
+$peak_start_display = date('h:i A', strtotime($peak_start));
 ?>
 <!DOCTYPE html>
 <html>
@@ -96,6 +134,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         ::-webkit-scrollbar-thumb { background: #2b7e3a; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #1f5a2a; }
         
+        /* Glassmorphism Navbar */
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -200,16 +239,54 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             color: white; 
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(43,126,58,0.3);
-        }
-        
-        .user-greeting { 
-            font-family: 'Montserrat', 'Inter', sans-serif;
-            font-weight: 600;
-            color: #2b7e3a; 
-            background: #eaf5e6;
-            padding: 0.4rem 1rem;
             border-radius: 50px;
         }
+        
+        /* 用户头像区域 - 可点击跳转 profile */
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            cursor: pointer;
+            background: rgba(234,245,230,0.6);
+            padding: 0.3rem 1rem 0.3rem 0.5rem;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        .user-profile:hover {
+            background: rgba(43,126,58,0.15);
+            transform: translateY(-2px);
+            border-radius: 50px;
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #2b7e3a;
+        }
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .user-info {
+            text-align: left;
+        }
+        .user-name {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #1e3a2a;
+        }
+        .user-balance {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.7rem;
+            color: #2b7e3a;
+            font-weight: 600;
+        }
+        
         .btn-logout { 
             background: #fee2e2; 
             color: #e67e22; 
@@ -226,8 +303,10 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             color: white;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(230,126,34,0.3);
+            border-radius: 50px;
         }
         
+        /* Page Header */
         .page-header { 
             display: flex; 
             justify-content: space-between; 
@@ -285,8 +364,10 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         .btn-book:hover { 
             transform: translateY(-3px);
             box-shadow: 0 12px 25px rgba(43,126,58,0.4);
+            border-radius: 60px;
         }
         
+        /* Warning Banner */
         .warning-banner {
             background: linear-gradient(135deg, #fff3cd, #ffe69e);
             border-left: 5px solid #e67e22;
@@ -317,6 +398,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             font-size: 0.8rem;
         }
         
+        /* Wallet Card */
         .wallet-card { 
             background: linear-gradient(135deg, #2b7e3a, #1b5e2a);
             color: white; 
@@ -356,9 +438,8 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         
         .wallet-card i { font-size: 1.2rem; }
         .wallet-card .amount { font-weight: 800; font-size: 1.1rem; }
-        .wallet-card a { color: #aaffaa; text-decoration: underline; font-size: 0.8rem; margin-left: 0.5rem; font-weight: 600; transition: color 0.3s; }
-        .wallet-card a:hover { color: white; }
         
+        /* Stats Cards */
         .stats-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
@@ -385,6 +466,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             transform: translateY(-8px) scale(1.02);
             box-shadow: 0 20px 40px rgba(43,126,58,0.15);
             background: white;
+            border-radius: 28px;
         }
         .stat-number { 
             font-family: 'Montserrat', 'Inter', sans-serif;
@@ -399,6 +481,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             font-weight: 500;
         }
         
+        /* Filter Tabs */
         .filter-tabs { 
             display: flex; 
             gap: 0.6rem; 
@@ -419,13 +502,16 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         .filter-btn:hover { 
             background: #d0e0c8; 
             transform: translateY(-2px);
+            border-radius: 50px;
         }
         .filter-btn.active { 
             background: #2b7e3a; 
             color: white; 
             box-shadow: 0 4px 12px rgba(43,126,58,0.3);
+            border-radius: 50px;
         }
         
+        /* Bookings Table */
         .bookings-table { 
             background: rgba(255,255,255,0.7);
             backdrop-filter: blur(10px);
@@ -514,6 +600,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             background: #2b7e3a; 
             color: white; 
             transform: translateY(-2px);
+            border-radius: 50px;
         }
         
         .btn-pay-now { 
@@ -549,6 +636,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         .btn-pay-now:hover { 
             transform: translateY(-2px);
             box-shadow: 0 6px 14px rgba(43,126,58,0.3);
+            border-radius: 50px;
         }
 
         .btn-cancel { 
@@ -571,6 +659,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             color: white; 
             transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(230,126,34,0.3);
+            border-radius: 50px;
         }
         .btn-cancel-disabled { 
             background: #e0e0e0; 
@@ -605,6 +694,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             background: #2b7e3a; 
             color: white; 
             transform: translateY(-2px);
+            border-radius: 50px;
         }
         .btn-reschedule-disabled { 
             background: #e0e0e0; 
@@ -620,6 +710,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             font-family: 'Montserrat', sans-serif;
         }
         
+        /* Modal */
         .modal { 
             display: none; 
             position: fixed; 
@@ -687,8 +778,9 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             transition: left 0.5s ease;
         }
         .print-btn:hover::before { left: 100%; }
-        .print-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(43,126,58,0.3); }
+        .print-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(43,126,58,0.3); border-radius: 60px; }
         
+        /* Reschedule Modal specific */
         .form-group { margin-bottom: 1rem; }
         .form-group label { 
             display: block; 
@@ -721,6 +813,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         .btn-save:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(43,126,58,0.3);
+            border-radius: 50px;
         }
         .message {
             padding: 0.8rem;
@@ -739,6 +832,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             border-left: 4px solid #e67e22;
         }
         
+        /* Empty State */
         .empty-state { 
             text-align: center; 
             padding: 4rem; 
@@ -751,6 +845,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         .empty-state h3 { color: #5a6e5c; margin-bottom: 0.5rem; }
         .empty-state p { color: #888; margin-bottom: 1.5rem; }
         
+        /* Footer */
         .footer { 
             background: #0f1f12; 
             color: #cbd5c0; 
@@ -765,7 +860,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         .footer-col a:hover { color: #2b7e3a; padding-left: 5px; transform: translateX(3px); }
         .social-icons { display: flex; gap: 1rem; margin-top: 1rem; }
         .social-icons a { background: #2c4a2e; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.3s ease; color: #cbd5c0; text-decoration: none; }
-        .social-icons a:hover { background: #2b7e3a; transform: translateY(-5px) rotate(360deg); }
+        .social-icons a:hover { background: #2b7e3a; transform: translateY(-5px) rotate(360deg); border-radius: 50%; }
         .footer-bottom { text-align: center; border-top: 1px solid #2c4a2e; padding-top: 1.5rem; font-size: 0.8rem; }
         
         @media (max-width: 768px) { 
@@ -779,11 +874,15 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             .footer-container { text-align: center; }
             .footer-col p { justify-content: center; }
             .social-icons { justify-content: center; }
+            .user-profile { padding: 0.2rem 0.8rem 0.2rem 0.3rem; }
+            .user-avatar { width: 32px; height: 32px; }
+            .user-name { font-size: 0.75rem; }
         }
     </style>
 </head>
 <body>
 <div class="container">
+    <!-- Navbar -->
     <div class="navbar">
         <a href="dashboard.php" class="logo-area">
             <img src="../Pictures/Admin_Module/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
@@ -794,8 +893,16 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
             <a href="my_bookings.php" class="active"><i class="fas fa-bookmark"></i> My Bookings</a>
             <a href="../Payment_Module/wallet.php"><i class="fas fa-wallet"></i> Wallet</a>
             <a href="coaches.php"><i class="fas fa-user-tie"></i> Coaches</a>
-            <span class="user-greeting">🏸 <?php echo htmlspecialchars($user['name'] ?? 'Player'); ?></span>
-            <a href="edit_profile.php" style="color:#2b7e3a;font-size:0.85rem; background:#eaf5e6; padding:0.4rem 1rem; border-radius:50px;"><i class="fas fa-user-edit"></i> Profile</a>
+            <!-- 用户头像 + 名字区域（点击跳转 Edit Profile） -->
+            <a href="edit_profile.php" class="user-profile">
+                <div class="user-avatar">
+                    <img src="<?php echo htmlspecialchars($avatarPath); ?>" alt="Avatar">
+                </div>
+                <div class="user-info">
+                    <div class="user-name"><?php echo htmlspecialchars($user['name'] ?? 'Player'); ?></div>
+                    <div class="user-balance">💰 RM <?php echo number_format($real_balance, 2); ?></div>
+                </div>
+            </a>
             <a href="logout.php" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
     </div>
@@ -822,7 +929,6 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
     <div class="wallet-card">
         <i class="fas fa-wallet"></i>
         <span>Wallet Balance: <span class="amount">RM <?php echo number_format($real_balance, 2); ?></span></span>
-        <a href="../Payment_Module/wallet.php">Top Up</a>
     </div>
     
     <?php 
@@ -959,6 +1065,7 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
     </div>
 </div>
 
+<!-- Footer -->
 <footer class="footer">
     <div class="footer-container">
         <div class="footer-col">
@@ -989,15 +1096,13 @@ $real_balance = $balance_row['wallet_balance'] ?? 0.00;
         </div>
         <div class="footer-col">
             <h4>Operating Hours</h4>
-            <p><i class="fas fa-clock"></i> Monday - Sunday: 8:00 AM - 1:00 AM</p>
-            <p><i class="fas fa-tag"></i> 8am - 3pm: RM10/hour</p>
-            <p><i class="fas fa-tag"></i> 3pm - 1am: RM15/hour</p>
+            <p><i class="fas fa-clock"></i> Monday - Sunday: <?php echo $open_time_display; ?> - <?php echo $close_time_display; ?></p>
+            <p><i class="fas fa-tag"></i> <?php echo $open_time_display; ?> - <?php echo $peak_start_display; ?>: RM <?php echo $off_peak_price; ?>/hour</p>
+            <p><i class="fas fa-tag"></i> <?php echo $peak_start_display; ?> - <?php echo $close_time_display; ?>: RM <?php echo $peak_price; ?>/hour</p>
             <p><i class="fas fa-calendar-alt"></i> Open daily including public holidays</p>
         </div>
     </div>
-    <div class="footer-bottom">
-        <p>&copy; 2025 Smash Arena – Your Game, Our Court. All rights reserved.</p>
-    </div>
+    <div class="footer-bottom"><p>&copy; 2025 Smash Arena – Your Game, Our Court. All rights reserved.</p></div>
 </footer>
 
 <script>

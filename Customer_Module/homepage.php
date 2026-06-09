@@ -679,10 +679,38 @@ $peak_price = getSetting('peak_price', '15');
 <!-- Footer -->
 <footer class="footer">
     <div class="footer-container">
-        <div class="footer-col"><h3>Smash Arena</h3><p><i class="fas fa-map-marker-alt"></i> 123 Jalan Badminton, Kuala Lumpur</p><p><i class="fas fa-phone-alt"></i> +603-1234 5678</p><p><i class="fas fa-envelope"></i> smasharenabadminton@gmail.com</p><div class="social-icons"><a href="#"><i class="fab fa-facebook-f"></i></a><a href="#"><i class="fab fa-instagram"></i></a><a href="#"><i class="fab fa-twitter"></i></a><a href="#"><i class="fab fa-whatsapp"></i></a></div></div>
-        <div class="footer-col"><h4>Quick Links</h4><a href="#" class="requires-login" data-href="dashboard.php">Find a Court</a><a href="#" class="requires-login" data-href="my_bookings.php">My Booking</a><a href="#" class="requires-login" data-href="../Payment_Module/wallet.php">Wallet</a></div>
-        <div class="footer-col"><h4>Support</h4><a href="faq.php">FAQs</a><a href="cancellation_policy.php">Cancellation Policy</a><a href="privacy_policy.php">Privacy Policy</a><a href="terms_of_use.php">Terms of Use</a><a href="contact_us.php">Contact Us</a></div>
-        <div class="footer-col"><h4>Operating Hours</h4><p><i class="fas fa-clock"></i> Monday - Sunday: <?php echo date('g:i A', strtotime($open_time)); ?> - <?php echo date('g:i A', strtotime($close_time)); ?></p><p><i class="fas fa-tag"></i> <?php echo date('g:i A', strtotime($open_time)); ?> - <?php echo date('g:i A', strtotime($peak_start)); ?>: RM <?php echo $off_peak_price; ?>/hour</p><p><i class="fas fa-tag"></i> <?php echo date('g:i A', strtotime($peak_start)); ?> - <?php echo date('g:i A', strtotime($close_time)); ?>: RM <?php echo $peak_price; ?>/hour</p><p><i class="fas fa-calendar-alt"></i> Open daily including public holidays</p></div>
+        <div class="footer-col"><h3>Smash Arena</h3>
+        <p><i class="fas fa-map-marker-alt"></i> 123 Jalan Badminton, Kuala Lumpur</p>
+        <p><i class="fas fa-phone-alt"></i> +603-1234 5678</p>
+        <p><i class="fas fa-envelope"></i> smasharenabadminton@gmail.com</p>
+        <div class="social-icons">
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-whatsapp"></i></a>
+        </div>
+    </div>
+        <div class="footer-col">
+            <h4>Quick Links</h4>
+            <a href="#" class="requires-login" data-href="dashboard.php">Find a Court</a>
+            <a href="#" class="requires-login" data-href="my_bookings.php">My Booking</a>
+            <a href="#" class="requires-login" data-href="../Payment_Module/wallet.php">Wallet</a>
+        </div>
+        <div class="footer-col">
+            <h4>Support</h4>
+            <a href="faq.php">FAQs</a>
+            <a href="cancellation_policy.php">Cancellation Policy</a>
+            <a href="privacy_policy.php">Privacy Policy</a>
+            <a href="terms_of_use.php">Terms of Use</a>
+            <a href="contact_us.php">Contact Us</a>
+        </div>
+        <div class="footer-col">
+            <h4>Operating Hours</h4>
+            <p><i class="fas fa-clock"></i> Monday - Sunday: <?php echo date('g:i A', strtotime($open_time)); ?> - <?php echo date('g:i A', strtotime($close_time)); ?></p>
+            <p><i class="fas fa-tag"></i> <?php echo date('g:i A', strtotime($open_time)); ?> - <?php echo date('g:i A', strtotime($peak_start)); ?>: RM <?php echo $off_peak_price; ?>/hour</p>
+            <p><i class="fas fa-tag"></i> <?php echo date('g:i A', strtotime($peak_start)); ?> - <?php echo date('g:i A', strtotime($close_time)); ?>: RM <?php echo $peak_price; ?>/hour</p>
+            <p><i class="fas fa-calendar-alt"></i> Open daily including public holidays</p>
+        </div>
     </div>
     <div class="footer-bottom"><p>&copy; 2025 Smash Arena – Your Game, Our Court. All rights reserved.</p></div>
 </footer>

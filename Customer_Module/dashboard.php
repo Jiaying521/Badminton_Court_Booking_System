@@ -96,18 +96,6 @@ if ($facRes) {
 }
 sort($facilities);
 
-// 获取最近预订
-$stmt = $pdo->prepare("
-    SELECT b.*, c.court_name 
-    FROM bookings b 
-    JOIN courts c ON b.court_id = c.id 
-    WHERE b.user_id = ? 
-    ORDER BY b.created_at DESC 
-    LIMIT 5
-");
-$stmt->execute([$user_id]);
-$recentBookings = $stmt->fetchAll();
-
 // 获取场地图片路径
 function getCourtImage($court) {
     $imageField = isset($court['court_image']) ? $court['court_image'] : null;
@@ -151,6 +139,29 @@ function getCourtImage($court) {
     
     return null;
 }
+
+// 获取用户头像
+$profile_picture = isset($user['profile_picture']) ? $user['profile_picture'] : '';
+$defaultAvatarPath = '../image/default_image.png';
+$avatarPath = $defaultAvatarPath;
+
+if (!empty($profile_picture)) {
+    $fullPath = __DIR__ . '/../' . $profile_picture;
+    if (file_exists($fullPath)) {
+        $fileTime = filemtime($fullPath);
+        $avatarPath = '../' . $profile_picture . '?v=' . $fileTime;
+    }
+}
+
+// 获取系统设置用于 footer 显示
+$open_time = getSetting('open_time', '08:00');
+$close_time = getSetting('close_time', '01:00');
+$peak_start = getSetting('peak_start', '15:00');
+$off_peak_price = getSetting('off_peak_price', '10');
+$peak_price = getSetting('peak_price', '15');
+$open_time_display = date('h:i A', strtotime($open_time));
+$close_time_display = date('h:i A', strtotime($close_time));
+$peak_start_display = date('h:i A', strtotime($peak_start));
 ?>
 <!DOCTYPE html>
 <html>
@@ -158,7 +169,6 @@ function getCourtImage($court) {
     <title>Smash Arena | Dashboard</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- 时尚字体导入 -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -177,7 +187,6 @@ function getCourtImage($court) {
             position: relative;
         }
         
-        /* 动态粒子背景效果 */
         body::before {
             content: '';
             position: fixed;
@@ -198,7 +207,6 @@ function getCourtImage($court) {
             z-index: 1;
         }
         
-        /* 自定义滚动条 */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #e0e8dc; border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: #2b7e3a; border-radius: 10px; }
@@ -222,14 +230,8 @@ function getCourtImage($court) {
         }
         
         @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .logo-area { 
@@ -253,10 +255,7 @@ function getCourtImage($court) {
             transition: width 0.4s ease;
         }
         
-        .logo-area:hover::after {
-            width: 100%;
-        }
-        
+        .logo-area:hover::after { width: 100%; }
         .logo-area:hover .logo-text { transform: scale(1.02); }
         .logo-area img { 
             height: 45px; 
@@ -286,7 +285,7 @@ function getCourtImage($court) {
         .nav-links { 
             display: flex; 
             align-items: center; 
-            gap: 0.5rem; 
+            gap: 0.8rem; 
             flex-wrap: wrap; 
         }
         .nav-links a { 
@@ -313,25 +312,60 @@ function getCourtImage($court) {
             transition: left 0.5s ease;
         }
         
-        .nav-links a:hover::before {
-            left: 100%;
-        }
-        
+        .nav-links a:hover::before { left: 100%; }
         .nav-links a:hover, .nav-links a.active { 
             background: #2b7e3a;
             color: white; 
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(43,126,58,0.3);
-        }
-        
-        .user-greeting { 
-            font-family: 'Montserrat', 'Inter', sans-serif;
-            font-weight: 600;
-            color: #2b7e3a; 
-            background: #eaf5e6;
-            padding: 0.4rem 1rem;
             border-radius: 50px;
         }
+        
+        /* 用户头像区域 - 可点击跳转 profile */
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            cursor: pointer;
+            background: rgba(234,245,230,0.6);
+            padding: 0.3rem 1rem 0.3rem 0.5rem;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        .user-profile:hover {
+            background: rgba(43,126,58,0.15);
+            transform: translateY(-2px);
+            border-radius: 50px;
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #2b7e3a;
+        }
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .user-info {
+            text-align: left;
+        }
+        .user-name {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #1e3a2a;
+        }
+        .user-balance {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.7rem;
+            color: #2b7e3a;
+            font-weight: 600;
+        }
+        
         .btn-logout { 
             background: #fee2e2; 
             color: #e67e22; 
@@ -348,13 +382,14 @@ function getCourtImage($court) {
             color: white;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(230,126,34,0.3);
+            border-radius: 50px;
         }
         
-        /* 欢迎横幅 - 玻璃态 + 动态光效 */
+        /* 欢迎横幅 */
         .welcome-banner { 
             background: linear-gradient(135deg, #2b7e3a, #1b5e2a);
             color: white; 
-            padding: 2rem 2rem; 
+            padding: 1.5rem 2rem; 
             border-radius: 32px; 
             margin-bottom: 2rem; 
             display: flex; 
@@ -368,14 +403,8 @@ function getCourtImage($court) {
         }
         
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .welcome-banner::before {
@@ -399,35 +428,15 @@ function getCourtImage($court) {
             font-family: 'Montserrat', 'Poppins', sans-serif;
             font-weight: 700;
             letter-spacing: -0.3px;
-            font-size: 1.8rem; 
-            margin-bottom: 0.3rem; 
+            font-size: 1.5rem; 
+            margin-bottom: 0.2rem; 
         }
-        .welcome-banner p { opacity: 0.9; }
-        .wallet-info { 
-            background: rgba(255,255,255,0.15); 
-            padding: 0.5rem 1.2rem; 
-            border-radius: 50px; 
-            display: inline-flex; 
-            align-items: center; 
-            gap: 0.5rem; 
-            margin-top: 0.5rem;
-            backdrop-filter: blur(4px);
-        }
-        .btn-wallet { 
-            color: #aaffaa; 
-            text-decoration: underline; 
-            font-size: 0.8rem; 
-            margin-left: 0.5rem;
-            font-weight: 600;
-            transition: color 0.3s;
-        }
-        .btn-wallet:hover { color: #ffffff; }
-        
+        .welcome-banner p { opacity: 0.9; font-size: 0.85rem; }
         .btn-my-bookings { 
             background: white; 
             color: #2b7e3a; 
             border: none; 
-            padding: 0.8rem 1.8rem; 
+            padding: 0.6rem 1.5rem; 
             border-radius: 50px; 
             cursor: pointer; 
             font-family: 'Montserrat', 'Inter', sans-serif;
@@ -440,14 +449,15 @@ function getCourtImage($court) {
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         .btn-my-bookings:hover { 
-            transform: translateY(-5px); 
-            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+            transform: translateY(-3px); 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            border-radius: 50px;
         }
         
-        /* 统计卡片 - 3D悬浮效果 */
+        /* 统计卡片 */
         .stats-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
             gap: 1.2rem; 
             margin-bottom: 2rem; 
         }
@@ -455,7 +465,7 @@ function getCourtImage($court) {
             background: rgba(255,255,255,0.8);
             backdrop-filter: blur(10px);
             border-radius: 28px; 
-            padding: 1.3rem; 
+            padding: 1.2rem; 
             display: flex; 
             align-items: center; 
             gap: 1rem; 
@@ -467,51 +477,46 @@ function getCourtImage($court) {
         }
         
         @keyframes fadeInScale {
-            from {
-                opacity: 0;
-                transform: scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
         }
         
-        .stat-card:nth-child(1) { animation-delay: 0.1s; }
-        .stat-card:nth-child(2) { animation-delay: 0.2s; }
-        .stat-card:nth-child(3) { animation-delay: 0.3s; }
-        .stat-card:nth-child(4) { animation-delay: 0.4s; }
+        .stat-card:nth-child(1) { animation-delay: 0.05s; }
+        .stat-card:nth-child(2) { animation-delay: 0.1s; }
+        .stat-card:nth-child(3) { animation-delay: 0.15s; }
+        .stat-card:nth-child(4) { animation-delay: 0.2s; }
         
         .stat-card:hover { 
-            transform: translateY(-8px) scale(1.02); 
-            box-shadow: 0 20px 40px rgba(43,126,58,0.2);
+            transform: translateY(-6px) scale(1.02); 
+            box-shadow: 0 15px 35px rgba(43,126,58,0.15);
             border-color: rgba(43,126,58,0.3);
             background: white;
+            border-radius: 28px;
         }
         .stat-icon { 
-            width: 55px; 
-            height: 55px; 
+            width: 50px; 
+            height: 50px; 
             background: linear-gradient(145deg, #eaf5e6, #d4e8cd);
-            border-radius: 50%; 
+            border-radius: 20px;
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            font-size: 1.6rem; 
+            font-size: 1.4rem; 
             color: #2b7e3a;
             transition: transform 0.3s;
         }
         .stat-card:hover .stat-icon {
-            transform: scale(1.1) rotate(5deg);
+            transform: scale(1.05) rotate(3deg);
         }
         .stat-info h3 { 
             font-family: 'Montserrat', 'Inter', sans-serif;
             font-weight: 900;
-            font-size: 1.8rem; 
+            font-size: 1.5rem; 
             color: #1e3a2a; 
         }
         .stat-info p { 
             color: #5a6e5c; 
-            font-size: 0.85rem; 
+            font-size: 0.7rem; 
             font-weight: 500;
         }
         
@@ -519,11 +524,11 @@ function getCourtImage($court) {
         .filter-form { 
             background: rgba(255,255,255,0.7);
             backdrop-filter: blur(10px);
-            padding: 1.5rem; 
+            padding: 1.2rem 1.5rem; 
             border-radius: 28px; 
             margin-bottom: 2rem; 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
             gap: 1rem; 
             align-items: end; 
             border: 1px solid rgba(255,255,255,0.3);
@@ -536,11 +541,11 @@ function getCourtImage($court) {
             color: #2c4a2e; 
             display: block; 
             margin-bottom: 0.3rem; 
-            font-size: 0.8rem;
+            font-size: 0.75rem;
         }
         .filter-group select, .filter-group input { 
             width: 100%; 
-            padding: 0.7rem 1rem; 
+            padding: 0.6rem 1rem; 
             border: 2px solid rgba(224,232,220,0.8); 
             border-radius: 60px; 
             background: rgba(254,253,248,0.9); 
@@ -551,12 +556,13 @@ function getCourtImage($court) {
             outline: none; 
             border-color: #2b7e3a; 
             box-shadow: 0 0 0 3px rgba(43,126,58,0.1);
+            border-radius: 60px;
         }
         .search-btn, .reset-btn { 
             background: linear-gradient(135deg, #2b7e3a, #1f5a2a);
             color: white; 
             border: none; 
-            padding: 0.7rem 1.2rem; 
+            padding: 0.6rem 1.2rem; 
             border-radius: 60px; 
             cursor: pointer; 
             font-family: 'Montserrat', 'Inter', sans-serif;
@@ -571,22 +577,23 @@ function getCourtImage($court) {
             transform: translateY(-3px);
             filter: brightness(1.02);
             box-shadow: 0 6px 14px rgba(43,126,58,0.3);
+            border-radius: 60px;
         }
         
         /* 场地网格 */
         .courts-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); 
-            gap: 1.8rem; 
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+            gap: 1.5rem; 
             margin-top: 1rem; 
         }
         .court-card { 
             background: white; 
-            border-radius: 28px; 
+            border-radius: 24px; 
             overflow: hidden; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
-            transition: all 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1); 
-            border-bottom: 4px solid #2b7e3a;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05); 
+            transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1); 
+            border-bottom: 3px solid #2b7e3a;
             animation: fadeInScale 0.5s ease-out both;
         }
         .court-card:nth-child(1) { animation-delay: 0.05s; }
@@ -597,12 +604,13 @@ function getCourtImage($court) {
         .court-card:nth-child(6) { animation-delay: 0.3s; }
         
         .court-card:hover { 
-            transform: translateY(-12px) scale(1.01); 
-            box-shadow: 0 30px 50px rgba(43,126,58,0.2);
+            transform: translateY(-8px) scale(1.01); 
+            box-shadow: 0 20px 40px rgba(43,126,58,0.15);
+            border-radius: 24px;
         }
         
         .court-image { 
-            height: 200px; 
+            height: 180px; 
             overflow: hidden; 
             background: linear-gradient(135deg, #2b7e3a, #1a5c2a); 
             position: relative; 
@@ -611,10 +619,10 @@ function getCourtImage($court) {
             width: 100%; 
             height: 100%; 
             object-fit: cover; 
-            transition: transform 0.7s cubic-bezier(0.2, 0.9, 0.4, 1.1); 
+            transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1); 
         }
         .court-card:hover .court-image img { 
-            transform: scale(1.1); 
+            transform: scale(1.05); 
         }
         .court-image .placeholder { 
             display: flex; 
@@ -624,65 +632,60 @@ function getCourtImage($court) {
             height: 100%; 
         }
         .court-image .placeholder .court-icon { 
-            font-size: 4rem; 
+            font-size: 3rem; 
             color: white; 
             margin-bottom: 0.5rem;
-            animation: bounce 2s ease-in-out infinite;
-        }
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
         }
         .court-image .placeholder .court-name-big { 
-            font-size: 1.3rem; 
+            font-size: 1.1rem; 
             font-weight: 700; 
             color: white; 
         }
         .court-type-badge { 
             position: absolute; 
-            top: 15px; 
-            right: 15px; 
+            top: 12px; 
+            right: 12px; 
             background: rgba(0,0,0,0.6); 
             backdrop-filter: blur(4px); 
             color: white; 
-            padding: 0.3rem 0.8rem; 
+            padding: 0.2rem 0.6rem; 
             border-radius: 50px; 
-            font-size: 0.7rem; 
+            font-size: 0.65rem; 
             font-family: 'Montserrat', sans-serif;
             font-weight: 600; 
             z-index: 2;
         }
         
         .court-info { 
-            padding: 1.3rem; 
+            padding: 1rem 1.2rem; 
         }
         .court-name { 
             font-family: 'Montserrat', 'Poppins', sans-serif;
             font-weight: 800;
             letter-spacing: -0.5px;
-            font-size: 1.3rem; 
+            font-size: 1.1rem; 
             color: #2b7e3a; 
-            margin-bottom: 0.3rem;
+            margin-bottom: 0.2rem;
         }
         .court-details { 
             color: #5a6e5c; 
-            font-size: 0.85rem; 
-            margin-bottom: 0.3rem; 
+            font-size: 0.75rem; 
+            margin-bottom: 0.2rem; 
             display: flex; 
             align-items: center; 
             gap: 0.5rem; 
         }
         .court-price { 
             background: #f8faf5; 
-            padding: 0.8rem; 
-            border-radius: 20px; 
-            margin: 0.8rem 0; 
+            padding: 0.5rem 0.8rem; 
+            border-radius: 16px; 
+            margin: 0.6rem 0; 
         }
         .price-row { 
             display: flex; 
             justify-content: space-between; 
-            font-size: 0.85rem; 
-            margin-bottom: 0.3rem; 
+            font-size: 0.75rem; 
+            margin-bottom: 0.2rem; 
         }
         .price-offpeak { 
             font-family: 'DM Sans', 'Inter', sans-serif;
@@ -698,8 +701,8 @@ function getCourtImage($court) {
             background: linear-gradient(135deg, #2b7e3a, #1f5a2a);
             color: white; 
             border: none; 
-            padding: 0.8rem; 
-            border-radius: 60px; 
+            padding: 0.6rem; 
+            border-radius: 50px; 
             width: 100%; 
             cursor: pointer; 
             font-family: 'Montserrat', 'Inter', sans-serif;
@@ -714,6 +717,7 @@ function getCourtImage($court) {
             box-shadow: 0 4px 12px rgba(43,126,58,0.2);
             position: relative;
             overflow: hidden;
+            font-size: 0.85rem;
         }
         .btn-book::before {
             content: '';
@@ -725,63 +729,12 @@ function getCourtImage($court) {
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
             transition: left 0.5s ease;
         }
-        .btn-book:hover::before {
-            left: 100%;
-        }
+        .btn-book:hover::before { left: 100%; }
         .btn-book:hover { 
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(43,126,58,0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 18px rgba(43,126,58,0.35);
+            border-radius: 50px;
         }
-        
-        /* 最近预订表格 */
-        .recent-section { margin-top: 2.5rem; }
-        .section-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 1rem; 
-        }
-        .section-header h2 { 
-            font-family: 'Montserrat', 'Poppins', sans-serif;
-            font-weight: 700;
-            font-size: 1.5rem; 
-            color: #1e3a2a;
-        }
-        .recent-table { 
-            background: rgba(255,255,255,0.7);
-            backdrop-filter: blur(10px);
-            border-radius: 28px; 
-            overflow-x: auto;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-            border: 1px solid rgba(255,255,255,0.3);
-        }
-        table { width: 100%; border-collapse: collapse; }
-        th { 
-            background: #2b7e3a; 
-            color: white; 
-            padding: 1rem; 
-            text-align: left; 
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 600;
-        }
-        td { 
-            padding: 1rem; 
-            border-bottom: 1px solid rgba(224,224,224,0.5); 
-        }
-        tr { transition: background 0.3s; }
-        tr:hover { background: rgba(43,126,58,0.05); }
-        .status { 
-            display: inline-block; 
-            padding: 0.25rem 0.8rem; 
-            border-radius: 50px; 
-            font-size: 0.75rem; 
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 600;
-        }
-        .status-Confirmed { background: #d4edda; color: #155724; }
-        .status-Pending { background: #fff3cd; color: #856404; }
-        .status-Completed { background: #cce5ff; color: #004085; }
-        .status-Cancelled { background: #f8d7da; color: #721c24; }
         
         /* 快捷操作 */
         .quick-actions { 
@@ -794,7 +747,7 @@ function getCourtImage($court) {
             background: rgba(255,255,255,0.7);
             backdrop-filter: blur(5px);
             border: 1.5px solid rgba(43,126,58,0.3); 
-            padding: 0.7rem 1.5rem; 
+            padding: 0.6rem 1.2rem; 
             border-radius: 60px; 
             color: #2b7e3a; 
             text-decoration: none; 
@@ -804,51 +757,54 @@ function getCourtImage($court) {
             display: inline-flex; 
             align-items: center; 
             gap: 0.5rem;
+            font-size: 0.85rem;
         }
         .action-btn:hover { 
             background: #2b7e3a; 
             color: white; 
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 10px 25px rgba(43,126,58,0.3);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 18px rgba(43,126,58,0.25);
             border-color: transparent;
+            border-radius: 60px;
         }
         
         /* 页脚 */
         .footer { 
             background: #0f1f12; 
             color: #cbd5c0; 
-            padding: 3rem 5% 1.5rem; 
-            margin-top: 4rem;
+            padding: 2rem 5% 1rem; 
+            margin-top: 3rem;
             border-radius: 32px 32px 0 0;
         }
         .footer-container { 
             max-width: 1400px; 
             margin: 0 auto; 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
-            gap: 2rem; 
-            margin-bottom: 2rem; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 1.5rem; 
+            margin-bottom: 1.5rem; 
         }
         .footer-col h3, .footer-col h4 { 
             font-family: 'Montserrat', sans-serif;
             font-weight: 700;
             color: #2b7e3a; 
-            margin-bottom: 1rem;
+            margin-bottom: 0.8rem;
+            font-size: 1rem;
         }
         .footer-col p { 
-            margin-bottom: 0.5rem; 
+            margin-bottom: 0.4rem; 
             display: flex; 
             align-items: center; 
-            gap: 0.6rem; 
-            font-size: 0.9rem; 
+            gap: 0.5rem; 
+            font-size: 0.8rem; 
         }
         .footer-col a { 
             color: #cbd5c0; 
             text-decoration: none; 
             display: block; 
-            margin-bottom: 0.6rem; 
+            margin-bottom: 0.5rem; 
             transition: 0.2s; 
-            font-size: 0.9rem; 
+            font-size: 0.8rem; 
         }
         .footer-col a:hover { 
             color: #2b7e3a; 
@@ -857,13 +813,13 @@ function getCourtImage($court) {
         }
         .social-icons { 
             display: flex; 
-            gap: 1rem; 
-            margin-top: 1rem; 
+            gap: 0.8rem; 
+            margin-top: 0.8rem; 
         }
         .social-icons a { 
             background: #2c4a2e; 
-            width: 36px; 
-            height: 36px; 
+            width: 32px; 
+            height: 32px; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
@@ -874,13 +830,14 @@ function getCourtImage($court) {
         }
         .social-icons a:hover { 
             background: #2b7e3a; 
-            transform: translateY(-5px) rotate(360deg);
+            transform: translateY(-4px) rotate(360deg);
+            border-radius: 50%;
         }
         .footer-bottom { 
             text-align: center; 
             border-top: 1px solid #2c4a2e; 
-            padding-top: 1.5rem; 
-            font-size: 0.8rem; 
+            padding-top: 1rem; 
+            font-size: 0.7rem; 
         }
 
         @media (max-width: 768px) { 
@@ -891,9 +848,12 @@ function getCourtImage($court) {
             .footer-container { text-align: center; }
             .footer-col p { justify-content: center; }
             .social-icons { justify-content: center; }
-            .stat-card { padding: 1rem; }
-            .stat-icon { width: 45px; height: 45px; font-size: 1.3rem; }
-            .stat-info h3 { font-size: 1.3rem; }
+            .stat-card { padding: 0.8rem; }
+            .stat-icon { width: 40px; height: 40px; font-size: 1.2rem; }
+            .stat-info h3 { font-size: 1.2rem; }
+            .user-profile { padding: 0.2rem 0.8rem 0.2rem 0.3rem; }
+            .user-avatar { width: 32px; height: 32px; }
+            .user-name { font-size: 0.75rem; }
         }
     </style>
 </head>
@@ -910,8 +870,16 @@ function getCourtImage($court) {
             <a href="my_bookings.php"><i class="fas fa-bookmark"></i> My Bookings</a>
             <a href="../Payment_Module/wallet.php"><i class="fas fa-wallet"></i> Wallet</a>
             <a href="coaches.php"><i class="fas fa-user-tie"></i> Coaches</a>
-            <span class="user-greeting">🏸 <?php echo htmlspecialchars($user['name'] ?? 'Player'); ?></span>
-            <a href="edit_profile.php" class="action-btn" style="padding:0.3rem 1rem; background:#eaf5e6;"><i class="fas fa-user-edit"></i> Profile</a>
+            <!-- 用户头像 + 名字区域（点击跳转 Edit Profile） -->
+            <a href="edit_profile.php" class="user-profile">
+                <div class="user-avatar">
+                    <img src="<?php echo htmlspecialchars($avatarPath); ?>" alt="Avatar">
+                </div>
+                <div class="user-info">
+                    <div class="user-name"><?php echo htmlspecialchars($user['name'] ?? 'Player'); ?></div>
+                    <div class="user-balance">💰 RM <?php echo number_format($real_balance, 2); ?></div>
+                </div>
+            </a>
             <a href="logout.php" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
     </div>
@@ -921,20 +889,34 @@ function getCourtImage($court) {
         <div>
             <h1>Ready to play, <?php echo htmlspecialchars($user['name'] ?? 'Player'); ?>! 🏸</h1>
             <p>Find your perfect court below and start your game</p>
-            <div class="wallet-info">
-                <i class="fas fa-wallet"></i> Balance: <strong>RM <?php echo number_format($real_balance, 2); ?></strong>
-                <a href="../Payment_Module/wallet.php" class="btn-wallet">Top Up</a>
-            </div>
         </div>
         <a href="my_bookings.php" class="btn-my-bookings"><i class="fas fa-bookmark"></i> My Bookings</a>
     </div>
     
     <!-- Stats Cards -->
     <div class="stats-grid">
-        <div class="stat-card"><div class="stat-icon"><i class="fas fa-calendar-check"></i></div><div class="stat-info"><h3><?php echo $upcomingCount; ?></h3><p>Upcoming Bookings</p></div></div>
-        <div class="stat-card"><div class="stat-icon"><i class="fas fa-history"></i></div><div class="stat-info"><h3><?php echo $totalBookings; ?></h3><p>Total Bookings</p></div></div>
-        <div class="stat-card"><div class="stat-icon"><i class="fas fa-coins"></i></div><div class="stat-info"><h3>RM <?php echo number_format($totalSpent, 2); ?></h3><p>Total Spent</p></div></div>
-        <div class="stat-card" onclick="window.location.href='../Payment_Module/redeem_voucher.php';" style="cursor: pointer;">
+        <div class="stat-card" onclick="window.location.href='my_bookings.php';">
+            <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+            <div class="stat-info">
+                <h3><?php echo $upcomingCount; ?></h3>
+                <p>Upcoming Bookings</p>
+            </div>
+        </div>
+        <div class="stat-card" onclick="window.location.href='my_bookings.php';">
+            <div class="stat-icon"><i class="fas fa-history"></i></div>
+            <div class="stat-info">
+                <h3><?php echo $totalBookings; ?></h3>
+                <p>Total Bookings</p>
+            </div>
+        </div>
+        <div class="stat-card" onclick="window.location.href='my_bookings.php';">
+            <div class="stat-icon"><i class="fas fa-coins"></i></div>
+            <div class="stat-info">
+                <h3>RM <?php echo number_format($totalSpent, 2); ?></h3>
+                <p>Total Spent</p>
+            </div>
+        </div>
+        <div class="stat-card" onclick="window.location.href='../Payment_Module/redeem_voucher.php';">
             <div class="stat-icon"><i class="fas fa-star"></i></div>
             <div class="stat-info">
                 <h3><?php echo $currentPointsBalance; ?></h3>
@@ -990,7 +972,6 @@ function getCourtImage($court) {
                                 <?php $icon = ($c['court_type'] == 'Training') ? '🏋️‍♂️' : '🏸'; ?>
                                 <div class="court-icon"><?php echo $icon; ?></div>
                                 <div class="court-name-big"><?php echo htmlspecialchars($c['court_name']); ?></div>
-                                <div class="court-location"><?php echo htmlspecialchars($c['location'] ?? 'Main Hall'); ?></div>
                             </div>
                         <?php endif; ?>
                         <span class="court-type-badge"><?php echo htmlspecialchars($c['court_type']); ?></span>
@@ -999,8 +980,8 @@ function getCourtImage($court) {
                         <div class="court-name">🏸 <?php echo htmlspecialchars($c['court_name']); ?></div>
                         <div class="court-details"><i class="fas fa-tools"></i> <?php echo htmlspecialchars($c['facilities'] ?? 'Shower, Locker'); ?></div>
                         <div class="court-price">
-                            <div class="price-row"><span><i class="fas fa-sun"></i> 8am - 2pm</span><span class="price-offpeak">RM <?php echo number_format($c['price_off_peak'], 2); ?> / hour</span></div>
-                            <div class="price-row"><span><i class="fas fa-moon"></i> 3pm - 1am</span><span class="price-peak">RM <?php echo number_format($c['price_peak'], 2); ?> / hour</span></div>
+                            <div class="price-row"><span><i class="fas fa-sun"></i> Off-Peak</span><span class="price-offpeak">RM <?php echo number_format($c['price_off_peak'], 2); ?> / hour</span></div>
+                            <div class="price-row"><span><i class="fas fa-moon"></i> Peak</span><span class="price-peak">RM <?php echo number_format($c['price_peak'], 2); ?> / hour</span></div>
                         </div>
                         <a href="book_court.php?court_id=<?php echo $c['id']; ?>" class="btn-book"><i class="fas fa-calendar-check"></i> Book Now →</a>
                     </div>
@@ -1011,44 +992,6 @@ function getCourtImage($court) {
         <?php endif; ?>
     </div>
     
-    <!-- Recent Bookings -->
-    <?php if(count($recentBookings) > 0): ?>
-    <div class="recent-section">
-        <div class="section-header">
-            <h2><i class="fas fa-clock"></i> Recent Bookings</h2>
-            <a href="my_bookings.php" style="color:#2b7e3a; font-weight:600;">View All →</a>
-        </div>
-        <div class="recent-table">
-            <table>
-                <thead>
-                    <tr><th>Court</th><th>Date</th><th>Time</th><th>Hours</th><th>Total</th><th>Status</th><th></th></tr>
-                </thead>
-                <tbody>
-                    <?php foreach($recentBookings as $b): ?>
-                    <tr>
-                        <td><strong><?php echo htmlspecialchars($b['court_name']); ?></strong></td>
-                        <td><?php echo date('M j, Y', strtotime($b['booking_date'])); ?></td>
-                        <td><?php echo date('h:i A', strtotime($b['start_time'])); ?> - <?php echo date('h:i A', strtotime($b['end_time'])); ?></td>
-                        <td><?php echo $b['total_hours']; ?>h</td>
-                        <td>RM <?php echo number_format($b['total_price'], 2); ?></td>
-                        <td><span class="status status-<?php echo $b['status']; ?>"><?php echo $b['status']; ?></span></td>
-                        <td><a href="booking_details.php?id=<?php echo $b['id']; ?>" style="color:#2b7e3a;"><i class="fas fa-eye"></i></a></td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <?php endif; ?>
-    
-    <!-- Quick Actions -->
-    <div class="quick-actions">
-        <a href="dashboard.php" class="action-btn"><i class="fas fa-plus"></i> Book a Court</a>
-        <a href="my_bookings.php" class="action-btn"><i class="fas fa-list"></i> My Bookings</a>
-        <a href="../Payment_Module/wallet.php" class="action-btn"><i class="fas fa-wallet"></i> Top Up Wallet</a>
-        <a href="edit_profile.php" class="action-btn"><i class="fas fa-user-cog"></i> Edit Profile</a>
-        <a href="change_password.php" class="action-btn"><i class="fas fa-key"></i> Change Password</a>
-    </div>
 </div>
 
 <!-- Footer -->
@@ -1056,14 +999,13 @@ function getCourtImage($court) {
     <div class="footer-container">
         <div class="footer-col">
             <h3>Smash Arena</h3>
-            <p><i class="fas fa-map-marker-alt"></i> 123 Jalan Badminton, Kuala Lumpur</p>
+            <p><i class="fas fa-map-marker-alt"></i> 123 Jalan Badminton, KL</p>
             <p><i class="fas fa-phone-alt"></i> +603-1234 5678</p>
-            <p><i class="fas fa-envelope"></i> smasharenabadminton@gmail.com</p>
+            <p><i class="fas fa-envelope"></i> support@smasharena.com</p>
             <div class="social-icons">
                 <a href="#"><i class="fab fa-facebook-f"></i></a>
                 <a href="#"><i class="fab fa-instagram"></i></a>
                 <a href="#"><i class="fab fa-twitter"></i></a>
-                <a href="#"><i class="fab fa-whatsapp"></i></a>
             </div>
         </div>
         <div class="footer-col">
@@ -1082,16 +1024,15 @@ function getCourtImage($court) {
         </div>
         <div class="footer-col">
             <h4>Operating Hours</h4>
-            <p><i class="fas fa-clock"></i> Monday - Sunday: <?php echo getOperatingHours(); ?></p>
-            <p><i class="fas fa-tag"></i> 8am - <?php echo date('h:i A', strtotime(getSetting('peak_start', '15:00'))); ?>: RM <?php echo getSetting('off_peak_price', '10'); ?>/hour</p>
-            <p><i class="fas fa-tag"></i> <?php echo date('h:i A', strtotime(getSetting('peak_start', '15:00'))); ?> - <?php echo date('h:i A', strtotime(getSetting('close_time', '01:00'))); ?>: RM <?php echo getSetting('peak_price', '15'); ?>/hour</p>
-            <p><i class="fas fa-calendar-alt"></i> Open daily including public holidays</p>
+            <p><i class="fas fa-clock"></i> Mon - Sun: <?php echo $open_time_display; ?> - <?php echo $close_time_display; ?></p>
+            <p><i class="fas fa-tag"></i> <?php echo $open_time_display; ?> - <?php echo $peak_start_display; ?>: RM <?php echo $off_peak_price; ?>/hour</p>
+            <p><i class="fas fa-tag"></i> <?php echo $peak_start_display; ?> - <?php echo $close_time_display; ?>: RM <?php echo $peak_price; ?>/hour</p>
+            <p><i class="fas fa-calendar-alt"></i> Open daily including holidays</p>
         </div>
     </div>
     <div class="footer-bottom">
-        <p>&copy; 2025 Smash Arena – Your Game, Our Court. All rights reserved.</p>
+        <p>&copy; 2025 Smash Arena – Your Game, Our Court.</p>
     </div>
 </footer>
-
 </body>
 </html>

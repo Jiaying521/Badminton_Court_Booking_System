@@ -1,11 +1,24 @@
 ﻿<?php
 require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/functions.php';
 if (!isLoggedIn()) redirect('homepage.php');
 
 $user_id = $_SESSION['user_id'];
 $stmt = $pdo->prepare("SELECT name FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch();
+
+// 获取系统设置用于 footer 显示
+$open_time = getSetting('open_time', '08:00');
+$close_time = getSetting('close_time', '01:00');
+$peak_start = getSetting('peak_start', '15:00');
+$off_peak_price = getSetting('off_peak_price', '10');
+$peak_price = getSetting('peak_price', '15');
+
+// 格式化时间显示
+$open_time_display = date('h:i A', strtotime($open_time));
+$close_time_display = date('h:i A', strtotime($close_time));
+$peak_start_display = date('h:i A', strtotime($peak_start));
 
 // Fetch all active coaches
 $coaches = $pdo->query("
@@ -35,6 +48,7 @@ $avail_map = [
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* 样式保持不变，与之前相同 */
         * { margin:0; padding:0; box-sizing:border-box; }
         
         body { 
@@ -239,7 +253,6 @@ $avail_map = [
             margin-top: 1rem;
         }
         
-        /* Coach Card - 3D悬浮效果 */
         .coach-card {
             background: rgba(255,255,255,0.8);
             backdrop-filter: blur(10px);
@@ -265,6 +278,7 @@ $avail_map = [
             transform: translateY(-12px) scale(1.01);
             box-shadow: 0 30px 50px rgba(43,126,58,0.2);
             background: white;
+            border-radius: 28px;
         }
         
         .card-hero {
@@ -401,6 +415,7 @@ $avail_map = [
             background: #2b7e3a;
             color: white;
             transform: translateY(-2px);
+            border-radius: 60px;
         }
         
         .btn-book {
@@ -437,6 +452,7 @@ $avail_map = [
         .btn-book:hover { 
             transform: translateY(-3px);
             box-shadow: 0 12px 25px rgba(43,126,58,0.4);
+            border-radius: 60px;
         }
         
         .btn-book.disabled {
@@ -509,6 +525,7 @@ $avail_map = [
         .social-icons a:hover { 
             background: #2b7e3a; 
             transform: translateY(-5px) rotate(360deg);
+            border-radius: 50%;
         }
         .footer-bottom { 
             text-align: center; 
@@ -625,7 +642,8 @@ $avail_map = [
 <!-- Footer -->
 <footer class="footer">
     <div class="footer-container">
-        <div class="footer-col"><h3>Smash Arena</h3>
+        <div class="footer-col">
+            <h3>Smash Arena</h3>
             <p><i class="fas fa-map-marker-alt"></i> 123 Jalan Badminton, Kuala Lumpur</p>
             <p><i class="fas fa-phone-alt"></i> +603-1234 5678</p>
             <p><i class="fas fa-envelope"></i> smasharenabadminton@gmail.com</p>
@@ -636,9 +654,27 @@ $avail_map = [
                 <a href="#"><i class="fab fa-whatsapp"></i></a>
             </div>
         </div>
-        <div class="footer-col"><h4>Quick Links</h4><a href="dashboard.php">Find a Court</a><a href="my_bookings.php">My Bookings</a><a href="../Payment_Module/wallet.php">Wallet</a></div>
-        <div class="footer-col"><h4>Support</h4><a href="faq.php">FAQs</a><a href="cancellation_policy.php">Cancellation Policy</a><a href="privacy_policy.php">Privacy Policy</a><a href="terms_of_use.php">Terms of Use</a><a href="contact_us.php">Contact Us</a></div>
-        <div class="footer-col"><h4>Operating Hours</h4><p><i class="fas fa-clock"></i> Monday - Sunday: <?php echo getOperatingHours(); ?></p><p><i class="fas fa-tag"></i> 8am - <?php echo date('h:i A', strtotime(getSetting('peak_start', '15:00'))); ?>: RM <?php echo getSetting('off_peak_price', '10'); ?>/hour</p><p><i class="fas fa-tag"></i> <?php echo date('h:i A', strtotime(getSetting('peak_start', '15:00'))); ?> - <?php echo date('h:i A', strtotime(getSetting('close_time', '01:00'))); ?>: RM <?php echo getSetting('peak_price', '15'); ?>/hour</p><p><i class="fas fa-calendar-alt"></i> Open daily including public holidays</p></div>
+        <div class="footer-col">
+            <h4>Quick Links</h4>
+            <a href="dashboard.php">Find a Court</a>
+            <a href="my_bookings.php">My Bookings</a>
+            <a href="../Payment_Module/wallet.php">Wallet</a>
+        </div>
+        <div class="footer-col">
+            <h4>Support</h4>
+            <a href="faq.php">FAQs</a>
+            <a href="cancellation_policy.php">Cancellation Policy</a>
+            <a href="privacy_policy.php">Privacy Policy</a>
+            <a href="terms_of_use.php">Terms of Use</a>
+            <a href="contact_us.php">Contact Us</a>
+        </div>
+        <div class="footer-col">
+            <h4>Operating Hours</h4>
+            <p><i class="fas fa-clock"></i> Monday - Sunday: <?php echo $open_time_display; ?> - <?php echo $close_time_display; ?></p>
+            <p><i class="fas fa-tag"></i> <?php echo $open_time_display; ?> - <?php echo $peak_start_display; ?>: RM <?php echo $off_peak_price; ?>/hour</p>
+            <p><i class="fas fa-tag"></i> <?php echo $peak_start_display; ?> - <?php echo $close_time_display; ?>: RM <?php echo $peak_price; ?>/hour</p>
+            <p><i class="fas fa-calendar-alt"></i> Open daily including public holidays</p>
+        </div>
     </div>
     <div class="footer-bottom"><p>&copy; 2025 Smash Arena – Your Game, Our Court. All rights reserved.</p></div>
 </footer>
