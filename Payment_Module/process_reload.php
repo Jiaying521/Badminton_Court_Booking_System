@@ -9,6 +9,9 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// EASY HUMAN COMMENT: Force the system engine to use local Malaysia time for real-time sync
+date_default_timezone_set('Asia/Kuala_Lumpur'); 
+
 // Make sure the user is submitting data via a secure POST form
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
@@ -18,6 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $return_to = $_POST['return_to'] ?? 'dashboard'; // Tells us where they came from (checkout or wallet page)
     $b_id = $_POST['booking_id'] ?? 0;      // The current booking ID if they topped up mid-checkout
     $b_amt = $_POST['amount'] ?? 0;          // The original court booking price if applicable
+    $pay_method = $_POST['pay_method'] ?? 'Bank'; // Collect the banking method type chosen
 
     // Basic validation to protect our code from empty data or zero/negative money reload attempts
     if ($user_id == 0 || $amt <= 0) {
@@ -34,16 +38,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Run the balance top-up update statement against our tables
     if ($stmt->execute()) {
         
-        // SMART REDIRECT
-        // If they were originally trying to check out a court and ran out of cash
-        if ($return_to === 'checkout' && $b_id != 0) {
-            // Send them right back to checkout.php with their booking details so they can finish renting their court instantly
-            header("Location: checkout.php?booking_id=$b_id&amount=$b_amt&status=success");
-        } else {
-            // Otherwise, if they just topped up from the menu link, send them back to the main dashboard screen
-            header("Location: ../Customer_Module/dashboard.php?status=success");
+        // EASY HUMAN COMMENT: Initialize the top-up memory array inside our PHP session structure if it does not exist
+        if (!isset($_SESSION['recent_topups']) || !is_array($_SESSION['recent_topups'])) {
+            $_SESSION['recent_topups'] = [];
         }
-        exit(); // Stop running the script execution after redirection triggers successfully
+
+        // Change the short single-word payment option labels into clean readable phrase titles
+        if ($pay_method === 'Bank') {
+            $clean_method = 'Online Banking';
+        } elseif ($pay_method === 'Card') {
+            $clean_method = 'Credit / Debit Card';
+        } else {
+            $clean_method = "Touch 'n Go eWallet";
+        }
+
+        // Add this new top-up record directly into our active computer session memory stream row array
+        $_SESSION['recent_topups'][] = [
+            'amount' => $amt,
+            'payment_method' => $clean_method,
+            'payment_status' => 'success',
+            'payment_date' => date('Y-m-d H:i:s')
+        ];
+
+        // EASY HUMAN COMMENT: Redirect the customer back to wallet.php first so they can see their new balance and transaction history updated!
+        header("Location: wallet.php?return=" . urlencode($return_to) . "&booking_id=$b_id&amount=$b_amt");
+        exit(); 
         
     } else {
         // Print a generic error message out if the database engine fails to write row inputs updates

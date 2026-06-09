@@ -204,6 +204,17 @@ body {
                 <p style="font-size: 13px; color:#666; text-align: left; margin-bottom: 20px;">Reloading: <strong style="color: #2b7e3a;">RM <?php echo number_format($reload_amt, 2); ?></strong></p>
                 
                 <div class="form-group">
+                    <label>Select Bank Profile</label>
+                    <select name="selected_bank" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; background: #fafafa; font-size: 14px; color: #333; outline: none;" required>
+                        <option value="Maybank2u">Maybank2u </option>
+                        <option value="CIMB Clicks">CIMB Bank</option>
+                        <option value="Public Bank">Public Bank Berhad</option>
+                        <option value="RHB Now">RHB Bank</option>
+                        <option value="Hong Leong Connect">Hong Leong Bank</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label>Online Banking Username</label>
                     <input type="text" placeholder="Enter your banking username" class="gateway-input" required autocomplete="off">
                 </div>

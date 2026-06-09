@@ -424,8 +424,8 @@ body {
 
                     <div id="online-choices" style="display: <?php echo ($real_balance < $amount) ? 'block' : 'none'; ?>;">
                         <p style="font-size: 14px; font-weight: bold; margin-bottom: 12px; color: #2b7e3a;">Select Provider Gateway:</p>
-                        <label style="display: block; margin-bottom: 10px; cursor: pointer; font-size:14px;"><input type="radio" name="sub_method" value="Bank" checked> Online Banking (FPX Direct)</label>
-                        <label style="display: block; margin-bottom: 10px; cursor: pointer; font-size:14px;"><input type="radio" name="sub_method" value="Card"> Visa / MasterCard / Debit</label>
+                        <label style="display: block; margin-bottom: 10px; cursor: pointer; font-size:14px;"><input type="radio" name="sub_method" value="Bank" checked> Online Banking </label>
+                        <label style="display: block; margin-bottom: 10px; cursor: pointer; font-size:14px;"><input type="radio" name="sub_method" value="Card"> Credit / Debit Card</label>
                         <label style="display: block; cursor: pointer; font-size:14px;"><input type="radio" name="sub_method" value="TNG"> Touch 'n Go eWallet App</label>
                     </div>
 

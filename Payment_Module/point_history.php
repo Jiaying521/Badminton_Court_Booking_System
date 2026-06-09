@@ -111,51 +111,274 @@ while ($row = $inv_res->fetch_assoc()) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* CSS resets to clear uneven baseline browser margins spacing */
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Inter',sans-serif; background:linear-gradient(145deg,#f5f9f0 0%,#e8efe2 100%); color:#1e2a2e; padding:2rem; }
-        .container { max-width:1200px; margin:0 auto; }
-        
-        /* Layout navigation header options rows style guidelines blueprint templates grids */
-        .navbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; padding-bottom:1rem; border-bottom:1px solid rgba(43,126,58,0.15); }
-        .logo-area { display:flex; align-items:center; gap:0.8rem; text-decoration:none; color: inherit; }
-        .logo-text { font-size:1.3rem; font-weight:700; color:#2b7e3a; }
-        .logo-text span { color:#e67e22; }
-        .nav-links { display:flex; align-items:center; gap:1.5rem; }
-        .nav-links a { color:#2c4a2e; text-decoration:none; font-weight:500; }
-        .nav-links a:hover { color:#2b7e3a; }
-        
-        .header-section { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem; }
-        .header-section h1 { color:#1e3a2a; font-size:1.8rem; }
-        
-        /* Grand totals indicator green summary block parameters layouts styling properties links keys */
-        .points-summary-card { background:linear-gradient(135deg,#2b7e3a,#1b5e2a); color:white; padding:1.5rem 2rem; border-radius:24px; display:flex; align-items:center; justify-content:space-between; margin-bottom:2rem; box-shadow:0 6px 18px rgba(43,126,58,0.15); }
-        .points-val { font-size:2.5rem; font-weight:800; }
-        .btn-shop { background:white; color:#2b7e3a; padding:0.6rem 1.2rem; border-radius:50px; font-weight:700; text-decoration:none; font-size:0.85rem; display:inline-flex; align-items:center; gap:5px; transition:0.2s; }
-        .btn-shop:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+} /* CSS resets to clear uneven baseline browser margins spacing */
 
-        /* Split display panels schema: 2 columns wide split blueprint framework columns */
-        .history-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
-        .panel-box { background:white; border-radius:24px; padding:1.5rem; box-shadow:0 4px 15px rgba(0,0,0,0.02); border:1px solid rgba(43,126,58,0.06); }
-        .panel-title { font-size:1.15rem; font-weight:700; color:#1e3a2a; margin-bottom:1.2rem; display:flex; align-items:center; gap:0.5rem; border-bottom:2px solid #eaf5e6; padding-bottom:0.5rem; }
-        
-        /* Log history listing sheet row lines templates formatting rules columns properties keys */
-        .log-table { width:100%; border-collapse:collapse; }
-        .log-table td { padding:1rem 0.5rem; border-bottom:1px solid #f0f4ee; vertical-align:middle; font-size:0.85rem; }
-        .text-earned { color:#2b7e3a; font-weight:700; font-size:1rem; }
-        .text-spent { color:#e67e22; font-weight:700; font-size:1rem; }
-        
-        /* Coupons inventory items container blueprints templates elements styles links */
-        .coupon-grid { display:flex; flex-direction:column; gap:0.8rem; }
-        .coupon-card { border:1px dashed #cbd5c0; background:#fafdf7; border-radius:14px; padding:1rem; display:flex; justify-content:space-between; align-items:center; }
-        .coupon-card.used-coupon { background:#f5f5f5; border-style:solid; border-color:#e0e0e0; opacity:0.7; }
-        
-        .badge { display:inline-block; padding:0.25rem 0.6rem; border-radius:50px; font-size:0.7rem; font-weight:600; }
-        .badge-active { background:#d4edda; color:#155724; }
-        .badge-used { background:#e0e0e0; color:#555; }
+body { 
+    font-family: 'Inter', sans-serif; 
+    background: linear-gradient(145deg, #f5f9f0 0%, #e8efe2 100%); 
+    color: #1e2a2e; 
+    padding: 2rem; 
+}
 
-        /* Responsive design utility adjusting column structure grid definitions automatically on phone viewports scale */
-        @media (max-width:768px) { .history-grid { grid-template-columns:1fr; } }
+.container { 
+    max-width: 1200px; 
+    margin: 0 auto; 
+}
+
+.navbar { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 2rem; 
+    padding-bottom: 1rem; 
+    border-bottom: 1px solid rgba(43, 126, 58, 0.15); 
+} /* Layout navigation header options rows style guidelines */
+
+.logo-area { 
+    display: flex; 
+    align-items: center; 
+    gap: 0.8rem; 
+    text-decoration: none; 
+    color: inherit; 
+}
+
+.logo-text { 
+    font-size: 1.3rem; 
+    font-weight: 700; 
+    color: #2b7e3a; 
+}
+
+.logo-text span { 
+    color: #e67e22; 
+}
+
+.nav-links { 
+    display: flex; 
+    align-items: center; 
+    gap: 1.5rem; 
+}
+
+.nav-links a { 
+    color: #2c4a2e; 
+    text-decoration: none; 
+    font-weight: 500; 
+}
+
+.nav-links a:hover { 
+    color: #2b7e3a; 
+}
+
+.tabs-container { 
+    display: flex; 
+    gap: 10px; 
+    margin-top: 1rem; 
+    margin-bottom: 1.5rem; 
+    border-bottom: 2px solid #eef3eb; 
+    padding-bottom: 10px; 
+} /* EASY HUMAN COMMENT: Keeps our navigation tab structure completely identical to the shop view */
+
+.tab-btn { 
+    flex: 1; 
+    padding: 12px 20px; 
+    border-radius: 14px; 
+    font-weight: 700; 
+    font-size: 0.9rem; 
+    text-decoration: none; 
+    text-align: center; 
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
+} /* EASY HUMAN COMMENT: Set cubic-bezier micro-interaction transitions for fluid tab bouncing mechanics */
+
+.tab-btn.active { 
+    background: #2b7e3a; 
+    color: white; 
+    box-shadow: 0 4px 12px rgba(43, 126, 58, 0.15); 
+}
+
+.tab-btn.inactive { 
+    background: white; 
+    color: #5a6e5c; 
+    border: 1px solid #e4ebe0; 
+}
+
+/* EASY HUMAN COMMENT: Added hovering scale lifts and shadow spreading micro-interactions to buttons */
+.tab-btn:hover { 
+    transform: translateY(-2px) scale(1.02); 
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08); 
+}
+
+.tab-btn.active:hover { 
+    background: #1f5a2a; 
+    box-shadow: 0 6px 15px rgba(43, 126, 58, 0.25); 
+}
+
+.tab-btn.inactive:hover { 
+    background: #f4f7f2; 
+    color: #1e3a2a; 
+    border-color: #2b7e3a; 
+}
+
+/* EASY HUMAN COMMENT: Added active press depression logic states */
+.tab-btn:active { 
+    transform: translateY(1px) scale(0.98); 
+}
+
+.header-section { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 1.5rem; 
+    flex-wrap: wrap; 
+    gap: 1rem; 
+}
+
+.header-section h1 { 
+    color: #1e3a2a; 
+    font-size: 1.8rem; 
+}
+
+.points-summary-card { 
+    background: linear-gradient(135deg, #2b7e3a, #1b5e2a); 
+    color: white; 
+    padding: 1.5rem 2rem; 
+    border-radius: 24px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    margin-bottom: 2rem; 
+    box-shadow: 0 6px 18 rgba(43, 126, 58, 0.15); 
+} /* Grand totals indicator green summary block parameters styling properties */
+
+.points-val { 
+    font-size: 2.5rem; 
+    font-weight: 800; 
+}
+
+.history-grid { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 1.5rem; 
+    align-items: stretch; 
+} /* Split display panels schema: 2 columns wide split blueprint framework */
+
+.panel-box { 
+    background: white; 
+    border-radius: 24px; 
+    padding: 1.5rem; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.02); 
+    border: 1px solid rgba(43,126,58,0.06); 
+    max-height: 460px; 
+    display: flex; 
+    flex-direction: column; 
+} /* EASY HUMAN COMMENT: Set a clean maximum height to shorten the dashboard blocks length by 50% */
+
+.panel-title { 
+    font-size: 1.15rem; 
+    font-weight: 700; 
+    color: #1e3a2a; 
+    margin-bottom: 1.2rem; 
+    display: flex; 
+    align-items: center; 
+    gap: 0.5rem; 
+    border-bottom: 2px solid #eaf5e6; 
+    padding-bottom: 0.5rem; 
+}
+
+.scroll-list-wrapper { 
+    flex: 1; 
+    overflow-y: auto; 
+    padding-right: 6px; 
+} /* EASY HUMAN COMMENT: This activates the clean internal scrolling rules so the frames stay compact */
+
+.scroll-list-wrapper::-webkit-scrollbar { 
+    width: 5px; 
+}
+
+.scroll-list-wrapper::-webkit-scrollbar-track { 
+    background: transparent; 
+}
+
+.scroll-list-wrapper::-webkit-scrollbar-thumb { 
+    background: #cbd5c0; 
+    border-radius: 10px; 
+}
+
+.log-table { 
+    width: 100%; 
+    border-collapse: collapse; 
+} /* Log history listing table formatting rules */
+
+.log-table td { 
+    padding: 1rem 0.5rem; 
+    border-bottom: 1px solid #f0f4ee; 
+    vertical-align: middle; 
+    font-size: 0.85rem; 
+}
+
+.text-earned { 
+    color: #2b7e3a; 
+    font-weight: 700; 
+    font-size: 1rem; 
+}
+
+.text-spent { 
+    color: #e67e22; 
+    font-weight: 700; 
+    font-size: 1rem; 
+}
+
+.coupon-grid { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 0.8rem; 
+} /* Coupons inventory items container layout blueprints templates */
+
+.coupon-card { 
+    border: 1px dashed #cbd5c0; 
+    background: #fafdf7; 
+    border-radius: 14px; 
+    padding: 1rem; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+}
+
+.coupon-card.used-coupon { 
+    background: #f5f5f5; 
+    border-style: solid; 
+    border-color: #e0e0e0; 
+    opacity: 0.7; 
+}
+
+.badge { 
+    display: inline-block; 
+    padding: 0.25rem 0.6rem; 
+    border-radius: 50px; 
+    font-size: 0.7rem; 
+    font-weight: 600; 
+}
+
+.badge-active { 
+    background: #d4edda; 
+    color: #155724; 
+}
+
+.badge-used { 
+    background: #e0e0e0; 
+    color: #555; 
+}
+
+@media (max-width:768px) { 
+    .history-grid { 
+        grid-template-columns: 1fr; 
+    } 
+    .panel-box { 
+        max-height: auto; 
+    }
+} /* Responsive adjustment for mobile screen configurations */
     </style>
 </head>
 <body>
@@ -172,8 +395,13 @@ while ($row = $inv_res->fetch_assoc()) {
         </div>
     </div>
 
-    <div class="header-section">
-        <h1><i class="fas fa-history" style="color:#2b7e3a;"></i> Reward Points Ledger</h1>
+    <div class="tabs-container">
+        <a href="redeem_voucher.php" class="tab-btn inactive">
+            <i class="fas fa-ticket-alt"></i> Redeem Vouchers
+        </a>
+        <a href="point_history.php" class="tab-btn active">
+            <i class="fas fa-history"></i> My Claims & Point History
+        </a>
     </div>
 
     <div class="points-summary-card">
@@ -181,7 +409,6 @@ while ($row = $inv_res->fetch_assoc()) {
             <p style="text-transform:uppercase; font-size:0.75rem; font-weight:700; letter-spacing:0.5px; opacity:0.85;">Current Rewards Balance</p>
             <div class="points-val"><?php echo $current_points; ?> <span style="font-size:1.1rem; font-weight:400;">Available Points</span></div>
         </div>
-        <a href="redeem_voucher.php" class="btn-shop"><i class="fas fa-store"></i> Redeem More Vouchers</a>
     </div>
 
     <div class="history-grid">
@@ -189,55 +416,59 @@ while ($row = $inv_res->fetch_assoc()) {
         <div class="panel-box">
             <div class="panel-title"><i class="fas fa-exchange-alt" style="color:#2b7e3a;"></i> Points Transaction Log</div>
             
-            <?php if(count($history_log) > 0): ?>
-                <table class="log-table">
-                    <tbody>
-                        <?php foreach($history_log as $log): ?>
-                            <tr>
-                                <td>
-                                    <div style="font-weight:600; color:#2c4a2e;"><?php echo htmlspecialchars($log['title']); ?></div>
-                                    <small style="color:#888;"><?php echo date('M j, Y', strtotime($log['date'])); ?> • <?php echo $log['amount_info']; ?></small>
-                                </td>
-                                <td style="text-align:right;">
-                                    <?php if($log['type'] === 'Earned'): ?>
-                                        <span class="text-earned">+<?php echo $log['points']; ?> Pts</span>
-                                    <?php else: ?>
-                                        <span class="text-spent">-<?php echo $log['points']; ?> Pts</span>
-                                    <?php endif; ?>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            <?php else: ?>
-                <p style="color:#888; text-align:center; padding:2rem; font-size:0.9rem;">No reward points movements logged yet.</p>
-            <?php endif; ?>
+            <div class="scroll-list-wrapper">
+                <?php if(count($history_log) > 0): ?>
+                    <table class="log-table">
+                        <tbody>
+                            <?php foreach($history_log as $log): ?>
+                                <tr>
+                                    <td>
+                                        <div style="font-weight:600; color:#2c4a2e;"><?php echo htmlspecialchars($log['title']); ?></div>
+                                        <small style="color:#888;"><?php echo date('M j, Y', strtotime($log['date'])); ?> • <?php echo $log['amount_info']; ?></small>
+                                    </td>
+                                    <td style="text-align:right;">
+                                        <?php if($log['type'] === 'Earned'): ?>
+                                            <span class="text-earned">+<?php echo $log['points']; ?> Pts</span>
+                                        <?php else: ?>
+                                            <span class="text-spent">-<?php echo $log['points']; ?> Pts</span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php else: ?>
+                    <p style="color:#888; text-align:center; padding:2rem; font-size:0.9rem;">No reward points movements logged yet.</p>
+                <?php endif; ?>
+            </div>
         </div>
 
         <div class="panel-box">
             <div class="panel-title"><i class="fas fa-ticket-alt" style="color:#e67e22;"></i> My Redeemed Vouchers Collection</div>
             
-            <div class="coupon-grid">
-                <?php if(count($user_inventory) > 0): ?>
-                    <?php foreach($user_inventory as $coupon): ?>
-                        <div class="coupon-card <?php echo ($coupon['is_used'] == 1) ? 'used-coupon' : ''; ?>">
-                            <div>
-                                <h4 style="color:#1e3a2a; font-weight:700;"><i class="fas fa-gift" style="color:#e67e22; margin-right:4px;"></i> <?php echo htmlspecialchars($coupon['title']); ?></h4>
-                                <small style="color:#777; display:block; margin-top:3px;">Claimed: <?php echo date('M j, Y', strtotime($coupon['redeemed_at'])); ?></small>
+            <div class="scroll-list-wrapper">
+                <div class="coupon-grid">
+                    <?php if(count($user_inventory) > 0): ?>
+                        <?php foreach($user_inventory as $coupon): ?>
+                            <div class="coupon-card <?php echo ($coupon['is_used'] == 1) ? 'used-coupon' : ''; ?>">
+                                <div>
+                                    <h4 style="color:#1e3a2a; font-weight:700;"><i class="fas fa-gift" style="color:#e67e22; margin-right:4px;"></i> <?php echo htmlspecialchars($coupon['title']); ?></h4>
+                                    <small style="color:#777; display:block; margin-top:3px;">Claimed: <?php echo date('M j, Y', strtotime($coupon['redeemed_at'])); ?></small>
+                                </div>
+                                <div style="text-align:right;">
+                                    <?php if($coupon['is_used'] == 0): ?>
+                                        <span class="badge badge-active"><i class="fas fa-check"></i> Active (Unused)</span>
+                                        <p style="font-size:10px; color:#2b7e3a; font-weight:bold; margin-top:4px;">Ready at Checkout</p>
+                                    <?php else: ?>
+                                        <span class="badge badge-used"><i class="fas fa-minus-circle"></i> Spent / Applied</span>
+                                    <?php endif; ?>
+                                </div>
                             </div>
-                            <div style="text-align:right;">
-                                <?php if($coupon['is_used'] == 0): ?>
-                                    <span class="badge badge-active"><i class="fas fa-check"></i> Active (Unused)</span>
-                                    <p style="font-size:10px; color:#2b7e3a; font-weight:bold; margin-top:4px;">Ready at Checkout</p>
-                                <?php else: ?>
-                                    <span class="badge badge-used"><i class="fas fa-minus-circle"></i> Spent / Applied</span>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <p style="color:#888; text-align:center; padding:2rem; font-size:0.9rem;">Your voucher wallet is currently empty.</p>
-                <?php endif; ?>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <p style="color:#888; text-align:center; padding:2rem; font-size:0.9rem;">Your voucher wallet is currently empty.</p>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
 

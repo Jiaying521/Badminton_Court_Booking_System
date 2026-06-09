@@ -10,18 +10,16 @@ if(!isLoggedIn()) redirect('../Customer_Module/homepage.php');
 // Grab the logged-in user's ID
 $user_id = $_SESSION['user_id'];
 
-// 1. 获取用户信息
 // Secure query to fetch the user's name from their user ID
 $userStmt = $pdo->prepare("SELECT name FROM users WHERE id = ?");
 $userStmt->execute([$user_id]);
 $user = $userStmt->fetch();
 
-// 2. Read live points balance directly from users.loyalty_points (single source of truth)
+// Read live points balance directly from users.loyalty_points (single source of truth)
 $stmt = $pdo->prepare("SELECT loyalty_points FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $current_points = (int)($stmt->fetchColumn() ?? 0);
 
-// 4. 处理用户点击 "Redeem" 按钮的后台动作逻辑
 // Check if the user clicked a "Redeem" link button on the UI shelf
 if (isset($_GET['action']) && $_GET['action'] === 'redeem') {
     $voucher_id = $_GET['voucher_id'] ?? 0;
@@ -82,7 +80,6 @@ if (isset($_GET['action']) && $_GET['action'] === 'redeem') {
     }
 }
 
-// 5. 从数据库里拉取所有可在商店里兑换的优惠券货架列表
 // Pull all our standard shop vouchers, sorting them from cheapest to most expensive
 $vouchers_shop_list = $pdo->query("
     SELECT v.*, (SELECT COUNT(*) FROM user_vouchers uv WHERE uv.voucher_id = v.id) AS claimed_count
@@ -102,34 +99,195 @@ $now = date('Y-m-d H:i:s');
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* General CSS layout resets to strip away default padding spaces */
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Inter',sans-serif; background:linear-gradient(145deg,#f5f9f0 0%,#e8efe2 100%); color:#1e2a2e; padding:2rem; }
-        /* Central layout whiteboard panel frame parameters */
-        .container { max-width:800px; margin:0 auto; background: white; padding: 2.5rem; border-radius: 28px; box-shadow:0 8px 25px rgba(0,0,0,0.04); text-align: center; border: 1px solid rgba(43,126,58,0.08);}
-        
-        /* Green active balance wallet card block element styling */
-        .points-box { background: linear-gradient(135deg, #2b7e3a, #1b5e2a); color: white; padding: 1.8rem; border-radius: 24px; margin: 1.5rem auto; width: 100%; max-width: 460px; box-shadow: 0 6px 20px rgba(43,126,58,0.2);}
-        .points-box p { opacity: 0.85; font-size: 0.9rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;}
-        .points-box h1 { font-size: 2.8rem; font-weight: 800; margin-top: 4px; }
-        .points-box h1 span { font-size: 1.1rem; font-weight: 400; opacity: 0.9; }
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+} /* General CSS layout resets to strip away default padding spaces */
 
-        /* Vouchers listing row cards shelf styles framework definitions */
-        .voucher-list { display: flex; flex-direction: column; gap: 1rem; margin-top: 2.5rem; text-align: left; }
-        .voucher-row { border: 2px dashed #cbd5c0; background: #fafdf7; border-radius: 20px; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
-        .voucher-row:hover { border-color: #2b7e3a; background: #fdfefb; transform: translateY(-1px); }
-        
-        .voucher-details h3 { color: #1e3a2a; font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
-        .voucher-details p { color: #666; font-size: 0.85rem; margin-top: 5px; }
-        
-        /* Interactive green claim purchase action button module styling specifications */
-        .btn-redeem { background: #2b7e3a; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 50px; font-weight: 600; text-decoration: none; font-size: 0.8rem; text-align: center; transition: 0.2s; display: inline-flex; align-items: center; }
-        .btn-redeem:hover { background: #1f5a2a; transform: translateY(-1px); }
-        /* Grey background locked state button style if funds are short */
-        .btn-locked { background: #e0e0e0; color: #888; cursor: not-allowed; }
-        
-        .back-link { display: inline-block; margin-top: 2.5rem; color: #2b7e3a; text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: 0.2s; }
-        .back-link:hover { color: #1f5a2a; letter-spacing: -0.2px; }
+body { 
+    font-family: 'Inter', sans-serif; 
+    background: linear-gradient(145deg, #f5f9f0 0%, #e8efe2 100%); 
+    color: #1e2a2e; 
+    padding: 2rem; 
+}
+
+.container { 
+    max-width: 800px; 
+    margin: 0 auto; 
+    background: white; 
+    padding: 2.5rem; 
+    border-radius: 28px; 
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.04); 
+    text-align: center; 
+    border: 1px solid rgba(43, 126, 58, 0.08); 
+} /* Central layout whiteboard panel frame parameters */
+
+.tabs-container { 
+    display: flex; 
+    gap: 10px; 
+    margin-top: 1.5rem; 
+    margin-bottom: 1.5rem; 
+    border-bottom: 2px solid #eef3eb; 
+    padding-bottom: 10px; 
+} /* Wrapper layout block for the horizontal navigation bar layout */
+
+.tab-btn { 
+    flex: 1; 
+    padding: 12px 20px; 
+    border-radius: 14px; 
+    font-weight: 700; 
+    font-size: 0.9rem; 
+    text-decoration: none; 
+    text-align: center; 
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
+} /* EASY HUMAN COMMENT: Swapped raw transition speed with an advanced cubic easing metric line for organic animation spring responses */
+
+.tab-btn.active { 
+    background: #2b7e3a; 
+    color: white; 
+    box-shadow: 0 4px 12px rgba(43, 126, 58, 0.15); 
+} /* Selected highlighted state parameters indicators context layout */
+
+.tab-btn.inactive { 
+    background: #f4f7f2; 
+    color: #5a6e5c; 
+    border: 1px solid #e4ebe0; 
+} /* Unselected passive button style background definitions variables attributes */
+
+/* EASY HUMAN COMMENT: Combined hover properties that smoothly pull button micro-interactions upwards on frame mouse movements */
+.tab-btn:hover { 
+    transform: translateY(-2px) scale(1.02); 
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08); 
+}
+
+.tab-btn.active:hover { 
+    background: #1f5a2a; 
+    box-shadow: 0 6px 15px rgba(43, 126, 58, 0.25); 
+}
+
+.tab-btn.inactive:hover { 
+    background: #eaf1e5; 
+    color: #1e3a2a; 
+    border-color: #2b7e3a; 
+}
+
+/* EASY HUMAN COMMENT: Added click depression mechanics so buttons compress down slightly when pressed */
+.tab-btn:active { 
+    transform: translateY(1px) scale(0.98); 
+}
+
+.points-box { 
+    background: linear-gradient(135deg, #2b7e3a, #1b5e2a); 
+    color: white; 
+    padding: 1.8rem; 
+    border-radius: 24px; 
+    margin: 1rem auto 1.5rem; 
+    width: 100%; 
+    max-width: 460px; 
+    box-shadow: 0 6px 20px rgba(43, 126, 58, 0.2); 
+} /* Green active balance wallet card block element styling */
+
+.points-box p { 
+    opacity: 0.85; 
+    font-size: 0.9rem; 
+    font-weight: 500; 
+    text-transform: uppercase; 
+    letter-spacing: 0.5px; 
+}
+
+.points-box h1 { 
+    font-size: 2.8rem; 
+    font-weight: 800; 
+    margin-top: 4px; 
+}
+
+.points-box h1 span { 
+    font-size: 1.1rem; 
+    font-weight: 400; 
+    opacity: 0.9; 
+}
+
+.voucher-list { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 1rem; 
+    margin-top: 2rem; 
+    text-align: left; 
+} /* Vouchers listing row cards shelf styles framework definitions */
+
+.voucher-row { 
+    border: 2px dashed #cbd5c0; 
+    background: #fafdf7; 
+    border-radius: 20px; 
+    padding: 1.5rem; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    transition: 0.2s; 
+}
+
+.voucher-row:hover { 
+    border-color: #2b7e3a; 
+    background: #fdfefb; 
+    transform: translateY(-1px); 
+}
+
+.voucher-details h3 { 
+    color: #1e3a2a; 
+    font-size: 1.15rem; 
+    font-weight: 700; 
+    display: flex; 
+    align-items: center; 
+    gap: 0.5rem; 
+}
+
+.voucher-details p { 
+    color: #666; 
+    font-size: 0.85rem; 
+    margin-top: 5px; 
+}
+
+.btn-redeem { 
+    background: #2b7e3a; 
+    color: white; 
+    border: none; 
+    padding: 0.6rem 1.2rem; 
+    border-radius: 50px; 
+    font-weight: 600; 
+    text-decoration: none; 
+    font-size: 0.8rem; 
+    text-align: center; 
+    transition: 0.2s; 
+    display: inline-flex; 
+    align-items: center; 
+} /* Interactive green claim purchase action button module styling specifications */
+
+.btn-redeem:hover { 
+    background: #1f5a2a; 
+    transform: translateY(-1px); 
+}
+
+.btn-locked { 
+    background: #e0e0e0; 
+    color: #888; 
+    cursor: not-allowed; 
+} /* Grey background locked state button style if funds are short */
+
+.back-link { 
+    display: inline-block; 
+    margin-top: 2.5rem; 
+    color: #2b7e3a; 
+    text-decoration: none; 
+    font-weight: 600; 
+    font-size: 0.9rem; 
+    transition: 0.2s; 
+}
+
+.back-link:hover { 
+    color: #1f5a2a; 
+    letter-spacing: -0.2px; 
+}
     </style>
 </head>
 <body>
@@ -137,9 +295,14 @@ $now = date('Y-m-d H:i:s');
 <div class="container">
     <h2 style="color: #2b7e3a; font-weight: 800;"><i class="fas fa-star"></i> Smash Arena Rewards Hub</h2>
     
-    <a href="point_history.php" style="color: #e67e22; font-weight: 700; font-size: 0.85rem; text-decoration: underline; display: inline-block; margin-top: 5px; margin-bottom: 5px;">
-        <i class="fas fa-list-alt"></i> View My Points History & Redeemed Vouchers →
-    </a>
+    <div class="tabs-container">
+        <a href="redeem_voucher.php" class="tab-btn active">
+            <i class="fas fa-ticket-alt"></i> Redeem Vouchers
+        </a>
+        <a href="point_history.php" class="tab-btn inactive">
+            <i class="fas fa-history"></i> My Claims & Point History
+        </a>
+    </div>
 
     <p style="color: #5a6e5c; font-size: 0.9rem; margin-top: 6px;">Hi <?php echo htmlspecialchars($user['name'] ?? 'Player'); ?>, trade your hard-earned points for court discount vouchers!</p>
     

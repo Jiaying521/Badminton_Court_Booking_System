@@ -43,6 +43,8 @@ if ($return_to === 'checkout') {
 
 // FIXED RELATION QUERY: Maps payments back to the users table via bookings link row maps safely
 $wallet_logs = [];
+
+// 1. Pull standard court checkout payments linked to this user's ID
 $log_stmt = $conn->prepare("
     SELECT p.amount, p.payment_method, p.payment_status, p.payment_date 
     FROM payments p
@@ -56,6 +58,27 @@ $log_stmt->execute();
 $log_res = $log_stmt->get_result();
 while ($log_row = $log_res->fetch_assoc()) {
     $wallet_logs[] = $log_row;
+}
+
+// 2. EASY HUMAN COMMENT: Read standalone top-ups from memory session tracking arrays if they exist
+if (isset($_SESSION['recent_topups']) && is_array($_SESSION['recent_topups'])) {
+    foreach ($_SESSION['recent_topups'] as $session_log) {
+        // Add the top-up row into the front of our display array list
+        array_unshift($wallet_logs, [
+            'amount' => $session_log['amount'],
+            'payment_method' => $session_log['payment_method'],
+            'payment_status' => $session_log['payment_status'],
+            'payment_date' => $session_log['payment_date']
+        ]);
+    }
+    
+    // Sort all rows together so the newest date item always stays at the top of the card view
+    usort($wallet_logs, function($item_a, $item_b) {
+        return strtotime($item_b['payment_date']) - strtotime($item_a['payment_date']);
+    });
+    
+    // Slice array table results row boundaries to 10 entries max lines
+    $wallet_logs = array_slice($wallet_logs, 0, 10);
 }
 ?>
 <!DOCTYPE html>
@@ -89,8 +112,8 @@ body {
     gap: 2rem; 
     width: 100%; 
     max-width: 1000px; 
-    align-items: start; 
-} /* Splits up main display layer frames side-by-side balanced horizontally */
+    align-items: stretch; 
+} /* EASY HUMAN COMMENT: Changes alignment to stretch to force equal column balance sizing levels */
 
 .wallet-card { 
     background: white; 
@@ -99,6 +122,9 @@ body {
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05); 
     border: 1px solid #eaf5e6; 
     text-align: center; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: space-between; 
 } /* Left operations control panel grid wrapper cards blueprints components */
 
 .balance-box { 
@@ -227,11 +253,10 @@ body {
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05); 
     border: 1px solid #eaf5e6; 
     text-align: left; 
-    height: 100%; 
-    min-height: 590px; 
+    max-height: 595px; 
     display: flex; 
     flex-direction: column; 
-} /* Shifted to stand-alone right grid box container panel */
+} /* EASY HUMAN COMMENT: Set max-height limits properties to match left dashboard panel dimensions exactly */
 
 .history-title { 
     font-size: 1.2rem; 
@@ -248,7 +273,25 @@ body {
 .history-list { 
     flex: 1; 
     overflow-y: auto; 
-    padding-right: 5px; 
+    padding-right: 8px; 
+} /* EASY HUMAN COMMENT: Activates rolling overflow scrolling functionality for longer datasets tracking list items rows */
+
+.history-list::-webkit-scrollbar { 
+    width: 6px; 
+}
+
+.history-list::-webkit-scrollbar-track { 
+    background: #f1f1f1; 
+    border-radius: 10px; 
+}
+
+.history-list::-webkit-scrollbar-thumb { 
+    background: #cbd5c0; 
+    border-radius: 10px; 
+}
+
+.history-list::-webkit-scrollbar-thumb:hover { 
+    background: #2b7e3a; 
 }
 
 .history-item { 
@@ -294,6 +337,7 @@ body {
         grid-template-columns: 1fr; 
     } 
     .history-section { 
+        max-height: auto; 
         min-height: auto; 
     } 
 } /* Fluid mobile layout breakdown parameters context rules triggers map stacking */
@@ -304,46 +348,48 @@ body {
     <div class="wallet-container">
         
         <div class="wallet-card">
-            <h2 style="color: #2b7e3a; font-weight: 800; font-size: 1.6rem;"><i class="fas fa-wallet"></i> Smash Wallet</h2>
-            
-            <div class="balance-box">
-                <p style="opacity: 0.85; font-size: 0.9rem; font-weight: 500; letter-spacing: 0.5px;">Current Balance</p>
-                <h1 style="font-size: 2.8rem; margin: 5px 0; font-weight: 800; letter-spacing: -0.5px;">RM <?php echo number_format($current_balance, 2); ?></h1>
+            <div>
+                <h2 style="color: #2b7e3a; font-weight: 800; font-size: 1.6rem;"><i class="fas fa-wallet"></i> Smash Wallet</h2>
+                
+                <div class="balance-box">
+                    <p style="opacity: 0.85; font-size: 0.9rem; font-weight: 500; letter-spacing: 0.5px;">Current Balance</p>
+                    <h1 style="font-size: 2.8rem; margin: 5px 0; font-weight: 800; letter-spacing: -0.5px;">RM <?php echo number_format($current_balance, 2); ?></h1>
+                </div>
+
+                <p style="text-align: left; font-weight: 700; font-size: 0.9rem; color: #1e3a2a; margin-bottom: 10px;">Quick Select:</p>
+                <div class="quick-grid">
+                    <button type="button" class="amt-btn" onclick="selectAmt(10, this)">RM 10</button>
+                    <button type="button" class="amt-btn" onclick="selectAmt(20, this)">RM 20</button>
+                    <button type="button" class="amt-btn" onclick="selectAmt(50, this)">RM 50</button>
+                </div>
+
+                <form action="wallet_gateway.php" method="POST" onsubmit="return validateReload()">
+                    <input type="hidden" name="return_to" value="<?php echo $return_to; ?>">
+                    <input type="hidden" name="booking_id" value="<?php echo $b_id; ?>">
+                    <input type="hidden" name="amount" value="<?php echo $b_amt; ?>">
+
+                    <input type="number" name="reload_amount" id="reload_amt" class="topup-input" placeholder="0.00" min="1" max="1000" step="0.01" oninput="this.value = this.value.replace(/[^0-9.]/g, '');">
+                    
+                    <p style="text-align: left; font-weight: 700; font-size: 0.9rem; color: #1e3a2a; margin: 5px 0 10px;">Payment Method:</p>
+                    
+                    <label class="method-card">
+                        <input type="radio" name="pay_method" value="Bank" checked>
+                        <span style="margin-left:12px; font-weight: 600; color: #333; font-size: 0.95rem;">Online Banking</span>
+                    </label>
+
+                    <label class="method-card">
+                        <input type="radio" name="pay_method" value="Card">
+                        <span style="margin-left:12px; font-weight: 600; color: #333; font-size: 0.95rem;">Credit / Debit Card</span>
+                    </label>
+                    
+                    <label class="method-card">
+                        <input type="radio" name="pay_method" value="TNG">
+                        <span style="margin-left:12px; font-weight: 600; color: #333; font-size: 0.95rem;">Touch 'n Go eWallet</span>
+                    </label>
+
+                    <button type="submit" class="btn-reload" style="margin-top: 15px;">Next Step →</button>
+                </form>
             </div>
-
-            <p style="text-align: left; font-weight: 700; font-size: 0.9rem; color: #1e3a2a; margin-bottom: 10px;">Quick Select:</p>
-            <div class="quick-grid">
-                <button type="button" class="amt-btn" onclick="selectAmt(10, this)">RM 10</button>
-                <button type="button" class="amt-btn" onclick="selectAmt(20, this)">RM 20</button>
-                <button type="button" class="amt-btn" onclick="selectAmt(50, this)">RM 50</button>
-            </div>
-
-            <form action="wallet_gateway.php" method="POST" onsubmit="return validateReload()">
-                <input type="hidden" name="return_to" value="<?php echo $return_to; ?>">
-                <input type="hidden" name="booking_id" value="<?php echo $b_id; ?>">
-                <input type="hidden" name="amount" value="<?php echo $b_amt; ?>">
-
-                <input type="number" name="reload_amount" id="reload_amt" class="topup-input" placeholder="0.00" min="1" max="1000" step="0.01" oninput="this.value = this.value.replace(/[^0-9.]/g, '');">
-                
-                <p style="text-align: left; font-weight: 700; font-size: 0.9rem; color: #1e3a2a; margin: 5px 0 10px;">Payment Method:</p>
-                
-                <label class="method-card">
-                    <input type="radio" name="pay_method" value="Bank" checked>
-                    <span style="margin-left:12px; font-weight: 600; color: #333; font-size: 0.95rem;">Online Banking (FPX)</span>
-                </label>
-
-                <label class="method-card">
-                    <input type="radio" name="pay_method" value="Card">
-                    <span style="margin-left:12px; font-weight: 600; color: #333; font-size: 0.95rem;">Credit / Debit Card</span>
-                </label>
-                
-                <label class="method-card">
-                    <input type="radio" name="pay_method" value="TNG">
-                    <span style="margin-left:12px; font-weight: 600; color: #333; font-size: 0.95rem;">Touch 'n Go eWallet</span>
-                </label>
-
-                <button type="submit" class="btn-reload" style="margin-top: 15px;">Next Step →</button>
-            </form>
             
             <a href="<?php echo $back_url; ?>" class="back-link">← <?php echo $back_label; ?></a>
         </div>
@@ -387,25 +433,19 @@ body {
     </div>
 
     <script>
-        // Triggered automatically on fast selection panel clicks to set numerical fields properties instantly
         function selectAmt(v, buttonElement) { 
             document.getElementById('reload_amt').value = v; 
-            // Wipe out active styling states off all shortcut buttons lines layouts components
             document.querySelectorAll('.amt-btn').forEach(btn => btn.classList.remove('active'));
-            // Highlight the chosen button module element live visually on screen layout components templates styles
             buttonElement.classList.add('active');
         }
         
-        // Listen for raw keypress typings inside number field boxes to strip active highlights from shortcut grids items automatically
         document.getElementById('reload_amt').addEventListener('input', function() {
             document.querySelectorAll('.amt-btn').forEach(btn => btn.classList.remove('active'));
         });
 
-        // Verification function triggered on submit to catch empty rows, zero, or negative money manipulation inputs hacks instantly before moving forward
         function validateReload() {
             const a = parseFloat(document.getElementById('reload_amt').value);
             if (isNaN(a) || a < 1) { 
-                // Alert a security error popup and halt form posting pipeline routes cleanly inside layout structures boundaries parameters rows
                 alert("Security Error: Invalid reload allocation amount. Minimum deposit is RM 1.00"); 
                 return false; 
             }

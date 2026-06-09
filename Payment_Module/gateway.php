@@ -2,6 +2,10 @@
 // gateway.php - The Multi-Step Mock Payment Interface Flow
 // Start the session so we can check if the user is logged in
 session_start();
+
+// EASY HUMAN COMMENT: Force this page to use Malaysia local time so checkout receipts match your clock perfectly
+date_default_timezone_set('Asia/Kuala_Lumpur'); 
+
 // Bring in our database connection setup file
 include 'db_connect.php';
 
@@ -337,10 +341,10 @@ body {
                             <div class="form-group">
                                 <label>Select Bank Profile</label>
                                 <select name="selected_bank" style="width: 100%; padding: 12px; border-radius: 8px; border:1px solid #ccc; background:#fafafa; font-size:14px;" required>
-                                    <option value="Maybank2u">Maybank2u (Malayan Banking Berhad)</option>
-                                    <option value="CIMB Clicks">CIMB Clicks (CIMB Bank)</option>
+                                    <option value="Maybank2u">Maybank2u </option>
+                                    <option value="CIMB Clicks">CIMB Bank</option>
                                     <option value="Public Bank">Public Bank Berhad</option>
-                                    <option value="RHB Now">RHB Banking Group</option>
+                                    <option value="RHB Now">RHB Bank</option>
                                     <option value="Hong Leong Connect">Hong Leong Bank</option>
                                 </select>
                             </div>
@@ -494,7 +498,7 @@ body {
                         $available_points = (int)($stmt_pts->get_result()->fetch_row()[0] ?? 0);
                     }
 
-                    // 🟢 EASY HUMAN COMMENT: Figure out the exact name of the payment method to print on the receipt
+                    // EASY HUMAN COMMENT: Figure out the exact name of the payment method to print on the receipt
                     if ($method === 'App Wallet') {
                         $invoice_method = 'Smash Arena Wallet';
                     } else {
@@ -570,7 +574,7 @@ const liveDatabaseCheck = setInterval(function() {
                 document.getElementById('tngMainContainer').style.background = '#2b7e3a'; 
                 
                 setTimeout(function() {
-                    window.location.href = 'gateway.php?step=3&status=success&booking_id=<?php echo $booking_id; ?>&amount=<?php echo $amount; ?>';
+                    window.location.href = 'gateway.php?step=3&status=success&booking_id=<?php echo $booking_id; ?>&amount=<?php echo $amount; ?>&payment_method=Online+Payment&sub_method=TNG';
                 }, 1800);
             }
         })
@@ -588,9 +592,7 @@ function simulateTngScan() {
     //After the short loading animation finishes, redirect to step 3 success
     setTimeout(function() {
         // We append payment_method and sub_method directly into this window redirection string
-        window.location.href = 'gateway.php?step=3&status=success&booking_id=<?php echo $booking_id; 
-        ?>&amount=<?php echo $amount; 
-        ?>&payment_method=Online+Payment&sub_method=TNG';
+        window.location.href = 'gateway.php?step=3&status=success&booking_id=<?php echo $booking_id; ?>&amount=<?php echo $amount; ?>&payment_method=Online+Payment&sub_method=TNG';
     }, 2200);
 }
 <?php endif; ?>
