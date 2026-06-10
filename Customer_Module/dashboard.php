@@ -33,18 +33,7 @@ $stmt = $pdo->prepare("SELECT SUM(total_price) FROM bookings WHERE user_id = ? A
 $stmt->execute([$user_id]);
 $totalSpent = $stmt->fetchColumn() ?? 0;
 
-// 计算积分
-$stmt_used = $pdo->prepare("
-    SELECT SUM(v.points_required) 
-    FROM user_vouchers uv 
-    JOIN voucher v ON uv.voucher_id = v.id 
-    WHERE uv.user_id = ?
-");
-$stmt_used->execute([$user_id]);
-$pointsUsed = $stmt_used->fetchColumn() ?? 0;
-
-$lifetimePoints = floor($totalSpent * 1);
-$currentPointsBalance = $lifetimePoints - $pointsUsed;
+$currentPointsBalance = (int)($user['loyalty_points'] ?? 0);
 
 // 获取所有场地类型
 $types = [];
@@ -323,9 +312,11 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         }
         
         /* 用户头像区域 - 可点击跳转 profile */
+        .nav-links a.user-profile,
         .user-profile {
-            display: flex;
+            display: flex !important;
             align-items: center;
+            flex-wrap: nowrap;
             gap: 0.6rem;
             cursor: pointer;
             background: rgba(234,245,230,0.6);
@@ -342,9 +333,11 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         .user-avatar {
             width: 32px;
             height: 32px;
+            min-width: 32px;
             border-radius: 50%;
             overflow: hidden;
             background: #2b7e3a;
+            flex-shrink: 0;
         }
         .user-avatar img {
             width: 100%;
@@ -359,6 +352,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             font-weight: 600;
             font-size: 0.75rem;
             color: #1e3a2a;
+            white-space: nowrap;
         }
         .user-balance {
             font-family: 'DM Sans', sans-serif;

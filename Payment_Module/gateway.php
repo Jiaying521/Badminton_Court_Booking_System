@@ -67,229 +67,208 @@ if ($display_amount < 0) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Secure Payment Gateway</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-* { 
-    margin: 0; 
-    padding: 0; 
-    box-sizing: border-box; 
-} /* Reset browser spacing */
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-body { 
-    font-family: 'Inter', sans-serif; 
-    background: #f5f9f0; 
-    padding: 2rem; 
+body {
+    font-family: 'Inter', 'Poppins', 'Montserrat', sans-serif;
+    background: radial-gradient(circle at 10% 20%, rgba(240,245,236,1) 0%, rgba(226,236,217,1) 100%);
+    color: #1e2a2e;
+    padding: 2rem;
+    min-height: 100vh;
+    position: relative;
 }
 
-.main-container { 
-    max-width: 1400px; 
-    margin: 0 auto; 
+body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-image: radial-gradient(rgba(43,126,58,0.08) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
 }
 
-.progress-bar { 
-    display: flex; 
-    justify-content: space-between; 
-    margin-bottom: 2rem; 
-    background: white; 
-    padding: 1rem 2rem; 
-    border-radius: 60px; 
-} /* Stepper wrapper card bar */
-
-.progress-step { 
-    text-align: center; 
-    flex: 1; 
+.main-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
 }
 
-.progress-step .step-number { 
-    width: 32px; 
-    height: 32px; 
-    background: #e0e0e0; 
-    border-radius: 50%; 
-    display: inline-flex; 
-    align-items: center; 
-    justify-content: center; 
-    margin-bottom: 0.3rem; 
-    color: #333; 
+/* Progress bar — matches addons/checkout */
+.progress-bar {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(10px);
+    padding: 0.8rem 2rem;
+    border-radius: 80px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    border: 1px solid rgba(255,255,255,0.3);
+    animation: fadeInDown 0.6s ease-out;
 }
 
-.progress-step.active .step-number { 
-    background: #2b7e3a; 
-    color: white; 
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-30px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.progress-step.completed .step-number { 
-    background: #2b7e3a; 
-    color: white; 
+.progress-step { text-align: center; flex: 1; position: relative; }
+
+.progress-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 15px; right: -50%;
+    width: 100%; height: 2px;
+    background: #e0e8dc; z-index: 0;
 }
 
-.progress-step .step-label { 
-    font-size: 0.75rem; 
-    color: #888; 
+.progress-step.completed:not(:last-child)::after { background: #2b7e3a; }
+
+.progress-step .step-number {
+    width: 36px; height: 36px;
+    background: #e0e8dc; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-bottom: 0.4rem; font-weight: 700; font-size: 0.9rem;
+    position: relative; z-index: 1; transition: 0.3s; color: #5a6e5c;
 }
 
-.progress-step.active .step-label { 
-    color: #2b7e3a; 
-    font-weight: 600; 
+.progress-step.active .step-number {
+    background: #2b7e3a; color: white;
+    box-shadow: 0 0 0 4px rgba(43,126,58,0.2);
+    animation: pulseStep 2s ease-in-out infinite;
 }
 
-.clone-container { 
-    background: white; 
-    padding: 25px; 
-    border-radius: 16px; 
-    border: 1px solid #e0e0e0; 
-    margin-top: 15px; 
-    text-align: left; 
-} /* Input forms placeholder wrapper box */
-
-.container { 
-    max-width: 500px; 
-    margin: 30px auto; 
-    padding: 30px; 
-    background: white; 
-    border-radius: 24px; 
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); 
+@keyframes pulseStep {
+    0%, 100% { box-shadow: 0 0 0 0px rgba(43,126,58,0.4); }
+    50% { box-shadow: 0 0 0 6px rgba(43,126,58,0.1); }
 }
 
-.btn-green { 
-    width: 100%; 
-    padding: 15px; 
-    margin-top: 20px; 
-    background-color: #2b7e3a; 
-    color: white; 
-    border: none; 
-    border-radius: 50px; 
-    font-weight: bold; 
-    cursor: pointer; 
-    font-size: 1rem; 
-    text-decoration: none; 
-    display: inline-block; 
-    box-sizing: border-box; 
+.progress-step.completed .step-number { background: #2b7e3a; color: white; }
+.progress-step .step-label { font-size: 0.75rem; color: #888; font-weight: 500; }
+.progress-step.active .step-label { color: #2b7e3a; font-weight: 700; }
+.progress-step.completed .step-label { color: #2b7e3a; }
+
+/* Main card */
+.container {
+    max-width: 500px;
+    margin: 30px auto;
+    padding: 2rem;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(10px);
+    border-radius: 28px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border: 1px solid rgba(255,255,255,0.3);
 }
 
-.btn-green:hover { 
-    background-color: #1f5a2a; 
+/* Input form wrapper */
+.clone-container {
+    background: rgba(255,255,255,0.6);
+    backdrop-filter: blur(8px);
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid rgba(238,243,234,0.8);
+    margin-top: 15px;
+    text-align: left;
 }
 
-.receipt-box { 
-    border: 2px dashed #cbd5c0; 
-    padding: 20px; 
-    border-radius: 12px; 
-    background: #fafdf7; 
-    text-align: left; 
-    margin-top: 15px; 
-} /* Dashed receipt design container */
-
-.form-group { 
-    margin-bottom: 15px; 
+.btn-green {
+    width: 100%; padding: 15px; margin-top: 1.2rem;
+    background: linear-gradient(135deg, #2b7e3a, #1f5a2a);
+    color: white; border: none; border-radius: 60px;
+    font-family: 'Montserrat', 'Inter', sans-serif;
+    font-weight: 700; cursor: pointer; font-size: 1rem;
+    text-decoration: none; display: block; text-align: center;
+    box-sizing: border-box; transition: all 0.4s ease;
+    box-shadow: 0 4px 15px rgba(43,126,58,0.3);
+    position: relative; overflow: hidden;
 }
 
-.form-group label { 
-    display: block; 
-    font-size: 12px; 
-    font-weight: 700; 
-    color: #444; 
-    margin-bottom: 6px; 
-    text-transform: uppercase; 
-    letter-spacing: 0.5px; 
+.btn-green::before {
+    content: ''; position: absolute; top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s ease;
 }
 
-.gateway-input { 
-    width: 100%; 
-    padding: 12px 14px; 
-    border-radius: 8px; 
-    border: 1px solid #ccc; 
-    outline: none; 
-    font-size: 14px; 
-    font-family: inherit; 
-    color: #333; 
-    background: #fafafa; 
-    transition: 0.2s; 
+.btn-green:hover::before { left: 100%; }
+.btn-green:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(43,126,58,0.4); }
+
+.receipt-box {
+    border: 2px dashed #cbd5c0;
+    padding: 1.5rem;
+    border-radius: 20px;
+    background: rgba(250,253,247,0.8);
+    text-align: left;
+    margin-top: 15px;
 }
 
-.gateway-input:focus { 
-    border-color: #2b7e3a; 
-    background: #fff; 
-    box-shadow: 0 0 0 3px rgba(43, 126, 58, 0.1); 
+.form-group { margin-bottom: 15px; }
+
+.form-group label {
+    display: block;
+    font-family: 'Montserrat', 'Inter', sans-serif;
+    font-size: 12px; font-weight: 700; color: #444;
+    margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;
 }
 
-.input-row { 
-    display: flex; 
-    gap: 12px; 
+.gateway-input {
+    width: 100%; padding: 12px 14px; border-radius: 12px;
+    border: 1px solid #ccc; outline: none; font-size: 14px;
+    font-family: inherit; color: #333;
+    background: rgba(250,250,250,0.8); transition: 0.2s;
 }
 
-.input-row .form-group { 
-    flex: 1; 
-    margin-bottom: 0; 
+.gateway-input:focus {
+    border-color: #2b7e3a; background: #fff;
+    box-shadow: 0 0 0 3px rgba(43,126,58,0.1);
 }
 
-.password-wrapper { 
-    position: relative; 
-    display: flex; 
-    align-items: center; 
-    width: 100%; 
+.input-row { display: flex; gap: 12px; }
+.input-row .form-group { flex: 1; margin-bottom: 0; }
+
+.password-wrapper { position: relative; display: flex; align-items: center; width: 100%; }
+
+.toggle-password-eye {
+    position: absolute; right: 15px; color: #666;
+    cursor: pointer; transition: 0.2s; font-size: 16px; z-index: 10;
 }
 
-.toggle-password-eye { 
-    position: absolute; 
-    right: 15px; 
-    color: #666; 
-    cursor: pointer; 
-    transition: 0.2s; 
-    font-size: 16px; 
-    z-index: 10; 
+.toggle-password-eye:hover { color: #2b7e3a; }
+
+.bank-badge-header {
+    border-bottom: 1px solid rgba(238,238,238,0.8);
+    padding-bottom: 15px; margin-bottom: 15px;
+    display: flex; align-items: center; justify-content: space-between;
 }
 
-.toggle-password-eye:hover { 
-    color: #2b7e3a; 
+.secure-notice {
+    font-size: 11px; color: #666;
+    display: flex; align-items: center; gap: 5px; margin-top: 10px;
+    background: rgba(249,249,249,0.8); padding: 8px 12px; border-radius: 10px;
 }
 
-.bank-badge-header { 
-    border-bottom: 1px solid #eee; 
-    padding-bottom: 15px; 
-    margin-bottom: 15px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between; 
+.tng-btn {
+    background: #005eb8; color: white; border: none;
+    padding: 12px; border-radius: 10px; font-weight: bold;
+    cursor: pointer; width: 100%; margin-top: 10px;
+    transition: 0.2s; font-size: 13px;
+    font-family: 'Montserrat', 'Inter', sans-serif;
 }
 
-.secure-notice { 
-    font-size: 11px; 
-    color: #666; 
-    display: flex; 
-    align-items: center; 
-    gap: 5px; 
-    margin-top: 10px; 
-    background: #f9f9f9; 
-    padding: 8px 12px; 
-    border-radius: 6px; 
-}
+.tng-btn:hover { background: #004487; }
 
-.tng-btn { 
-    background: #005eb8; 
-    color: white; 
-    border: none; 
-    padding: 12px; 
-    border-radius: 8px; 
-    font-weight: bold; 
-    cursor: pointer; 
-    width: 100%; 
-    margin-top: 10px; 
-    transition: 0.2s; 
-    font-size: 13px; 
-}
-
-.tng-btn:hover { 
-    background: #004487; 
-}
-
-.countdown-text { 
-    font-size: 12px; 
-    color: #ffeb3b; 
-    font-weight: bold; 
-    margin-top: 5px; 
-    display: block; 
-    letter-spacing: 0.5px; 
+.countdown-text {
+    font-size: 12px; color: #ffeb3b; font-weight: bold;
+    margin-top: 5px; display: block; letter-spacing: 0.5px;
 }
     </style>
 </head>
@@ -297,9 +276,9 @@ body {
 <div class="main-container">
 
     <div class="progress-bar">
-        <div class="progress-step completed"><div class="step-number">1</div><div class="step-label">Court</div></div>
-        <div class="progress-step completed"><div class="step-number">2</div><div class="step-label">Time</div></div>
-        <div class="progress-step completed"><div class="step-number">3</div><div class="step-label">Add-ons</div></div>
+        <div class="progress-step completed"><div class="step-number"><i class="fas fa-check"></i></div><div class="step-label">Court</div></div>
+        <div class="progress-step completed"><div class="step-number"><i class="fas fa-check"></i></div><div class="step-label">Time</div></div>
+        <div class="progress-step completed"><div class="step-number"><i class="fas fa-check"></i></div><div class="step-label">Add-ons</div></div>
         <div class="progress-step active"><div class="step-number">4</div><div class="step-label">Payment</div></div>
     </div>
 

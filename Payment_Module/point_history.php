@@ -108,7 +108,7 @@ while ($row = $inv_res->fetch_assoc()) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Points & Vouchers History | Smash Arena</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
 * { 
@@ -129,47 +129,64 @@ body {
     margin: 0 auto; 
 }
 
-.navbar { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    margin-bottom: 2rem; 
-    padding-bottom: 1rem; 
-    border-bottom: 1px solid rgba(43, 126, 58, 0.15); 
-} /* Layout navigation header options rows style guidelines */
-
-.logo-area { 
-    display: flex; 
-    align-items: center; 
-    gap: 0.8rem; 
-    text-decoration: none; 
-    color: inherit; 
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(15px);
+    padding: 0.8rem 1.8rem;
+    border-radius: 80px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+    border: 1px solid rgba(255,255,255,0.3);
 }
 
-.logo-text { 
-    font-size: 1.3rem; 
-    font-weight: 700; 
-    color: #2b7e3a; 
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    text-decoration: none;
+    color: inherit;
 }
 
-.logo-text span { 
-    color: #e67e22; 
+.logo-area img { height: 45px; width: auto; }
+
+.logo-text {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #2b7e3a 0%, #e67e22 80%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: -1px;
+    text-transform: uppercase;
 }
 
-.nav-links { 
-    display: flex; 
-    align-items: center; 
-    gap: 1.5rem; 
+.logo-text span {
+    background: linear-gradient(135deg, #e67e22 0%, #f39c12 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 }
 
-.nav-links a { 
-    color: #2c4a2e; 
-    text-decoration: none; 
-    font-weight: 500; 
+.btn-back {
+    background: #2b7e3a;
+    color: white;
+    padding: 0.5rem 1.2rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: background 0.2s ease, transform 0.2s ease;
 }
 
-.nav-links a:hover { 
-    color: #2b7e3a; 
+.btn-back:hover {
+    background: #1f5a2a;
+    transform: translateY(-1px);
 }
 
 .tabs-container { 
@@ -371,6 +388,23 @@ body {
     color: #555; 
 }
 
+.btn-book-now {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 0.35rem 0.9rem;
+    background: #2b7e3a;
+    color: white;
+    border-radius: 50px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+.btn-book-now:hover {
+    background: #1f5a2a;
+    transform: translateY(-1px);
+}
+
 @media (max-width:768px) { 
     .history-grid { 
         grid-template-columns: 1fr; 
@@ -386,13 +420,10 @@ body {
 
     <div class="navbar">
         <a href="../Customer_Module/dashboard.php" class="logo-area">
+            <img src="../Pictures/Admin_Module/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
             <div class="logo-text">Smash <span>Arena</span></div>
         </a>
-        <div class="nav-links">
-            <a href="../Customer_Module/dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
-            <a href="../Customer_Module/my_bookings.php"><i class="fas fa-bookmark"></i> My Bookings</a>
-            <a href="wallet.php"><i class="fas fa-wallet"></i> Wallet</a>
-        </div>
+        <a href="../Customer_Module/dashboard.php" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
     </div>
 
     <div class="tabs-container">
@@ -459,6 +490,7 @@ body {
                                     <?php if($coupon['is_used'] == 0): ?>
                                         <span class="badge badge-active"><i class="fas fa-check"></i> Active (Unused)</span>
                                         <p style="font-size:10px; color:#2b7e3a; font-weight:bold; margin-top:4px;">Ready at Checkout</p>
+                                        <a href="../Customer_Module/dashboard.php" class="btn-book-now"><i class="fas fa-calendar-check"></i> Book Now</a>
                                     <?php else: ?>
                                         <span class="badge badge-used"><i class="fas fa-minus-circle"></i> Spent / Applied</span>
                                     <?php endif; ?>

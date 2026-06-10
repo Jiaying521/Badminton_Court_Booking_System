@@ -89,24 +89,43 @@ if($booking_id) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment | Smash Arena</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-* { 
-    margin: 0; 
-    padding: 0; 
-    box-sizing: border-box; 
-} /* CSS reset to clean up default browser padding spaces */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-body { 
-    font-family: 'Inter', sans-serif; 
-    background: #f5f9f0; 
-    padding: 2rem; 
-} /* Page styling layout parameters */
+body {
+    font-family: 'Inter', 'Poppins', 'Montserrat', sans-serif;
+    background: radial-gradient(circle at 10% 20%, rgba(240,245,236,1) 0%, rgba(226,236,217,1) 100%);
+    color: #1e2a2e;
+    padding: 2rem;
+    min-height: 100vh;
+    position: relative;
+}
 
-.container { 
-    max-width: 1400px; 
-    margin: 0 auto; 
+body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-image: radial-gradient(rgba(43,126,58,0.08) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
 }
 
 .progress-bar {
@@ -213,21 +232,27 @@ body {
     gap: 1.5rem; 
 } /* Split layout container: Left column is 2x wider */
 
-.payment-section { 
-    background: white; 
-    border-radius: 24px; 
-    padding: 1.5rem; 
-    margin-bottom: 1.5rem; 
-    text-align: left; 
-} /* Payment methods block layout styling */
+.payment-section {
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(10px);
+    border-radius: 28px;
+    padding: 1.8rem;
+    margin-bottom: 1.5rem;
+    text-align: left;
+    border: 1px solid rgba(255,255,255,0.3);
+}
 
-.section-title { 
-    font-size: 1.3rem; 
-    font-weight: 700; 
-    color: #2b7e3a; 
-    margin-bottom: 1.5rem; 
-    padding-bottom: 0.5rem; 
-    border-bottom: 2px solid #eaf5e6; 
+.section-title {
+    font-family: 'Montserrat', 'Poppins', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #2b7e3a;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.7rem;
+    border-bottom: 2px solid rgba(234,245,230,0.8);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
 }
 
 .payment-option-card { 
@@ -258,71 +283,76 @@ body {
     margin-left: 8px; 
 }
 
-.cart-summary { 
-    background: white; 
-    border-radius: 24px; 
-    padding: 1.5rem; 
-    position: sticky; 
-    top: 2rem; 
-    text-align: left; 
-} /* Floating booking totals data overview panels side card */
-
-.summary-item { 
-    display: flex; 
-    justify-content: space-between; 
-    padding: 0.6rem 0; 
-    border-bottom: 1px solid #eee; 
-    font-size: 0.9rem; 
-    color: #555; 
+.cart-summary {
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(10px);
+    border-radius: 28px;
+    padding: 1.8rem;
+    position: sticky;
+    top: 2rem;
+    text-align: left;
+    border: 1px solid rgba(255,255,255,0.3);
 }
 
-.cart-total { 
-    display: flex; 
-    justify-content: space-between; 
-    padding: 1rem 0; 
-    margin-top: 0.5rem; 
-    border-top: 2px solid #2b7e3a; 
-    font-weight: 700; 
-    font-size: 1.3rem; 
-    color: #2b7e3a; 
+.cart-summary h3 {
+    font-family: 'Montserrat', 'Poppins', sans-serif;
+    font-size: 1.3rem;
+    color: #1e3a2a;
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.7rem;
+    border-bottom: 2px solid rgba(234,245,230,0.8);
 }
 
-.btn-continue { 
-    background: #2b7e3a; 
-    color: white; 
-    border: none; 
-    padding: 1rem; 
-    border-radius: 50px; 
-    width: 100%; 
-    font-weight: 700; 
-    font-size: 1rem; 
-    cursor: pointer; 
-    margin-top: 1rem; 
-    transition: 0.2s; 
-    display: block; 
-    text-align: center; 
-    text-decoration: none; 
-} /* Dynamic main action interactive execution buttons */
-
-.btn-continue:hover { 
-    background: #1f5a2a; 
-    transform: translateY(-2px); 
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid rgba(240,240,240,0.8);
+    font-size: 0.9rem;
+    color: #4a5b4e;
 }
 
-.btn-skip { 
-    background: #e0e0e0; 
-    color: #333; 
-    border: none; 
-    padding: 0.8rem; 
-    border-radius: 50px; 
-    width: 100%; 
-    margin-top: 0.5rem; 
-    cursor: pointer; 
-    text-align: center; 
-    text-decoration: none; 
-    display: block; 
-    font-size: 0.9rem; 
+.cart-total {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 0 0.5rem;
+    margin-top: 0.5rem;
+    border-top: 2px solid #2b7e3a;
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: #2b7e3a;
 }
+
+.btn-continue {
+    background: linear-gradient(135deg, #2b7e3a, #1f5a2a);
+    color: white; border: none; padding: 1rem; border-radius: 60px;
+    width: 100%; font-family: 'Montserrat', 'Inter', sans-serif;
+    font-weight: 700; font-size: 1rem; cursor: pointer; margin-top: 1.2rem;
+    transition: all 0.4s ease; box-shadow: 0 4px 15px rgba(43,126,58,0.3);
+    display: block; text-align: center; text-decoration: none;
+    position: relative; overflow: hidden;
+}
+
+.btn-continue::before {
+    content: ''; position: absolute; top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.btn-continue:hover::before { left: 100%; }
+.btn-continue:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(43,126,58,0.4); }
+
+.btn-skip {
+    background: rgba(245,245,245,0.8);
+    color: #666; border: 1px solid rgba(224,224,224,0.8);
+    padding: 0.8rem; border-radius: 60px; width: 100%; margin-top: 0.8rem;
+    cursor: pointer; font-family: 'Montserrat', 'Inter', sans-serif;
+    font-weight: 600; transition: all 0.3s ease;
+    text-align: center; text-decoration: none; display: block; font-size: 0.9rem;
+}
+
+.btn-skip:hover { background: #e8e8e8; transform: translateY(-2px); }
 
 #online-choices { 
     margin: 5px 0 15px 35px; 
@@ -341,13 +371,14 @@ body {
     border-radius: 14px; 
 } /* Saved reward shop vouchers dropdown section wrapper card design rules */
 
-.voucher-select-box label { 
-    font-size: 0.8rem; 
-    font-weight: 700; 
-    color: #2b7e3a; 
-    display: block; 
-    margin-bottom: 5px; 
-    text-transform: uppercase; 
+.voucher-select-box label {
+    font-family: 'Montserrat', 'Inter', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #2b7e3a;
+    display: block;
+    margin-bottom: 5px;
+    text-transform: uppercase;
 }
 
 .voucher-dropdown { 
