@@ -3,6 +3,14 @@ session_start();
 
 /* --- Logout Logic --- */
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
+    if (isset($_SESSION['username'])) {
+        $log_conn = mysqli_connect("localhost", "root", "", "badminton_hub");
+        if ($log_conn) {
+            require_once __DIR__ . '/../log_activity.php';
+            logActivity($log_conn, 'Logout', 'Auth', 'User logged out.');
+            mysqli_close($log_conn);
+        }
+    }
     session_unset();
     session_destroy();
     header("Location: ../LoginPage.php");
@@ -258,28 +266,37 @@ if ($q_biz) {
     }
 }
 
-$biz_hours = $close_hour - $open_hour; // number of slots
+if ($close_hour <= $open_hour) $close_hour += 24;
+$biz_hours = $close_hour - $open_hour;
 $peak_hours = array_fill(0, $biz_hours, 0);
 $peak_labels = [];
 for ($h = $open_hour; $h < $close_hour; $h++) {
-    $peak_labels[] = date('g A', mktime($h, 0, 0));
+    $peak_labels[] = date('g A', mktime($h % 24, 0, 0));
 }
 
 /* --- Peak Booking Hours (last 30 days, business hours only) --- */
+$real_close = $close_hour % 24;
+
+if ($real_close > $open_hour) {
+    $peak_condition = "HOUR(start_time) >= $open_hour AND HOUR(start_time) < $real_close";
+} else {
+    $peak_condition = "HOUR(start_time) >= $open_hour OR HOUR(start_time) < $real_close";
+}
+
 $q_peak = mysqli_query($db, "
     SELECT HOUR(start_time) AS hr, COUNT(*) AS total
     FROM bookings
     WHERE booking_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
       AND status != 'Cancelled'
-      AND HOUR(start_time) >= $open_hour
-      AND HOUR(start_time) < $close_hour
+      AND ($peak_condition)
     GROUP BY hr
     ORDER BY hr
 ");
 
 if ($q_peak) {
     while ($row = mysqli_fetch_assoc($q_peak)) {
-        $idx = (int)$row['hr'] - $open_hour;
+        $hr  = (int)$row['hr'];
+        $idx = ($hr >= $open_hour) ? $hr - $open_hour : $hr + (24 - $open_hour);
         if ($idx >= 0 && $idx < $biz_hours) $peak_hours[$idx] = (int)$row['total'];
     }
 }

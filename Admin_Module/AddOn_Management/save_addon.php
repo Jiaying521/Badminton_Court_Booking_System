@@ -8,6 +8,7 @@ if (!isset($_SESSION['username']) || !in_array($_SESSION['role'], ['Superadmin',
 }
 
 $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
+require_once __DIR__ . '/../log_activity.php';
 
 $upload_base = __DIR__ . '/../../Pictures/Admin_Module/products/';
 
@@ -68,6 +69,7 @@ if (isset($_POST['add_product'])) {
         VALUES ('$category', '$name', '$description', '$price', '$image_url', '$stock', '$is_active')
     ");
 
+    logActivity($conn, 'Create', 'Add-On Management', "Added product: $name (category: $category, price: RM$price)");
     header("Location: ManageAddOns.php?success=added");
     exit();
 }
@@ -105,6 +107,7 @@ if (isset($_POST['update_product'])) {
         WHERE id = $id
     ");
 
+    logActivity($conn, 'Update', 'Add-On Management', "Updated product: $name (ID $id)");
     header("Location: ManageAddOns.php?success=updated");
     exit();
 }
@@ -113,11 +116,16 @@ if (isset($_POST['update_product'])) {
 if (isset($_POST['delete_product'])) {
     $id = intval($_POST['product_id_delete']);
 
+    $del_row = mysqli_fetch_assoc(mysqli_query($conn, "SELECT name FROM products WHERE id = $id"));
+    $del_name = $del_row['name'] ?? "ID $id";
+
     $check = mysqli_query($conn, "SELECT id FROM booking_addons WHERE product_id = $id LIMIT 1");
     if ($check && mysqli_num_rows($check) > 0) {
         mysqli_query($conn, "UPDATE products SET is_active = 0 WHERE id = $id");
+        logActivity($conn, 'Delete', 'Add-On Management', "Deactivated product (has orders): $del_name");
     } else {
         mysqli_query($conn, "DELETE FROM products WHERE id = $id");
+        logActivity($conn, 'Delete', 'Add-On Management', "Deleted product: $del_name");
     }
 
     header("Location: ManageAddOns.php?deleted=1");

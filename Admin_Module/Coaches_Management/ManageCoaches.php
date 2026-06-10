@@ -27,6 +27,7 @@
 
     //Database connection
     $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
+    require_once __DIR__ . '/../log_activity.php';
 
     $username     = $_SESSION['username'];
     $role         = $_SESSION['role'];
@@ -123,6 +124,7 @@
                 mysqli_query($conn, "INSERT INTO coaches (admin_id, name, specialty, price_per_hour, gender, age, is_active)
                                      VALUES ('$admin_id', '$user', '$spec', $coach_price_sql, '$gender_add', $age_sql_val, 0)");
 
+                logActivity($conn, 'Create', 'Coach Management', "Created Coach account: $user ($email)");
                 $mail_sent = sendTemporaryPassword($email, $user, $temp_pass);
                 if($mail_sent){
                     $toasts[] = ['text' => 'Coach account created & email sent.', 'type' => 'success'];
@@ -179,6 +181,7 @@
             WHERE id = (SELECT admin_id FROM coaches WHERE id = $coach_id)
         ");
 
+        logActivity($conn, 'Update', 'Coach Management', "Updated coach profile: $name (ID $coach_id)");
         header("Location: ManageCoaches.php?success=1");
         exit();
     }
@@ -189,12 +192,12 @@
         $new_status = $_GET['status'];
 
         if(in_array($new_status, ['Active', 'Inactive', 'Suspended'])){
-            // Only an Active account can take bookings
-            $is_active = ($new_status === 'Active') ? 1 : 0;
-
-            // A manual change clears the auto-unban date; manual Suspended = no end date (until admin reactivates)
+            $is_active  = ($new_status === 'Active') ? 1 : 0;
+            $coach_name = mysqli_fetch_assoc(mysqli_query($conn, "SELECT name FROM coaches WHERE id = $toggle_id"));
             mysqli_query($conn, "UPDATE coaches SET is_active = $is_active WHERE id = $toggle_id");
             mysqli_query($conn, "UPDATE admins SET status = '$new_status', suspended_until = NULL WHERE id = (SELECT admin_id FROM coaches WHERE id = $toggle_id)");
+            logActivity($conn, 'Status Change', 'Coach Management',
+                        "Set coach '" . ($coach_name['name'] ?? "ID $toggle_id") . "' account status to $new_status");
         }
 
         header("Location: ManageCoaches.php?updated=1");
@@ -205,8 +208,11 @@
     if(isset($_GET['avail_id']) && isset($_GET['avail_status'])){
         $avail_id     = intval($_GET['avail_id']);
         $avail_status = mysqli_real_escape_string($conn, $_GET['avail_status']);
+        $avail_coach  = mysqli_fetch_assoc(mysqli_query($conn, "SELECT name FROM coaches WHERE id = $avail_id"));
 
         mysqli_query($conn, "UPDATE coaches SET availability_status = '$avail_status' WHERE id = $avail_id");
+        logActivity($conn, 'Status Change', 'Coach Management',
+                    "Set coach '" . ($avail_coach['name'] ?? "ID $avail_id") . "' availability to $avail_status");
 
         header("Location: ManageCoaches.php?updated=1");
         exit();

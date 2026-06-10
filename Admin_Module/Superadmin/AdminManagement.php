@@ -35,6 +35,7 @@ header("Expires: 0");
 
 // Database connection
 $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
+require_once __DIR__ . '/../log_activity.php';
 
 // PHPMailer function
 function sendTemporaryPassword($to_email, $username, $temp_pass) {
@@ -108,6 +109,7 @@ if (isset($_POST['add_account'])) {
                 VALUES ('$user', '$email', '$hashed_pass', 'Admin', 'Inactive', 0, NULL)";
 
         if (mysqli_query($conn, $sql)) {
+            logActivity($conn, 'Create', 'Admin Management', "Created Admin account: $user ($email)");
             $mail_sent = sendTemporaryPassword($email, $user, $temp_pass);
             if ($mail_sent) {
                 $toasts[] = ['text' => 'Account created & email sent.', 'type' => 'success'];
@@ -124,15 +126,21 @@ if (isset($_POST['add_account'])) {
 if (isset($_GET['update_id']) && isset($_GET['new_status'])) {
     $uid    = intval($_GET['update_id']);
     $status = mysqli_real_escape_string($conn, $_GET['new_status']);
+    $target = mysqli_fetch_assoc(mysqli_query($conn, "SELECT username FROM admins WHERE id = $uid"));
     mysqli_query($conn, "UPDATE admins SET status = '$status' WHERE id = $uid");
+    logActivity($conn, 'Status Change', 'Admin Management',
+                "Set admin '" . ($target['username'] ?? "ID $uid") . "' status to $status");
     header("Location: AdminManagement.php");
     exit();
 }
 
 // Handle delete
 if (isset($_GET['delete_id'])) {
-    $did = intval($_GET['delete_id']);
+    $did    = intval($_GET['delete_id']);
+    $target = mysqli_fetch_assoc(mysqli_query($conn, "SELECT username FROM admins WHERE id = $did"));
     mysqli_query($conn, "DELETE FROM admins WHERE id = $did AND role != 'Superadmin'");
+    logActivity($conn, 'Delete', 'Admin Management',
+                "Deleted Admin account: '" . ($target['username'] ?? "ID $did") . "'");
     header("Location: AdminManagement.php");
     exit();
 }

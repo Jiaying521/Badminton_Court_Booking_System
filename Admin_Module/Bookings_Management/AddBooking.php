@@ -16,6 +16,7 @@
 
     // Include notification helper
     require_once __DIR__ . '/../api/notification_helper.php';
+    require_once __DIR__ . '/../log_activity.php';
 
     // Get POST data
     $user_id      = (int)$_POST['user_id'];
@@ -109,6 +110,7 @@
         }
     }
 
+    logActivity($conn, 'Create', 'Booking Management', "Created booking #$new_booking_id for user ID $user_id at court ID $court_id on $booking_date");
     header("Location: ManageBookings.php?added=1");
     exit();
 ?>

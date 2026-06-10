@@ -64,6 +64,7 @@
     ");
 
     require_once '../api/notification_helper.php';
+    require_once __DIR__ . '/../log_activity.php';
     $bq = mysqli_query($conn, "
         SELECT b.*, u.name AS player_name, c.court_name
         FROM bookings b
@@ -85,6 +86,7 @@
             'completed', $booking_id, 'booking');
     }
 
+    logActivity($conn, 'Update', 'Booking Management', "Uploaded completion proof for booking #$booking_id, status set to Completed");
     header("Location: ManageBookings.php?updated=1");
     exit();
 ?>

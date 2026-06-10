@@ -14,8 +14,8 @@
     //Database Connection
     $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
 
-    // Notification helper
     require_once '../api/notification_helper.php';
+    require_once __DIR__ . '/../log_activity.php';
 
     // Handle status change from dropdown
     if(isset($_GET['id']) && isset($_GET['status'])){
@@ -196,10 +196,12 @@
             }
         }
 
+        logActivity($conn, 'Status Change', 'Booking Management',
+                    "Booking #$booking_id ($player_name at $court_name): $old_status → $new_status");
         header("Location: ManageBookings.php?updated=1");
         exit();
     }
-    
+
     // Handle booking edit form
     if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['booking_id'])){
 
@@ -229,8 +231,8 @@
         WHERE id = $booking_id
     ");
 
-    // Redirect back with success message
+    logActivity($conn, 'Update', 'Booking Management', "Edited booking #$booking_id details.");
     header("Location: ManageBookings.php?edited=1");
-        exit();
+    exit();
     }
 ?>

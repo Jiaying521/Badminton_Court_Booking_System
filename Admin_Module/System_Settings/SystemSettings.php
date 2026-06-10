@@ -20,6 +20,7 @@ $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
 if (!$conn) {
     die("Database connection failed: " . mysqli_connect_error());
 }
+require_once __DIR__ . '/../log_activity.php';
 
 /* Logged-in user info from session */
 $username     = $_SESSION['username'];
@@ -58,6 +59,8 @@ if (isset($_POST['save_hours'])) {
         end_time   = '" . mysqli_real_escape_string($conn, $close_time) . ":00'
     ");
 
+    logActivity($conn, 'Settings', 'System Settings',
+                "Updated business hours: open $open_time – close $close_time, peak $peak_start – $peak_end");
     $toasts[] = ['text' => 'Hours updated successfully!', 'type' => 'success'];
 }
 
@@ -77,6 +80,7 @@ if (isset($_POST['add_closed_day'])) {
     } else {
         // Date does not exist — insert a new record.
         mysqli_query($conn, "INSERT INTO closed_days (closed_date, reason) VALUES ('$closed_date', '$reason')");
+        logActivity($conn, 'Settings', 'System Settings', "Added closed day: $closed_date" . ($reason ? " ($reason)" : ''));
         $toasts[] = ['text' => 'Closed day added!', 'type' => 'success'];
     }
 }
@@ -85,11 +89,11 @@ if (isset($_POST['add_closed_day'])) {
 /* Action C: Delete a Closed Day (trash icon, URL has ?delete_closed=ID) */
 if (isset($_GET['delete_closed'])) {
 
-    // intval() makes sure the ID is a plain integer — protects against SQL injection.
-    $did = intval($_GET['delete_closed']);
+    $did    = intval($_GET['delete_closed']);
+    $cd_row = mysqli_fetch_assoc(mysqli_query($conn, "SELECT closed_date FROM closed_days WHERE id = $did"));
     mysqli_query($conn, "DELETE FROM closed_days WHERE id = $did");
+    logActivity($conn, 'Delete', 'System Settings', "Removed closed day: " . ($cd_row['closed_date'] ?? "ID $did"));
 
-    // Redirect after deleting so refreshing the page will not delete again.
     header("Location: SystemSettings.php?deleted=1");
     exit();
 }
@@ -113,8 +117,9 @@ if (isset($_POST['add_promo'])) {
         $toasts[] = ['text' => 'Promo code already exists!', 'type' => 'pending'];
     } else {
         // Does not exist — insert a new record.
-        mysqli_query($conn, "INSERT INTO promo_codes (code, discount_type, discount_value, valid_from, valid_until) 
+        mysqli_query($conn, "INSERT INTO promo_codes (code, discount_type, discount_value, valid_from, valid_until)
             VALUES ('" . mysqli_real_escape_string($conn, $code) . "', '$discount_type', $discount_value, '$valid_from', '$valid_until')");
+        logActivity($conn, 'Create', 'System Settings', "Created promo code: $code ($discount_type $discount_value)");
         $toasts[] = ['text' => 'Promo code created!', 'type' => 'success'];
     }
 }
@@ -124,9 +129,12 @@ if (isset($_POST['add_promo'])) {
 if (isset($_GET['toggle_promo'])) {
 
     $pid        = intval($_GET['toggle_promo']);
-    $new_status = intval($_GET['active']); // 1 = active, 0 = inactive
+    $new_status = intval($_GET['active']);
+    $promo_row  = mysqli_fetch_assoc(mysqli_query($conn, "SELECT code FROM promo_codes WHERE id = $pid"));
 
     mysqli_query($conn, "UPDATE promo_codes SET is_active = $new_status WHERE id = $pid");
+    logActivity($conn, 'Status Change', 'System Settings',
+                "Set promo code '" . ($promo_row['code'] ?? "ID $pid") . "' to " . ($new_status ? 'Active' : 'Inactive'));
 
     header("Location: SystemSettings.php?updated=1");
     exit();
@@ -136,8 +144,10 @@ if (isset($_GET['toggle_promo'])) {
 /* Action F: Delete a Promo Code (trash icon, URL has ?delete_promo=ID) */
 if (isset($_GET['delete_promo'])) {
 
-    $pid = intval($_GET['delete_promo']);
+    $pid       = intval($_GET['delete_promo']);
+    $promo_del = mysqli_fetch_assoc(mysqli_query($conn, "SELECT code FROM promo_codes WHERE id = $pid"));
     mysqli_query($conn, "DELETE FROM promo_codes WHERE id = $pid");
+    logActivity($conn, 'Delete', 'System Settings', "Deleted promo code: " . ($promo_del['code'] ?? "ID $pid"));
 
     header("Location: SystemSettings.php?deleted=1");
     exit();
@@ -159,6 +169,7 @@ if (isset($_POST['add_voucher'])) {
 
     mysqli_query($conn, "INSERT INTO voucher (title, discount_amount, points_required, description, valid_from, valid_until, quantity)
         VALUES ('$title', $discount_amount, $points_required, '$description', $valid_from, $valid_until, $quantity)");
+    logActivity($conn, 'Create', 'System Settings', "Created voucher: $title (RM$discount_amount, $points_required pts)");
     $toasts[] = ['text' => 'Voucher created!', 'type' => 'success'];
 }
 
@@ -184,6 +195,7 @@ if (isset($_POST['edit_voucher'])) {
         quantity        = $quantity
         WHERE id = $vid");
 
+    logActivity($conn, 'Update', 'System Settings', "Updated voucher: $title (ID $vid)");
     $toasts[] = ['text' => 'Voucher updated!', 'type' => 'success'];
 }
 
@@ -201,7 +213,9 @@ if (isset($_GET['delete_voucher'])) {
         exit();
     }
 
+    $vdel = mysqli_fetch_assoc(mysqli_query($conn, "SELECT title FROM voucher WHERE id = $vid"));
     mysqli_query($conn, "DELETE FROM voucher WHERE id = $vid");
+    logActivity($conn, 'Delete', 'System Settings', "Deleted voucher: " . ($vdel['title'] ?? "ID $vid"));
     header("Location: SystemSettings.php?deleted=1");
     exit();
 }
@@ -216,6 +230,7 @@ if (isset($_POST['save_pricing'])) {
     mysqli_query($conn, "UPDATE settings SET setting_value = '$off_peak_price' WHERE setting_key = 'off_peak_price'");
     mysqli_query($conn, "UPDATE settings SET setting_value = '$peak_price'     WHERE setting_key = 'peak_price'");
 
+    logActivity($conn, 'Settings', 'System Settings', "Updated court pricing: off-peak RM$off_peak_price, peak RM$peak_price");
     $toasts[] = ['text' => 'Pricing updated!', 'type' => 'success'];
 }
 
@@ -234,6 +249,7 @@ if (isset($_POST['save_contact']) && $role === 'Superadmin') {
     mysqli_query($conn, "UPDATE settings SET setting_value = '$contact_whatsapp' WHERE setting_key = 'contact_whatsapp'");
     mysqli_query($conn, "UPDATE settings SET setting_value = '$address'          WHERE setting_key = 'address'");
 
+    logActivity($conn, 'Settings', 'System Settings', "Updated contact information");
     $toasts[] = ['text' => 'Contact information updated!', 'type' => 'success'];
 }
 

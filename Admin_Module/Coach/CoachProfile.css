@@ -56,7 +56,10 @@
 .cp-hero-avatar-wrap {
     position: relative;
     flex-shrink: 0;
+    transition: opacity 0.2s;
 }
+
+.cp-hero-avatar-wrap:hover { opacity: 0.85; }
 
 .cp-hero-avatar {
     width: 110px;

@@ -35,6 +35,7 @@ if (!isset($base_path)) {
                     <li><a href="<?php echo $base_path; ?>Customers_Management/ManageCustomers.php">Customer Management</a></li>
                     <li><a href="<?php echo $base_path; ?>AddOn_Management/ManageAddOns.php">Add-On Management</a></li>
                     <li><a href="<?php echo $base_path; ?>Report/RevenueReport.php">Reports / Revenue</a></li>
+                    <li><a href="<?php echo $base_path; ?>Logs/ActivityLogs.php">Activity Logs</a></li>
                 </ul>
             </li>
 

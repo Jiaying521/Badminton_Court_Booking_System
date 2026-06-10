@@ -7,6 +7,36 @@
 
 let cropperInstance = null;
 
+let formDirty = false;
+
+(function () {
+    const form = document.querySelector('form[method="POST"]');
+    if (!form) return;
+
+    form.addEventListener('input',  () => { formDirty = true; });
+    form.addEventListener('change', () => { formDirty = true; });
+    form.addEventListener('submit', () => { formDirty = false; });
+
+    window.addEventListener('beforeunload', function (e) {
+        if (!formDirty) return;
+        e.preventDefault();
+        e.returnValue = '';
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!formDirty) return;
+        const link = e.target.closest('a[href]');
+        if (!link) return;
+        const href = link.getAttribute('href');
+        if (!href || href.startsWith('#') || href.startsWith('javascript')) return;
+        e.preventDefault();
+        if (confirm('You have unsaved changes. Leave without saving?')) {
+            formDirty = false;
+            window.location.href = link.href;
+        }
+    });
+})();
+
 // Step 1 — when the user picks a file, read it and open the crop modal.
 document.getElementById('photo-input').addEventListener('change', function () {
     const file = this.files[0];
@@ -37,8 +67,9 @@ function applyCrop() {
     const canvas = cropperInstance.getCroppedCanvas({ width: 300, height: 300 });
     const dataUrl = canvas.toDataURL('image/png');
 
-    document.getElementById('hero-avatar').src      = dataUrl;
+    document.getElementById('hero-avatar').src        = dataUrl;
     document.getElementById('cropped-img-data').value = dataUrl;
+    formDirty = true;
 
     cropperInstance.destroy();
     cropperInstance = null;

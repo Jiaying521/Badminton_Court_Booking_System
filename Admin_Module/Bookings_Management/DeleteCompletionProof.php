@@ -6,6 +6,7 @@
     }
 
     $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
+    require_once __DIR__ . '/../log_activity.php';
 
     $booking_id = (int)($_POST['booking_id'] ?? 0);
     if ($booking_id <= 0) {
@@ -44,6 +45,7 @@
         WHERE id = $booking_id AND coach_id = $my_coach_id
     ");
 
+    logActivity($conn, 'Delete', 'Booking Management', "Removed completion proof for booking #$booking_id, status reverted to Confirmed");
     header("Location: ManageBookings.php?updated=1");
     exit();
 ?>

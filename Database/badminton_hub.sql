@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 07, 2026 at 06:00 PM
+-- Generation Time: Jun 10, 2026 at 03:05 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -20,6 +20,24 @@ SET time_zone = "+00:00";
 --
 -- Database: `badminton_hub`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `activity_logs`
+--
+
+CREATE TABLE `activity_logs` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `username` varchar(100) DEFAULT NULL,
+  `role` varchar(50) DEFAULT NULL,
+  `action` varchar(100) NOT NULL,
+  `module` varchar(100) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `ip_address` varchar(45) DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -166,7 +184,8 @@ INSERT INTO `bookings` (`id`, `user_id`, `court_id`, `booking_date`, `start_time
 (53, 1, 2, '2026-06-24', '09:00:00', '18:00:00', 9, 0, 0, 0.00, 'Casual Play', 110.00, 'Pending', 0.00, '', '2026-06-05 03:28:27', NULL),
 (54, 1, 2, '2026-06-17', '13:00:00', '18:00:00', 5, 0, 0, 0.00, 'Casual Play', 70.00, 'Pending', 0.00, '', '2026-06-05 13:27:19', NULL),
 (55, 12, 10, '2026-06-09', '17:00:00', '18:00:00', 1, 2, 1, 20.00, 'Casual Play', 298.00, 'Confirmed', 0.00, '', '2026-06-07 14:11:32', NULL),
-(56, 12, 1, '2026-06-08', '08:00:00', '10:00:00', 2, 0, 0, 0.00, 'Casual Play', 719.00, 'Pending', 0.00, '', '2026-06-07 15:14:10', NULL);
+(56, 12, 1, '2026-06-08', '08:00:00', '10:00:00', 2, 0, 0, 0.00, 'Casual Play', 719.00, 'Pending', 0.00, '', '2026-06-07 15:14:10', NULL),
+(57, 12, 1, '2026-06-10', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', 10.00, '', '2026-06-10 00:40:22', NULL);
 
 -- --------------------------------------------------------
 
@@ -245,7 +264,7 @@ CREATE TABLE `coaches` (
 --
 
 INSERT INTO `coaches` (`id`, `admin_id`, `name`, `specialty`, `phone`, `price_per_hour`, `is_active`, `gender`, `age`, `profile_img`, `availability_status`, `available_from`, `available_to`, `late_cancel_strikes`) VALUES
-(1, 2, 'Coach Lim', 'Singles Coaching', '', 50.00, 1, '', 40, '1779345778_coach.png', 'Available', '20:47:00', '20:45:00', 0),
+(1, 2, 'Coach Lim', 'Singles Coaching', '', 50.00, 1, '', 40, '1781052468_coach.png', 'Available', '20:47:00', '20:45:00', 0),
 (2, 3, 'Coach Wong', 'Doubles Coaching', '', 30.00, 1, '', NULL, NULL, 'Available', NULL, NULL, 0),
 (3, 4, 'Coach Tan', 'Junior Development', '', 30.00, 1, 'Male', NULL, NULL, 'Available', NULL, NULL, 0);
 
@@ -594,7 +613,8 @@ INSERT INTO `payments` (`payment_id`, `booking_id`, `amount`, `discount_applied`
 (28, 43, 20.00, 0.00, 20.00, 'App Wallet', 'success', NULL, '2026-05-21 04:50:23'),
 (29, 49, 40.00, 0.00, 40.00, 'App Wallet', 'success', NULL, '2026-05-21 06:45:34'),
 (30, 55, 298.00, 20.00, 278.00, 'Online Payment', 'failed', NULL, '2026-06-07 14:14:13'),
-(31, 55, 298.00, 0.00, 298.00, 'App Wallet', 'success', NULL, '2026-06-07 14:14:29');
+(31, 55, 298.00, 0.00, 298.00, 'App Wallet', 'success', NULL, '2026-06-07 14:14:29'),
+(32, 57, 10.00, 0.00, 10.00, 'App Wallet', 'success', NULL, '2026-06-10 00:42:16');
 
 -- --------------------------------------------------------
 
@@ -756,7 +776,7 @@ INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `gender`, `crea
 (9, 'Jason Teh', 'jason@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60199001122', NULL, '2026-04-30 16:34:47', 0.00, 0, NULL),
 (10, 'Nurul Huda', 'nurul@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60110101010', NULL, '2026-04-30 16:34:47', 0.00, 0, NULL),
 (11, 'wz', 'zhefurry@gmail.com', '$2y$10$ti8t5iVME5.hWJhMY0cE5ukBX67z0z4xPn8HL0pskzUS9Kn0PL9iS', '+60123456789', NULL, '2026-04-14 03:28:20', 70.00, 0, ''),
-(12, 'CHIN ZHEN XIN', 'chinzx1814@gmail.com', '$2y$10$JCc6Tn0hxcgIcqRxr6q5AeLo071m.WGAWVi6gegpajbaHHmdQid/6', '+60136973118', NULL, '2026-06-07 11:59:31', 702.00, 1068, NULL);
+(12, 'CHIN ZHEN XIN', 'chinzx1814@gmail.com', '$2y$10$JCc6Tn0hxcgIcqRxr6q5AeLo071m.WGAWVi6gegpajbaHHmdQid/6', '+60136973118', NULL, '2026-06-07 11:59:31', 692.00, 1078, NULL);
 
 -- --------------------------------------------------------
 
@@ -810,6 +830,16 @@ INSERT INTO `voucher` (`id`, `title`, `discount_amount`, `points_required`, `des
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `activity_logs`
+--
+ALTER TABLE `activity_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_created_at` (`created_at`),
+  ADD KEY `idx_username` (`username`),
+  ADD KEY `idx_module` (`module`),
+  ADD KEY `idx_action` (`action`);
 
 --
 -- Indexes for table `admins`
@@ -953,6 +983,12 @@ ALTER TABLE `voucher`
 --
 
 --
+-- AUTO_INCREMENT for table `activity_logs`
+--
+ALTER TABLE `activity_logs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `admins`
 --
 ALTER TABLE `admins`
@@ -962,7 +998,7 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
 
 --
 -- AUTO_INCREMENT for table `booking_addons`
@@ -1028,7 +1064,7 @@ ALTER TABLE `otp_codes`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `products`
@@ -1119,29 +1155,6 @@ ALTER TABLE `court_availability`
 --
 ALTER TABLE `payments`
   ADD CONSTRAINT `fk_payments_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE;
--- ============================================
--- Smash Arena - Database Migration
--- 只添加缺少的字段
--- ============================================
-
--- 1. 添加 reschedule_count 字段（如果不存在）
-SET @exists = (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_NAME = 'bookings' AND COLUMN_NAME = 'reschedule_count');
-SET @sql = IF(@exists = 0, 'ALTER TABLE bookings ADD COLUMN reschedule_count INT DEFAULT 0 AFTER status', 'SELECT "reschedule_count already exists"');
-PREPARE stmt FROM @sql;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
-
--- 2. 添加 cancellation_count 字段（如果不存在）
-SET @exists2 = (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_NAME = 'users' AND COLUMN_NAME = 'cancellation_count');
-SET @sql2 = IF(@exists2 = 0, 'ALTER TABLE users ADD COLUMN cancellation_count INT DEFAULT 0 AFTER wallet_balance', 'SELECT "cancellation_count already exists"');
-PREPARE stmt2 FROM @sql2;
-EXECUTE stmt2;
-DEALLOCATE PREPARE stmt2;
-
--- 验证字段是否添加成功
-SELECT 
-    (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_NAME = 'bookings' AND COLUMN_NAME = 'reschedule_count') AS bookings_reschedule_count,
-    (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_NAME = 'users' AND COLUMN_NAME = 'cancellation_count') AS users_cancellation_count;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

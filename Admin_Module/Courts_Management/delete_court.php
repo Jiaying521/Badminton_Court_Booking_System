@@ -10,23 +10,24 @@ if (!isset($_SESSION['username']) || !in_array($_SESSION['role'], ['Superadmin',
 }
 
 $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
+require_once __DIR__ . '/../log_activity.php';
 
-// intval() makes sure the ID is a clean integer, no SQL tricks possible.
 $court_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 if ($court_id > 0) {
-    // If this court already has bookings, don't actually delete it —
-    // just mark it inactive so historical bookings keep their reference.
+    $court_row     = mysqli_fetch_assoc(mysqli_query($conn, "SELECT court_name FROM courts WHERE id = $court_id"));
+    $court_label   = $court_row ? $court_row['court_name'] : "ID $court_id";
     $booking_check = mysqli_query($conn, "SELECT id FROM bookings WHERE court_id = $court_id LIMIT 1");
 
     if ($booking_check && mysqli_num_rows($booking_check) > 0) {
         mysqli_query($conn, "UPDATE courts SET is_active = 0 WHERE id = $court_id");
+        logActivity($conn, 'Delete', 'Court Management', "Deactivated court (has bookings): $court_label");
         header("Location: ManageCourts.php?deleted=1");
         exit();
     }
 
-    // No bookings — safe to remove the row entirely.
     mysqli_query($conn, "DELETE FROM courts WHERE id = $court_id");
+    logActivity($conn, 'Delete', 'Court Management', "Deleted court: $court_label");
 }
 
 header("Location: ManageCourts.php?deleted=1");
