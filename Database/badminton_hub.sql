@@ -3,11 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
-<<<<<<< HEAD
--- Generation Time: Jun 10, 2026 at 03:05 AM
-=======
--- Generation Time: Jun 10, 2026 at 03:53 AM
->>>>>>> ba0f6f5d539db8cd4fcddded7d4f40c00aba7b2e
+-- Generation Time: Jun 10, 2026 at 02:00 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -43,8 +39,6 @@ CREATE TABLE `activity_logs` (
   `created_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-<<<<<<< HEAD
-=======
 --
 -- Dumping data for table `activity_logs`
 --
@@ -54,9 +48,9 @@ INSERT INTO `activity_logs` (`id`, `user_id`, `username`, `role`, `action`, `mod
 (2, 1, 'superadmin', 'Superadmin', 'Settings', 'System Settings', 'Updated business hours: open 08:00 – close 13:00, peak 16:00 – 21:00', '::1', '2026-06-10 09:19:36'),
 (3, 1, 'superadmin', 'Superadmin', 'Settings', 'System Settings', 'Updated business hours: open 08:00 – close 01:00, peak 16:00 – 21:00', '::1', '2026-06-10 09:20:06'),
 (4, 1, 'superadmin', 'Superadmin', 'Settings', 'System Settings', 'Updated business hours: open 08:00 – close 01:00, peak 16:00 – 20:00', '::1', '2026-06-10 09:22:43'),
-(5, 1, 'superadmin', 'Superadmin', 'Settings', 'System Settings', 'Updated business hours: open 08:00 – close 01:00, peak 16:00 – 20:00', '::1', '2026-06-10 09:43:21');
+(5, 1, 'superadmin', 'Superadmin', 'Settings', 'System Settings', 'Updated business hours: open 08:00 – close 01:00, peak 16:00 – 20:00', '::1', '2026-06-10 09:43:21'),
+(6, 1, 'superadmin', 'Superadmin', 'Logout', 'Auth', 'User logged out.', '::1', '2026-06-10 04:17:57');
 
->>>>>>> ba0f6f5d539db8cd4fcddded7d4f40c00aba7b2e
 -- --------------------------------------------------------
 
 --
@@ -203,7 +197,11 @@ INSERT INTO `bookings` (`id`, `user_id`, `court_id`, `booking_date`, `start_time
 (54, 1, 2, '2026-06-17', '13:00:00', '18:00:00', 5, 0, 0, 0.00, 'Casual Play', 70.00, 'Pending', 0.00, '', '2026-06-05 13:27:19', NULL),
 (55, 12, 10, '2026-06-09', '17:00:00', '18:00:00', 1, 2, 1, 20.00, 'Casual Play', 298.00, 'Confirmed', 0.00, '', '2026-06-07 14:11:32', NULL),
 (56, 12, 1, '2026-06-08', '08:00:00', '10:00:00', 2, 0, 0, 0.00, 'Casual Play', 719.00, 'Pending', 0.00, '', '2026-06-07 15:14:10', NULL),
-(57, 12, 1, '2026-06-10', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', 10.00, '', '2026-06-10 00:40:22', NULL);
+(57, 12, 1, '2026-06-10', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', 10.00, '', '2026-06-10 00:40:22', NULL),
+(58, 12, 2, '2026-06-17', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', 0.00, '', '2026-06-10 02:48:56', NULL),
+(59, 12, 2, '2026-06-24', '22:00:00', '23:00:00', 1, 0, 0, 0.00, 'Casual Play', 814.00, 'Cancelled', 0.00, '', '2026-06-10 02:56:09', NULL),
+(60, 12, 3, '2026-06-25', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Confirmed', 0.00, '', '2026-06-10 02:57:35', NULL),
+(61, 12, 10, '2026-06-10', '12:00:00', '13:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-06-10 02:58:37', NULL);
 
 -- --------------------------------------------------------
 
@@ -230,7 +228,8 @@ INSERT INTO `booking_addons` (`id`, `booking_id`, `product_id`, `quantity`, `pri
 (4, 55, 7, 1, 199.00),
 (5, 55, 21, 1, 55.00),
 (6, 55, 26, 1, 14.00),
-(7, 56, 3, 1, 699.00);
+(7, 56, 3, 1, 699.00),
+(8, 59, 10, 1, 799.00);
 
 -- --------------------------------------------------------
 
@@ -632,7 +631,12 @@ INSERT INTO `payments` (`payment_id`, `booking_id`, `amount`, `discount_applied`
 (29, 49, 40.00, 0.00, 40.00, 'App Wallet', 'success', NULL, '2026-05-21 06:45:34'),
 (30, 55, 298.00, 20.00, 278.00, 'Online Payment', 'failed', NULL, '2026-06-07 14:14:13'),
 (31, 55, 298.00, 0.00, 298.00, 'App Wallet', 'success', NULL, '2026-06-07 14:14:29'),
-(32, 57, 10.00, 0.00, 10.00, 'App Wallet', 'success', NULL, '2026-06-10 00:42:16');
+(32, 57, 10.00, 0.00, 10.00, 'App Wallet', 'success', NULL, '2026-06-10 00:42:16'),
+(33, 58, 10.00, 0.00, 10.00, 'App Wallet', 'success', NULL, '2026-06-10 02:54:04'),
+(34, 58, 0.00, 0.00, 10.00, 'Refund', 'success', 'REF_1781060055_58', '2026-06-10 02:54:15'),
+(35, 59, 814.00, 20.00, 794.00, 'App Wallet', 'success', NULL, '2026-06-10 02:56:24'),
+(36, 59, 0.00, 0.00, 814.00, 'Refund', 'success', 'REF_1781060197_59', '2026-06-10 02:56:37'),
+(37, 60, 10.00, 0.00, 10.00, 'App Wallet', 'success', NULL, '2026-06-10 02:57:58');
 
 -- --------------------------------------------------------
 
@@ -794,7 +798,7 @@ INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `gender`, `crea
 (9, 'Jason Teh', 'jason@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60199001122', NULL, '2026-04-30 16:34:47', 0.00, 0, NULL),
 (10, 'Nurul Huda', 'nurul@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60110101010', NULL, '2026-04-30 16:34:47', 0.00, 0, NULL),
 (11, 'wz', 'zhefurry@gmail.com', '$2y$10$ti8t5iVME5.hWJhMY0cE5ukBX67z0z4xPn8HL0pskzUS9Kn0PL9iS', '+60123456789', NULL, '2026-04-14 03:28:20', 70.00, 0, ''),
-(12, 'CHIN ZHEN XIN', 'chinzx1814@gmail.com', '$2y$10$JCc6Tn0hxcgIcqRxr6q5AeLo071m.WGAWVi6gegpajbaHHmdQid/6', '+60136973118', NULL, '2026-06-07 11:59:31', 692.00, 1078, NULL);
+(12, 'CHIN ZHEN XIN', 'chinzx1814@gmail.com', '$2y$10$JCc6Tn0hxcgIcqRxr6q5AeLo071m.WGAWVi6gegpajbaHHmdQid/6', '+60136973118', NULL, '2026-06-07 11:59:31', 1702.00, 1892, NULL);
 
 -- --------------------------------------------------------
 
@@ -817,7 +821,7 @@ CREATE TABLE `user_vouchers` (
 INSERT INTO `user_vouchers` (`id`, `user_id`, `voucher_id`, `is_used`, `redeemed_at`) VALUES
 (1, 1, 1, 1, '2026-05-21 04:42:19'),
 (2, 12, 1, 0, '2026-06-07 13:57:04'),
-(3, 12, 3, 0, '2026-06-07 13:57:43');
+(3, 12, 3, 1, '2026-06-07 13:57:43');
 
 -- --------------------------------------------------------
 
@@ -1004,11 +1008,7 @@ ALTER TABLE `voucher`
 -- AUTO_INCREMENT for table `activity_logs`
 --
 ALTER TABLE `activity_logs`
-<<<<<<< HEAD
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-=======
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
->>>>>>> ba0f6f5d539db8cd4fcddded7d4f40c00aba7b2e
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `admins`
@@ -1020,13 +1020,13 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
 
 --
 -- AUTO_INCREMENT for table `booking_addons`
 --
 ALTER TABLE `booking_addons`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `closed_days`
@@ -1086,7 +1086,7 @@ ALTER TABLE `otp_codes`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT for table `products`
