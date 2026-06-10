@@ -27,6 +27,8 @@ if ($conn->connect_error) {
     exit;
 }
 
+require_once __DIR__ . '/log_activity.php';
+
 // 3. Verify Token and Fetch Current Password
 $current_time = date('Y-m-d H:i:s');
 // We select 'password' to compare it later
@@ -63,6 +65,7 @@ $updateStmt = $conn->prepare("UPDATE admins SET password = ?, reset_token = NULL
 $updateStmt->bind_param("ss", $hashedPassword, $email);
 
 if ($updateStmt->execute()) {
+    logActivity($conn, 'Password Reset', 'Auth', "Password reset via email link for: $email", null, $email, null);
     echo json_encode(['status' => 'success', 'message' => 'Password updated successfully!']);
 } else {
     echo json_encode(['status' => 'error', 'message' => 'Database update failed.']);

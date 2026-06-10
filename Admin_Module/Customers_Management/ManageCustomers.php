@@ -20,6 +20,7 @@
 
     //Database connection
     $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
+    require_once __DIR__ . '/../log_activity.php';
 
     $username     = $_SESSION['username'];
     $role         = $_SESSION['role'];
@@ -96,6 +97,7 @@
         ");
 
         if($result_upd){
+            logActivity($conn, 'Update', 'Customer Management', "Updated customer profile: $name (ID $user_id)");
             header("Location: ManageCustomers.php?success=1");
         } else {
             $toasts[] = ['text' => 'Database error: ' . mysqli_error($conn), 'type' => 'error'];
@@ -111,8 +113,10 @@
 
         if($action === 'refund'){
             mysqli_query($conn, "UPDATE users SET wallet_balance = wallet_balance + $amount WHERE id = $user_id");
+            logActivity($conn, 'Update', 'Customer Management', "Wallet refund RM" . number_format($amount, 2) . " to customer ID $user_id");
         } elseif($action === 'deduct'){
             mysqli_query($conn, "UPDATE users SET wallet_balance = GREATEST(0, wallet_balance - $amount) WHERE id = $user_id");
+            logActivity($conn, 'Update', 'Customer Management', "Wallet deduct RM" . number_format($amount, 2) . " from customer ID $user_id");
         }
 
         header("Location: ManageCustomers.php?wallet_updated=1");

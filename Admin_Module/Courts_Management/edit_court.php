@@ -11,6 +11,7 @@ header("Pragma: no-cache");
 header("Expires: 0");
 
 $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
+require_once __DIR__ . '/../log_activity.php';
 $username = $_SESSION['username'];
 $role = $_SESSION['role'];
 $display_name = $username;
@@ -50,6 +51,7 @@ if (isset($_POST['update_court'])) {
                 WHERE id = $court_id";
 
         if (mysqli_query($conn, $sql)) {
+            logActivity($conn, 'Update', 'Court Management', "Updated court: $court_name (ID $court_id)");
             header("Location: ManageCourts.php?success=1");
             exit();
         }

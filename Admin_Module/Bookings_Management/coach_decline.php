@@ -71,6 +71,7 @@ mysqli_query($conn, "UPDATE users SET wallet_balance = wallet_balance + $refund_
 mysqli_query($conn, "UPDATE bookings SET status = 'Cancelled' WHERE id = $booking_id");
 
 require_once '../api/notification_helper.php';
+require_once __DIR__ . '/../log_activity.php';
 
 $player_name  = $booking['player_name'];
 $court_name   = $booking['court_name'];
@@ -145,6 +146,10 @@ if ($is_late) {
         'booking'
     );
 }
+
+$decline_type = $is_late ? 'late decline' : 'on-time decline';
+logActivity($conn, 'Status Change', 'Booking Management',
+            "Coach declined booking #$booking_id ($player_name at $court_name on $booking_date) — $decline_type, refunded RM$refund_str");
 
 mysqli_close($conn);
 

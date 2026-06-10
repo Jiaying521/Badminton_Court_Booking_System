@@ -14,6 +14,8 @@ if ($conn->connect_error) {
     exit;
 }
 
+require_once __DIR__ . '/log_activity.php';
+
 $input = json_decode(file_get_contents('php://input'), true);
 $user = $input['username'] ?? '';
 $pass = $input['password'] ?? '';
@@ -55,25 +57,31 @@ if ($result->num_rows === 1) {
 
     // Verify the password hash
     if (password_verify($pass, $row['password'])) {
-        // Store user information and role in the session for security
-        $_SESSION['id'] = $row['id'];
+        $_SESSION['id']       = $row['id'];
         $_SESSION['username'] = $row['username'];
-        $_SESSION['role'] = $row['role'];
+        $_SESSION['role']     = $row['role'];
 
-        // Logic change: If status is Inactive, it means it is a new account
         $is_new_account = ($row['status'] === 'Inactive');
 
-        // Send back success and use 'first_login' key for compatibility with your JS
+        logActivity($conn, 'Login', 'Auth', 'User logged in successfully.',
+                    $row['id'], $row['username'], $row['role']);
+
         echo json_encode([
-            'success' => true, 
-            'username' => $row['username'],
-            'role' => $row['role'],
+            'success'     => true,
+            'username'    => $row['username'],
+            'role'        => $row['role'],
             'first_login' => $is_new_account
         ]);
     } else {
+        logActivity($conn, 'Login Failed', 'Auth',
+                    "Failed login attempt for username: $user",
+                    null, $user, null);
         echo json_encode(['success' => false, 'message' => 'Invalid Username or Password']);
     }
 } else {
+    logActivity($conn, 'Login Failed', 'Auth',
+                "Failed login attempt for username: $user",
+                null, $user, null);
     echo json_encode(['success' => false, 'message' => 'Invalid Username or Password']);
 }
 

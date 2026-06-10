@@ -20,6 +20,7 @@
 
     // Database Connection
     $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
+    require_once __DIR__ . '/../log_activity.php';
 
     // Take session user information
     $username = $_SESSION['username'];
@@ -58,7 +59,7 @@
                 for ($day = 1; $day <= 7; $day++) {
                     mysqli_query($conn, "INSERT INTO court_availability (court_id, day_of_week, start_time, end_time) VALUES ('$new_court_id', '$day', '08:00:00', '01:00:00')");
                 }
-                // Success - go back to ManageCourts with success message
+                logActivity($conn, 'Create', 'Court Management', "Added new court: $court_name");
                 header("Location: ManageCourts.php?success=1");
                 exit();
             } else {

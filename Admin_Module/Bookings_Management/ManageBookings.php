@@ -42,8 +42,10 @@
 
         if (!empty($ids)) {
             $conn_bulk = mysqli_connect("localhost", "root", "", "badminton_hub");
+            require_once __DIR__ . '/../log_activity.php';
             $ids_str   = implode(',', $ids);
             $role_bulk = $_SESSION['role'];
+            $count     = count($ids);
 
             if ($role_bulk === 'Coach') {
                 // Coach: can only mark complete or decline their own bookings
@@ -53,19 +55,25 @@
 
                 if ($action === 'confirm') {
                     mysqli_query($conn_bulk, "UPDATE bookings SET status='Completed' WHERE id IN ($ids_str) AND coach_id = $my_cid");
+                    logActivity($conn_bulk, 'Status Change', 'Booking Management', "Bulk marked $count booking(s) as Completed: IDs $ids_str");
                 } elseif ($action === 'cancel') {
                     mysqli_query($conn_bulk, "UPDATE bookings SET status='Cancelled' WHERE id IN ($ids_str) AND coach_id = $my_cid");
+                    logActivity($conn_bulk, 'Status Change', 'Booking Management', "Bulk cancelled $count booking(s): IDs $ids_str");
                 }
 
             } elseif (in_array($role_bulk, ['Superadmin', 'Admin'])) {
                 if ($action === 'confirm') {
                     mysqli_query($conn_bulk, "UPDATE bookings SET status='Confirmed' WHERE id IN ($ids_str)");
+                    logActivity($conn_bulk, 'Status Change', 'Booking Management', "Bulk confirmed $count booking(s): IDs $ids_str");
                 } elseif ($action === 'cancel') {
                     mysqli_query($conn_bulk, "UPDATE bookings SET status='Cancelled' WHERE id IN ($ids_str)");
+                    logActivity($conn_bulk, 'Status Change', 'Booking Management', "Bulk cancelled $count booking(s): IDs $ids_str");
                 } elseif ($action === 'complete') {
                     mysqli_query($conn_bulk, "UPDATE bookings SET status='Completed' WHERE id IN ($ids_str)");
+                    logActivity($conn_bulk, 'Status Change', 'Booking Management', "Bulk marked $count booking(s) as Completed: IDs $ids_str");
                 } elseif ($action === 'delete') {
                     mysqli_query($conn_bulk, "DELETE FROM bookings WHERE id IN ($ids_str)");
+                    logActivity($conn_bulk, 'Delete', 'Booking Management', "Bulk deleted $count booking(s): IDs $ids_str");
                 }
             }
 

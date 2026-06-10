@@ -21,6 +21,7 @@ header("Pragma: no-cache");
 header("Expires: 0");
 
 $conn         = mysqli_connect("localhost", "root", "", "badminton_hub");
+require_once __DIR__ . '/../log_activity.php';
 $admin_id     = (int)$_SESSION['id'];
 $username     = $_SESSION['username'];
 $role         = $_SESSION['role'];
@@ -62,6 +63,7 @@ if (isset($_POST['save_working_hours'])) {
     $coach['available_from'] = $_POST['available_from'] ?? null;
     $coach['available_to']   = $_POST['available_to']   ?? null;
 
+    logActivity($conn, 'Update', 'Coach Profile', "Updated own working hours");
     $success = 'Working hours saved.';
 }
 
@@ -114,6 +116,7 @@ if (isset($_POST['update_profile'])) {
         LIMIT 1
     "));
 
+    logActivity($conn, 'Update', 'Coach Profile', "Updated own profile");
     $success = 'Profile updated successfully!';
 }
 
@@ -160,13 +163,13 @@ $ac = $avail_colors[$avail] ?? $avail_colors['Available'];
 
     <!-- Profile Hero -->
     <div class="cp-hero">
-        <div class="cp-hero-avatar-wrap">
+        <div class="cp-hero-avatar-wrap" onclick="document.getElementById('photo-input').click()" title="Change photo" style="cursor:pointer;">
             <img id="hero-avatar" src="<?php echo $profile_img; ?>" alt="Profile Photo" class="cp-hero-avatar"
                  onerror="this.onerror=null;this.src='../../Pictures/Admin_Module/coaches/default.png'">
-            <label class="cp-avatar-edit-btn" title="Change photo">
+            <div class="cp-avatar-edit-btn">
                 <i class="fas fa-camera"></i>
                 <input type="file" id="photo-input" accept="image/*" style="display:none;">
-            </label>
+            </div>
         </div>
 
         <div class="cp-hero-info">

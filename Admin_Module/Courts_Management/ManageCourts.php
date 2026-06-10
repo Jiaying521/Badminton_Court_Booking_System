@@ -28,6 +28,7 @@
 
     // Database Connection
     $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
+    require_once __DIR__ . '/../log_activity.php';
 
     // Take session user information
     $username     = $_SESSION['username'];
@@ -39,12 +40,16 @@
 
     // Handle delete from modal
     if(isset($_POST['delete_court'])){
-        $del_id       = intval($_POST['court_id_delete']);
+        $del_id        = intval($_POST['court_id_delete']);
+        $del_row       = mysqli_fetch_assoc(mysqli_query($conn, "SELECT court_name FROM courts WHERE id = $del_id"));
+        $del_label     = $del_row['court_name'] ?? "ID $del_id";
         $booking_check = mysqli_query($conn, "SELECT id FROM bookings WHERE court_id = $del_id LIMIT 1");
         if($booking_check && mysqli_num_rows($booking_check) > 0){
             mysqli_query($conn, "UPDATE courts SET is_active = 0 WHERE id = $del_id");
+            logActivity($conn, 'Delete', 'Court Management', "Deactivated court (has bookings): $del_label");
         } else {
             mysqli_query($conn, "DELETE FROM courts WHERE id = $del_id");
+            logActivity($conn, 'Delete', 'Court Management', "Deleted court: $del_label");
         }
         header("Location: ManageCourts.php?deleted=1");
         exit();
@@ -78,6 +83,7 @@
                 is_active      = '$is_active'
             WHERE id = $court_id
         ");
+        logActivity($conn, 'Update', 'Court Management', "Updated court: $court_name (ID $court_id)");
         header("Location: ManageCourts.php?success=1");
         exit();
     }
