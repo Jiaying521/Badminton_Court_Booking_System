@@ -78,6 +78,7 @@
     font-weight: 800;
 }
 
+<<<<<<< HEAD
 .page-btn.disabled {
     opacity: 0.35;
     pointer-events: none;
@@ -114,4 +115,10 @@
     color: var(--text-muted);
     font-family: 'Outfit', sans-serif;
     white-space: nowrap;
+=======
+.page-ellipsis {
+    font-size: 13px;
+    color: var(--text-muted);
+    padding: 0 2px;
+>>>>>>> ba0f6f5d539db8cd4fcddded7d4f40c00aba7b2e
 }

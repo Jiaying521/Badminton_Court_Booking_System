@@ -180,7 +180,11 @@ if (isset($_GET['export']) && $_GET['export'] === 'txt') {
 }
 
 /* Pagination */
+<<<<<<< HEAD
 $per_page    = 15;
+=======
+$per_page    = 20;
+>>>>>>> ba0f6f5d539db8cd4fcddded7d4f40c00aba7b2e
 $page        = max(1, (int)($_GET['page'] ?? 1));
 $where       = buildWhere($conn, $f_search, $f_role, $f_module, $f_from, $f_to);
 
@@ -294,6 +298,18 @@ function pageQS($p, $sort, $dir, $search, $role, $module, $from, $to) {
             </form>
         </div>
 
+<<<<<<< HEAD
+=======
+        <?php if ($total_rows > 0): ?>
+            <?php
+                $from_row = $offset + 1;
+                $to_row   = min($offset + $per_page, $total_rows);
+            ?>
+            <p class="log-result-info">
+                Showing <strong><?php echo $from_row; ?></strong> &ndash; <strong><?php echo $to_row; ?></strong> of <strong><?php echo $total_rows; ?></strong> entries<?php echo $has_filter ? ' (filtered)' : ''; ?>
+            </p>
+        <?php endif; ?>
+>>>>>>> ba0f6f5d539db8cd4fcddded7d4f40c00aba7b2e
 
         <table class="data-table">
             <thead>
@@ -322,7 +338,12 @@ function pageQS($p, $sort, $dir, $search, $role, $module, $from, $to) {
                                 <small style="color:var(--text-muted);"><?php echo date('H:i:s', strtotime($log['created_at'])); ?></small>
                             </td>
                             <td>
+<<<<<<< HEAD
                                 <small class="role-label"><?php echo htmlspecialchars($log['username'] ?? '-'); ?></small>
+=======
+                                <strong><?php echo htmlspecialchars($log['username'] ?? '-'); ?></strong><br>
+                                <small class="role-label"><?php echo htmlspecialchars($log['role'] ?? '-'); ?></small>
+>>>>>>> ba0f6f5d539db8cd4fcddded7d4f40c00aba7b2e
                             </td>
                             <td><?php echo htmlspecialchars($log['module'] ?? '-'); ?></td>
                             <td><?php echo actionBadge($log['action']); ?></td>
@@ -340,6 +361,7 @@ function pageQS($p, $sort, $dir, $search, $role, $module, $from, $to) {
                     <a href="?<?php echo pageQS($page - 1, $sort_col, strtolower($sort_dir), $f_search, $f_role, $f_module, $f_from, $f_to); ?>" class="page-btn">
                         <i class="fas fa-chevron-left"></i>
                     </a>
+<<<<<<< HEAD
                 <?php else: ?>
                     <span class="page-btn disabled"><i class="fas fa-chevron-left"></i></span>
                 <?php endif; ?>
@@ -356,13 +378,39 @@ function pageQS($p, $sort, $dir, $search, $role, $module, $from, $to) {
                     <?php if ($f_from   !== '') echo '<input type="hidden" name="from"   value="' . htmlspecialchars($f_from)   . '">'; ?>
                     <?php if ($f_to     !== '') echo '<input type="hidden" name="to"     value="' . htmlspecialchars($f_to)     . '">'; ?>
                 </form>
+=======
+                <?php endif; ?>
+
+                <?php
+                $start = max(1, $page - 2);
+                $end   = min($total_pages, $page + 2);
+                if ($start > 1): ?>
+                    <a href="?<?php echo pageQS(1, $sort_col, strtolower($sort_dir), $f_search, $f_role, $f_module, $f_from, $f_to); ?>" class="page-btn">1</a>
+                    <?php if ($start > 2): ?><span class="page-ellipsis">...</span><?php endif; ?>
+                <?php endif; ?>
+
+                <?php for ($i = $start; $i <= $end; $i++): ?>
+                    <a href="?<?php echo pageQS($i, $sort_col, strtolower($sort_dir), $f_search, $f_role, $f_module, $f_from, $f_to); ?>"
+                       class="page-btn <?php echo $i === $page ? 'active' : ''; ?>">
+                        <?php echo $i; ?>
+                    </a>
+                <?php endfor; ?>
+
+                <?php if ($end < $total_pages): ?>
+                    <?php if ($end < $total_pages - 1): ?><span class="page-ellipsis">...</span><?php endif; ?>
+                    <a href="?<?php echo pageQS($total_pages, $sort_col, strtolower($sort_dir), $f_search, $f_role, $f_module, $f_from, $f_to); ?>" class="page-btn"><?php echo $total_pages; ?></a>
+                <?php endif; ?>
+>>>>>>> ba0f6f5d539db8cd4fcddded7d4f40c00aba7b2e
 
                 <?php if ($page < $total_pages): ?>
                     <a href="?<?php echo pageQS($page + 1, $sort_col, strtolower($sort_dir), $f_search, $f_role, $f_module, $f_from, $f_to); ?>" class="page-btn">
                         <i class="fas fa-chevron-right"></i>
                     </a>
+<<<<<<< HEAD
                 <?php else: ?>
                     <span class="page-btn disabled"><i class="fas fa-chevron-right"></i></span>
+=======
+>>>>>>> ba0f6f5d539db8cd4fcddded7d4f40c00aba7b2e
                 <?php endif; ?>
             </div>
         <?php endif; ?>

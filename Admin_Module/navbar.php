@@ -26,6 +26,7 @@ if (!isset($base_path)) {
             <li><a href="<?php echo $base_path; ?>Superadmin/AdminManagement.php">Admin Management</a></li>
             <li><a href="<?php echo $base_path; ?>Courts_Management/ManageCourts.php">Court Management</a></li>
             <li><a href="<?php echo $base_path; ?>System_Settings/SystemSettings.php">System Settings</a></li>
+            <li><a href="<?php echo $base_path; ?>Logs/ActivityLogs.php">Activity Logs</a></li>
 
             <li class="dropdown">
                 <a href="#" class="drop-btn">More Options ▼</a>
