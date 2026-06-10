@@ -849,7 +849,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         .footer { 
             background: #0f1f12; 
             color: #cbd5c0; 
-            padding: 3rem 5% 1.5rem; 
+            padding: 2rem 5% 1rem; 
             margin-top: 4rem;
             border-radius: 32px 32px 0 0;
         }
@@ -882,7 +882,6 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
 </head>
 <body>
 <div class="container">
-    <!-- Navbar -->
     <div class="navbar">
         <a href="dashboard.php" class="logo-area">
             <img src="../Pictures/Admin_Module/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
@@ -893,13 +892,12 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             <a href="my_bookings.php" class="active"><i class="fas fa-bookmark"></i> My Bookings</a>
             <a href="../Payment_Module/wallet.php"><i class="fas fa-wallet"></i> Wallet</a>
             <a href="coaches.php"><i class="fas fa-user-tie"></i> Coaches</a>
-            <!-- 用户头像 + 名字区域（点击跳转 Edit Profile） -->
             <a href="edit_profile.php" class="user-profile">
                 <div class="user-avatar">
                     <img src="<?php echo htmlspecialchars($avatarPath); ?>" alt="Avatar">
                 </div>
                 <div class="user-info">
-                    <div class="user-name"><?php echo htmlspecialchars($user['name'] ?? 'Player'); ?></div>
+                    <div class="user-namephp"><?php echo htmlspecialchars($user['name'] ?? 'Player'); ?></div>
                     <div class="user-balance">💰 RM <?php echo number_format($real_balance, 2); ?></div>
                 </div>
             </a>
@@ -975,6 +973,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
                     $current_timestamp = time();
                     $hours_until_booking = ($booking_timestamp - $current_timestamp) / 3600;
                     $can_cancel = ($b['status'] == 'Pending' || $b['status'] == 'Confirmed') && $hours_until_booking >= 2;
+                    $can_cancel = ($b['status'] == 'Pending' || $b['status'] == 'Confirmed') && $hours_until_booking >= 2;
                     $can_reschedule = ($b['status'] == 'Pending' || $b['status'] == 'Confirmed') && $hours_until_booking >= 24;
                     $reschedule_count = $b['reschedule_count'] ?? 0;
                     $has_rescheduled = $reschedule_count >= 1;
@@ -1018,7 +1017,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
                                 </button>
                             <?php endif; ?>
                         <?php endif; ?>
-                    </td>
+                    </div>
                 </tr>
                 <?php endforeach; ?>
             </tbody>
@@ -1065,7 +1064,29 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
     </div>
 </div>
 
-<!-- Footer -->
+<div id="cancelChoiceModal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 440px; margin: 12% auto; text-align: center;">
+        <div class="modal-header" style="background: linear-gradient(135deg, #2b7e3a, #1f5a2a);">
+            <h3><i class="fas fa-exclamation-triangle"></i> Cancellation Choice</h3>
+            <button class="modal-close" onclick="closeCancelChoiceModal()">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 2rem;">
+            <p id="cancelChoiceText" style="font-size: 14px; color: #5a6e5c; margin-bottom: 25px; line-height: 1.5; text-align: left;"></p>
+            
+            <button onclick="executeCancelAction('all')" style="background: #ff4d4d; color: white; width: 100%; padding: 12px; margin-bottom: 12px; border: none; border-radius: 50px; font-weight: 700; cursor: pointer; font-family: 'Montserrat', sans-serif;">
+                <i class="fas fa-trash-alt"></i> Cancel Whole Booking (Full Refund)
+            </button>
+            
+            <button onclick="executeCancelAction('addons')" style="background: #e67e22; color: white; width: 100%; padding: 12px; margin-bottom: 20px; border: none; border-radius: 50px; font-weight: 700; cursor: pointer; font-family: 'Montserrat', sans-serif;">
+                <i class="fas fa-shopping-bag"></i> Cancel Add-ons Only (Keep Court)
+            </button>
+            
+            <hr style="border: 0; border-top: 1px solid #eef3eb; margin-bottom: 15px;">
+            <a href="javascript:void(0)" onclick="closeCancelChoiceModal()" style="color: #666; font-size: 13px; font-weight: 600; text-decoration: none; display: block;">Keep Everything Unchanged</a>
+        </div>
+    </div>
+</div>
+
 <footer class="footer">
     <div class="footer-container">
         <div class="footer-col">
@@ -1170,6 +1191,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
     window.onclick = (e) => { 
         if(e.target === document.getElementById('receiptModal')) closeModal();
         if(e.target === document.getElementById('rescheduleModal')) closeRescheduleModal();
+        if(e.target === document.getElementById('cancelChoiceModal')) closeCancelChoiceModal();
     };
     
     let currentBookingId = null;
@@ -1288,6 +1310,25 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         }
     }
     
+    // EASY HUMAN COMMENT: Global tracking handles for our modern multi-option interception modal loop
+    let globalCancelBookingId = null;
+    let globalCancelPolicyMessage = '';
+
+    function closeCancelChoiceModal() {
+        document.getElementById('cancelChoiceModal').style.display = 'none';
+    }
+
+    async function executeCancelAction(choiceType) {
+        closeCancelChoiceModal();
+        if (choiceType === 'all') {
+            // Process the standard full cancel script sequence
+            await proceedCancel(globalCancelBookingId, 'all');
+        } else if (choiceType === 'addons') {
+            // Process the items-only partial cancel request
+            await proceedCancel(globalCancelBookingId, 'addons');
+        }
+    }
+
     async function cancelBooking(bookingId, currentCancellationCount) {
         try {
             const response = await fetch(`get_booking_details.php?id=${bookingId}`);
@@ -1298,7 +1339,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
                 const now = new Date();
                 const hoursDiff = (bookingDateTime - now) / (1000 * 60 * 60);
                 const hasCoach = booking.coach_name && booking.coach_name !== '';
-                const addonsTotal = booking.addons_total || 0;
+                const addonsTotal = parseFloat(booking.addons_total || 0);
                 
                 let confirmMessage = '';
                 
@@ -1308,7 +1349,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
                         `Date: ${booking.booking_date}\n` +
                         `Time: ${booking.start_time} - ${booking.end_time}\n\n` +
                         `✅ Full Refund: RM ${booking.total_price}\n\n` +
-                        `Do you want to proceed with cancellation?`;
+                        `📌 Cancellation Policy: ≥48 hours notice = Full refund.`;
                 } else if (hoursDiff >= 24) {
                     if (hasCoach) {
                         confirmMessage = `🏸 CANCELLATION POLICY (24-48 hours notice) - Training Mode\n\n` +
@@ -1316,7 +1357,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
                             `Date: ${booking.booking_date}\n` +
                             `Time: ${booking.start_time} - ${booking.end_time}\n\n` +
                             `✅ Full Refund: RM ${booking.total_price}\n\n` +
-                            `Do you want to proceed with cancellation?`;
+                            `📌 Training Mode: ≥24 hours notice = Full refund.`;
                     } else {
                         confirmMessage = `🏸 CANCELLATION POLICY (24-48 hours notice) - Play Only\n\n` +
                             `Booking: ${booking.court_name}\n` +
@@ -1324,7 +1365,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
                             `Time: ${booking.start_time} - ${booking.end_time}\n\n` +
                             `📌 RM 10.00 cancellation fee applies\n` +
                             `💰 Refund: RM ${(parseFloat(booking.total_price) - 10).toFixed(2)}\n\n` +
-                            `Do you want to proceed with cancellation?`;
+                            `📌 Play Only Mode: 24-48 hours notice = RM10 fee.`;
                     }
                 } else if (hoursDiff >= 2) {
                     if (hasCoach) {
@@ -1338,8 +1379,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
                             `📌 Court fee: NOT refunded\n` +
                             `📌 Coach fee: 50% refunded (RM ${coachRefund.toFixed(2)})\n` +
                             `📌 Add-ons: FULLY refunded (RM ${addonsTotal.toFixed(2)})\n` +
-                            `💰 Total refund: RM ${refundAmount.toFixed(2)}\n\n` +
-                            `Do you want to proceed with cancellation?`;
+                            `💰 Total refund: RM ${refundAmount.toFixed(2)}`;
                     } else {
                         confirmMessage = `🏸 CANCELLATION POLICY (2-24 hours notice) - Play Only\n\n` +
                             `Booking: ${booking.court_name}\n` +
@@ -1347,8 +1387,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
                             `Time: ${booking.start_time} - ${booking.end_time}\n\n` +
                             `📌 Court fee: NOT refunded\n` +
                             `📌 Add-ons: FULLY refunded (RM ${addonsTotal.toFixed(2)})\n` +
-                            `💰 Total refund: RM ${addonsTotal.toFixed(2)}\n\n` +
-                            `Do you want to proceed with cancellation?`;
+                            `💰 Total refund: RM ${addonsTotal.toFixed(2)}`;
                     }
                 } else if (hoursDiff >= 1) {
                     if (hasCoach) {
@@ -1359,15 +1398,14 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
                             `❌ Court fee: NOT refunded\n` +
                             `❌ Coach fee: NOT refunded (already paid to coach)\n` +
                             `✅ Add-ons: FULLY refunded (RM ${addonsTotal.toFixed(2)})\n\n` +
-                            `💰 Refund: RM ${addonsTotal.toFixed(2)}\n\n` +
-                            `Do you want to proceed with cancellation?`;
+                            `💰 Refund: RM ${addonsTotal.toFixed(2)}`;
                     } else {
                         confirmMessage = `🏸 CANCELLATION POLICY (1-2 hours notice) - Play Only\n\n` +
                             `Booking: ${booking.court_name}\n` +
                             `Date: ${booking.booking_date}\n` +
                             `Time: ${booking.start_time} - ${booking.end_time}\n\n` +
                             `❌ NO REFUND will be issued\n\n` +
-                            `Do you want to proceed with cancellation?`;
+                            `💰 No refund will be issued.`;
                     }
                 } else {
                     confirmMessage = `🏸 CANCELLATION POLICY (<1 hour notice)\n\n` +
@@ -1375,42 +1413,53 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
                         `Date: ${booking.booking_date}\n` +
                         `Time: ${booking.start_time} - ${booking.end_time}\n\n` +
                         `❌ NO REFUND will be issued\n\n` +
-                        `Do you want to proceed with cancellation?`;
+                        `💰 No refund will be issued.`;
                 }
                 
-                if(confirm(confirmMessage)) {
-                    await proceedCancel(bookingId);
+                // EASY HUMAN COMMENT: If the booking has items, show our modal instead of firing a plain confirm popup
+                if (addonsTotal > 0) {
+                    globalCancelBookingId = bookingId;
+                    document.getElementById('cancelChoiceText').innerText = `We found active equipment or snack add-ons (Value: RM ${addonsTotal.toFixed(2)}) linked to this court booking.\n\nWould you like to cancel your entire session, or just drop the extra items while keeping your court confirmed?`;
+                    document.getElementById('cancelChoiceModal').style.display = 'block';
+                } else {
+                    if(confirm(confirmMessage + '\n\nDo you want to proceed with cancellation?')) {
+                        await proceedCancel(bookingId, 'all');
+                    }
                 }
             } else {
                 if(confirm('Are you sure you want to cancel this booking?')) {
-                    await proceedCancel(bookingId);
+                    await proceedCancel(bookingId, 'all');
                 }
             }
         } catch(e) {
             console.error(e);
             if(confirm('Are you sure you want to cancel this booking?')) {
-                await proceedCancel(bookingId);
+                await proceedCancel(bookingId, 'all');
             }
         }
     }
     
-    async function proceedCancel(bookingId) {
+    // EASY HUMAN COMMENT: Added cancelType payload forwarding parameters to talk with the modified background handler
+    async function proceedCancel(bookingId, cancelType = 'all') {
         try {
             const response = await fetch(`cancel_booking.php`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ booking_id: bookingId })
+                body: JSON.stringify({ 
+                    booking_id: bookingId,
+                    cancel_type: cancelType 
+                })
             });
             const data = await response.json();
             if(data.success) {
                 alert(data.message);
                 location.reload();
             } else {
-                alert(data.message || 'Failed to cancel booking');
+                alert(data.message || 'Failed to complete transaction processing');
             }
         } catch(e) {
             console.error(e);
-            alert('Error cancelling booking');
+            alert('Error processing the cancellation request');
         }
     }
 </script>

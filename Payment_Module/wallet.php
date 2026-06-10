@@ -44,12 +44,12 @@ if ($return_to === 'checkout') {
 // FIXED RELATION QUERY: Maps payments back to the users table via bookings link row maps safely
 $wallet_logs = [];
 
-// 1. Pull standard court checkout payments linked to this user's ID
+// 1. EASY HUMAN COMMENT: Upgraded SQL query to fetch raw amount, final_amount, and payment_method types to catch refunds live
 $log_stmt = $conn->prepare("
-    SELECT p.amount, p.payment_method, p.payment_status, p.payment_date 
+    SELECT p.amount, p.final_amount, p.payment_method, p.payment_status, p.payment_date 
     FROM payments p
     JOIN bookings b ON p.booking_id = b.id
-    WHERE b.user_id = ? AND p.amount > 0 
+    WHERE b.user_id = ?
     ORDER BY p.payment_date DESC 
     LIMIT 10
 ");
@@ -64,12 +64,13 @@ while ($log_row = $log_res->fetch_assoc()) {
 if (isset($_SESSION['recent_topups']) && is_array($_SESSION['recent_topups'])) {
     foreach ($_SESSION['recent_topups'] as $session_log) {
         // Add the top-up row into the front of our display array list
-        array_unshift($wallet_logs, [
+        $wallet_logs[] = [
             'amount' => $session_log['amount'],
+            'final_amount' => $session_log['amount'], // Balance metric replication map
             'payment_method' => $session_log['payment_method'],
             'payment_status' => $session_log['payment_status'],
             'payment_date' => $session_log['payment_date']
-        ]);
+        ];
     }
     
     // Sort all rows together so the newest date item always stays at the top of the card view
@@ -332,6 +333,11 @@ body {
     color: #721c24; 
 }
 
+.badge-refund {
+    background: #e3f2fd;
+    color: #0d47a1;
+} /* EASY HUMAN COMMENT: Added custom blue styling badge parameters for refunded entries layout items tracking states */
+
 @media (max-width: 850px) { 
     .wallet-container { 
         grid-template-columns: 1fr; 
@@ -401,26 +407,46 @@ body {
             
             <div class="history-list">
                 <?php if (count($wallet_logs) > 0): ?>
-                    <?php foreach ($wallet_logs as $log): ?>
+                    <?php foreach ($wallet_logs as $log): 
+                        // EASY HUMAN COMMENT: Dynamically handle string presentation titles and positive/negative indicators based on checkout vs refund type methods
+                        $is_refund = ($log['payment_method'] === 'Refund' || $log['payment_method'] === 'Refund_Addons');
+                        $display_amt = $is_refund ? (float)$log['final_amount'] : (float)$log['amount'];
+                        
+                        if ($log['payment_method'] === 'Refund') {
+                            $display_title = "Full Court Cancel Refund";
+                            $amt_color = "#0d47a1";
+                            $prefix = "+RM ";
+                            $badge_class = "status-badge badge-refund";
+                            $badge_label = "Refunded";
+                        } elseif ($log['payment_method'] === 'Refund_Addons') {
+                            $display_title = "Equipment Add-on Refund";
+                            $amt_color = "#0d47a1";
+                            $prefix = "+RM ";
+                            $badge_class = "status-badge badge-refund";
+                            $badge_label = "Refunded";
+                        } else {
+                            $display_title = "Loaded via " . htmlspecialchars($log['payment_method']);
+                            $amt_color = "#2b7e3a";
+                            $prefix = "+RM ";
+                            $badge_class = strtolower($log['payment_status']) === 'success' ? "status-badge badge-success" : "status-badge badge-failed";
+                            $badge_label = strtolower($log['payment_status']) === 'success' ? "Success" : "Failed";
+                        }
+                    ?>
                         <div class="history-item">
                             <div>
                                 <span style="font-weight: 600; color: #333;">
-                                    Loaded via <?php echo htmlspecialchars($log['payment_method']); ?>
+                                    <?php echo $display_title; ?>
                                 </span>
                                 <small class="log-date">
                                     <?php echo date('M j, Y • h:i A', strtotime($log['payment_date'])); ?>
                                 </small>
                             </div>
                             <div style="text-align: right;">
-                                <strong style="color: #2b7e3a; font-size: 0.95rem;">
-                                    +RM <?php echo number_format($log['amount'], 2); ?>
+                                <strong style="color: <?php echo $amt_color; ?>; font-size: 0.95rem;">
+                                    <?php echo $prefix . number_format($display_amt, 2); ?>
                                 </strong>
                                 <br>
-                                <?php if (strtolower($log['payment_status']) === 'success'): ?>
-                                    <span class="status-badge badge-success">Success</span>
-                                <?php else: ?>
-                                    <span class="status-badge badge-failed">Failed</span>
-                                <?php endif; ?>
+                                <span class="<?php echo $badge_class; ?>"><?php echo $badge_label; ?></span>
                             </div>
                         </div>
                     <?php endforeach; ?>

@@ -9,6 +9,7 @@ if(!isLoggedIn()) {
 
 $data = json_decode(file_get_contents('php://input'), true);
 $booking_id = $data['booking_id'] ?? 0;
+$cancel_type = $data['cancel_type'] ?? 'all'; // EASY HUMAN COMMENT: Detect choice payload parameters safely
 
 // 检查预订是否存在且属于当前用户
 $stmt = $pdo->prepare("
@@ -35,6 +36,68 @@ if($booking['status'] == 'Completed') {
     exit;
 }
 
+// 获取add-on总金额
+$stmt_addons = $pdo->prepare("SELECT SUM(price * quantity) as total_addons FROM booking_addons WHERE booking_id = ?");
+$stmt_addons->execute([$booking_id]);
+$addons_total = $stmt_addons->fetchColumn() ?? 0;
+
+
+// NEW ADDITION: PATH 1 — CANCEL ADD-ONS ITEMS ONLY
+if ($cancel_type === 'addons') {
+    if ($addons_total <= 0) {
+        echo json_encode(['success' => false, 'message' => 'No add-on items found to cancel.']);
+        exit;
+    }
+
+    try {
+        $pdo->beginTransaction();
+
+        // 1. Give the add-on money back to the player's wallet balance
+        $stmt_user = $pdo->prepare("SELECT wallet_balance, loyalty_points FROM users WHERE id = ?");
+        $stmt_user->execute([$_SESSION['user_id']]);
+        $user_row = $stmt_user->fetch();
+        $new_balance = $user_row['wallet_balance'] + $addons_total;
+        
+        // EASY HUMAN COMMENT: Calculate points to reverse (RM 1 = 1 Point). Ensure balance never goes below 0.
+        $points_to_deduct = floor($addons_total);
+        $new_points = max(0, ($user_row['loyalty_points'] ?? 0) - $points_to_deduct);
+
+        // Update user row with both modified wallet balance and deducted loyalty points
+        $update_wallet = $pdo->prepare("UPDATE users SET wallet_balance = ?, loyalty_points = ? WHERE id = ?");
+        $update_wallet->execute([$new_balance, $new_points, $_SESSION['user_id']]);
+
+        // 2. Drop the extra add-on record lines completely out of the items ledger
+        $delete_addons = $pdo->prepare("DELETE FROM booking_addons WHERE booking_id = ?");
+        $delete_addons->execute([$booking_id]);
+
+        // 3. Deduct the items price from the master bill, keeping court status Confirmed
+        $update_booking = $pdo->prepare("UPDATE bookings SET total_price = total_price - ? WHERE id = ?");
+        $update_booking->execute([$addons_total, $booking_id]);
+
+        // 4. Register a clean trace ID row into payments for accounting transparency
+        $stmt_payment = $pdo->prepare("
+            INSERT INTO payments (booking_id, amount, final_amount, payment_method, payment_status, transaction_id, payment_date) 
+            VALUES (?, 0, ?, 'Refund_Addons', 'success', ?, NOW())
+        ");
+        $refund_trans_id = 'REF_ADD_' . time() . '_' . $booking_id;
+        $stmt_payment->execute([$booking_id, $addons_total, $refund_trans_id]);
+
+        $pdo->commit();
+
+        $success_msg = "✅ Add-ons Cancelled Successfully!\n💰 RM " . number_format($addons_total, 2) . " has been refunded back to your wallet.\n📉 Points Reversed: -" . $points_to_deduct . " Pts\n🏸 Your court booking remains active.";
+        echo json_encode(['success' => true, 'message' => $success_msg, 'refund_amount' => $addons_total]);
+        exit;
+
+    } catch(Exception $e) {
+        if($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        echo json_encode(['success' => false, 'message' => 'Failed to drop equipment items: ' . $e->getMessage()]);
+        exit;
+    }
+}
+
+
 // 判断是否有教练
 $has_coach = ($booking['coach_id'] && $booking['coach_id'] > 0 && $booking['coach_hours'] > 0);
 
@@ -43,11 +106,6 @@ $booking_datetime = $booking['booking_date'] . ' ' . $booking['start_time'];
 $booking_timestamp = strtotime($booking_datetime);
 $current_timestamp = time();
 $hours_until_booking = ($booking_timestamp - $current_timestamp) / 3600;
-
-// 获取add-on总金额
-$stmt_addons = $pdo->prepare("SELECT SUM(price * quantity) as total_addons FROM booking_addons WHERE booking_id = ?");
-$stmt_addons->execute([$booking_id]);
-$addons_total = $stmt_addons->fetchColumn() ?? 0;
 
 // 根据文档政策设置退款规则
 $cancellation_fee = 0;
