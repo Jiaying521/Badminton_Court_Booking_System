@@ -151,7 +151,6 @@
     <link rel="stylesheet" href="../Dashboard/Dashboard.css">
     <link rel="stylesheet" href="../Superadmin/AdminManagement.css">
     <link rel="stylesheet" href="ManageCourts.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
     <style>
         .modal-photos {
             margin-top: 4px;
@@ -164,158 +163,26 @@
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 4px;
-        }
-        .modal-photos .photos-hint {
-            font-size: 12px;
-            color: #94a3b8;
             margin-bottom: 10px;
         }
-        .photos-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-        }
-        .photo-slot {
-            position: relative;
-            border: 1.5px dashed var(--border);
-            border-radius: 10px;
-            aspect-ratio: 16 / 9;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
+        .btn-manage-photos {
+            display: inline-flex;
             align-items: center;
-            justify-content: center;
-            gap: 3px;
-            cursor: pointer;
-            color: var(--text-muted);
-            font-size: 11px;
-            font-weight: 600;
-            background: #f8fafc;
-            transition: border-color 0.25s, background 0.25s;
-        }
-        .photo-slot:hover {
-            border-color: var(--primary);
-            background: #fffbeb;
-        }
-        .photo-slot i { font-size: 15px; }
-        .photo-slot img {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .photo-slot .slot-tag {
-            position: absolute;
-            top: 5px;
-            left: 5px;
-            background: rgba(17,24,39,0.75);
-            color: #fff;
-            font-size: 9px;
-            font-weight: 700;
-            padding: 1px 7px;
-            border-radius: 20px;
-            letter-spacing: 0.4px;
-            z-index: 2;
-        }
-        .photo-slot .slot-tag.tag-main { background: var(--primary); }
-        .photo-slot .slot-delete {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            width: 22px;
-            height: 22px;
-            border: none;
-            border-radius: 50%;
-            background: rgba(239,68,68,0.92);
-            color: #fff;
-            font-size: 10px;
-            cursor: pointer;
-            z-index: 2;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s;
-        }
-        .photo-slot .slot-delete:hover { transform: scale(1.1); }
-
-        .crop-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(17,24,39,0.6);
-            z-index: 3000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .crop-overlay.active { display: flex; }
-        .crop-card {
-            background: #fff;
-            border-radius: 14px;
-            width: 100%;
-            max-width: 620px;
-            overflow: hidden;
-        }
-        .crop-card .crop-head {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px 20px;
-            border-bottom: 1px solid var(--border);
-        }
-        .crop-card .crop-head h3 {
-            font-size: 15px;
-            font-weight: 700;
-            color: #1f2937;
-        }
-        .crop-card .crop-close {
-            border: none;
-            background: none;
-            font-size: 20px;
-            color: var(--text-muted);
-            cursor: pointer;
-        }
-        .crop-body {
-            padding: 16px 20px;
-            max-height: 60vh;
-        }
-        .crop-body img {
-            display: block;
-            max-width: 100%;
-            max-height: 50vh;
-        }
-        .crop-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            padding: 14px 20px;
-            border-top: 1px solid var(--border);
-        }
-        .crop-actions .btn-crop-cancel {
-            border: 1.5px solid var(--border);
-            background: #fff;
-            color: #374151;
-            padding: 8px 18px;
-            border-radius: 9px;
-            font-family: 'Outfit', sans-serif;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .crop-actions .btn-crop-save {
-            border: none;
+            gap: 8px;
             background: var(--primary);
             color: #fff;
-            padding: 8px 18px;
+            padding: 9px 18px;
             border-radius: 9px;
             font-family: 'Outfit', sans-serif;
             font-size: 13px;
             font-weight: 700;
-            cursor: pointer;
+            text-decoration: none;
+            transition: opacity 0.2s, transform 0.2s;
         }
-        .crop-actions .btn-crop-save:disabled { opacity: 0.6; cursor: wait; }
+        .btn-manage-photos:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
     </style>
 </head>
 <body>
@@ -482,8 +349,9 @@
 
                     <div class="modal-field full-width modal-photos">
                         <div class="photos-title"><i class="fas fa-images" style="color:var(--primary); margin-right:5px;"></i>Court Photos</div>
-                        <div class="photos-hint">Main photo shows on the customer dashboard card, gallery photos on the booking page. Click a slot to upload (cropped to 16:9).</div>
-                        <div class="photos-grid" id="courtPhotosGrid"></div>
+                        <a href="#" id="modal-photos-link" class="btn-manage-photos">
+                            <i class="fas fa-images"></i> Manage / Upload Photos
+                        </a>
                     </div>
 
                 </div>
@@ -572,132 +440,6 @@
             </form>
         </div>
     </div>
-
-    <!-- Court photo crop modal -->
-    <div class="crop-overlay" id="cropOverlay">
-        <div class="crop-card">
-            <div class="crop-head">
-                <h3><i class="fas fa-crop-alt" style="color:var(--primary); margin-right:6px;"></i>Crop Photo</h3>
-                <button type="button" class="crop-close" onclick="closeCrop()">&times;</button>
-            </div>
-            <div class="crop-body">
-                <img id="cropImage" src="" alt="Crop preview">
-            </div>
-            <div class="crop-actions">
-                <button type="button" class="btn-crop-cancel" onclick="closeCrop()">Cancel</button>
-                <button type="button" class="btn-crop-save" id="cropSaveBtn" onclick="saveCrop()">
-                    <i class="fas fa-check"></i> Crop & Upload
-                </button>
-            </div>
-        </div>
-    </div>
-    <input type="file" id="photoInput" accept="image/png, image/jpeg" style="display:none;">
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
-    <script>
-    /* Court photo manager inside the edit modal */
-    let cropper = null;
-    let currentSlot = null;
-    let photosCourtId = null;
-
-    async function loadCourtPhotos(courtId) {
-        photosCourtId = courtId;
-        const grid = document.getElementById('courtPhotosGrid');
-        grid.innerHTML = '<span style="color:#94a3b8; font-size:12px;">Loading photos...</span>';
-        try {
-            const res = await fetch('upload_court_image.php?action=list&court_id=' + courtId);
-            const data = await res.json();
-            if (!data.success) { grid.innerHTML = ''; return; }
-            grid.innerHTML = '';
-            for (const slot of ['main', '1', '2', '3', '4', '5']) {
-                const photo = data.slots[slot];
-                const div = document.createElement('div');
-                div.className = 'photo-slot';
-                div.onclick = () => pickPhoto(slot);
-                div.innerHTML =
-                    '<span class="slot-tag ' + (slot === 'main' ? 'tag-main' : '') + '">' +
-                        (slot === 'main' ? 'MAIN' : 'GALLERY ' + slot) + '</span>' +
-                    (photo
-                        ? '<img src="' + photo + '" alt="Court photo">' +
-                          '<button type="button" class="slot-delete" title="Remove photo" ' +
-                          'onclick="event.stopPropagation(); deletePhoto(\'' + slot + '\')"><i class="fas fa-trash-alt"></i></button>'
-                        : '<i class="fas fa-cloud-upload-alt"></i><span>Upload</span>');
-                grid.appendChild(div);
-            }
-        } catch (e) {
-            grid.innerHTML = '<span style="color:#ef4444; font-size:12px;">Failed to load photos</span>';
-        }
-    }
-
-    function pickPhoto(slot) {
-        currentSlot = slot;
-        const input = document.getElementById('photoInput');
-        input.value = '';
-        input.click();
-    }
-
-    document.getElementById('photoInput').addEventListener('change', function() {
-        if (!this.files || !this.files[0]) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const img = document.getElementById('cropImage');
-            img.src = e.target.result;
-            document.getElementById('cropOverlay').classList.add('active');
-            if (cropper) cropper.destroy();
-            cropper = new Cropper(img, {
-                aspectRatio: 16 / 9,
-                viewMode: 1,
-                autoCropArea: 1,
-                background: false
-            });
-        };
-        reader.readAsDataURL(this.files[0]);
-    });
-
-    function closeCrop() {
-        document.getElementById('cropOverlay').classList.remove('active');
-        if (cropper) { cropper.destroy(); cropper = null; }
-    }
-
-    function saveCrop() {
-        if (!cropper) return;
-        const btn = document.getElementById('cropSaveBtn');
-        btn.disabled = true;
-        cropper.getCroppedCanvas({ width: 1280, height: 720 }).toBlob(async (blob) => {
-            const formData = new FormData();
-            formData.append('court_id', photosCourtId);
-            formData.append('slot', currentSlot);
-            formData.append('action', 'upload');
-            formData.append('image', blob, 'court.jpg');
-            try {
-                const res = await fetch('upload_court_image.php', { method: 'POST', body: formData });
-                const data = await res.json();
-                btn.disabled = false;
-                if (data.success) {
-                    closeCrop();
-                    loadCourtPhotos(photosCourtId);
-                } else {
-                    alert(data.message || 'Upload failed');
-                }
-            } catch (e) {
-                btn.disabled = false;
-                alert('Upload failed');
-            }
-        }, 'image/jpeg', 0.9);
-    }
-
-    async function deletePhoto(slot) {
-        if (!confirm('Remove this photo?')) return;
-        const formData = new FormData();
-        formData.append('court_id', photosCourtId);
-        formData.append('slot', slot);
-        formData.append('action', 'delete');
-        const res = await fetch('upload_court_image.php', { method: 'POST', body: formData });
-        const data = await res.json();
-        if (data.success) loadCourtPhotos(photosCourtId);
-        else alert(data.message || 'Failed to remove photo');
-    }
-    </script>
 
     <script src="ManageCourts.js"></script>
     <script src="../Dashboard/Dashboard.js"></script>

@@ -332,9 +332,8 @@ for ($i = 1; $i <= 5; $i++) {
             </div>
 
             <!-- Court Photos -->
-            <div class="photos-card">
+            <div class="photos-card" id="court-photos">
                 <h2><i class="fas fa-images" style="color:var(--primary); margin-right:6px;"></i>Court Photos</h2>
-                <p class="photos-hint">Main photo appears on the customer dashboard card. Gallery photos (up to 5) appear on the customer booking page. Click a slot to upload — photos are cropped to 16:9.</p>
 
                 <div class="photos-grid">
                     <?php foreach ($photo_slots as $slot => $photo): ?>
