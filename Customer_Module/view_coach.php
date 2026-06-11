@@ -6,7 +6,7 @@ if (!isLoggedIn()) redirect('homepage.php');
 
 $coach_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if ($coach_id <= 0) {
-    redirect('dashboard.php');
+    redirect('coaches.php');
 }
 
 // Get current user
@@ -31,7 +31,7 @@ if (!empty($profile_picture)) {
 $real_balance = $user['wallet_balance'] ?? 0.00;
 $currentPointsBalance = (int)($user['loyalty_points'] ?? 0);
 
-// Fetch coach
+// Fetch coach with proper join
 $stmt = $pdo->prepare("
     SELECT c.*, a.email
     FROM coaches c
@@ -43,7 +43,7 @@ $stmt->execute([$coach_id]);
 $coach = $stmt->fetch();
 
 if (!$coach) {
-    redirect('dashboard.php');
+    redirect('coaches.php');
 }
 
 // Get coach image
@@ -61,7 +61,7 @@ $avail_map = [
 ];
 $ac = $avail_map[$avail] ?? $avail_map['Available'];
 
-// Get coach's upcoming bookings
+// Get coach's completed sessions count
 $stmt_bookings = $pdo->prepare("
     SELECT COUNT(*) as total_bookings 
     FROM bookings 
@@ -70,9 +70,24 @@ $stmt_bookings = $pdo->prepare("
 $stmt_bookings->execute([$coach_id]);
 $total_sessions = $stmt_bookings->fetchColumn() ?? 0;
 
-// Get coach rating
-$rating = 4.8;
-$total_reviews = 24;
+// Default rating values
+$rating = 4.9;
+$total_reviews = 12;
+
+try {
+    $checkTable = $pdo->query("SHOW TABLES LIKE 'coach_ratings'");
+    if ($checkTable && $checkTable->rowCount() > 0) {
+        $stmt_rating = $pdo->prepare("SELECT AVG(rating) as avg_rating, COUNT(*) as total FROM coach_ratings WHERE coach_id = ?");
+        $stmt_rating->execute([$coach_id]);
+        $rating_data = $stmt_rating->fetch();
+        if ($rating_data && $rating_data['avg_rating']) {
+            $rating = round($rating_data['avg_rating'], 1);
+            $total_reviews = $rating_data['total'];
+        }
+    }
+} catch(PDOException $e) {
+    // Table doesn't exist, use default values
+}
 
 // Get system settings for footer
 $open_time = getSetting('open_time', '08:00');
@@ -84,7 +99,31 @@ $open_time_display = date('h:i A', strtotime($open_time));
 $close_time_display = date('h:i A', strtotime($close_time));
 $peak_start_display = date('h:i A', strtotime($peak_start));
 
-$back = $_SERVER['HTTP_REFERER'] ?? 'coaches.php';
+// Calculate years of experience
+$experience_years = date('Y') - 2018;
+
+// Get min date for booking (tomorrow)
+$min_date = date('Y-m-d', strtotime('+1 day'));
+
+// Get coach fields with fallback
+$coach_description = isset($coach['description']) && !empty($coach['description']) 
+    ? $coach['description'] 
+    : 'Professional badminton coach dedicated to helping players of all levels improve their game. Specializing in technique, footwork, and match strategy.';
+
+$coach_specialty = isset($coach['specialty']) && !empty($coach['specialty']) 
+    ? $coach['specialty'] 
+    : 'All-round Coaching';
+
+$coach_phone = isset($coach['phone']) && !empty($coach['phone']) 
+    ? $coach['phone'] 
+    : 'Contact via support';
+
+$coach_email = isset($coach['email']) && !empty($coach['email']) 
+    ? $coach['email'] 
+    : 'Not available';
+
+$coach_gender = isset($coach['gender']) ? $coach['gender'] : '';
+$coach_age = isset($coach['age']) ? (int)$coach['age'] : 0;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -135,7 +174,6 @@ $back = $_SERVER['HTTP_REFERER'] ?? 'coaches.php';
         ::-webkit-scrollbar-thumb { background: #2b7e3a; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #1f5a2a; }
         
-        /* 玻璃态导航栏 */
         .navbar { 
             display: flex; 
             justify-content: space-between; 
@@ -245,7 +283,6 @@ $back = $_SERVER['HTTP_REFERER'] ?? 'coaches.php';
             border-radius: 50px;
         }
         
-        /* 用户头像区域 */
         .nav-links a.user-profile,
         .user-profile {
             display: flex !important;
@@ -314,14 +351,12 @@ $back = $_SERVER['HTTP_REFERER'] ?? 'coaches.php';
             border-radius: 50px;
         }
         
-        /* Main Content */
         .main-content {
             display: grid;
             grid-template-columns: 1fr 380px;
             gap: 2rem;
         }
         
-        /* Left Column - Coach Profile */
         .profile-card {
             background: rgba(255,255,255,0.7);
             backdrop-filter: blur(10px);
@@ -478,7 +513,6 @@ $back = $_SERVER['HTTP_REFERER'] ?? 'coaches.php';
             color: #5a6e5c;
         }
         
-        /* Right Column - Booking Sidebar */
         .booking-sidebar {
             background: rgba(255,255,255,0.7);
             backdrop-filter: blur(10px);
@@ -593,7 +627,20 @@ $back = $_SERVER['HTTP_REFERER'] ?? 'coaches.php';
             text-align: center;
         }
         
-        /* 页脚 - 与 dashboard 一致 */
+        .info-banner {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border-radius: 16px;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #92400e;
+        }
+        
+        .info-banner i {
+            margin-right: 0.3rem;
+        }
+        
         .footer { 
             background: #0f1f12; 
             color: #cbd5c0; 
@@ -703,7 +750,6 @@ $back = $_SERVER['HTTP_REFERER'] ?? 'coaches.php';
             <a href="my_bookings.php"><i class="fas fa-bookmark"></i> My Bookings</a>
             <a href="../Payment_Module/wallet.php"><i class="fas fa-wallet"></i> Wallet</a>
             <a href="coaches.php" class="active"><i class="fas fa-user-tie"></i> Coaches</a>
-            <!-- 用户头像 + 名字区域（点击跳转 Edit Profile） -->
             <a href="edit_profile.php" class="user-profile">
                 <div class="user-avatar">
                     <img src="<?php echo htmlspecialchars($avatarPath); ?>" alt="Avatar">
@@ -745,27 +791,27 @@ $back = $_SERVER['HTTP_REFERER'] ?? 'coaches.php';
                     </div>
                     <div class="info-item">
                         <div class="label"><i class="fas fa-star"></i> Specialty</div>
-                        <div class="value"><?php echo htmlspecialchars($coach['specialty'] ?: 'All-round Coaching'); ?></div>
+                        <div class="value"><?php echo htmlspecialchars($coach_specialty); ?></div>
                     </div>
-                    <?php if ($coach['gender']): ?>
+                    <?php if ($coach_gender): ?>
                     <div class="info-item">
                         <div class="label"><i class="fas fa-venus-mars"></i> Gender</div>
-                        <div class="value"><?php echo htmlspecialchars($coach['gender']); ?></div>
+                        <div class="value"><?php echo htmlspecialchars($coach_gender); ?></div>
                     </div>
                     <?php endif; ?>
-                    <?php if ($coach['age']): ?>
+                    <?php if ($coach_age > 0): ?>
                     <div class="info-item">
                         <div class="label"><i class="fas fa-cake-candles"></i> Age</div>
-                        <div class="value"><?php echo (int)$coach['age']; ?> years</div>
+                        <div class="value"><?php echo $coach_age; ?> years</div>
                     </div>
                     <?php endif; ?>
                     <div class="info-item">
                         <div class="label"><i class="fas fa-envelope"></i> Email</div>
-                        <div class="value"><?php echo htmlspecialchars($coach['email'] ?: 'Not available'); ?></div>
+                        <div class="value"><?php echo htmlspecialchars($coach_email); ?></div>
                     </div>
                     <div class="info-item">
                         <div class="label"><i class="fas fa-phone"></i> Contact</div>
-                        <div class="value"><?php echo htmlspecialchars($coach['phone'] ?: 'Contact via support'); ?></div>
+                        <div class="value"><?php echo htmlspecialchars($coach_phone); ?></div>
                     </div>
                 </div>
                 
@@ -779,14 +825,14 @@ $back = $_SERVER['HTTP_REFERER'] ?? 'coaches.php';
                         <div class="label">Rating (<?php echo $total_reviews; ?> reviews)</div>
                     </div>
                     <div class="stat-badge">
-                        <div class="number"><?php echo date('Y') - 2018; ?></div>
+                        <div class="number"><?php echo $experience_years; ?></div>
                         <div class="label">Years Experience</div>
                     </div>
                 </div>
                 
                 <div class="bio-text">
                     <i class="fas fa-quote-left" style="color:#2b7e3a; margin-right:0.5rem;"></i>
-                    <?php echo htmlspecialchars($coach['specialty'] ?? 'Professional badminton coach dedicated to helping players of all levels improve their game. Specializing in technique, footwork, and match strategy.'); ?>
+                    <?php echo htmlspecialchars($coach_description); ?>
                 </div>
             </div>
         </div>
@@ -802,29 +848,36 @@ $back = $_SERVER['HTTP_REFERER'] ?? 'coaches.php';
                 <span class="price-unit">/ hour</span>
             </div>
             
+            <div class="info-banner">
+                <i class="fas fa-info-circle"></i> Coach sessions require a Training Court booking
+            </div>
+            
             <?php if ($avail === 'Available'): ?>
-                <form action="book_court.php" method="GET" class="booking-form">
-                    <input type="hidden" name="coach_id" value="<?php echo $coach_id; ?>">
+                <form action="dashboard.php" method="GET" class="booking-form" id="bookingForm">
+                    <input type="hidden" name="preferred_coach_id" value="<?php echo $coach_id; ?>">
+                    <input type="hidden" name="court_type" value="Training">
                     <div class="form-group">
                         <label><i class="fas fa-calendar"></i> Select Date</label>
-                        <input type="date" name="booking_date" min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>" required>
+                        <input type="date" name="booking_date" id="booking_date" min="<?php echo $min_date; ?>" required>
                     </div>
                     <div class="form-group">
                         <label><i class="fas fa-clock"></i> Duration</label>
-                        <select name="duration" required>
+                        <select name="duration" id="duration" required>
+                            <option value="">Select duration</option>
                             <option value="1">1 hour</option>
                             <option value="2">2 hours</option>
                             <option value="3">3 hours</option>
+                            <option value="4">4 hours</option>
                         </select>
                     </div>
                     <div class="wallet-info-sidebar">
                         <i class="fas fa-wallet"></i> Your Balance: <strong>RM <?php echo number_format($real_balance, 2); ?></strong>
                     </div>
-                    <button type="submit" class="btn-book-now">
-                        <i class="fas fa-calendar-plus"></i> Book Now
+                    <button type="submit" class="btn-book-now" id="bookNowBtn">
+                        <i class="fas fa-calendar-plus"></i> Choose a Training Court
                     </button>
                     <div class="note-text">
-                        <i class="fas fa-info-circle"></i> You will be redirected to complete your booking
+                        <i class="fas fa-info-circle"></i> You will be shown only Training Courts to book with this coach
                     </div>
                 </form>
             <?php else: ?>
@@ -839,7 +892,7 @@ $back = $_SERVER['HTTP_REFERER'] ?? 'coaches.php';
     </div>
 </div>
 
-<!-- Footer - 与 dashboard 一致 -->
+<!-- Footer -->
 <footer class="footer">
     <div class="footer-container">
         <div class="footer-col">
@@ -880,5 +933,37 @@ $back = $_SERVER['HTTP_REFERER'] ?? 'coaches.php';
     </div>
 </footer>
 
+<script>
+    // 简单的客户端验证
+    document.getElementById('bookingForm')?.addEventListener('submit', function(e) {
+        const date = document.getElementById('booking_date')?.value;
+        const duration = document.getElementById('duration')?.value;
+        
+        if (!date) {
+            e.preventDefault();
+            alert('Please select a date');
+            return false;
+        }
+        
+        if (!duration) {
+            e.preventDefault();
+            alert('Please select duration');
+            return false;
+        }
+        
+        // 验证日期不能是今天（必须至少明天）
+        const selectedDate = new Date(date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (selectedDate <= today) {
+            e.preventDefault();
+            alert('Please select a date from tomorrow onwards');
+            return false;
+        }
+        
+        return true;
+    });
+</script>
 </body>
 </html>

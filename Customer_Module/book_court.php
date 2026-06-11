@@ -10,6 +10,11 @@ $stmt->execute([$court_id]);
 $court = $stmt->fetch();
 if(!$court) redirect('dashboard.php');
 
+// 从 GET 参数获取预选教练、日期、时长（从 view_coach.php 跳转过来）
+$preferred_coach_id = isset($_GET['preferred_coach_id']) ? (int)$_GET['preferred_coach_id'] : 0;
+$preferred_duration = isset($_GET['duration']) ? (int)$_GET['duration'] : 0;
+$preferred_date = isset($_GET['booking_date']) ? $_GET['booking_date'] : '';
+
 // 获取球场照片
 function getCourtImage($court) {
     $possibleFields = ['court_image', 'photo', 'image', 'photo_path'];
@@ -802,13 +807,17 @@ $court_photos = getAllCourtImages($court);
                     <div class="coach-divider"></div>
                     <div class="coach-section-title"><i class="fas fa-user-tie"></i> Select Coach (Optional)</div>
                     <div id="coachList" class="coach-container">
-                        <div class="coach-item selected" data-coach-id="0" data-coach-price="0" data-coach-name="No coach">
+                        <div class="coach-item <?php echo ($preferred_coach_id == 0) ? 'selected' : ''; ?>" 
+                             data-coach-id="0" data-coach-price="0" data-coach-name="No coach">
                             <div class="coach-avatar"><img src="../Pictures/Admin_Module/coaches/default.png" alt="No coach"></div>
                             <div class="coach-info"><div class="coach-name">📝 No coach</div><div class="coach-specialty">Practice on your own</div></div>
                             <div class="coach-price"><div class="price">FREE</div></div>
                         </div>
                         <?php foreach($coaches as $coach): ?>
-                        <div class="coach-item" data-coach-id="<?=$coach['id']?>" data-coach-price="<?=$coach['price_per_hour']?>" data-coach-name="<?=htmlspecialchars($coach['name'])?>">
+                        <div class="coach-item <?php echo ($preferred_coach_id == $coach['id']) ? 'selected' : ''; ?>" 
+                             data-coach-id="<?=$coach['id']?>" 
+                             data-coach-price="<?=$coach['price_per_hour']?>" 
+                             data-coach-name="<?=htmlspecialchars($coach['name'])?>">
                             <div class="coach-avatar"><img src="<?=htmlspecialchars(getCoachImage($coach))?>" alt="<?=htmlspecialchars($coach['name'])?>" onerror="this.src='../Pictures/Admin_Module/coaches/default.png'"></div>
                             <div class="coach-info"><div class="coach-name"><?=htmlspecialchars($coach['name'])?></div><div class="coach-specialty"><?=htmlspecialchars($coach['specialty'])?></div></div>
                             <div class="coach-price"><div class="price">RM <?=number_format($coach['price_per_hour'], 2)?></div><div class="unit">/ hr</div></div>
@@ -847,6 +856,11 @@ $court_photos = getAllCourtImages($court);
     const courtType = '<?=$court['court_type']?>';
     const offPeakPrice = <?=$court['price_off_peak']?>;
     const peakPrice = <?=$court['price_peak']?>;
+    
+    // 预选参数
+    const preferredCoachId = <?php echo $preferred_coach_id; ?>;
+    const preferredDuration = <?php echo $preferred_duration; ?>;
+    const preferredDate = '<?php echo $preferred_date; ?>';
     
     let availableSlots = [];
     let selectedDate = null;
@@ -906,8 +920,20 @@ $court_photos = getAllCourtImages($court);
         });
     }
     
-    // 日期选择器
-    flatpickr(dateInput, {
+    // 自动预选教练
+    if(preferredCoachId > 0) {
+        setTimeout(function() {
+            const preferredCoach = document.querySelector('.coach-item[data-coach-id="' + preferredCoachId + '"]');
+            if(preferredCoach) {
+                preferredCoach.click();
+            }
+        }, 100);
+    }
+    
+    let flatpickrInstance = null;
+    
+    // 日期选择器（支持预填日期）
+    const flatpickrConfig = {
         dateFormat: "Y-m-d",
         minDate: "today",
         maxDate: new Date().fp_incr(30),
@@ -919,7 +945,20 @@ $court_photos = getAllCourtImages($court);
                 resetSelection();
             }
         }
-    });
+    };
+    
+    if(preferredDate) {
+        flatpickrInstance = flatpickr(dateInput, flatpickrConfig);
+        flatpickrInstance.setDate(preferredDate);
+        // 触发加载时间槽
+        setTimeout(() => {
+            if(preferredDate) {
+                loadSlots(preferredDate);
+            }
+        }, 200);
+    } else {
+        flatpickr(dateInput, flatpickrConfig);
+    }
     
     async function loadSlots(date) {
         timeSection.style.display = 'block';
@@ -975,6 +1014,18 @@ $court_photos = getAllCourtImages($court);
                     submitBtn.disabled = true;
                 });
             });
+            
+            // 自动预选时长
+            if(preferredDuration > 0) {
+                setTimeout(function() {
+                    const hourBtns = document.querySelectorAll('.hour-btn');
+                    hourBtns.forEach(btn => {
+                        if(parseInt(btn.dataset.hours) === preferredDuration) {
+                            btn.click();
+                        }
+                    });
+                }, 300);
+            }
         } catch(e) {
             console.error(e);
             slotList.innerHTML = '<div class="error-msg">Error loading slots</div>';
