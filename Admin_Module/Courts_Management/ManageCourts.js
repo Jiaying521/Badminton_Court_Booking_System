@@ -16,6 +16,8 @@ function openCourtModal(id, name, type, location, facilities, priceOffPeak, pric
     document.getElementById('modal-price-peak').value     = pricePeak;
     document.getElementById('modal-is-active').checked   = isActive === 1;
 
+    if (typeof loadCourtPhotos === 'function') loadCourtPhotos(id);
+
     document.getElementById('courtModal').classList.add('active');
 }
 

@@ -10,6 +10,32 @@ if (!isset($_SESSION['username']) || !in_array($_SESSION['role'], ['Superadmin',
 $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
 require_once __DIR__ . '/../log_activity.php';
 
+// List action: return the current photo for every slot of a court (used by the edit modal)
+if (($_GET['action'] ?? '') === 'list') {
+    $court_id = intval($_GET['court_id'] ?? 0);
+    $result = mysqli_query($conn, "SELECT court_name FROM courts WHERE id = $court_id");
+    $court = mysqli_fetch_assoc($result);
+    if (!$court) {
+        echo json_encode(['success' => false, 'message' => 'Court not found']);
+        exit();
+    }
+    $base_name = strtolower(str_replace(' ', '_', $court['court_name']));
+    $dir = __DIR__ . '/../../Pictures/Admin_Module/courts/';
+    $slots = [];
+    foreach (['main', '1', '2', '3', '4', '5'] as $s) {
+        $stem = ($s === 'main') ? $base_name : $base_name . '_' . $s;
+        $slots[$s] = null;
+        foreach (['jpg', 'jpeg', 'png'] as $ext) {
+            if (file_exists($dir . $stem . '.' . $ext)) {
+                $slots[$s] = '../../Pictures/Admin_Module/courts/' . $stem . '.' . $ext . '?v=' . filemtime($dir . $stem . '.' . $ext);
+                break;
+            }
+        }
+    }
+    echo json_encode(['success' => true, 'slots' => $slots]);
+    exit();
+}
+
 $court_id = intval($_POST['court_id'] ?? 0);
 $slot     = $_POST['slot'] ?? '';
 $action   = $_POST['action'] ?? 'upload';
