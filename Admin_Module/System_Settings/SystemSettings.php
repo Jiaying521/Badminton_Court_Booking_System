@@ -153,6 +153,12 @@ if (isset($_GET['delete_promo'])) {
     exit();
 }
 
+/* Ensure voucher.per_user_limit column exists (how many times one customer can redeem the same voucher) */
+$limit_col = mysqli_query($conn, "SHOW COLUMNS FROM voucher LIKE 'per_user_limit'");
+if (mysqli_num_rows($limit_col) == 0) {
+    mysqli_query($conn, "ALTER TABLE voucher ADD per_user_limit INT NOT NULL DEFAULT 1");
+}
+
 /* Action G: Add Voucher */
 if (isset($_POST['add_voucher'])) {
     $title           = mysqli_real_escape_string($conn, trim($_POST['voucher_title']));
@@ -167,8 +173,11 @@ if (isset($_POST['add_voucher'])) {
     /* Optional stock — empty means unlimited */
     $quantity = ($_POST['quantity'] !== '' && (int)$_POST['quantity'] >= 0) ? (int)$_POST['quantity'] : "NULL";
 
-    mysqli_query($conn, "INSERT INTO voucher (title, discount_amount, points_required, description, valid_from, valid_until, quantity)
-        VALUES ('$title', $discount_amount, $points_required, '$description', $valid_from, $valid_until, $quantity)");
+    /* How many times one customer can redeem this voucher (minimum 1) */
+    $per_user_limit = max(1, intval($_POST['per_user_limit'] ?? 1));
+
+    mysqli_query($conn, "INSERT INTO voucher (title, discount_amount, points_required, description, valid_from, valid_until, quantity, per_user_limit)
+        VALUES ('$title', $discount_amount, $points_required, '$description', $valid_from, $valid_until, $quantity, $per_user_limit)");
     logActivity($conn, 'Create', 'System Settings', "Created voucher: $title (RM$discount_amount, $points_required pts)");
     $toasts[] = ['text' => 'Voucher created!', 'type' => 'success'];
 }
@@ -184,6 +193,7 @@ if (isset($_POST['edit_voucher'])) {
     $valid_from  = !empty($_POST['valid_from'])  ? "'" . mysqli_real_escape_string($conn, str_replace('T', ' ', $_POST['valid_from']))  . "'" : "NULL";
     $valid_until = !empty($_POST['valid_until']) ? "'" . mysqli_real_escape_string($conn, str_replace('T', ' ', $_POST['valid_until'])) . "'" : "NULL";
     $quantity    = ($_POST['quantity'] !== '' && (int)$_POST['quantity'] >= 0) ? (int)$_POST['quantity'] : "NULL";
+    $per_user_limit = max(1, intval($_POST['per_user_limit'] ?? 1));
 
     mysqli_query($conn, "UPDATE voucher SET
         title           = '$title',
@@ -192,7 +202,8 @@ if (isset($_POST['edit_voucher'])) {
         description     = '$description',
         valid_from      = $valid_from,
         valid_until     = $valid_until,
-        quantity        = $quantity
+        quantity        = $quantity,
+        per_user_limit  = $per_user_limit
         WHERE id = $vid");
 
     logActivity($conn, 'Update', 'System Settings', "Updated voucher: $title (ID $vid)");
@@ -684,6 +695,12 @@ $vouchers = mysqli_query($conn, "
                                 placeholder="e.g. 100" min="0">
                         </div>
 
+                        <div class="settings-field">
+                            <label>Redeem Limit Per Customer</label>
+                            <input type="number" name="per_user_limit" class="form-control"
+                                placeholder="e.g. 1" min="1" value="1">
+                        </div>
+
                     </div>
 
                     <button type="submit" name="add_voucher" class="btn-add-account">
@@ -700,6 +717,7 @@ $vouchers = mysqli_query($conn, "
                             <th>Points Required</th>
                             <th>Valid Period</th>
                             <th>Stock</th>
+                            <th>Limit / Person</th>
                             <th>Description</th>
                             <th>Action</th>
                         </tr>
@@ -719,6 +737,7 @@ $vouchers = mysqli_query($conn, "
                             data-from="<?php echo $v['valid_from']  ? date('Y-m-d\TH:i', strtotime($v['valid_from']))  : ''; ?>"
                             data-until="<?php echo $v['valid_until'] ? date('Y-m-d\TH:i', strtotime($v['valid_until'])) : ''; ?>"
                             data-quantity="<?php echo $has_qty ? (int)$v['quantity'] : ''; ?>"
+                            data-limit="<?php echo max(1, (int)($v['per_user_limit'] ?? 1)); ?>"
                             onclick="openEditVoucher(this)" style="cursor:pointer;">
                             <td><strong><?php echo htmlspecialchars($v['title']); ?></strong></td>
                             <td>RM <?php echo number_format($v['discount_amount'], 2); ?></td>
@@ -746,6 +765,8 @@ $vouchers = mysqli_query($conn, "
                                     <span style="color:#94a3b8;">Unlimited</span>
                                 <?php endif; ?>
                             </td>
+
+                            <td><?php echo max(1, (int)($v['per_user_limit'] ?? 1)); ?> time(s)</td>
 
                             <td><?php echo htmlspecialchars($v['description']); ?></td>
                             <td onclick="event.stopPropagation()">
@@ -806,6 +827,11 @@ $vouchers = mysqli_query($conn, "
                         <input type="number" name="quantity" id="ev-quantity" min="0">
                     </div>
 
+                    <div class="modal-field">
+                        <label>Redeem Limit Per Customer</label>
+                        <input type="number" name="per_user_limit" id="ev-limit" min="1" required>
+                    </div>
+
                     <div class="modal-field full-width">
                         <label>Description</label>
                         <input type="text" name="description" id="ev-description">
@@ -844,6 +870,7 @@ $vouchers = mysqli_query($conn, "
         document.getElementById('ev-from').value        = el.dataset.from;
         document.getElementById('ev-until').value        = el.dataset.until;
         document.getElementById('ev-quantity').value    = el.dataset.quantity;
+        document.getElementById('ev-limit').value       = el.dataset.limit;
         document.getElementById('editVoucherModal').classList.add('active');
     }
 

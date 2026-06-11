@@ -38,6 +38,7 @@ if (!empty($user_voucher_id) && $user_id > 0) {
         FROM user_vouchers uv
         JOIN voucher v ON uv.voucher_id = v.id
         WHERE uv.id = ? AND uv.user_id = ? AND uv.is_used = 0
+          AND (v.valid_until IS NULL OR v.valid_until >= NOW())
     ");
     $v_check->bind_param("ii", $user_voucher_id, $user_id);
     $v_check->execute();

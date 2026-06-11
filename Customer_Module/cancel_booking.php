@@ -41,6 +41,15 @@ $stmt_addons = $pdo->prepare("SELECT SUM(price * quantity) as total_addons FROM 
 $stmt_addons->execute([$booking_id]);
 $addons_total = $stmt_addons->fetchColumn() ?? 0;
 
+// 获取实际付款金额（顾客真正付出去的，扣除 voucher 折扣后）
+$stmt_paid = $pdo->prepare("
+    SELECT final_amount FROM payments
+    WHERE booking_id = ? AND payment_status = 'success' AND payment_method NOT LIKE 'Refund%'
+    ORDER BY id ASC LIMIT 1
+");
+$stmt_paid->execute([$booking_id]);
+$actual_paid = (float)($stmt_paid->fetchColumn() ?? $booking['total_price']);
+
 
 // NEW ADDITION: PATH 1 — CANCEL ADD-ONS ITEMS ONLY
 if ($cancel_type === 'addons') {
@@ -199,6 +208,9 @@ if ($hours_until_booking >= 48) {
     }
 }
 
+// Cap refund at what the customer actually paid (voucher discount is not refunded)
+$refund_amount = min($refund_amount, $actual_paid);
+
 if (!$can_cancel) {
     echo json_encode([
         'success' => false, 
@@ -228,13 +240,16 @@ try {
     
     // 退还金额到钱包
     if ($refund_amount > 0) {
-        $stmt = $pdo->prepare("SELECT wallet_balance FROM users WHERE id = ?");
+        $stmt = $pdo->prepare("SELECT wallet_balance, loyalty_points FROM users WHERE id = ?");
         $stmt->execute([$booking['user_id']]);
         $user = $stmt->fetch();
         $new_balance = $user['wallet_balance'] + $refund_amount;
-        
-        $update_wallet = $pdo->prepare("UPDATE users SET wallet_balance = ? WHERE id = ?");
-        $update_wallet->execute([$new_balance, $booking['user_id']]);
+
+        $points_to_deduct = floor($refund_amount);
+        $new_points = max(0, ($user['loyalty_points'] ?? 0) - $points_to_deduct);
+
+        $update_wallet = $pdo->prepare("UPDATE users SET wallet_balance = ?, loyalty_points = ? WHERE id = ?");
+        $update_wallet->execute([$new_balance, $new_points, $booking['user_id']]);
         
         // 记录退款
         $stmt_payment = $pdo->prepare("

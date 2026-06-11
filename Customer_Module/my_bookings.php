@@ -17,7 +17,7 @@ $stmt = $pdo->prepare("
     JOIN courts c ON b.court_id = c.id 
     LEFT JOIN coaches co ON b.coach_id = co.id
     WHERE b.user_id = ? 
-    ORDER BY b.booking_date DESC, b.start_time DESC
+    ORDER BY b.created_at DESC
 ");
 $stmt->execute([$user_id]);
 $bookings = $stmt->fetchAll();
@@ -961,7 +961,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
     <div class="bookings-table">
         <table id="bookingsTable">
             <thead>
-                <tr><th>Court</th><th>Date & Time</th><th>Duration</th><th>Coach</th><th>Total</th><th>Status</th><th>Action</th></tr>
+                <tr><th>Court</th><th>Booked On</th><th>Date & Time</th><th>Duration</th><th>Coach</th><th>Total</th><th>Status</th><th>Action</th></tr>
             </thead>
             <tbody>
                 <?php foreach($bookings as $b): 
@@ -980,6 +980,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
                 ?>
                 <tr data-status="<?php echo $b['status']; ?>">
                     <td><strong><?php echo htmlspecialchars($b['court_name']); ?></strong><div class="court-badge"><?php echo htmlspecialchars($b['court_type']); ?></div></td>
+                    <td><?php echo date('M j, Y', strtotime($b['created_at'])); ?><br><small><?php echo date('h:i A', strtotime($b['created_at'])); ?></small></td>
                     <td><?php echo $booking_date; ?><br><small><?php echo $start_time; ?> - <?php echo $end_time; ?></small></td>
                     <td><?php echo $b['total_hours']; ?> hour<?php echo $b['total_hours'] > 1 ? 's' : ''; ?></td>
                     <td><?php if($b['coach_id'] && $b['coach_id'] > 0): ?><i class="fas fa-chalkboard-user"></i> <?php echo htmlspecialchars($b['coach_name']); ?><br><small><?php echo $b['coach_hours']; ?> hour(s)</small><?php else: ?>-<?php endif; ?></td>
@@ -1157,6 +1158,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
                     </div>
                     <div class="receipt-row"><span>Receipt No.</span><span>#${String(b.id).padStart(6,'0')}</span></div>
                     <div class="receipt-row"><span>Transaction ID</span><span>${b.transaction_id || 'N/A'}</span></div>
+                    <div class="receipt-row"><span>Booked On</span><span>${b.created_at}</span></div>
                     <div class="receipt-row"><span>Court</span><span>${b.court_name} (${b.court_type})</span></div>
                     <div class="receipt-row"><span>Date</span><span>${b.booking_date}</span></div>
                     <div class="receipt-row"><span>Time</span><span>${b.start_time} - ${b.end_time}</span></div>
@@ -1172,6 +1174,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
                         <span>${isRefund ? 'RM ' + refundAmount.toFixed(2) : 'RM ' + parseFloat(b.total_price).toFixed(2)}</span>
                     </div>
                     ${isRefund ? `<div class="receipt-row" style="font-size:0.8rem; color:#666;"><span>Note</span><span>Amount refunded to wallet</span></div>` : ''}
+                    ${b.status === 'Cancelled'
+                        ? `<div class="receipt-row" style="color:#e67e22;"><span>Points Reversed</span><span>- ${Math.floor(parseFloat(b.total_price) - parseFloat(b.cancellation_fee))} Pts</span></div>`
+                        : (b.points_earned > 0 ? `<div class="receipt-row" style="color:#2b7e3a;"><span>Points Earned</span><span>+ ${b.points_earned} Pts</span></div>` : '')}
                     <button class="print-btn" onclick="window.print()"><i class="fas fa-print"></i> Print Receipt</button>
                 `;
                 document.getElementById('receiptModal').style.display = 'block';

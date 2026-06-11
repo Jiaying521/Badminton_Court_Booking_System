@@ -837,17 +837,18 @@ CREATE TABLE `voucher` (
   `description` varchar(255) DEFAULT NULL,
   `valid_from` datetime DEFAULT NULL,
   `valid_until` datetime DEFAULT NULL,
-  `quantity` int(11) DEFAULT NULL
+  `quantity` int(11) DEFAULT NULL,
+  `per_user_limit` int(11) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `voucher`
 --
 
-INSERT INTO `voucher` (`id`, `title`, `discount_amount`, `points_required`, `description`, `valid_from`, `valid_until`, `quantity`) VALUES
-(1, 'RM 5.00 Court Discount', 5.00, 50, 'Redeem with 50 points', NULL, NULL, NULL),
-(2, 'RM 10.00 Court Discount', 10.00, 100, 'Redeem with 100 points', NULL, NULL, NULL),
-(3, 'RM 20.00 Mega Saver', 20.00, 180, 'Redeem with 180 points', NULL, NULL, NULL);
+INSERT INTO `voucher` (`id`, `title`, `discount_amount`, `points_required`, `description`, `valid_from`, `valid_until`, `quantity`, `per_user_limit`) VALUES
+(1, 'RM 5.00 Court Discount', 5.00, 50, 'Redeem with 50 points', NULL, NULL, NULL, 1),
+(2, 'RM 10.00 Court Discount', 10.00, 100, 'Redeem with 100 points', NULL, NULL, NULL, 1),
+(3, 'RM 20.00 Mega Saver', 20.00, 180, 'Redeem with 180 points', NULL, NULL, NULL, 1);
 
 --
 -- Indexes for dumped tables

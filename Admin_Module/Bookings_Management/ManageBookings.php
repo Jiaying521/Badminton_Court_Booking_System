@@ -141,8 +141,8 @@
     $filter_search    = isset($_GET['search'])    ? mysqli_real_escape_string($conn, $_GET['search'])    : '';
 
     // Sort handling
-    $allowed_sorts = ['id', 'name', 'court_name', 'booking_date', 'start_time', 'end_time', 'total_price', 'status'];
-    $sort_col = isset($_GET['sort']) && in_array($_GET['sort'], $allowed_sorts) ? $_GET['sort'] : 'booking_date';
+    $allowed_sorts = ['id', 'name', 'court_name', 'created_at', 'booking_date', 'start_time', 'end_time', 'total_price', 'status'];
+    $sort_col = isset($_GET['sort']) && in_array($_GET['sort'], $allowed_sorts) ? $_GET['sort'] : 'created_at';
     $sort_dir = isset($_GET['dir']) && $_GET['dir'] === 'asc' ? 'ASC' : 'DESC';
     $next_dir = ($sort_dir === 'ASC') ? 'desc' : 'asc';
     $order_col = match($sort_col) {
@@ -197,6 +197,7 @@
             users.name,
             courts.court_name,
             bookings.booking_date,
+            bookings.created_at,
             bookings.start_time,
             bookings.end_time,
             bookings.status,
@@ -398,6 +399,7 @@
                         <th class="bulk-col"></th>
                         <th><?php echo bookingSortLink('Player Name',  'name',         $sort_col, $sort_dir, $next_dir, $extra); ?></th>
                         <th><?php echo bookingSortLink('Court Name',   'court_name',   $sort_col, $sort_dir, $next_dir, $extra); ?></th>
+                        <th><?php echo bookingSortLink('Order Date',   'created_at',   $sort_col, $sort_dir, $next_dir, $extra); ?></th>
                         <th><?php echo bookingSortLink('Booking Date', 'booking_date', $sort_col, $sort_dir, $next_dir, $extra); ?></th>
                         <th><?php echo bookingSortLink('Start Time',   'start_time',   $sort_col, $sort_dir, $next_dir, $extra); ?></th>
                         <th><?php echo bookingSortLink('End Time',     'end_time',     $sort_col, $sort_dir, $next_dir, $extra); ?></th>
@@ -441,6 +443,7 @@
                         </td>
                         <td><?php echo htmlspecialchars($row['name']); ?></td>
                         <td><?php echo htmlspecialchars($row['court_name']); ?></td>
+                        <td><?php echo date("d-m-Y h:i A", strtotime($row['created_at'])); ?></td>
                         <td><?php echo date("d-m-Y", strtotime($row['booking_date'])); ?></td>
                         <td><?php echo date("h:i A", strtotime($row['start_time'])); ?></td>
                         <td><?php echo date("h:i A", strtotime($row['end_time'])); ?></td>
@@ -481,7 +484,7 @@
 
                     <!-- Details row — hidden by default, shown on click -->
                     <tr class="details-row" id="details-<?php echo $row['id']; ?>">
-                        <td colspan="8">
+                        <td colspan="9">
                             <!-- Coloured left border based on booking status -->
                             <div class="details-inner status-<?php echo $row['status']; ?>">
                                 <div class="details-grid">

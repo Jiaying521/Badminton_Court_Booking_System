@@ -54,6 +54,16 @@ if (isset($_GET['action']) && $_GET['action'] === 'redeem') {
             $sold_out = $claimed >= (int)$v_item['quantity'];
         }
 
+        // Per-customer redeem limit: check how many times they already claimed this voucher
+        $per_user_limit = max(1, (int)($v_item['per_user_limit'] ?? 1));
+        $dupStmt = $pdo->prepare("SELECT COUNT(*) FROM user_vouchers WHERE user_id = ? AND voucher_id = ?");
+        $dupStmt->execute([$user_id, $voucher_id]);
+        $my_claimed = (int)$dupStmt->fetchColumn();
+
+        if ($my_claimed >= $per_user_limit) {
+            echo "<script>alert('⚠️ You have reached the redeem limit for this voucher ($per_user_limit time(s) per account).'); window.location.href='redeem_voucher.php';</script>";
+            exit;
+        }
         if ($not_started) {
             echo "<script>alert('This voucher is not available yet.'); window.location.href='redeem_voucher.php';</script>";
             exit;
@@ -89,11 +99,15 @@ if (isset($_GET['action']) && $_GET['action'] === 'redeem') {
 }
 
 // Pull all our standard shop vouchers, sorting them from cheapest to most expensive
-$vouchers_shop_list = $pdo->query("
-    SELECT v.*, (SELECT COUNT(*) FROM user_vouchers uv WHERE uv.voucher_id = v.id) AS claimed_count
+$shop_stmt = $pdo->prepare("
+    SELECT v.*,
+           (SELECT COUNT(*) FROM user_vouchers uv WHERE uv.voucher_id = v.id) AS claimed_count,
+           (SELECT COUNT(*) FROM user_vouchers uv2 WHERE uv2.voucher_id = v.id AND uv2.user_id = ?) AS my_claimed
     FROM voucher v
     ORDER BY v.points_required ASC
-")->fetchAll();
+");
+$shop_stmt->execute([$user_id]);
+$vouchers_shop_list = $shop_stmt->fetchAll();
 
 // Used to check each voucher's availability window while rendering the shelf
 $now = date('Y-m-d H:i:s');
@@ -341,6 +355,8 @@ body {
             $sold_out    = $has_qty && $remaining <= 0;
             $available   = !$not_started && !$expired && !$sold_out;
             $affordable  = $current_points >= $v['points_required'];
+            $limit       = max(1, (int)($v['per_user_limit'] ?? 1));
+            $mine        = (int)$v['my_claimed'] >= $limit;
         ?>
             <div class="voucher-row">
                 <div class="voucher-details">
@@ -358,7 +374,11 @@ body {
                     <?php endif; ?>
                 </div>
                 <div>
-                    <?php if (!$available): ?>
+                    <?php if ($mine): ?>
+                        <button class="btn-redeem btn-locked" disabled>
+                            <i class="fas fa-check-circle" style="margin-right:5px;"></i> Redeem Limit Reached
+                        </button>
+                    <?php elseif (!$available): ?>
                         <button class="btn-redeem btn-locked" disabled>
                             <i class="fas fa-lock" style="margin-right:5px;"></i>
                             <?php echo $sold_out ? 'Out of Stock' : ($expired ? 'Expired' : 'Not Available Yet'); ?>

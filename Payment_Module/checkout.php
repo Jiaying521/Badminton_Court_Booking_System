@@ -67,6 +67,7 @@ if($booking_id) {
         FROM user_vouchers uv
         JOIN voucher v ON uv.voucher_id = v.id
         WHERE uv.user_id = '$user_id' AND uv.is_used = 0
+          AND (v.valid_until IS NULL OR v.valid_until >= NOW())
     ";
     $v_result = $conn->query($v_sql);
     // If the database gives us the vouchers cleanly

@@ -29,14 +29,15 @@ $stmt->execute();
 $current_points = (int)($stmt->get_result()->fetch_row()[0] ?? 0);
 
 
-// 3. FETCH EARNED LOG ITEMS (From Confirmed Bookings)
+// 3. FETCH EARNED LOG ITEMS (From Successful Booking Payments)
 $earned_list = [];
-// Query to pull all successful bookings so we can show them as point-earning history entries
+// Query to pull all successful payments so we can show them as point-earning history entries
 $e_stmt = $conn->prepare("
-    SELECT id, booking_date, total_price 
-    FROM bookings 
-    WHERE user_id = ? AND status = 'Confirmed'
-    ORDER BY booking_date DESC, created_at DESC
+    SELECT p.booking_id, p.payment_date, p.final_amount
+    FROM payments p
+    JOIN bookings b ON p.booking_id = b.id
+    WHERE b.user_id = ? AND p.payment_status = 'success' AND p.payment_method NOT LIKE 'Refund%'
+    ORDER BY p.payment_date DESC
 ");
 $e_stmt->bind_param("i", $user_id);
 $e_stmt->execute();
@@ -45,10 +46,41 @@ while ($row = $e_res->fetch_assoc()) {
     // Structure each row as an 'Earned' point transaction type log item
     $earned_list[] = [
         'type' => 'Earned',
-        'title' => 'Court Booking Reward (ID: #' . $row['id'] . ')',
-        'date' => $row['booking_date'],
-        'points' => floor($row['total_price'] * 1), // RM1 = 1 point formatting layout
-        'amount_info' => 'Spent RM ' . number_format($row['total_price'], 2)
+        'title' => 'Court Booking Reward (ID: #' . $row['booking_id'] . ')',
+        'date' => $row['payment_date'],
+        'points' => floor($row['final_amount'] * 1), // RM1 = 1 point formatting layout
+        'amount_info' => 'Spent RM ' . number_format($row['final_amount'], 2)
+    ];
+}
+
+// 3B. FETCH REFUND REVERSAL ITEMS (Points deducted when a booking or its add-ons get refunded)
+$refund_list = [];
+// For full booking refunds, reverse only the points originally earned (based on original payment's final_amount).
+// For add-ons refunds, use the refund record's final_amount directly (it equals the add-ons cost).
+$r_stmt = $conn->prepare("
+    SELECT p.booking_id, p.payment_date, p.final_amount AS refund_amount, p.payment_method,
+           COALESCE(orig.final_amount, p.final_amount) AS points_basis
+    FROM payments p
+    JOIN bookings b ON p.booking_id = b.id
+    LEFT JOIN payments orig ON orig.booking_id = p.booking_id
+        AND orig.payment_method NOT LIKE 'Refund%'
+        AND orig.payment_status = 'success'
+    WHERE b.user_id = ? AND p.payment_status = 'success' AND p.payment_method LIKE 'Refund%'
+    ORDER BY p.payment_date DESC
+");
+$r_stmt->bind_param("i", $user_id);
+$r_stmt->execute();
+$r_res = $r_stmt->get_result();
+while ($row = $r_res->fetch_assoc()) {
+    $is_addons = ($row['payment_method'] === 'Refund_Addons');
+    $pts = $is_addons ? floor($row['refund_amount']) : floor($row['points_basis']);
+    // Structure each refund row as a 'Spent' style deduction log item
+    $refund_list[] = [
+        'type' => 'Spent',
+        'title' => ($is_addons ? 'Add-ons Refund Reversal' : 'Booking Refund Reversal') . ' (ID: #' . $row['booking_id'] . ')',
+        'date' => $row['payment_date'],
+        'points' => $pts,
+        'amount_info' => 'Refunded RM ' . number_format($row['refund_amount'], 2)
     ];
 }
 
@@ -76,8 +108,8 @@ while ($row = $s_res->fetch_assoc()) {
     ];
 }
 
-// Combine both arrays (Earned + Spent) into a single master history list stream
-$history_log = array_merge($earned_list, $spent_list);
+// Combine all arrays (Earned + Refund Reversals + Spent) into a single master history list stream
+$history_log = array_merge($earned_list, $refund_list, $spent_list);
 // Sort the master logs array so the newest points events appear right at the top
 usort($history_log, function($a, $b) {
     return strcmp($b['date'], $a['date']);
@@ -88,7 +120,7 @@ usort($history_log, function($a, $b) {
 $user_inventory = [];
 // Query to pull every voucher the user owns to display in their visual wallet collection
 $inv_stmt = $conn->prepare("
-    SELECT uv.id, uv.is_used, uv.redeemed_at, v.title, v.discount_amount 
+    SELECT uv.id, uv.is_used, uv.redeemed_at, v.title, v.discount_amount, v.valid_until
     FROM user_vouchers uv
     JOIN voucher v ON uv.voucher_id = v.id
     WHERE uv.user_id = ?
@@ -480,19 +512,28 @@ body {
             <div class="scroll-list-wrapper">
                 <div class="coupon-grid">
                     <?php if(count($user_inventory) > 0): ?>
-                        <?php foreach($user_inventory as $coupon): ?>
-                            <div class="coupon-card <?php echo ($coupon['is_used'] == 1) ? 'used-coupon' : ''; ?>">
+                        <?php foreach($user_inventory as $coupon):
+                            $is_expired = !empty($coupon['valid_until']) && strtotime($coupon['valid_until']) < time();
+                        ?>
+                            <div class="coupon-card <?php echo ($coupon['is_used'] == 1 || $is_expired) ? 'used-coupon' : ''; ?>">
                                 <div>
                                     <h4 style="color:#1e3a2a; font-weight:700;"><i class="fas fa-gift" style="color:#e67e22; margin-right:4px;"></i> <?php echo htmlspecialchars($coupon['title']); ?></h4>
                                     <small style="color:#777; display:block; margin-top:3px;">Claimed: <?php echo date('M j, Y', strtotime($coupon['redeemed_at'])); ?></small>
+                                    <?php if(!empty($coupon['valid_until'])): ?>
+                                        <small style="color:<?php echo $is_expired ? '#c0392b' : '#e67e22'; ?>; display:block; margin-top:2px; font-weight:600;">
+                                            <i class="fas fa-hourglass-half"></i> Valid until: <?php echo date('M j, Y', strtotime($coupon['valid_until'])); ?>
+                                        </small>
+                                    <?php endif; ?>
                                 </div>
                                 <div style="text-align:right;">
-                                    <?php if($coupon['is_used'] == 0): ?>
+                                    <?php if($coupon['is_used'] == 1): ?>
+                                        <span class="badge badge-used"><i class="fas fa-minus-circle"></i> Spent / Applied</span>
+                                    <?php elseif($is_expired): ?>
+                                        <span class="badge badge-used" style="background:#fdecea; color:#c0392b;"><i class="fas fa-clock"></i> Expired</span>
+                                    <?php else: ?>
                                         <span class="badge badge-active"><i class="fas fa-check"></i> Active (Unused)</span>
                                         <p style="font-size:10px; color:#2b7e3a; font-weight:bold; margin-top:4px;">Ready at Checkout</p>
                                         <a href="../Customer_Module/dashboard.php" class="btn-book-now"><i class="fas fa-calendar-check"></i> Book Now</a>
-                                    <?php else: ?>
-                                        <span class="badge badge-used"><i class="fas fa-minus-circle"></i> Spent / Applied</span>
                                     <?php endif; ?>
                                 </div>
                             </div>
