@@ -2,6 +2,10 @@
 require_once __DIR__ . '/../config.php';
 header('Content-Type: application/json');
 
+// 关闭错误输出
+error_reporting(0);
+ini_set('display_errors', 0);
+
 if(!isLoggedIn()) {
     echo json_encode(['success' => false, 'message' => 'Not logged in']);
     exit;
@@ -9,7 +13,6 @@ if(!isLoggedIn()) {
 
 $data = json_decode(file_get_contents('php://input'), true);
 $booking_id = $data['booking_id'] ?? 0;
-$cancel_type = $data['cancel_type'] ?? 'all'; // EASY HUMAN COMMENT: Detect choice payload parameters safely
 
 // 检查预订是否存在且属于当前用户
 $stmt = $pdo->prepare("
@@ -36,77 +39,6 @@ if($booking['status'] == 'Completed') {
     exit;
 }
 
-// 获取add-on总金额
-$stmt_addons = $pdo->prepare("SELECT SUM(price * quantity) as total_addons FROM booking_addons WHERE booking_id = ?");
-$stmt_addons->execute([$booking_id]);
-$addons_total = $stmt_addons->fetchColumn() ?? 0;
-
-// 获取实际付款金额（顾客真正付出去的，扣除 voucher 折扣后）
-$stmt_paid = $pdo->prepare("
-    SELECT final_amount FROM payments
-    WHERE booking_id = ? AND payment_status = 'success' AND payment_method NOT LIKE 'Refund%'
-    ORDER BY id ASC LIMIT 1
-");
-$stmt_paid->execute([$booking_id]);
-$actual_paid = (float)($stmt_paid->fetchColumn() ?? $booking['total_price']);
-
-
-// NEW ADDITION: PATH 1 — CANCEL ADD-ONS ITEMS ONLY
-if ($cancel_type === 'addons') {
-    if ($addons_total <= 0) {
-        echo json_encode(['success' => false, 'message' => 'No add-on items found to cancel.']);
-        exit;
-    }
-
-    try {
-        $pdo->beginTransaction();
-
-        // 1. Give the add-on money back to the player's wallet balance
-        $stmt_user = $pdo->prepare("SELECT wallet_balance, loyalty_points FROM users WHERE id = ?");
-        $stmt_user->execute([$_SESSION['user_id']]);
-        $user_row = $stmt_user->fetch();
-        $new_balance = $user_row['wallet_balance'] + $addons_total;
-        
-        // EASY HUMAN COMMENT: Calculate points to reverse (RM 1 = 1 Point). Ensure balance never goes below 0.
-        $points_to_deduct = floor($addons_total);
-        $new_points = max(0, ($user_row['loyalty_points'] ?? 0) - $points_to_deduct);
-
-        // Update user row with both modified wallet balance and deducted loyalty points
-        $update_wallet = $pdo->prepare("UPDATE users SET wallet_balance = ?, loyalty_points = ? WHERE id = ?");
-        $update_wallet->execute([$new_balance, $new_points, $_SESSION['user_id']]);
-
-        // 2. Drop the extra add-on record lines completely out of the items ledger
-        $delete_addons = $pdo->prepare("DELETE FROM booking_addons WHERE booking_id = ?");
-        $delete_addons->execute([$booking_id]);
-
-        // 3. Deduct the items price from the master bill, keeping court status Confirmed
-        $update_booking = $pdo->prepare("UPDATE bookings SET total_price = total_price - ? WHERE id = ?");
-        $update_booking->execute([$addons_total, $booking_id]);
-
-        // 4. Register a clean trace ID row into payments for accounting transparency
-        $stmt_payment = $pdo->prepare("
-            INSERT INTO payments (booking_id, amount, final_amount, payment_method, payment_status, transaction_id, payment_date) 
-            VALUES (?, 0, ?, 'Refund_Addons', 'success', ?, NOW())
-        ");
-        $refund_trans_id = 'REF_ADD_' . time() . '_' . $booking_id;
-        $stmt_payment->execute([$booking_id, $addons_total, $refund_trans_id]);
-
-        $pdo->commit();
-
-        $success_msg = "✅ Add-ons Cancelled Successfully!\n💰 RM " . number_format($addons_total, 2) . " has been refunded back to your wallet.\n📉 Points Reversed: -" . $points_to_deduct . " Pts\n🏸 Your court booking remains active.";
-        echo json_encode(['success' => true, 'message' => $success_msg, 'refund_amount' => $addons_total]);
-        exit;
-
-    } catch(Exception $e) {
-        if($pdo->inTransaction()) {
-            $pdo->rollBack();
-        }
-        echo json_encode(['success' => false, 'message' => 'Failed to drop equipment items: ' . $e->getMessage()]);
-        exit;
-    }
-}
-
-
 // 判断是否有教练
 $has_coach = ($booking['coach_id'] && $booking['coach_id'] > 0 && $booking['coach_hours'] > 0);
 
@@ -116,33 +48,72 @@ $booking_timestamp = strtotime($booking_datetime);
 $current_timestamp = time();
 $hours_until_booking = ($booking_timestamp - $current_timestamp) / 3600;
 
+// 获取add-on总金额
+$stmt_addons = $pdo->prepare("SELECT SUM(price * quantity) as total_addons FROM booking_addons WHERE booking_id = ?");
+$stmt_addons->execute([$booking_id]);
+$addons_total = $stmt_addons->fetchColumn() ?? 0;
+
+// 获取用户取消次数
+$cancellation_count = 0;
+try {
+    $checkCol = $pdo->query("SHOW COLUMNS FROM users LIKE 'cancellation_count'");
+    if($checkCol && $checkCol->rowCount() > 0) {
+        $stmt_cancel_count = $pdo->prepare("SELECT cancellation_count FROM users WHERE id = ?");
+        $stmt_cancel_count->execute([$_SESSION['user_id']]);
+        $cancel_data = $stmt_cancel_count->fetch();
+        $cancellation_count = $cancel_data['cancellation_count'] ?? 0;
+    }
+} catch(PDOException $e) {
+    $cancellation_count = 0;
+}
+
+$is_second_cancellation = ($cancellation_count >= 1);
+
 // 根据文档政策设置退款规则
 $cancellation_fee = 0;
+$extra_penalty = 0;
 $refund_amount = 0;
 $can_cancel = false;
 $message = '';
 
 if ($hours_until_booking >= 48) {
-    // ≥ 48小时：全额退款
+    // ≥ 48小时：全额退款（第二次取消罚RM5）
     $cancellation_fee = 0;
-    $refund_amount = $booking['total_price'];
+    $extra_penalty = $is_second_cancellation ? 5.00 : 0;
+    $refund_amount = max(0, $booking['total_price'] - $extra_penalty);
     $can_cancel = true;
-    $message = "✅ Full refund of RM " . number_format($refund_amount, 2) . " will be credited to your wallet.\n\n📌 Cancellation Policy: ≥48 hours notice = Full refund.";
+    if ($is_second_cancellation) {
+        $message = "⚠️ This is your 2nd cancellation!\n\n📌 Additional penalty of RM " . number_format($extra_penalty, 2) . " applies.\n💰 Refund: RM " . number_format($refund_amount, 2) . " will be credited to your wallet.\n\n📌 Cancellation Policy: ≥48 hours notice = Full refund (2nd cancellation penalty applies).";
+    } else {
+        $message = "✅ Full refund of RM " . number_format($refund_amount, 2) . " will be credited to your wallet.\n\n📌 Cancellation Policy: ≥48 hours notice = Full refund.";
+    }
     
 } elseif ($hours_until_booking >= 24) {
     // 24-48小时
     if ($has_coach) {
         // 有教练模式：全额退款
         $cancellation_fee = 0;
-        $refund_amount = $booking['total_price'];
-        $message = "✅ Full refund of RM " . number_format($refund_amount, 2) . " will be credited to your wallet.\n\n📌 Training Mode: ≥24 hours notice = Full refund.";
+        $extra_penalty = $is_second_cancellation ? 5.00 : 0;
+        $refund_amount = max(0, $booking['total_price'] - $extra_penalty);
+        $can_cancel = true;
+        if ($is_second_cancellation) {
+            $message = "⚠️ This is your 2nd cancellation!\n\n📌 Additional penalty of RM " . number_format($extra_penalty, 2) . " applies.\n💰 Refund: RM " . number_format($refund_amount, 2) . " will be credited to your wallet.\n\n📌 Training Mode: ≥24 hours notice = Full refund (2nd cancellation penalty applies).";
+        } else {
+            $message = "✅ Full refund of RM " . number_format($refund_amount, 2) . " will be credited to your wallet.\n\n📌 Training Mode: ≥24 hours notice = Full refund.";
+        }
     } else {
-        // 纯打球模式：扣除 RM10 手续费
+        // 纯打球模式：扣除 RM10 手续费 + 第二次取消额外RM5
         $cancellation_fee = 10.00;
-        $refund_amount = max(0, $booking['total_price'] - $cancellation_fee);
-        $message = "📌 RM 10.00 cancellation fee applies.\n💰 Refund: RM " . number_format($refund_amount, 2) . " will be credited to your wallet.\n\n📌 Play Only Mode: 24-48 hours notice = RM10 fee.";
+        $extra_penalty = $is_second_cancellation ? 5.00 : 0;
+        $total_deduction = $cancellation_fee + $extra_penalty;
+        $refund_amount = max(0, $booking['total_price'] - $total_deduction);
+        $can_cancel = true;
+        if ($is_second_cancellation) {
+            $message = "⚠️ This is your 2nd cancellation!\n\n📌 RM 10.00 cancellation fee applies.\n📌 Additional penalty of RM " . number_format($extra_penalty, 2) . " applies.\n💰 Refund: RM " . number_format($refund_amount, 2) . " will be credited to your wallet.\n\n📌 Play Only Mode: 24-48 hours notice = RM10 fee + RM5 penalty for 2nd cancellation.";
+        } else {
+            $message = "📌 RM 10.00 cancellation fee applies.\n💰 Refund: RM " . number_format($refund_amount, 2) . " will be credited to your wallet.\n\n📌 Play Only Mode: 24-48 hours notice = RM10 fee.";
+        }
     }
-    $can_cancel = true;
     
 } elseif ($hours_until_booking >= 2) {
     // 2-24小时
@@ -152,6 +123,7 @@ if ($hours_until_booking >= 48) {
         $coach_refund = $coach_fee * 0.5;
         $refund_amount = $coach_refund + $addons_total;
         $cancellation_fee = $booking['total_price'] - $refund_amount;
+        $can_cancel = true;
         $message = "📌 Training Mode Cancellation Policy (2-24 hours):\n" .
                    "   • Court fee: NOT refunded\n" .
                    "   • Coach fee: 50% refunded (RM " . number_format($coach_refund, 2) . ")\n" .
@@ -161,12 +133,12 @@ if ($hours_until_booking >= 48) {
         // 纯打球模式：球场费不退，仅退add-on
         $refund_amount = $addons_total;
         $cancellation_fee = $booking['total_price'] - $refund_amount;
+        $can_cancel = true;
         $message = "📌 Play Only Mode Cancellation Policy (2-24 hours):\n" .
                    "   • Court fee: NOT refunded\n" .
                    "   • Add-ons: FULLY refunded (RM " . number_format($addons_total, 2) . ")\n" .
                    "💰 Total refund: RM " . number_format($refund_amount, 2);
     }
-    $can_cancel = true;
     
 } elseif ($hours_until_booking >= 1) {
     // 1-2小时
@@ -174,6 +146,7 @@ if ($hours_until_booking >= 48) {
         // 有教练模式：add-on全额退款，球场和教练费不退
         $refund_amount = $addons_total;
         $cancellation_fee = $booking['total_price'] - $addons_total;
+        $can_cancel = true;
         $message = "📌 Training Mode Cancellation Policy (1-2 hours):\n" .
                    "   • Court fee: NOT refunded\n" .
                    "   • Coach fee: NOT refunded (already paid to coach)\n" .
@@ -183,12 +156,12 @@ if ($hours_until_booking >= 48) {
         // 纯打球模式：完全不退款
         $refund_amount = 0;
         $cancellation_fee = $booking['total_price'];
+        $can_cancel = true;
         $message = "❌ Play Only Mode: No refund for cancellations within 2 hours of start time.\n\n" .
                    "   • Court fee: NOT refunded\n" .
                    "   • Add-ons: NOT refunded\n\n" .
                    "💰 No refund will be issued.";
     }
-    $can_cancel = true;
     
 } else {
     // < 1小时：完全不退款
@@ -208,9 +181,6 @@ if ($hours_until_booking >= 48) {
     }
 }
 
-// Cap refund at what the customer actually paid (voucher discount is not refunded)
-$refund_amount = min($refund_amount, $actual_paid);
-
 if (!$can_cancel) {
     echo json_encode([
         'success' => false, 
@@ -224,40 +194,68 @@ try {
     $pdo->beginTransaction();
     
     // 更新预订状态
-    $update = $pdo->prepare("UPDATE bookings SET status = 'Cancelled', cancellation_fee = ? WHERE id = ?");
-    $update->execute([$cancellation_fee, $booking_id]);
+    $total_fee = $cancellation_fee + $extra_penalty;
     
-    // 增加用户取消次数（记录到数据库）
     try {
-        $checkCol = $pdo->query("SHOW COLUMNS FROM users LIKE 'cancellation_count'");
-        if($checkCol->rowCount() > 0) {
-            $update_cancel_count = $pdo->prepare("UPDATE users SET cancellation_count = COALESCE(cancellation_count, 0) + 1 WHERE id = ?");
-            $update_cancel_count->execute([$_SESSION['user_id']]);
+        $checkCol = $pdo->query("SHOW COLUMNS FROM bookings LIKE 'cancellation_fee'");
+        if($checkCol && $checkCol->rowCount() > 0) {
+            $update = $pdo->prepare("UPDATE bookings SET status = 'Cancelled', cancellation_fee = ? WHERE id = ?");
+            $update->execute([$total_fee, $booking_id]);
+        } else {
+            $update = $pdo->prepare("UPDATE bookings SET status = 'Cancelled' WHERE id = ?");
+            $update->execute([$booking_id]);
         }
     } catch(PDOException $e) {
-        // 如果字段不存在，忽略（兼容旧数据库）
+        $update = $pdo->prepare("UPDATE bookings SET status = 'Cancelled' WHERE id = ?");
+        $update->execute([$booking_id]);
+    }
+    
+    // 增加用户的取消次数
+    try {
+        $checkCol = $pdo->query("SHOW COLUMNS FROM users LIKE 'cancellation_count'");
+        if($checkCol && $checkCol->rowCount() > 0) {
+            $new_cancellation_count = $cancellation_count + 1;
+            $update_cancel_count = $pdo->prepare("UPDATE users SET cancellation_count = ? WHERE id = ?");
+            $update_cancel_count->execute([$new_cancellation_count, $_SESSION['user_id']]);
+        }
+    } catch(PDOException $e) {
+        // 忽略
     }
     
     // 退还金额到钱包
     if ($refund_amount > 0) {
-        $stmt = $pdo->prepare("SELECT wallet_balance, loyalty_points FROM users WHERE id = ?");
+        $stmt = $pdo->prepare("SELECT wallet_balance FROM users WHERE id = ?");
         $stmt->execute([$booking['user_id']]);
         $user = $stmt->fetch();
         $new_balance = $user['wallet_balance'] + $refund_amount;
-
-        $points_to_deduct = floor($refund_amount);
-        $new_points = max(0, ($user['loyalty_points'] ?? 0) - $points_to_deduct);
-
-        $update_wallet = $pdo->prepare("UPDATE users SET wallet_balance = ?, loyalty_points = ? WHERE id = ?");
-        $update_wallet->execute([$new_balance, $new_points, $booking['user_id']]);
+        
+        $update_wallet = $pdo->prepare("UPDATE users SET wallet_balance = ? WHERE id = ?");
+        $update_wallet->execute([$new_balance, $booking['user_id']]);
         
         // 记录退款
-        $stmt_payment = $pdo->prepare("
-            INSERT INTO payments (booking_id, amount, final_amount, payment_method, payment_status, transaction_id, payment_date) 
-            VALUES (?, ?, ?, 'Refund', 'success', ?, NOW())
-        ");
-        $refund_transaction_id = 'REF_' . time() . '_' . $booking_id;
-        $stmt_payment->execute([$booking_id, $cancellation_fee, $refund_amount, $refund_transaction_id]);
+        try {
+            $checkPaymentCols = $pdo->query("SHOW COLUMNS FROM payments");
+            $paymentColumns = $checkPaymentCols->fetchAll(PDO::FETCH_COLUMN);
+            
+            $refund_transaction_id = 'REF_' . time() . '_' . $booking_id;
+            
+            if (in_array('payment_date', $paymentColumns)) {
+                $stmt_payment = $pdo->prepare("
+                    INSERT INTO payments (booking_id, amount, final_amount, payment_method, payment_status, transaction_id, payment_date) 
+                    VALUES (?, ?, ?, 'Refund', 'success', ?, NOW())
+                ");
+                $stmt_payment->execute([$booking_id, $total_fee, $refund_amount, $refund_transaction_id]);
+            } else {
+                $stmt_payment = $pdo->prepare("
+                    INSERT INTO payments (booking_id, amount, final_amount, payment_method, payment_status, transaction_id) 
+                    VALUES (?, ?, ?, 'Refund', 'success', ?)
+                ");
+                $stmt_payment->execute([$booking_id, $total_fee, $refund_amount, $refund_transaction_id]);
+            }
+        } catch(PDOException $e) {
+            // 如果插入失败，不影响主流程
+            error_log("Failed to record refund payment: " . $e->getMessage());
+        }
     }
     
     $pdo->commit();

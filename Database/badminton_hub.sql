@@ -1178,6 +1178,15 @@ ALTER TABLE `court_availability`
 --
 ALTER TABLE `payments`
   ADD CONSTRAINT `fk_payments_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE;
+
+-- 1. 添加字段（如果没有）
+ALTER TABLE bookings ADD COLUMN reschedule_count INT DEFAULT 0 AFTER status;
+
+-- 2. 重置所有值为0
+UPDATE bookings SET reschedule_count = 0;
+
+-- 3. 确认修改
+SELECT id, status, reschedule_count FROM bookings;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
