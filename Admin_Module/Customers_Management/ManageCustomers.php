@@ -392,9 +392,13 @@
                     $row_count = 0;
                     while($row = mysqli_fetch_assoc($result)):
                         $row_count++;
-                        $avatar = $row['profile_picture']
-                            ? '../../Pictures/Admin_Module/users/' . htmlspecialchars($row['profile_picture'])
-                            : '../../Pictures/Admin_Module/users/default_avatar.png';
+                        /* Customer side stores the full relative path, admin side stores filename only — handle both */
+                        $avatar = '../../Pictures/Admin_Module/users/default_avatar.png';
+                        if ($row['profile_picture']) {
+                            $avatar = (strpos($row['profile_picture'], '/') !== false)
+                                ? '../../' . htmlspecialchars($row['profile_picture'])
+                                : '../../Pictures/Admin_Module/users/' . htmlspecialchars($row['profile_picture']);
+                        }
                         $initials    = strtoupper(substr($row['name'], 0, 1));
                         $joined      = date('d M Y', strtotime($row['created_at']));
                         $wallet      = number_format($row['wallet_balance'], 2);

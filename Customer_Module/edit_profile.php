@@ -887,38 +887,6 @@ if ($verified) {
                     <a href="../Payment_Module/wallet.php">Top Up</a>
                 </div>
                 
-                <div id="avatarModal" class="modal">
-                    <div class="modal-content">
-                        <h3><i class="fas fa-camera"></i> Change Profile Picture</h3>
-                        <div class="preview">
-                            <img id="previewImage" src="<?php echo htmlspecialchars($avatarPath); ?>" alt="">
-                        </div>
-                        
-                        <?php if ($avatar_message): ?>
-                            <div class="message"><?php echo htmlspecialchars($avatar_message); ?></div>
-                        <?php endif; ?>
-                        <?php if ($avatar_error): ?>
-                            <div class="error"><?php echo htmlspecialchars($avatar_error); ?></div>
-                        <?php endif; ?>
-                        
-                        <form id="avatarForm" method="POST" action="" enctype="multipart/form-data">
-                            <input type="hidden" name="action" value="upload_avatar">
-                            <input type="file" name="profile_picture" id="avatarInput" accept="image/jpeg,image/png,image/gif,image/webp" onchange="previewImage(this)">
-                            <div class="modal-buttons">
-                                <button type="submit" class="btn-upload"><i class="fas fa-upload"></i> Upload</button>
-                                <?php if (!empty($profile_picture)): ?>
-                                    <button type="button" class="btn-delete" onclick="deleteAvatar()"><i class="fas fa-trash"></i> Remove</button>
-                                <?php endif; ?>
-                                <button type="button" class="btn-cancel-modal" onclick="closeAvatarModal()"><i class="fas fa-times"></i> Cancel</button>
-                            </div>
-                        </form>
-                        
-                        <form id="deleteAvatarForm" method="POST" action="" style="display:none;">
-                            <input type="hidden" name="action" value="delete_avatar">
-                        </form>
-                    </div>
-                </div>
-                
                 <div class="form-section">
                     <h3><i class="fas fa-user-edit"></i> Personal Information</h3>
                     
@@ -996,6 +964,38 @@ if ($verified) {
             </div>
         </div>
     <?php endif; ?>
+</div>
+
+<div id="avatarModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-camera"></i> Change Profile Picture</h3>
+        <div class="preview">
+            <img id="previewImage" src="<?php echo htmlspecialchars($avatarPath); ?>" alt="">
+        </div>
+
+        <?php if ($avatar_message): ?>
+            <div class="message"><?php echo htmlspecialchars($avatar_message); ?></div>
+        <?php endif; ?>
+        <?php if ($avatar_error): ?>
+            <div class="error"><?php echo htmlspecialchars($avatar_error); ?></div>
+        <?php endif; ?>
+
+        <form id="avatarForm" method="POST" action="" enctype="multipart/form-data">
+            <input type="hidden" name="action" value="upload_avatar">
+            <input type="file" name="profile_picture" id="avatarInput" accept="image/jpeg,image/png,image/gif,image/webp" onchange="previewImage(this)">
+            <div class="modal-buttons">
+                <button type="submit" class="btn-upload"><i class="fas fa-upload"></i> Upload</button>
+                <?php if (!empty($profile_picture)): ?>
+                    <button type="button" class="btn-delete" onclick="deleteAvatar()"><i class="fas fa-trash"></i> Remove</button>
+                <?php endif; ?>
+                <button type="button" class="btn-cancel-modal" onclick="closeAvatarModal()"><i class="fas fa-times"></i> Cancel</button>
+            </div>
+        </form>
+
+        <form id="deleteAvatarForm" method="POST" action="" style="display:none;">
+            <input type="hidden" name="action" value="delete_avatar">
+        </form>
+    </div>
 </div>
 
 <script>

@@ -52,8 +52,11 @@ function openDetailsModal(userId) {
                   `</div>`
                 : '<p style="color:#94a3b8;font-size:13px;">No bookings yet.</p>';
 
+            // Customer side stores the full relative path, admin side stores filename only — handle both
             const avatarSrc = data.user.profile_picture
-                ? '../../Pictures/Admin_Module/users/' + data.user.profile_picture
+                ? (data.user.profile_picture.includes('/')
+                    ? '../../' + data.user.profile_picture
+                    : '../../Pictures/Admin_Module/users/' + data.user.profile_picture)
                 : '../../Pictures/Admin_Module/users/default_avatar.png';
 
             modalBody.innerHTML = `
@@ -102,7 +105,9 @@ function openCustomerEditModal(id, name, phone, gender, wallet, points, img) {
     document.getElementById('cust-cropped-img-data').value = '';
 
     const preview = document.getElementById('cust-modal-img-preview');
-    preview.src = img ? '../../Pictures/Admin_Module/users/' + img : '../../Pictures/Admin_Module/users/default_avatar.png';
+    preview.src = img
+        ? (img.includes('/') ? '../../' + img : '../../Pictures/Admin_Module/users/' + img)
+        : '../../Pictures/Admin_Module/users/default_avatar.png';
 
     document.getElementById('custEditPanel').style.display = 'block';
     document.getElementById('custCropPanel').style.display = 'none';
