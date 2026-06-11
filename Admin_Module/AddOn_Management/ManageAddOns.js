@@ -46,36 +46,75 @@ function closeAddAddonModal() {
     document.getElementById('add-image-hint').textContent = 'Click to upload image';
 }
 
-// Preview image before upload (edit modal)
-function previewEditImage(input) {
-    var preview = document.getElementById('modal-image-preview');
-    var hint    = document.getElementById('modal-image-hint');
+// ── Crop before upload (shared by the add and edit modals) ──────────────────
+var productCropper = null;
+var cropSourceInput = null;
+var cropPreviewId = null;
+var cropHintId = null;
 
-    if (input.files && input.files[0]) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            preview.src           = e.target.result;
-            preview.style.display = 'block';
-            hint.textContent      = 'Click to change image';
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
+function openProductCrop(input, previewId, hintId) {
+    if (!input.files || !input.files[0]) return;
+    cropSourceInput = input;
+    cropPreviewId = previewId;
+    cropHintId = hintId;
+
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var img = document.getElementById('cropImage');
+        img.src = e.target.result;
+        document.getElementById('cropOverlay').classList.add('active');
+        if (productCropper) productCropper.destroy();
+        productCropper = new Cropper(img, {
+            aspectRatio: 1,
+            viewMode: 1,
+            autoCropArea: 1,
+            background: false,
+            dragMode: 'none',
+            movable: false,
+            zoomable: false,
+            zoomOnWheel: false,
+            toggleDragModeOnDblclick: false
+        });
+    };
+    reader.readAsDataURL(input.files[0]);
 }
 
-// Preview image before upload (add modal)
-function previewAddImage(input) {
-    var preview = document.getElementById('add-image-preview');
-    var hint    = document.getElementById('add-image-hint');
+function closeCrop() {
+    document.getElementById('cropOverlay').classList.remove('active');
+    if (productCropper) { productCropper.destroy(); productCropper = null; }
+    if (cropSourceInput) cropSourceInput.value = '';
+}
 
-    if (input.files && input.files[0]) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            preview.src           = e.target.result;
-            preview.style.display = 'block';
-            hint.textContent      = 'Click to change image';
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
+function applyProductCrop() {
+    if (!productCropper) return;
+    productCropper.getCroppedCanvas({ width: 800, height: 800 }).toBlob(function(blob) {
+        // Put the cropped file back into the form's file input so the normal POST uploads it
+        var file = new File([blob], 'product.jpg', { type: 'image/jpeg' });
+        var dt = new DataTransfer();
+        dt.items.add(file);
+        cropSourceInput.files = dt.files;
+
+        var preview = document.getElementById(cropPreviewId);
+        var hint    = document.getElementById(cropHintId);
+        preview.src           = URL.createObjectURL(blob);
+        preview.style.display = 'block';
+        hint.textContent      = 'Click to change image';
+
+        document.getElementById('cropOverlay').classList.remove('active');
+        productCropper.destroy();
+        productCropper = null;
+        cropSourceInput = null;
+    }, 'image/jpeg', 0.9);
+}
+
+// Crop image before upload (edit modal)
+function previewEditImage(input) {
+    openProductCrop(input, 'modal-image-preview', 'modal-image-hint');
+}
+
+// Crop image before upload (add modal)
+function previewAddImage(input) {
+    openProductCrop(input, 'add-image-preview', 'add-image-hint');
 }
 
 // Close modals when clicking outside

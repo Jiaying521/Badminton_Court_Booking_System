@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/functions.php';
 if(!isLoggedIn()) redirect('homepage.php');
@@ -851,6 +851,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             color: #cbd5c0; 
             padding: 2rem 5% 1rem; 
             margin-top: 4rem;
+            margin-left: -2rem;
+            margin-right: -2rem;
+            margin-bottom: -2rem;
             border-radius: 32px 32px 0 0;
         }
         .footer-container { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 2rem; margin-bottom: 2rem; }

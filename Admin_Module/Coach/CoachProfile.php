@@ -403,12 +403,12 @@ $ac = $avail_colors[$avail] ?? $avail_colors['Available'];
 
 <!-- Crop Modal -->
 <div class="modal-overlay" id="cropModal">
-    <div class="modal-card" id="cropPanel" style="max-width:680px;">
+    <div class="modal-card" id="cropPanel" style="max-width:900px;">
         <div class="modal-header">
             <h2><i class="fas fa-crop-alt"></i> Crop Photo</h2>
         </div>
         <div id="crop-area" style="padding:0 28px 16px;">
-            <img id="crop-img" style="display:block;width:100%;">
+            <img id="crop-img" style="display:block;width:100%;height:460px;">
         </div>
         <div class="modal-actions">
             <button type="button" class="btn-modal-cancel" onclick="cancelCrop()">Cancel</button>

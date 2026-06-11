@@ -559,12 +559,12 @@
         </div>
 
         <!-- Crop Panel -->
-        <div class="modal-card" id="custCropPanel" style="display:none;">
+        <div class="modal-card" id="custCropPanel" style="display:none; max-width:900px;">
             <div class="modal-header">
                 <h2><i class="fas fa-crop-alt"></i> Crop Photo</h2>
             </div>
-            <div id="cust-crop-area">
-                <img id="cust-crop-img" style="display:block; width:100%;">
+            <div id="cust-crop-area" style="padding:0 24px 16px;">
+                <img id="cust-crop-img" style="display:block; width:100%; height:460px;">
             </div>
             <div class="modal-actions">
                 <button type="button" class="btn-modal-cancel" onclick="cancelCustCrop()">Back</button>

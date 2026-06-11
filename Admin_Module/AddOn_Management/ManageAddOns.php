@@ -102,6 +102,83 @@ function getProductImagePath($image_url) {
     <link rel="stylesheet" href="../Dashboard/Dashboard.css">
     <link rel="stylesheet" href="../Superadmin/AdminManagement.css">
     <link rel="stylesheet" href="ManageAddOns.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+    <style>
+        .crop-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(17,24,39,0.6);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .crop-overlay.active { display: flex; }
+        .crop-card {
+            background: #fff;
+            border-radius: 14px;
+            width: 100%;
+            max-width: 760px;
+            overflow: hidden;
+        }
+        .crop-card .crop-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .crop-card .crop-head h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        .crop-card .crop-close {
+            border: none;
+            background: none;
+            font-size: 20px;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+        .crop-body {
+            padding: 16px 20px;
+        }
+        .crop-body img {
+            display: block;
+            width: 100%;
+            height: 440px;
+        }
+        .crop-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 14px 20px;
+            border-top: 1px solid var(--border);
+        }
+        .crop-actions .btn-crop-cancel {
+            border: 1.5px solid var(--border);
+            background: #fff;
+            color: #374151;
+            padding: 8px 18px;
+            border-radius: 9px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .crop-actions .btn-crop-save {
+            border: none;
+            background: var(--primary);
+            color: #fff;
+            padding: 8px 18px;
+            border-radius: 9px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
 
@@ -366,6 +443,26 @@ function getProductImagePath($image_url) {
         </div>
     </div>
 
+    <!-- Product image crop modal -->
+    <div class="crop-overlay" id="cropOverlay">
+        <div class="crop-card">
+            <div class="crop-head">
+                <h3><i class="fas fa-crop-alt" style="color:var(--primary); margin-right:6px;"></i>Crop Photo</h3>
+                <button type="button" class="crop-close" onclick="closeCrop()">&times;</button>
+            </div>
+            <div class="crop-body">
+                <img id="cropImage" src="" alt="Crop preview">
+            </div>
+            <div class="crop-actions">
+                <button type="button" class="btn-crop-cancel" onclick="closeCrop()">Cancel</button>
+                <button type="button" class="btn-crop-save" onclick="applyProductCrop()">
+                    <i class="fas fa-check"></i> Crop & Use
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
     <script src="ManageAddOns.js"></script>
     <script src="../Dashboard/Dashboard.js"></script>
 

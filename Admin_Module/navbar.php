@@ -4,8 +4,8 @@ if (!isset($base_path)) {
 }
 ?>
 
-<link rel="stylesheet" href="<?php echo $base_path; ?>navbar.css">
-<link rel="stylesheet" href="<?php echo $base_path; ?>responsive.css">
+<link rel="stylesheet" href="<?php echo $base_path; ?>navbar.css?v=<?php echo filemtime(__DIR__ . '/navbar.css'); ?>">
+<link rel="stylesheet" href="<?php echo $base_path; ?>responsive.css?v=<?php echo filemtime(__DIR__ . '/responsive.css'); ?>">
 
 <nav class="nav-bar">
     <div class="nav-left">
@@ -117,6 +117,16 @@ if (!isset($base_path)) {
                 });
             }
         }
+
+        // On mobile, tapping "More Options" expands/collapses the submenu (desktop keeps hover)
+        document.querySelectorAll('.dropdown .drop-btn').forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                if (toggle && getComputedStyle(toggle).display !== 'none') {
+                    btn.parentElement.classList.toggle('open');
+                }
+            });
+        });
 
         const logoutBtn = document.getElementById("logout-btn");
         if (logoutBtn) {

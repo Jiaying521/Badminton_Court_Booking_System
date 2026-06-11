@@ -38,6 +38,49 @@
     // This page sits at Admin_Module root, so navbar links don't need a prefix.
     $base_path = '../';
 
+    // Handle add from modal
+    if(isset($_POST['save_court'])){
+        $court_name     = mysqli_real_escape_string($conn, $_POST['court_name']);
+        $court_type     = mysqli_real_escape_string($conn, $_POST['court_type']);
+        $location       = mysqli_real_escape_string($conn, $_POST['location']);
+        $facilities     = mysqli_real_escape_string($conn, $_POST['facilities']);
+        $price_off_peak = mysqli_real_escape_string($conn, $_POST['price_off_peak']);
+        $price_peak     = mysqli_real_escape_string($conn, $_POST['price_peak']);
+        $is_active      = isset($_POST['is_active']) ? 1 : 0;
+
+        $check = mysqli_query($conn, "SELECT id FROM courts WHERE court_name = '$court_name'");
+        if(mysqli_num_rows($check) > 0){
+            header("Location: ManageCourts.php?error=duplicate");
+            exit();
+        }
+
+        mysqli_query($conn, "INSERT INTO courts (court_name, court_type, location, facilities, price_off_peak, price_peak, is_active)
+                VALUES ('$court_name', '$court_type', '$location', '$facilities', '$price_off_peak', '$price_peak', '$is_active')");
+        $new_court_id = mysqli_insert_id($conn);
+        for ($day = 1; $day <= 7; $day++) {
+            mysqli_query($conn, "INSERT INTO court_availability (court_id, day_of_week, start_time, end_time) VALUES ('$new_court_id', '$day', '08:00:00', '01:00:00')");
+        }
+
+        // Save photos picked in the Add Court modal, using the naming the customer pages read
+        $base_name = strtolower(str_replace(' ', '_', $_POST['court_name']));
+        $photo_dir = __DIR__ . '/../../Pictures/Admin_Module/courts/';
+        foreach (['main', '1', '2', '3', '4', '5'] as $slot) {
+            $field = 'photo_' . $slot;
+            if (!isset($_FILES[$field]) || $_FILES[$field]['error'] !== UPLOAD_ERR_OK) continue;
+            $info = getimagesize($_FILES[$field]['tmp_name']);
+            if ($info === false || !in_array($info[2], [IMAGETYPE_JPEG, IMAGETYPE_PNG])) continue;
+            $stem = ($slot === 'main') ? $base_name : $base_name . '_' . $slot;
+            if (move_uploaded_file($_FILES[$field]['tmp_name'], $photo_dir . $stem . '.jpg') && $slot === 'main') {
+                $safe_img = mysqli_real_escape_string($conn, $stem . '.jpg');
+                mysqli_query($conn, "UPDATE courts SET court_image = '$safe_img' WHERE id = $new_court_id");
+            }
+        }
+
+        logActivity($conn, 'Create', 'Court Management', "Added new court: $court_name");
+        header("Location: ManageCourts.php?success=1");
+        exit();
+    }
+
     // Handle delete from modal
     if(isset($_POST['delete_court'])){
         $del_id        = intval($_POST['court_id_delete']);
@@ -151,6 +194,7 @@
     <link rel="stylesheet" href="../Dashboard/Dashboard.css">
     <link rel="stylesheet" href="../Superadmin/AdminManagement.css">
     <link rel="stylesheet" href="ManageCourts.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
     <style>
         .modal-photos {
             margin-top: 4px;
@@ -165,24 +209,158 @@
             letter-spacing: 0.5px;
             margin-bottom: 10px;
         }
-        .btn-manage-photos {
-            display: inline-flex;
+        .photos-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .photo-slot {
+            position: relative;
+            border: 1.5px dashed var(--border);
+            border-radius: 10px;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            gap: 3px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 600;
+            background: #f8fafc;
+            transition: border-color 0.25s, background 0.25s;
+        }
+        .photo-slot:hover {
+            border-color: var(--primary);
+            background: #fffbeb;
+        }
+        .photo-slot i { font-size: 15px; }
+        .photo-slot img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .photo-slot .slot-tag {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: rgba(17,24,39,0.75);
+            color: #fff;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 1px 7px;
+            border-radius: 20px;
+            letter-spacing: 0.4px;
+            z-index: 2;
+        }
+        .photo-slot .slot-tag.tag-main { background: var(--primary); }
+        .photo-slot .slot-delete {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 22px;
+            height: 22px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(239,68,68,0.92);
+            color: #fff;
+            font-size: 10px;
+            cursor: pointer;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+        .photo-slot .slot-delete:hover { transform: scale(1.1); }
+        .photo-slot.slot-more {
+            border-style: solid;
+            background: #fffbeb;
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .photo-slot.slot-more:hover { background: #fef3c7; }
+        .more-grid { grid-template-columns: repeat(2, 1fr); }
+
+        .crop-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(17,24,39,0.6);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .crop-overlay.active { display: flex; }
+        .crop-card {
+            background: #fff;
+            border-radius: 14px;
+            width: 100%;
+            max-width: 900px;
+            overflow: hidden;
+        }
+        .crop-card .crop-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .crop-card .crop-head h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        .crop-card .crop-close {
+            border: none;
+            background: none;
+            font-size: 20px;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+        .crop-body {
+            padding: 16px 20px;
+        }
+        .crop-body img {
+            display: block;
+            width: 100%;
+            height: 460px;
+        }
+        .crop-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 14px 20px;
+            border-top: 1px solid var(--border);
+        }
+        .crop-actions .btn-crop-cancel {
+            border: 1.5px solid var(--border);
+            background: #fff;
+            color: #374151;
+            padding: 8px 18px;
+            border-radius: 9px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .crop-actions .btn-crop-save {
+            border: none;
             background: var(--primary);
             color: #fff;
-            padding: 9px 18px;
+            padding: 8px 18px;
             border-radius: 9px;
             font-family: 'Outfit', sans-serif;
             font-size: 13px;
             font-weight: 700;
-            text-decoration: none;
-            transition: opacity 0.2s, transform 0.2s;
+            cursor: pointer;
         }
-        .btn-manage-photos:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
+        .crop-actions .btn-crop-save:disabled { opacity: 0.6; cursor: wait; }
     </style>
 </head>
 <body>
@@ -256,7 +434,7 @@
                     <?php while($row = mysqli_fetch_assoc($result)): ?>
 
                     <!-- Main row — click to open edit modal -->
-                    <tr class="main-row" onclick="openCourtModal(
+                    <tr class="main-row" data-court-id="<?php echo $row['id']; ?>" onclick="openCourtModal(
                         <?php echo $row['id']; ?>,
                         '<?php echo addslashes($row['court_name']); ?>',
                         '<?php echo addslashes($row['court_type']); ?>',
@@ -349,9 +527,7 @@
 
                     <div class="modal-field full-width modal-photos">
                         <div class="photos-title"><i class="fas fa-images" style="color:var(--primary); margin-right:5px;"></i>Court Photos</div>
-                        <a href="#" id="modal-photos-link" class="btn-manage-photos">
-                            <i class="fas fa-images"></i> Manage / Upload Photos
-                        </a>
+                        <div class="photos-grid" id="courtPhotosGrid"></div>
                     </div>
 
                 </div>
@@ -383,7 +559,7 @@
                 <button class="modal-close" type="button" onclick="closeAddCourtModal()">&times;</button>
             </div>
 
-            <form action="AddCourt.php" method="POST">
+            <form action="ManageCourts.php" method="POST" enctype="multipart/form-data">
                 <div class="modal-grid">
 
                     <div class="modal-field">
@@ -426,6 +602,17 @@
                         </label>
                     </div>
 
+                    <div class="modal-field full-width modal-photos">
+                        <div class="photos-title"><i class="fas fa-images" style="color:var(--primary); margin-right:5px;"></i>Court Photos</div>
+                        <div class="photos-grid" id="addPhotosGrid"></div>
+                        <input type="file" name="photo_main" id="addPhotoFile-main" hidden>
+                        <input type="file" name="photo_1" id="addPhotoFile-1" hidden>
+                        <input type="file" name="photo_2" id="addPhotoFile-2" hidden>
+                        <input type="file" name="photo_3" id="addPhotoFile-3" hidden>
+                        <input type="file" name="photo_4" id="addPhotoFile-4" hidden>
+                        <input type="file" name="photo_5" id="addPhotoFile-5" hidden>
+                    </div>
+
                 </div>
 
                 <div class="modal-actions">
@@ -441,6 +628,43 @@
         </div>
     </div>
 
+    <!-- More gallery photos modal -->
+    <div class="crop-overlay" id="morePhotosModal">
+        <div class="crop-card">
+            <div class="crop-head">
+                <h3><i class="fas fa-images" style="color:var(--primary); margin-right:6px;"></i>More Gallery Photos</h3>
+                <button type="button" class="crop-close" onclick="closeMorePhotos()">&times;</button>
+            </div>
+            <div class="crop-body">
+                <div class="photos-grid more-grid" id="morePhotosGrid"></div>
+            </div>
+            <div class="crop-actions">
+                <button type="button" class="btn-crop-cancel" onclick="closeMorePhotos()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Court photo crop modal -->
+    <div class="crop-overlay" id="cropOverlay">
+        <div class="crop-card">
+            <div class="crop-head">
+                <h3><i class="fas fa-crop-alt" style="color:var(--primary); margin-right:6px;"></i>Crop Photo</h3>
+                <button type="button" class="crop-close" onclick="closeCrop()">&times;</button>
+            </div>
+            <div class="crop-body">
+                <img id="cropImage" src="" alt="Crop preview">
+            </div>
+            <div class="crop-actions">
+                <button type="button" class="btn-crop-cancel" onclick="closeCrop()">Cancel</button>
+                <button type="button" class="btn-crop-save" id="cropSaveBtn" onclick="saveCrop()">
+                    <i class="fas fa-check"></i> Crop & Upload
+                </button>
+            </div>
+        </div>
+    </div>
+    <input type="file" id="photoInput" accept="image/png, image/jpeg" style="display:none;">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
     <script src="ManageCourts.js"></script>
     <script src="../Dashboard/Dashboard.js"></script>
 

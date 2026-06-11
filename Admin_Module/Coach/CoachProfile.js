@@ -54,7 +54,12 @@ document.getElementById('photo-input').addEventListener('change', function () {
         cropperInstance = new Cropper(cropImg, {
             aspectRatio: 1,
             viewMode: 1,
-            autoCropArea: 0.8
+            autoCropArea: 0.8,
+            dragMode: 'none',
+            movable: false,
+            zoomable: false,
+            zoomOnWheel: false,
+            toggleDragModeOnDblclick: false
         });
     };
     reader.readAsDataURL(file);

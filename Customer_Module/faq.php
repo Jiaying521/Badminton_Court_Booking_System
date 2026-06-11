@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require_once __DIR__ . '/../config.php';
 $isLoggedIn = isset($_SESSION['user_id']);
 $back_link = $isLoggedIn ? 'dashboard.php' : 'homepage.php';
@@ -392,6 +392,9 @@ $faqs = [
             color: #cbd5c0; 
             padding: 3rem 5% 1.5rem; 
             margin-top: 4rem;
+            margin-left: -2rem;
+            margin-right: -2rem;
+            margin-bottom: -2rem;
             border-radius: 32px 32px 0 0;
         }
         .footer-container { 

@@ -603,14 +603,14 @@
         </div>
 
         <!-- Crop Panel (replaces edit panel when cropping) -->
-        <div class="modal-card" id="cropPanel" style="display:none;">
+        <div class="modal-card" id="cropPanel" style="display:none; max-width:900px;">
 
             <div class="modal-header">
                 <h2><i class="fas fa-crop-alt"></i> Crop Photo</h2>
             </div>
 
-            <div id="crop-area">
-                <img id="crop-img" style="display:block; width:100%;">
+            <div id="crop-area" style="padding:0 24px 16px;">
+                <img id="crop-img" style="display:block; width:100%; height:460px;">
             </div>
 
             <div class="modal-actions">

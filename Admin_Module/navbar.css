@@ -405,7 +405,7 @@
 
     .submenu {
         position: static;
-        display: block;
+        display: none;
         background: rgba(255,255,255,0.06);
         box-shadow: none;
         border: none;
@@ -413,6 +413,11 @@
         margin-top: 6px;
         border-radius: 10px;
     }
+
+    /* On mobile the submenu opens by tapping More Options, not hover */
+    .dropdown:hover .submenu { display: none; }
+    .dropdown.open .submenu { display: block; }
+    .dropdown.open .drop-btn { background-color: rgba(255,255,255,0.12) !important; }
 
     .submenu li a {
         color: rgba(255,255,255,0.7) !important;
