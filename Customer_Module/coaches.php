@@ -70,6 +70,9 @@ $avail_map = [
     'Sick'      => ['color' => '#dc2626', 'bg' => '#fee2e2'],
     'Off Day'   => ['color' => '#64748b', 'bg' => '#f1f5f9'],
 ];
+
+// 获取最小日期（明天）
+$min_date = date('Y-m-d', strtotime('+1 day'));
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -536,6 +539,115 @@ $avail_map = [
             box-shadow: none;
         }
         
+        /* 弹窗样式 */
+        .book-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .book-modal-content {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 32px;
+            padding: 2rem;
+            max-width: 450px;
+            width: 90%;
+            animation: slideUp 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .book-modal-header {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1e3a2a;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #eef3ea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .book-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #888;
+            transition: 0.2s;
+        }
+        
+        .book-modal-close:hover {
+            color: #e67e22;
+            transform: rotate(90deg);
+        }
+        
+        .book-modal-body {
+            margin-top: 1rem;
+        }
+        
+        .book-form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .book-form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: #1e3a2a;
+            margin-bottom: 0.3rem;
+        }
+        
+        .book-form-group input, .book-form-group select {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border: 2px solid rgba(224,232,220,0.8);
+            border-radius: 16px;
+            background: rgba(254,253,248,0.9);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+        }
+        
+        .book-form-group input:focus, .book-form-group select:focus {
+            outline: none;
+            border-color: #2b7e3a;
+        }
+        
+        .btn-submit-booking {
+            background: linear-gradient(135deg, #2b7e3a, #1f5a2a);
+            color: white;
+            border: none;
+            padding: 0.9rem;
+            border-radius: 60px;
+            width: 100%;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 0.5rem;
+        }
+        
+        .btn-submit-booking:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(43,126,58,0.3);
+        }
+        
         /* Footer */
         .footer { 
             background: #0f1f12; 
@@ -708,9 +820,9 @@ $avail_map = [
                             <i class="fas fa-user"></i> View Profile
                         </a>
                         <?php if ($avail === 'Available'): ?>
-                            <a href="book_court.php?coach_id=<?php echo $c['id']; ?>" class="btn-book">
+                            <button class="btn-book" onclick="openBookingModal(<?php echo $c['id']; ?>, '<?php echo htmlspecialchars($c['name']); ?>', <?php echo $c['price_per_hour']; ?>)">
                                 <i class="fas fa-calendar-plus"></i> Book
-                            </a>
+                            </button>
                         <?php else: ?>
                             <span class="btn-book disabled">
                                 <i class="fas fa-calendar-xmark"></i> Unavailable
@@ -723,6 +835,43 @@ $avail_map = [
         </div>
     <?php endif; ?>
 </div>
+
+<!-- Booking Modal -->
+<div id="bookingModal" class="book-modal">
+    <div class="book-modal-content">
+        <div class="book-modal-header">
+            <span>Book Training Session</span>
+            <button class="book-modal-close" onclick="closeBookingModal()">&times;</button>
+        </div>
+        <div class="book-modal-body">
+            <form action="dashboard.php" method="GET" id="bookingForm">
+                <input type="hidden" name="preferred_coach_id" id="preferred_coach_id">
+                <input type="hidden" name="court_type" value="Training">
+                <div class="book-form-group">
+                    <label><i class="fas fa-calendar"></i> Select Date</label>
+                    <input type="date" name="booking_date" id="booking_date" min="<?php echo $min_date; ?>" required>
+                </div>
+                <div class="book-form-group">
+                    <label><i class="fas fa-clock"></i> Duration</label>
+                    <select name="duration" id="duration" required>
+                        <option value="">Select duration</option>
+                        <option value="1">1 hour</option>
+                        <option value="2">2 hours</option>
+                        <option value="3">3 hours</option>
+                        <option value="4">4 hours</option>
+                    </select>
+                </div>
+                <div class="wallet-info-sidebar" style="background: rgba(234,245,230,0.6); border-radius: 16px; padding: 0.8rem; margin: 1rem 0; text-align: center;">
+                    <i class="fas fa-wallet"></i> Your Balance: <strong>RM <?php echo number_format($real_balance, 2); ?></strong>
+                </div>
+                <button type="submit" class="btn-submit-booking">
+                    <i class="fas fa-calendar-plus"></i> Choose a Training Court
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Footer -->
 <footer class="footer">
     <div class="footer-container">
@@ -762,5 +911,59 @@ $avail_map = [
     </div>
     <div class="footer-bottom"><p>&copy; 2025 Smash Arena – Your Game, Our Court. All rights reserved.</p></div>
 </footer>
+
+<script>
+    let currentCoachId = null;
+    
+    function openBookingModal(coachId, coachName, coachPrice) {
+        currentCoachId = coachId;
+        document.getElementById('preferred_coach_id').value = coachId;
+        document.getElementById('booking_date').value = '';
+        document.getElementById('duration').value = '';
+        document.getElementById('bookingModal').style.display = 'flex';
+    }
+    
+    function closeBookingModal() {
+        document.getElementById('bookingModal').style.display = 'none';
+    }
+    
+    // 点击模态框背景关闭
+    document.getElementById('bookingModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeBookingModal();
+        }
+    });
+    
+    // 表单验证
+    document.getElementById('bookingForm').addEventListener('submit', function(e) {
+        const date = document.getElementById('booking_date').value;
+        const duration = document.getElementById('duration').value;
+        
+        if (!date) {
+            e.preventDefault();
+            alert('Please select a date');
+            return false;
+        }
+        
+        if (!duration) {
+            e.preventDefault();
+            alert('Please select duration');
+            return false;
+        }
+        
+        // 验证日期不能是今天（必须至少明天）
+        const selectedDate = new Date(date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (selectedDate <= today) {
+            e.preventDefault();
+            alert('Please select a date from tomorrow onwards');
+            return false;
+        }
+        
+        return true;
+    });
+</script>
 </body>
 </html>
