@@ -45,7 +45,7 @@ $addons_total = $stmt_addons->fetchColumn() ?? 0;
 $stmt_paid = $pdo->prepare("
     SELECT final_amount FROM payments
     WHERE booking_id = ? AND payment_status = 'success' AND payment_method NOT LIKE 'Refund%'
-    ORDER BY id ASC LIMIT 1
+    ORDER BY payment_id ASC LIMIT 1
 ");
 $stmt_paid->execute([$booking_id]);
 $actual_paid = (float)($stmt_paid->fetchColumn() ?? $booking['total_price']);
