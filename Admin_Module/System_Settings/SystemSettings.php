@@ -71,6 +71,12 @@ if (isset($_POST['add_closed_day'])) {
     $closed_date = mysqli_real_escape_string($conn, $_POST['closed_date']);
     $reason      = mysqli_real_escape_string($conn, trim($_POST['reason']));
 
+    // Reject past dates — no point marking a day that has already passed.
+    if (!empty($closed_date) && $closed_date < date('Y-m-d')) {
+        $toasts[] = ['text' => 'Closed date cannot be in the past.', 'type' => 'error'];
+        goto after_closed_day;
+    }
+
     // Check if this date already exists to prevent duplicates.
     $check = mysqli_query($conn, "SELECT id FROM closed_days WHERE closed_date = '$closed_date'");
 
@@ -83,6 +89,7 @@ if (isset($_POST['add_closed_day'])) {
         logActivity($conn, 'Settings', 'System Settings', "Added closed day: $closed_date" . ($reason ? " ($reason)" : ''));
         $toasts[] = ['text' => 'Closed day added!', 'type' => 'success'];
     }
+    after_closed_day:
 }
 
 
@@ -94,10 +101,10 @@ if (isset($_GET['delete_closed'])) {
     mysqli_query($conn, "DELETE FROM closed_days WHERE id = $did");
     logActivity($conn, 'Delete', 'System Settings', "Removed closed day: " . ($cd_row['closed_date'] ?? "ID $did"));
 
-    header("Location: SystemSettings.php?deleted=1");
+    $_SESSION['toasts'][] = ['text' => 'Closed day removed.', 'type' => 'pending'];
+    header("Location: SystemSettings.php");
     exit();
 }
-
 
 /* Action D: Add a Promo Code (triggered by "Create Promo Code" button) */
 if (isset($_POST['add_promo'])) {
@@ -106,22 +113,62 @@ if (isset($_POST['add_promo'])) {
     $code           = strtoupper(trim($_POST['promo_code']));
     $discount_type  = mysqli_real_escape_string($conn, $_POST['discount_type']);
     $discount_value = floatval($_POST['discount_value']); // floatval() ensures it is a decimal number
-    $valid_from     = $_POST['valid_from'];
-    $valid_until    = $_POST['valid_until'];
+    $valid_from_raw  = $_POST['valid_from']  ?? '';
+    $valid_until_raw = $_POST['valid_until'] ?? '';
+    $valid_from  = str_replace('T', ' ', $valid_from_raw);
+    $valid_until = str_replace('T', ' ', $valid_until_raw);
+
+    // Reject negative or zero discount values.
+    if ($discount_value <= 0) {
+        $_SESSION['toasts'][] = ['text' => 'Discount value must be greater than 0.', 'type' => 'error'];
+        header("Location: SystemSettings.php#sec-promo");
+        exit();
+    }
+
+    // Reject percentage discounts above 100%.
+    if ($discount_type === 'percentage' && $discount_value > 100) {
+        $_SESSION['toasts'][] = ['text' => 'Percentage discount cannot exceed 100%.', 'type' => 'error'];
+        header("Location: SystemSettings.php#sec-promo");
+        exit();
+    }
+
+    // Valid From cannot be in the past (compare datetime).
+    if (!empty($valid_from) && $valid_from < date('Y-m-d H:i') ) {
+        $_SESSION['toasts'][] = ['text' => 'Valid From cannot be in the past.', 'type' => 'error'];
+        header("Location: SystemSettings.php#sec-promo");
+        exit();
+    }
+
+    // Valid Until must be at least 10 minutes after Valid From.
+    if (!empty($valid_from) && !empty($valid_until)) {
+        $gap_minutes = (strtotime($valid_until) - strtotime($valid_from)) / 60;
+        if ($gap_minutes < 10) {
+            $_SESSION['toasts'][] = ['text' => 'Valid Until must be at least 10 minutes after Valid From.', 'type' => 'error'];
+            header("Location: SystemSettings.php#sec-promo");
+            exit();
+        }
+    }
 
     // Check if this promo code already exists.
     $check = mysqli_query($conn, "SELECT id FROM promo_codes WHERE code = '" . mysqli_real_escape_string($conn, $code) . "'");
 
     if (mysqli_num_rows($check) > 0) {
         // Already exists — show a warning.
-        $toasts[] = ['text' => 'Promo code already exists!', 'type' => 'pending'];
+        $_SESSION['toasts'][] = ['text' => 'Promo code already exists!', 'type' => 'pending'];
     } else {
         // Does not exist — insert a new record.
+        $vf_sql = mysqli_real_escape_string($conn, $valid_from);
+        $vu_sql = mysqli_real_escape_string($conn, $valid_until);
         mysqli_query($conn, "INSERT INTO promo_codes (code, discount_type, discount_value, valid_from, valid_until)
-            VALUES ('" . mysqli_real_escape_string($conn, $code) . "', '$discount_type', $discount_value, '$valid_from', '$valid_until')");
+            VALUES ('" . mysqli_real_escape_string($conn, $code) . "', '$discount_type', $discount_value, '$vf_sql', '$vu_sql')");
         logActivity($conn, 'Create', 'System Settings', "Created promo code: $code ($discount_type $discount_value)");
-        $toasts[] = ['text' => 'Promo code created!', 'type' => 'success'];
+        $_SESSION['toasts'][] = ['text' => 'Promo code created!', 'type' => 'success'];
     }
+
+    // Redirect after POST so refreshing the page doesn't resubmit the form
+    // (this was the cause of the repeated "Promo code already exists!" toast).
+    header("Location: SystemSettings.php#sec-promo");
+    exit();
 }
 
 
@@ -136,7 +183,8 @@ if (isset($_GET['toggle_promo'])) {
     logActivity($conn, 'Status Change', 'System Settings',
                 "Set promo code '" . ($promo_row['code'] ?? "ID $pid") . "' to " . ($new_status ? 'Active' : 'Inactive'));
 
-    header("Location: SystemSettings.php?updated=1");
+    $_SESSION['toasts'][] = ['text' => 'Status updated to ' . ($new_status ? 'Active' : 'Inactive') . '.', 'type' => 'success'];
+    header("Location: SystemSettings.php#sec-promo");
     exit();
 }
 
@@ -149,7 +197,8 @@ if (isset($_GET['delete_promo'])) {
     mysqli_query($conn, "DELETE FROM promo_codes WHERE id = $pid");
     logActivity($conn, 'Delete', 'System Settings', "Deleted promo code: " . ($promo_del['code'] ?? "ID $pid"));
 
-    header("Location: SystemSettings.php?deleted=1");
+    $_SESSION['toasts'][] = ['text' => 'Promo code deleted.', 'type' => 'pending'];
+    header("Location: SystemSettings.php#sec-promo");
     exit();
 }
 
@@ -166,9 +215,39 @@ if (isset($_POST['add_voucher'])) {
     $points_required = intval($_POST['points_required']);
     $description     = mysqli_real_escape_string($conn, trim($_POST['description']));
 
+    // Reject non-positive discount amounts.
+    if ($discount_amount <= 0) {
+        $toasts[] = ['text' => 'Discount amount must be greater than 0.', 'type' => 'error'];
+        goto after_voucher;
+    }
+
+    // Reject non-positive points.
+    if ($points_required < 1) {
+        $toasts[] = ['text' => 'Points required must be at least 1.', 'type' => 'error'];
+        goto after_voucher;
+    }
+
     /* Optional availability window (datetime-local sends "Y-m-dTH:i", swap T for a space) */
-    $valid_from  = !empty($_POST['valid_from'])  ? "'" . mysqli_real_escape_string($conn, str_replace('T', ' ', $_POST['valid_from']))  . "'" : "NULL";
-    $valid_until = !empty($_POST['valid_until']) ? "'" . mysqli_real_escape_string($conn, str_replace('T', ' ', $_POST['valid_until'])) . "'" : "NULL";
+    $valid_from_raw  = $_POST['valid_from']  ?? '';
+    $valid_until_raw = $_POST['valid_until'] ?? '';
+
+    // Available From cannot be in the past (compare date portion only).
+    if (!empty($valid_from_raw) && substr($valid_from_raw, 0, 10) < date('Y-m-d')) {
+        $toasts[] = ['text' => 'Available From cannot be in the past.', 'type' => 'error'];
+        goto after_voucher;
+    }
+
+    // Available Until must be at least 10 minutes after Available From.
+    if (!empty($valid_from_raw) && !empty($valid_until_raw)) {
+        $gap_minutes = (strtotime($valid_until_raw) - strtotime($valid_from_raw)) / 60;
+        if ($gap_minutes < 10) {
+            $toasts[] = ['text' => 'Available Until must be at least 10 minutes after Available From.', 'type' => 'error'];
+            goto after_voucher;
+        }
+    }
+
+    $valid_from  = !empty($valid_from_raw)  ? "'" . mysqli_real_escape_string($conn, str_replace('T', ' ', $valid_from_raw))  . "'" : "NULL";
+    $valid_until = !empty($valid_until_raw) ? "'" . mysqli_real_escape_string($conn, str_replace('T', ' ', $valid_until_raw)) . "'" : "NULL";
 
     /* Optional stock — empty means unlimited */
     $quantity = ($_POST['quantity'] !== '' && (int)$_POST['quantity'] >= 0) ? (int)$_POST['quantity'] : "NULL";
@@ -176,10 +255,20 @@ if (isset($_POST['add_voucher'])) {
     /* How many times one customer can redeem this voucher (minimum 1) */
     $per_user_limit = max(1, intval($_POST['per_user_limit'] ?? 1));
 
+    // Check if a voucher with this title already exists (case-insensitive).
+    $title_check = mysqli_query($conn, "SELECT id FROM voucher WHERE LOWER(title) = LOWER('$title')");
+
+    if (mysqli_num_rows($title_check) > 0) {
+        // Already exists — show a warning, don't insert.
+        $toasts[] = ['text' => 'A voucher with this name already exists!', 'type' => 'pending'];
+        goto after_voucher;
+    }
+
     mysqli_query($conn, "INSERT INTO voucher (title, discount_amount, points_required, description, valid_from, valid_until, quantity, per_user_limit)
         VALUES ('$title', $discount_amount, $points_required, '$description', $valid_from, $valid_until, $quantity, $per_user_limit)");
     logActivity($conn, 'Create', 'System Settings', "Created voucher: $title (RM$discount_amount, $points_required pts)");
     $toasts[] = ['text' => 'Voucher created!', 'type' => 'success'];
+    after_voucher:
 }
 
 /* Action G2: Edit Voucher */
@@ -190,10 +279,43 @@ if (isset($_POST['edit_voucher'])) {
     $points_required = intval($_POST['points_required']);
     $description     = mysqli_real_escape_string($conn, trim($_POST['description']));
 
-    $valid_from  = !empty($_POST['valid_from'])  ? "'" . mysqli_real_escape_string($conn, str_replace('T', ' ', $_POST['valid_from']))  . "'" : "NULL";
-    $valid_until = !empty($_POST['valid_until']) ? "'" . mysqli_real_escape_string($conn, str_replace('T', ' ', $_POST['valid_until'])) . "'" : "NULL";
+    // Reject non-positive discount amounts.
+    if ($discount_amount <= 0) {
+        $toasts[] = ['text' => 'Discount amount must be greater than 0.', 'type' => 'error'];
+        goto after_edit_voucher;
+    }
+
+    // Reject non-positive points.
+    if ($points_required < 1) {
+        $toasts[] = ['text' => 'Points required must be at least 1.', 'type' => 'error'];
+        goto after_edit_voucher;
+    }
+
+    $valid_from_raw  = $_POST['valid_from']  ?? '';
+    $valid_until_raw = $_POST['valid_until'] ?? '';
+
+    // Available Until must be at least 10 minutes after Available From.
+    if (!empty($valid_from_raw) && !empty($valid_until_raw)) {
+        $gap_minutes = (strtotime($valid_until_raw) - strtotime($valid_from_raw)) / 60;
+        if ($gap_minutes < 10) {
+            $toasts[] = ['text' => 'Available Until must be at least 10 minutes after Available From.', 'type' => 'error'];
+            goto after_edit_voucher;
+        }
+    }
+
+    $valid_from  = !empty($valid_from_raw)  ? "'" . mysqli_real_escape_string($conn, str_replace('T', ' ', $valid_from_raw))  . "'" : "NULL";
+    $valid_until = !empty($valid_until_raw) ? "'" . mysqli_real_escape_string($conn, str_replace('T', ' ', $valid_until_raw)) . "'" : "NULL";
     $quantity    = ($_POST['quantity'] !== '' && (int)$_POST['quantity'] >= 0) ? (int)$_POST['quantity'] : "NULL";
     $per_user_limit = max(1, intval($_POST['per_user_limit'] ?? 1));
+
+    // Check if another voucher already uses this title (case-insensitive, excluding itself).
+    $title_check = mysqli_query($conn, "SELECT id FROM voucher WHERE LOWER(title) = LOWER('$title') AND id != $vid");
+
+    if (mysqli_num_rows($title_check) > 0) {
+        // Already exists — show a warning, don't update.
+        $toasts[] = ['text' => 'A voucher with this name already exists!', 'type' => 'pending'];
+        goto after_edit_voucher;
+    }
 
     mysqli_query($conn, "UPDATE voucher SET
         title           = '$title',
@@ -208,6 +330,7 @@ if (isset($_POST['edit_voucher'])) {
 
     logActivity($conn, 'Update', 'System Settings', "Updated voucher: $title (ID $vid)");
     $toasts[] = ['text' => 'Voucher updated!', 'type' => 'success'];
+    after_edit_voucher:
 }
 
 /* Action H: Delete Voucher (blocks delete if any customer has already claimed it) */
@@ -220,14 +343,16 @@ if (isset($_GET['delete_voucher'])) {
 
     if ($used_count > 0) {
         // Block hard delete — it would orphan customer voucher records.
-        header("Location: SystemSettings.php?deleted=blocked");
+        $_SESSION['toasts'][] = ['text' => 'Cannot delete: this voucher has already been claimed by customers.', 'type' => 'error'];
+        header("Location: SystemSettings.php#sec-voucher");
         exit();
     }
 
     $vdel = mysqli_fetch_assoc(mysqli_query($conn, "SELECT title FROM voucher WHERE id = $vid"));
     mysqli_query($conn, "DELETE FROM voucher WHERE id = $vid");
     logActivity($conn, 'Delete', 'System Settings', "Deleted voucher: " . ($vdel['title'] ?? "ID $vid"));
-    header("Location: SystemSettings.php?deleted=1");
+    $_SESSION['toasts'][] = ['text' => 'Voucher deleted.', 'type' => 'pending'];
+    header("Location: SystemSettings.php#sec-voucher");
     exit();
 }
 
@@ -262,19 +387,6 @@ if (isset($_POST['save_contact']) && $role === 'Superadmin') {
 
     logActivity($conn, 'Settings', 'System Settings', "Updated contact information");
     $toasts[] = ['text' => 'Contact information updated!', 'type' => 'success'];
-}
-
-
-/* Pick up redirect-based toasts (after delete/toggle operations) */
-if (isset($_GET['deleted'])) {
-    if ($_GET['deleted'] === 'blocked') {
-        $toasts[] = ['text' => 'Cannot delete: this voucher has already been claimed by customers.', 'type' => 'error'];
-    } else {
-        $toasts[] = ['text' => 'Deleted successfully.', 'type' => 'pending'];
-    }
-}
-if (isset($_GET['updated'])) {
-    $toasts[] = ['text' => 'Updated successfully.', 'type' => 'success'];
 }
 
 
@@ -478,7 +590,8 @@ $vouchers = mysqli_query($conn, "
 
                     <div class="settings-field">
                         <label>Date</label>
-                        <input type="date" name="closed_date" class="form-control" required>
+                        <input type="date" name="closed_date" class="form-control" required
+                               min="<?php echo date('Y-m-d'); ?>">
                     </div>
 
                     <div class="settings-field" style="flex:1; min-width:200px;">
@@ -557,12 +670,14 @@ $vouchers = mysqli_query($conn, "
 
                         <div class="settings-field">
                             <label>Valid From</label>
-                            <input type="date" name="valid_from" class="form-control" required>
+                            <input type="datetime-local" name="valid_from" id="promo-valid-from" class="form-control" required
+                                   min="<?php echo date('Y-m-d\TH:i'); ?>">
                         </div>
 
                         <div class="settings-field">
                             <label>Valid Until</label>
-                            <input type="date" name="valid_until" class="form-control" required>
+                            <input type="datetime-local" name="valid_until" id="promo-valid-until" class="form-control" required
+                                   min="<?php echo date('Y-m-d\TH:i'); ?>">
                         </div>
 
                     </div>
@@ -601,39 +716,39 @@ $vouchers = mysqli_query($conn, "
                                 <?php endif; ?>
                             </td>
 
-                            <!-- Show the validity date range -->
+                            <!-- Show the validity datetime range -->
                             <td>
-                                <?php echo date("d M Y", strtotime($promo['valid_from'])); ?>
+                                <?php echo date("d M Y g:i A", strtotime($promo['valid_from'])); ?>
                                 –
-                                <?php echo date("d M Y", strtotime($promo['valid_until'])); ?>
+                                <?php echo date("d M Y g:i A", strtotime($promo['valid_until'])); ?>
                             </td>
 
-                            <!-- Show Active or Inactive badge -->
+                            <!-- Inline status dropdown — clicking opens a 2-option menu; selecting redirects via toggle_promo -->
                             <td>
-                                <?php if ($promo['is_active'] == 1): ?>
-                                    <span class="badge success">Active</span>
-                                <?php else: ?>
-                                    <span class="badge pending">Inactive</span>
-                                <?php endif; ?>
+                                <div class="promo-status-wrap" data-id="<?php echo $promo['id']; ?>"
+                                     data-active="<?php echo $promo['is_active']; ?>">
+                                    <!-- Badge button — no chevron, just the status label -->
+                                    <button type="button" class="promo-status-btn <?php echo $promo['is_active'] == 1 ? 'is-active' : 'is-inactive'; ?>"
+                                            onclick="togglePromoDropdown(this)">
+                                        <?php echo $promo['is_active'] == 1 ? 'Active' : 'Inactive'; ?>
+                                    </button>
+                                    <!-- Floating option list — positioned by JS to escape table clipping -->
+                                    <div class="promo-status-dropdown">
+                                        <?php if ($promo['is_active'] == 1): ?>
+                                            <span class="promo-status-dropdown-header" style="color:#16a34a;">Active</span>
+                                        <?php else: ?>
+                                            <span class="promo-status-dropdown-header" style="color:#a16207;">Inactive</span>
+                                        <?php endif; ?>
+                                        <a class="promo-status-option <?php echo $promo['is_active'] == 1 ? 'is-selected' : ''; ?>"
+                                           href="SystemSettings.php?toggle_promo=<?php echo $promo['id']; ?>&active=1">Active</a>
+                                        <a class="promo-status-option <?php echo $promo['is_active'] == 0 ? 'is-selected' : ''; ?>"
+                                           href="SystemSettings.php?toggle_promo=<?php echo $promo['id']; ?>&active=0">Inactive</a>
+                                    </div>
+                                </div>
                             </td>
 
-                            <!-- Toggle and Delete action buttons -->
+                            <!-- Action: delete only (toggle moved to Status column) -->
                             <td>
-                                <?php if ($promo['is_active'] == 1): ?>
-                                    <!-- Currently active — clicking this will deactivate it (active=0) -->
-                                    <a href="SystemSettings.php?toggle_promo=<?php echo $promo['id']; ?>&active=0"
-                                       style="margin-right:8px;" title="Deactivate">
-                                        <i class="fas fa-toggle-on" style="color:#22c55e; font-size:18px;"></i>
-                                    </a>
-                                <?php else: ?>
-                                    <!-- Currently inactive — clicking this will activate it (active=1) -->
-                                    <a href="SystemSettings.php?toggle_promo=<?php echo $promo['id']; ?>&active=1"
-                                       style="margin-right:8px;" title="Activate">
-                                        <i class="fas fa-toggle-off" style="color:#94a3b8; font-size:18px;"></i>
-                                    </a>
-                                <?php endif; ?>
-
-                                <!-- Delete button -->
                                 <a href="SystemSettings.php?delete_promo=<?php echo $promo['id']; ?>"
                                    onclick="return confirm('Delete this promo code?');">
                                     <i class="fas fa-trash-alt" style="color:#ef4444; font-size:18px;"></i>
@@ -664,7 +779,7 @@ $vouchers = mysqli_query($conn, "
                         <div class="settings-field">
                             <label>Discount Amount (RM)</label>
                             <input type="number" name="discount_amount" class="form-control"
-                                placeholder="e.g. 5.00" step="0.01" min="0" required>
+                                placeholder="e.g. 5.00" step="0.01" min="0.01" required>
                         </div>
 
                         <div class="settings-field">
@@ -681,12 +796,14 @@ $vouchers = mysqli_query($conn, "
 
                         <div class="settings-field">
                             <label>Available From <span class="ss-optional">Optional</span></label>
-                            <input type="datetime-local" name="valid_from" class="form-control">
+                            <input type="datetime-local" name="valid_from" id="voucher-valid-from" class="form-control"
+                                   min="<?php echo date('Y-m-d\T00:00'); ?>">
                         </div>
 
                         <div class="settings-field">
                             <label>Available Until <span class="ss-optional">Optional</span></label>
-                            <input type="datetime-local" name="valid_until" class="form-control">
+                            <input type="datetime-local" name="valid_until" id="voucher-valid-until" class="form-control"
+                                   min="<?php echo date('Y-m-d\T00:00'); ?>">
                         </div>
 
                         <div class="settings-field">
@@ -804,7 +921,7 @@ $vouchers = mysqli_query($conn, "
 
                     <div class="modal-field">
                         <label>Discount Amount (RM)</label>
-                        <input type="number" name="discount_amount" id="ev-discount" step="0.01" min="0" required>
+                        <input type="number" name="discount_amount" id="ev-discount" step="0.01" min="0.01" required>
                     </div>
 
                     <div class="modal-field">
@@ -949,6 +1066,204 @@ $vouchers = mysqli_query($conn, "
         });
     })();
 
+    </script>
+    <script>
+    /* Promo status inline dropdown
+       The dropdown is moved to <body> on first open to escape all overflow clipping.
+       Visibility is controlled directly via style.display (not CSS parent selectors,
+       which break once the element is reparented). */
+
+    // Track the currently open dropdown element (now lives in <body>)
+    var _openPromoDropdown = null;
+    var _openPromoWrap     = null;
+
+    function togglePromoDropdown(btn) {
+        var wrap     = btn.closest('.promo-status-wrap');
+        var dropdown = wrap.querySelector('.promo-status-dropdown');
+
+        // If this wrap is already open, close it
+        if (_openPromoWrap === wrap) {
+            _closePromoDropdown();
+            return;
+        }
+
+        // Close any previously open dropdown
+        _closePromoDropdown();
+
+        // Move to <body> once to escape table/card overflow
+        if (dropdown.parentElement !== document.body) {
+            document.body.appendChild(dropdown);
+        }
+
+        // Show and position
+        dropdown.style.display = 'block';
+        var rect = btn.getBoundingClientRect();
+        dropdown.style.top  = (rect.bottom + 4) + 'px';
+        dropdown.style.left = rect.left + 'px';
+
+        _openPromoDropdown = dropdown;
+        _openPromoWrap     = wrap;
+    }
+
+    function _closePromoDropdown() {
+        if (_openPromoDropdown) {
+            _openPromoDropdown.style.display = 'none';
+            _openPromoDropdown = null;
+            _openPromoWrap     = null;
+        }
+    }
+
+    // Close on outside click
+    document.addEventListener('click', function (e) {
+        if (_openPromoDropdown &&
+            !e.target.closest('.promo-status-wrap') &&
+            !e.target.closest('.promo-status-dropdown')) {
+            _closePromoDropdown();
+        }
+    });
+
+    // Reposition on scroll / resize
+    function _repositionPromoDropdown() {
+        if (!_openPromoWrap || !_openPromoDropdown) return;
+        var btn  = _openPromoWrap.querySelector('.promo-status-btn');
+        var rect = btn.getBoundingClientRect();
+        _openPromoDropdown.style.top  = (rect.bottom + 4) + 'px';
+        _openPromoDropdown.style.left = rect.left + 'px';
+    }
+    window.addEventListener('scroll', _repositionPromoDropdown, true);
+    window.addEventListener('resize', _repositionPromoDropdown);
+    </script>
+
+    <script>
+    /* ===================================================================
+       Client-side date / value validation
+       Runs on form submit so users get instant feedback without a round-trip.
+       PHP also validates server-side for safety.
+       =================================================================== */
+    (function () {
+        const TODAY_DATE     = '<?php echo date('Y-m-d\TH:i'); ?>';
+        const TODAY_DATETIME = '<?php echo date('Y-m-d\T00:00'); ?>';
+        const MIN_GAP_MIN    = 10; // promo / voucher "until" must be at least this many minutes after "from"
+
+        /* Returns a datetime-local string (YYYY-MM-DDTHH:mm) `minutes` later than dtLocal */
+        function addMinutes(dtLocal, minutes) {
+            const d = new Date(dtLocal);
+            d.setMinutes(d.getMinutes() + minutes);
+            const pad = n => String(n).padStart(2, '0');
+            return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())
+                 + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+        }
+
+        /* True if (until - from) is less than MIN_GAP_MIN minutes */
+        function gapTooSmall(fromVal, untilVal) {
+            return (new Date(untilVal) - new Date(fromVal)) < MIN_GAP_MIN * 60000;
+        }
+
+        /* ── Promo Code form ── */
+        const promoFrom  = document.getElementById('promo-valid-from');
+        const promoUntil = document.getElementById('promo-valid-until');
+
+        /* When "from" changes, push the "until" min forward so it can't be less than 10 minutes later */
+        if (promoFrom && promoUntil) {
+            promoFrom.addEventListener('change', function () {
+                const minUntil = this.value ? addMinutes(this.value, MIN_GAP_MIN) : TODAY_DATE;
+                promoUntil.min = minUntil;
+                if (promoUntil.value && promoUntil.value < minUntil) {
+                    promoUntil.value = minUntil;
+                }
+            });
+        }
+
+        /* Promo form submit guard */
+        const promoForm = promoFrom && promoFrom.closest('form');
+        if (promoForm) {
+            promoForm.addEventListener('submit', function (e) {
+                const discountInput = promoForm.querySelector('[name="discount_value"]');
+                if (discountInput && parseFloat(discountInput.value) <= 0) {
+                    e.preventDefault();
+                    alert('Discount value must be greater than 0.');
+                    discountInput.focus();
+                    return;
+                }
+                const discountType = promoForm.querySelector('[name="discount_type"]');
+                if (discountType && discountType.value === 'percentage' && parseFloat(discountInput.value) > 100) {
+                    e.preventDefault();
+                    alert('Percentage discount cannot exceed 100%.');
+                    discountInput.focus();
+                    return;
+                }
+                if (promoFrom.value && promoUntil.value && gapTooSmall(promoFrom.value, promoUntil.value)) {
+                    e.preventDefault();
+                    alert('Valid Until must be at least ' + MIN_GAP_MIN + ' minutes after Valid From.');
+                    promoUntil.focus();
+                }
+            });
+        }
+
+        /* ── Voucher Create form ── */
+        const vFrom  = document.getElementById('voucher-valid-from');
+        const vUntil = document.getElementById('voucher-valid-until');
+
+        if (vFrom && vUntil) {
+            vFrom.addEventListener('change', function () {
+                const minUntil = this.value ? addMinutes(this.value, MIN_GAP_MIN) : TODAY_DATETIME;
+                vUntil.min = minUntil;
+                if (vUntil.value && vUntil.value < minUntil) {
+                    vUntil.value = minUntil;
+                }
+            });
+        }
+
+        const voucherForm = vFrom && vFrom.closest('form');
+        if (voucherForm) {
+            voucherForm.addEventListener('submit', function (e) {
+                const discountInput = voucherForm.querySelector('[name="discount_amount"]');
+                if (discountInput && parseFloat(discountInput.value) <= 0) {
+                    e.preventDefault();
+                    alert('Discount amount must be greater than 0.');
+                    discountInput.focus();
+                    return;
+                }
+                if (vFrom.value && vUntil.value && gapTooSmall(vFrom.value, vUntil.value)) {
+                    e.preventDefault();
+                    alert('Available Until must be at least ' + MIN_GAP_MIN + ' minutes after Available From.');
+                    vUntil.focus();
+                }
+            });
+        }
+
+        /* ── Edit Voucher Modal form ── */
+        const evFrom  = document.getElementById('ev-from');
+        const evUntil = document.getElementById('ev-until');
+
+        if (evFrom && evUntil) {
+            evFrom.addEventListener('change', function () {
+                const minUntil = this.value ? addMinutes(this.value, MIN_GAP_MIN) : TODAY_DATETIME;
+                evUntil.min = minUntil;
+                if (evUntil.value && evUntil.value < minUntil) {
+                    evUntil.value = minUntil;
+                }
+            });
+        }
+
+        const evForm = evFrom && evFrom.closest('form');
+        if (evForm) {
+            evForm.addEventListener('submit', function (e) {
+                const discountInput = evForm.querySelector('[name="discount_amount"]');
+                if (discountInput && parseFloat(discountInput.value) <= 0) {
+                    e.preventDefault();
+                    alert('Discount amount must be greater than 0.');
+                    discountInput.focus();
+                    return;
+                }
+                if (evFrom.value && evUntil.value && gapTooSmall(evFrom.value, evUntil.value)) {
+                    e.preventDefault();
+                    alert('Available Until must be at least ' + MIN_GAP_MIN + ' minutes after Available From.');
+                    evUntil.focus();
+                }
+            });
+        }
+    })();
     </script>
 
 </body>

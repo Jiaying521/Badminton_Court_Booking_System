@@ -169,3 +169,79 @@ html { scroll-behavior: smooth; }
     margin-left: 6px;
 }
 
+
+/* ── Promo Status inline dropdown ── */
+.promo-status-wrap {
+    position: relative;
+    display: inline-block;
+}
+
+/* The visible badge button — matches the existing .badge style, no chevron */
+.promo-status-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 999px;
+    border: none;
+    font-family: 'Outfit', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    white-space: nowrap;
+}
+.promo-status-btn:hover { opacity: 0.85; }
+
+.promo-status-btn.is-active {
+    background: #dcfce7;
+    color: #16a34a;
+}
+.promo-status-btn.is-inactive {
+    background: #fef9c3;
+    color: #a16207;
+}
+
+/* Dropdown uses position:fixed so it is never clipped by table overflow:hidden.
+   JS sets top/left on open. */
+.promo-status-dropdown {
+    display: none;
+    position: fixed;          /* escape the table stacking context */
+    min-width: 140px;
+    background: #fff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(15,23,42,0.13);
+    overflow: hidden;
+    z-index: 9999;
+}
+
+/* Bold label at top of the dropdown, matching screenshot */
+.promo-status-dropdown-header {
+    display: block;
+    padding: 10px 14px 6px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #16a34a;          /* green — overridden per-instance via inline style */
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.promo-status-option {
+    display: block;
+    padding: 9px 14px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    text-decoration: none;
+    transition: background 0.12s;
+}
+.promo-status-option:hover {
+    background: #f8fafc;
+    color: #0f172a;
+}
+/* Selected option is bold, inherits the header colour */
+.promo-status-option.is-selected {
+    font-weight: 700;
+    color: #0f172a;
+}
