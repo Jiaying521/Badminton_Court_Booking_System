@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 10, 2026 at 02:00 PM
+-- Generation Time: Jun 12, 2026 at 05:43 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -49,7 +49,59 @@ INSERT INTO `activity_logs` (`id`, `user_id`, `username`, `role`, `action`, `mod
 (3, 1, 'superadmin', 'Superadmin', 'Settings', 'System Settings', 'Updated business hours: open 08:00 – close 01:00, peak 16:00 – 21:00', '::1', '2026-06-10 09:20:06'),
 (4, 1, 'superadmin', 'Superadmin', 'Settings', 'System Settings', 'Updated business hours: open 08:00 – close 01:00, peak 16:00 – 20:00', '::1', '2026-06-10 09:22:43'),
 (5, 1, 'superadmin', 'Superadmin', 'Settings', 'System Settings', 'Updated business hours: open 08:00 – close 01:00, peak 16:00 – 20:00', '::1', '2026-06-10 09:43:21'),
-(6, 1, 'superadmin', 'Superadmin', 'Logout', 'Auth', 'User logged out.', '::1', '2026-06-10 04:17:57');
+(6, 1, 'superadmin', 'Superadmin', 'Logout', 'Auth', 'User logged out.', '::1', '2026-06-10 04:17:57'),
+(7, 1, 'superadmin', 'Superadmin', 'Login', 'Auth', 'User logged in successfully.', '::1', '2026-06-11 17:10:24'),
+(8, 1, 'superadmin', 'Superadmin', 'Logout', 'Auth', 'User logged out.', '::1', '2026-06-11 17:13:37'),
+(9, 1, 'superadmin', 'Superadmin', 'Login', 'Auth', 'User logged in successfully.', '::1', '2026-06-11 17:19:25'),
+(10, 1, 'superadmin', 'Superadmin', 'Logout', 'Auth', 'User logged out.', '::1', '2026-06-11 18:01:49'),
+(11, 1, 'superadmin', 'Superadmin', 'Login', 'Auth', 'User logged in successfully.', '::1', '2026-06-11 18:02:08'),
+(12, 1, 'superadmin', 'Superadmin', 'Status Change', 'Coach Management', 'Set coach \'Coach Lim\' account status to Active', '::1', '2026-06-11 18:07:19'),
+(13, 1, 'superadmin', 'Superadmin', 'Logout', 'Auth', 'User logged out.', '::1', '2026-06-11 18:41:16'),
+(14, 5, 'admin', 'Admin', 'Login', 'Auth', 'User logged in successfully.', '::1', '2026-06-11 18:41:19'),
+(15, 5, 'admin', 'Admin', 'Logout', 'Auth', 'User logged out.', '::1', '2026-06-11 18:41:24'),
+(16, NULL, 'superadmin', NULL, 'Login Failed', 'Auth', 'Failed login attempt for username: superadmin', '::1', '2026-06-11 18:41:28'),
+(17, 1, 'superadmin', 'Superadmin', 'Login', 'Auth', 'User logged in successfully.', '::1', '2026-06-11 18:41:32'),
+(18, 1, 'superadmin', 'Superadmin', 'Login', 'Auth', 'User logged in successfully.', '::1', '2026-06-12 04:33:51'),
+(19, 1, 'superadmin', 'Superadmin', 'Create', 'System Settings', 'Created voucher: RM 1.00 Court Discount (RM1, 10 pts)', '::1', '2026-06-12 04:44:23'),
+(20, 1, 'superadmin', 'Superadmin', 'Delete', 'System Settings', 'Deleted voucher: RM 1.00 Court Discount', '::1', '2026-06-12 04:44:49'),
+(21, 1, 'superadmin', 'Superadmin', 'Update', 'System Settings', 'Updated voucher: RM 10.00 Court Discount (ID 2)', '::1', '2026-06-12 04:45:51'),
+(22, 1, 'superadmin', 'Superadmin', 'Update', 'System Settings', 'Updated voucher: RM 5.00 Court Discount (ID 1)', '::1', '2026-06-12 04:46:57'),
+(23, 1, 'superadmin', 'Superadmin', 'Logout', 'Auth', 'User logged out.', '::1', '2026-06-12 04:50:37'),
+(24, 2, 'Coach Lim', 'Coach', 'Login', 'Auth', 'User logged in successfully.', '::1', '2026-06-12 04:50:43'),
+(25, 2, 'Coach Lim', 'Coach', 'Logout', 'Auth', 'User logged out.', '::1', '2026-06-12 04:51:32'),
+(26, NULL, 'superadmin', NULL, 'Login Failed', 'Auth', 'Failed login attempt for username: superadmin', '::1', '2026-06-12 04:51:42'),
+(27, 1, 'superadmin', 'Superadmin', 'Login', 'Auth', 'User logged in successfully.', '::1', '2026-06-12 04:51:45'),
+(28, 1, 'superadmin', 'Superadmin', 'Status Change', 'Booking Management', 'Booking #52 (wz at Court B): Cancelled → Confirmed', '::1', '2026-06-12 04:52:04'),
+(29, 1, 'superadmin', 'Superadmin', 'Logout', 'Auth', 'User logged out.', '::1', '2026-06-12 04:52:10'),
+(30, 2, 'Coach Lim', 'Coach', 'Login', 'Auth', 'User logged in successfully.', '::1', '2026-06-12 04:52:14'),
+(31, 2, 'Coach Lim', 'Coach', 'Logout', 'Auth', 'User logged out.', '::1', '2026-06-12 04:53:04'),
+(32, 2, 'Coach Lim', 'Coach', 'Login', 'Auth', 'User logged in successfully.', '::1', '2026-06-12 04:54:02'),
+(33, 2, 'Coach Lim', 'Coach', 'Logout', 'Auth', 'User logged out.', '::1', '2026-06-12 04:54:12'),
+(34, 1, 'superadmin', 'Superadmin', 'Login', 'Auth', 'User logged in successfully.', '::1', '2026-06-12 04:54:16'),
+(35, 1, 'superadmin', 'Superadmin', 'Logout', 'Auth', 'User logged out.', '::1', '2026-06-12 04:55:00'),
+(36, 1, 'superadmin', 'Superadmin', 'Login', 'Auth', 'User logged in successfully.', '::1', '2026-06-12 04:57:11'),
+(37, 1, 'superadmin', 'Superadmin', 'Create', 'System Settings', 'Created promo code: 1 (percentage 1)', '::1', '2026-06-12 05:15:40'),
+(38, 1, 'superadmin', 'Superadmin', 'Status Change', 'System Settings', 'Set promo code \'1\' to Inactive', '::1', '2026-06-12 05:15:44'),
+(39, 1, 'superadmin', 'Superadmin', 'Status Change', 'System Settings', 'Set promo code \'1\' to Active', '::1', '2026-06-12 05:15:58'),
+(40, 1, 'superadmin', 'Superadmin', 'Delete', 'System Settings', 'Deleted promo code: 1', '::1', '2026-06-12 05:16:07'),
+(41, 1, 'superadmin', 'Superadmin', 'Update', 'System Settings', 'Updated voucher: RM 5.00 Court Discount (ID 1)', '::1', '2026-06-12 05:18:23'),
+(42, 1, 'superadmin', 'Superadmin', 'Create', 'System Settings', 'Created promo code: SAVE20 (percentage 10)', '::1', '2026-06-12 05:21:19'),
+(43, 1, 'superadmin', 'Superadmin', 'Delete', 'System Settings', 'Deleted promo code: SAVE20', '::1', '2026-06-12 05:22:24'),
+(44, 1, 'superadmin', 'Superadmin', 'Update', 'System Settings', 'Updated voucher: RM 10.00 Court Discount (ID 2)', '::1', '2026-06-12 05:23:13'),
+(45, 1, 'superadmin', 'Superadmin', 'Update', 'System Settings', 'Updated voucher: RM 5.00 Court Discount (ID 1)', '::1', '2026-06-12 05:23:21'),
+(46, 1, 'superadmin', 'Superadmin', 'Update', 'System Settings', 'Updated voucher: RM 5.00 Court Discount (ID 1)', '::1', '2026-06-12 05:23:25'),
+(47, 1, 'superadmin', 'Superadmin', 'Update', 'System Settings', 'Updated voucher: RM 5.00 Court Discount (ID 1)', '::1', '2026-06-12 05:26:59'),
+(48, 1, 'superadmin', 'Superadmin', 'Update', 'System Settings', 'Updated voucher: RM 5.00 Court Discount (ID 1)', '::1', '2026-06-12 05:27:08'),
+(49, 1, 'superadmin', 'Superadmin', 'Create', 'System Settings', 'Created promo code: SAVE20 (percentage 1)', '::1', '2026-06-12 05:27:58'),
+(50, 1, 'superadmin', 'Superadmin', 'Delete', 'System Settings', 'Deleted promo code: SAVE20', '::1', '2026-06-12 05:31:55'),
+(51, 1, 'superadmin', 'Superadmin', 'Create', 'System Settings', 'Created promo code: HI (percentage 12)', '::1', '2026-06-12 05:32:09'),
+(52, 1, 'superadmin', 'Superadmin', 'Status Change', 'System Settings', 'Set promo code \'HI\' to Active', '::1', '2026-06-12 05:33:38'),
+(53, 1, 'superadmin', 'Superadmin', 'Status Change', 'System Settings', 'Set promo code \'HI\' to Inactive', '::1', '2026-06-12 05:33:40'),
+(54, 1, 'superadmin', 'Superadmin', 'Delete', 'System Settings', 'Deleted promo code: HI', '::1', '2026-06-12 05:33:43'),
+(55, 1, 'superadmin', 'Superadmin', 'Create', 'System Settings', 'Created promo code: SAVE20 (percentage 10)', '::1', '2026-06-12 05:34:01'),
+(56, 1, 'superadmin', 'Superadmin', 'Delete', 'System Settings', 'Deleted promo code: SAVE20', '::1', '2026-06-12 05:35:26'),
+(57, 1, 'superadmin', 'Superadmin', 'Create', 'System Settings', 'Created voucher: RM 5.00 Court Discount (RM5, 50 pts)', '::1', '2026-06-12 05:40:41'),
+(58, 1, 'superadmin', 'Superadmin', 'Delete', 'System Settings', 'Deleted voucher: RM 5.00 Court Discount', '::1', '2026-06-12 05:40:48');
 
 -- --------------------------------------------------------
 
@@ -135,6 +187,7 @@ CREATE TABLE `bookings` (
   `session_type` enum('Casual Play','Training','Tournament','Friendly Game') DEFAULT 'Casual Play',
   `total_price` decimal(10,2) NOT NULL COMMENT 'total fee (court + coach)',
   `status` enum('Pending','Confirmed','Cancelled','Completed') DEFAULT 'Pending',
+  `reschedule_count` int(11) DEFAULT 0,
   `cancellation_fee` decimal(10,2) DEFAULT 0.00,
   `notes` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -145,63 +198,65 @@ CREATE TABLE `bookings` (
 -- Dumping data for table `bookings`
 --
 
-INSERT INTO `bookings` (`id`, `user_id`, `court_id`, `booking_date`, `start_time`, `end_time`, `total_hours`, `coach_id`, `coach_hours`, `coach_price_total`, `session_type`, `total_price`, `status`, `cancellation_fee`, `notes`, `created_at`, `completion_photo`) VALUES
-(6, 2, 1, '2026-05-02', '09:00:00', '11:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 0.00, 'Alice morning training', '2026-04-30 16:34:47', NULL),
-(7, 3, 2, '2026-05-03', '14:00:00', '16:00:00', 2, NULL, 0, 0.00, '', 50.00, 'Pending', 0.00, 'Michael weekend match', '2026-04-30 16:34:47', NULL),
-(8, 4, 1, '2026-05-04', '08:00:00', '10:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 0.00, 'Siti fitness practice', '2026-04-30 16:34:47', NULL),
-(9, 5, 3, '2026-05-04', '18:00:00', '20:00:00', 2, NULL, 0, 0.00, '', 50.00, 'Confirmed', 0.00, 'Ahmad evening session', '2026-04-30 16:34:47', NULL),
-(10, 6, 2, '2026-05-05', '10:00:00', '12:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Cancelled', 0.00, 'Rachel cancelled booking', '2026-04-30 16:34:47', NULL),
-(11, 7, 1, '2026-05-05', '13:00:00', '15:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 0.00, 'Daniel weekday practice', '2026-04-30 16:34:47', NULL),
-(12, 8, 3, '2026-05-06', '16:00:00', '18:00:00', 2, NULL, 0, 0.00, '', 50.00, 'Completed', 0.00, 'Priya competitive game', '2026-04-30 16:34:47', NULL),
-(13, 9, 2, '2026-05-06', '19:00:00', '21:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 0.00, 'Jason night practice', '2026-04-30 16:34:47', NULL),
-(14, 10, 1, '2026-05-07', '07:00:00', '09:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 0.00, 'Nurul early session', '2026-04-30 16:34:47', NULL),
-(15, 11, 1, '2026-05-15', '21:00:00', '23:00:00', 2, 0, 0, 0.00, 'Casual Play', 30.00, 'Cancelled', 0.00, '', '2026-05-07 03:29:21', NULL),
-(16, 11, 1, '2026-05-08', '09:00:00', '11:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 0.00, '', '2026-05-07 03:40:37', NULL),
-(17, 11, 1, '2026-05-08', '11:00:00', '01:00:00', 14, 0, 0, 0.00, 'Casual Play', 195.00, 'Cancelled', 0.00, '', '2026-05-07 03:43:56', NULL),
-(18, 11, 1, '2026-05-08', '12:00:00', '18:00:00', 6, 0, 0, 0.00, 'Casual Play', 80.00, 'Cancelled', 0.00, '', '2026-05-07 03:44:12', NULL),
-(19, 11, 3, '2026-05-08', '08:00:00', '10:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 0.00, '', '2026-05-07 03:50:54', NULL),
-(20, 11, 3, '2026-05-08', '14:00:00', '20:00:00', 6, 0, 0, 0.00, 'Casual Play', 90.00, 'Cancelled', 0.00, '', '2026-05-07 03:59:49', NULL),
-(21, 11, 1, '2026-05-23', '08:00:00', '09:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', 0.00, '', '2026-05-07 04:02:04', NULL),
-(22, 11, 1, '2026-05-22', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', 0.00, '', '2026-05-07 04:02:30', NULL),
-(23, 11, 2, '2026-05-08', '16:00:00', '21:00:00', 5, 0, 0, 0.00, 'Casual Play', 75.00, 'Cancelled', 0.00, '', '2026-05-07 04:02:54', NULL),
-(24, 11, 1, '2026-05-15', '10:00:00', '16:00:00', 6, 0, 0, 0.00, 'Casual Play', 70.00, 'Cancelled', 0.00, '', '2026-05-07 04:05:31', NULL),
-(25, 11, 2, '2026-05-08', '13:00:00', '14:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', 0.00, '', '2026-05-07 04:05:43', NULL),
-(26, 11, 2, '2026-05-29', '13:00:00', '00:00:00', 11, 0, 0, 0.00, 'Casual Play', 160.00, 'Cancelled', 0.00, '', '2026-05-07 04:06:31', NULL),
-(27, 11, 1, '2026-05-08', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-07 04:16:32', NULL),
-(28, 11, 1, '2026-05-07', '13:00:00', '14:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Confirmed', 0.00, '', '2026-05-07 04:24:15', NULL),
-(29, 11, 2, '2026-05-08', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Pending', 0.00, '', '2026-05-07 04:40:34', NULL),
-(30, 11, 2, '2026-05-28', '08:00:00', '09:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-07 05:24:25', NULL),
-(31, 11, 2, '2026-05-14', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-07 05:33:03', NULL),
-(32, 11, 2, '2026-05-23', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Confirmed', 0.00, '', '2026-05-07 05:37:58', NULL),
-(33, 1, 5, '2026-05-18', '16:00:00', '17:00:00', 1, 0, 0, 0.00, 'Casual Play', 15.00, 'Confirmed', 0.00, '', '2026-05-18 07:36:21', NULL),
-(34, 1, 8, '2026-05-18', '16:00:00', '17:00:00', 1, 4, 1, 10.00, 'Casual Play', 224.00, 'Confirmed', 0.00, '', '2026-05-18 07:59:13', NULL),
-(35, 1, 1, '2026-05-21', '09:00:00', '11:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 10.00, '', '2026-05-20 10:42:20', NULL),
-(36, 1, 1, '2026-05-22', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 10.00, '', '2026-05-20 11:02:24', NULL),
-(37, 1, 1, '2026-05-21', '14:00:00', '15:00:00', 1, 0, 0, 0.00, 'Casual Play', 15.00, 'Cancelled', 10.00, '', '2026-05-20 11:11:59', NULL),
-(38, 1, 1, '2026-05-21', '15:00:00', '16:00:00', 1, 0, 0, 0.00, 'Casual Play', 15.00, 'Cancelled', 10.00, '', '2026-05-20 11:16:04', NULL),
-(39, 1, 2, '2026-05-21', '12:00:00', '14:00:00', 2, 0, 0, 0.00, 'Casual Play', 319.00, 'Confirmed', 0.00, '', '2026-05-20 11:28:04', NULL),
-(40, 1, 3, '2026-05-21', '09:00:00', '11:00:00', 2, 0, 0, 0.00, 'Casual Play', 219.00, 'Cancelled', 10.00, '', '2026-05-20 11:28:53', NULL),
-(41, 1, 3, '2026-05-21', '11:00:00', '13:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 10.00, '', '2026-05-20 11:31:45', NULL),
-(42, 1, 3, '2026-05-21', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Confirmed', 0.00, '', '2026-05-20 11:35:21', NULL),
-(43, 1, 1, '2026-05-21', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Confirmed', 0.00, '', '2026-05-20 11:40:50', NULL),
-(44, 1, 1, '2026-05-29', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-20 11:49:45', NULL),
-(45, 1, 1, '2026-05-21', '13:00:00', '15:00:00', 2, 0, 0, 0.00, 'Casual Play', 25.00, 'Confirmed', 0.00, '', '2026-05-20 12:21:58', NULL),
-(46, 1, 1, '2026-05-22', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Confirmed', 0.00, '', '2026-05-21 04:36:43', NULL),
-(47, 1, 2, '2026-05-28', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-21 06:43:16', NULL),
-(48, 1, 8, '2026-05-21', '15:00:00', '16:00:00', 1, 1, 1, 25.00, 'Casual Play', 40.00, 'Cancelled', 0.00, '', '2026-05-21 06:43:43', NULL),
-(49, 1, 8, '2026-05-21', '16:00:00', '17:00:00', 1, 1, 1, 25.00, 'Casual Play', 40.00, 'Cancelled', 0.00, '', '2026-05-21 06:44:20', NULL),
-(50, 1, 2, '2026-05-29', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-21 15:28:45', NULL),
-(51, 1, 2, '2026-05-27', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-05-26 17:05:37', NULL),
-(52, 11, 2, '2026-06-10', '08:45:00', '11:42:00', 3, 1, 3, 150.00, 'Casual Play', 180.00, 'Pending', 0.00, '', '2026-06-05 00:42:35', NULL),
-(53, 1, 2, '2026-06-24', '09:00:00', '18:00:00', 9, 0, 0, 0.00, 'Casual Play', 110.00, 'Pending', 0.00, '', '2026-06-05 03:28:27', NULL),
-(54, 1, 2, '2026-06-17', '13:00:00', '18:00:00', 5, 0, 0, 0.00, 'Casual Play', 70.00, 'Pending', 0.00, '', '2026-06-05 13:27:19', NULL),
-(55, 12, 10, '2026-06-09', '17:00:00', '18:00:00', 1, 2, 1, 20.00, 'Casual Play', 298.00, 'Confirmed', 0.00, '', '2026-06-07 14:11:32', NULL),
-(56, 12, 1, '2026-06-08', '08:00:00', '10:00:00', 2, 0, 0, 0.00, 'Casual Play', 719.00, 'Pending', 0.00, '', '2026-06-07 15:14:10', NULL),
-(57, 12, 1, '2026-06-10', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', 10.00, '', '2026-06-10 00:40:22', NULL),
-(58, 12, 2, '2026-06-17', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', 0.00, '', '2026-06-10 02:48:56', NULL),
-(59, 12, 2, '2026-06-24', '22:00:00', '23:00:00', 1, 0, 0, 0.00, 'Casual Play', 814.00, 'Cancelled', 0.00, '', '2026-06-10 02:56:09', NULL),
-(60, 12, 3, '2026-06-25', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Confirmed', 0.00, '', '2026-06-10 02:57:35', NULL),
-(61, 12, 10, '2026-06-10', '12:00:00', '13:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0.00, '', '2026-06-10 02:58:37', NULL);
+INSERT INTO `bookings` (`id`, `user_id`, `court_id`, `booking_date`, `start_time`, `end_time`, `total_hours`, `coach_id`, `coach_hours`, `coach_price_total`, `session_type`, `total_price`, `status`, `reschedule_count`, `cancellation_fee`, `notes`, `created_at`, `completion_photo`) VALUES
+(6, 2, 1, '2026-05-02', '09:00:00', '11:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 0, 0.00, 'Alice morning training', '2026-04-30 16:34:47', NULL),
+(7, 3, 2, '2026-05-03', '14:00:00', '16:00:00', 2, NULL, 0, 0.00, '', 50.00, 'Pending', 0, 0.00, 'Michael weekend match', '2026-04-30 16:34:47', NULL),
+(8, 4, 1, '2026-05-04', '08:00:00', '10:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 0, 0.00, 'Siti fitness practice', '2026-04-30 16:34:47', NULL),
+(9, 5, 3, '2026-05-04', '18:00:00', '20:00:00', 2, NULL, 0, 0.00, '', 50.00, 'Confirmed', 0, 0.00, 'Ahmad evening session', '2026-04-30 16:34:47', NULL),
+(10, 6, 2, '2026-05-05', '10:00:00', '12:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Cancelled', 0, 0.00, 'Rachel cancelled booking', '2026-04-30 16:34:47', NULL),
+(11, 7, 1, '2026-05-05', '13:00:00', '15:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 0, 0.00, 'Daniel weekday practice', '2026-04-30 16:34:47', NULL),
+(12, 8, 3, '2026-05-06', '16:00:00', '18:00:00', 2, NULL, 0, 0.00, '', 50.00, 'Completed', 0, 0.00, 'Priya competitive game', '2026-04-30 16:34:47', NULL),
+(13, 9, 2, '2026-05-06', '19:00:00', '21:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 0, 0.00, 'Jason night practice', '2026-04-30 16:34:47', NULL),
+(14, 10, 1, '2026-05-07', '07:00:00', '09:00:00', 2, NULL, 0, 0.00, 'Training', 40.00, 'Confirmed', 0, 0.00, 'Nurul early session', '2026-04-30 16:34:47', NULL),
+(15, 11, 1, '2026-05-15', '21:00:00', '23:00:00', 2, 0, 0, 0.00, 'Casual Play', 30.00, 'Cancelled', 0, 0.00, '', '2026-05-07 03:29:21', NULL),
+(16, 11, 1, '2026-05-08', '09:00:00', '11:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 0, 0.00, '', '2026-05-07 03:40:37', NULL),
+(17, 11, 1, '2026-05-08', '11:00:00', '01:00:00', 14, 0, 0, 0.00, 'Casual Play', 195.00, 'Cancelled', 0, 0.00, '', '2026-05-07 03:43:56', NULL),
+(18, 11, 1, '2026-05-08', '12:00:00', '18:00:00', 6, 0, 0, 0.00, 'Casual Play', 80.00, 'Cancelled', 0, 0.00, '', '2026-05-07 03:44:12', NULL),
+(19, 11, 3, '2026-05-08', '08:00:00', '10:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 0, 0.00, '', '2026-05-07 03:50:54', NULL),
+(20, 11, 3, '2026-05-08', '14:00:00', '20:00:00', 6, 0, 0, 0.00, 'Casual Play', 90.00, 'Cancelled', 0, 0.00, '', '2026-05-07 03:59:49', NULL),
+(21, 11, 1, '2026-05-23', '08:00:00', '09:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', 0, 0.00, '', '2026-05-07 04:02:04', NULL),
+(22, 11, 1, '2026-05-22', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', 0, 0.00, '', '2026-05-07 04:02:30', NULL),
+(23, 11, 2, '2026-05-08', '16:00:00', '21:00:00', 5, 0, 0, 0.00, 'Casual Play', 75.00, 'Cancelled', 0, 0.00, '', '2026-05-07 04:02:54', NULL),
+(24, 11, 1, '2026-05-15', '10:00:00', '16:00:00', 6, 0, 0, 0.00, 'Casual Play', 70.00, 'Cancelled', 0, 0.00, '', '2026-05-07 04:05:31', NULL),
+(25, 11, 2, '2026-05-08', '13:00:00', '14:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', 0, 0.00, '', '2026-05-07 04:05:43', NULL),
+(26, 11, 2, '2026-05-29', '13:00:00', '00:00:00', 11, 0, 0, 0.00, 'Casual Play', 160.00, 'Cancelled', 0, 0.00, '', '2026-05-07 04:06:31', NULL),
+(27, 11, 1, '2026-05-08', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0, 0.00, '', '2026-05-07 04:16:32', NULL),
+(28, 11, 1, '2026-05-07', '13:00:00', '14:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Confirmed', 0, 0.00, '', '2026-05-07 04:24:15', NULL),
+(29, 11, 2, '2026-05-08', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Pending', 0, 0.00, '', '2026-05-07 04:40:34', NULL),
+(30, 11, 2, '2026-05-28', '08:00:00', '09:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0, 0.00, '', '2026-05-07 05:24:25', NULL),
+(31, 11, 2, '2026-05-14', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0, 0.00, '', '2026-05-07 05:33:03', NULL),
+(32, 11, 2, '2026-05-23', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Confirmed', 0, 0.00, '', '2026-05-07 05:37:58', NULL),
+(33, 1, 5, '2026-05-18', '16:00:00', '17:00:00', 1, 0, 0, 0.00, 'Casual Play', 15.00, 'Confirmed', 0, 0.00, '', '2026-05-18 07:36:21', NULL),
+(34, 1, 8, '2026-05-18', '16:00:00', '17:00:00', 1, 4, 1, 10.00, 'Casual Play', 224.00, 'Confirmed', 0, 0.00, '', '2026-05-18 07:59:13', NULL),
+(35, 1, 1, '2026-05-21', '09:00:00', '11:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 0, 10.00, '', '2026-05-20 10:42:20', NULL),
+(36, 1, 1, '2026-05-22', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 0, 10.00, '', '2026-05-20 11:02:24', NULL),
+(37, 1, 1, '2026-05-21', '14:00:00', '15:00:00', 1, 0, 0, 0.00, 'Casual Play', 15.00, 'Cancelled', 0, 10.00, '', '2026-05-20 11:11:59', NULL),
+(38, 1, 1, '2026-05-21', '15:00:00', '16:00:00', 1, 0, 0, 0.00, 'Casual Play', 15.00, 'Cancelled', 0, 10.00, '', '2026-05-20 11:16:04', NULL),
+(39, 1, 2, '2026-05-21', '12:00:00', '14:00:00', 2, 0, 0, 0.00, 'Casual Play', 319.00, 'Confirmed', 0, 0.00, '', '2026-05-20 11:28:04', NULL),
+(40, 1, 3, '2026-05-21', '09:00:00', '11:00:00', 2, 0, 0, 0.00, 'Casual Play', 219.00, 'Cancelled', 0, 10.00, '', '2026-05-20 11:28:53', NULL),
+(41, 1, 3, '2026-05-21', '11:00:00', '13:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 0, 10.00, '', '2026-05-20 11:31:45', NULL),
+(42, 1, 3, '2026-05-21', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Confirmed', 0, 0.00, '', '2026-05-20 11:35:21', NULL),
+(43, 1, 1, '2026-05-21', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Confirmed', 0, 0.00, '', '2026-05-20 11:40:50', NULL),
+(44, 1, 1, '2026-05-29', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0, 0.00, '', '2026-05-20 11:49:45', NULL),
+(45, 1, 1, '2026-05-21', '13:00:00', '15:00:00', 2, 0, 0, 0.00, 'Casual Play', 25.00, 'Confirmed', 0, 0.00, '', '2026-05-20 12:21:58', NULL),
+(46, 1, 1, '2026-05-22', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Confirmed', 0, 0.00, '', '2026-05-21 04:36:43', NULL),
+(47, 1, 2, '2026-05-28', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0, 0.00, '', '2026-05-21 06:43:16', NULL),
+(48, 1, 8, '2026-05-21', '15:00:00', '16:00:00', 1, 1, 1, 25.00, 'Casual Play', 40.00, 'Cancelled', 0, 0.00, '', '2026-05-21 06:43:43', NULL),
+(49, 1, 8, '2026-05-21', '16:00:00', '17:00:00', 1, 1, 1, 25.00, 'Casual Play', 40.00, 'Cancelled', 0, 0.00, '', '2026-05-21 06:44:20', NULL),
+(50, 1, 2, '2026-05-29', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0, 0.00, '', '2026-05-21 15:28:45', NULL),
+(51, 1, 2, '2026-05-27', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Pending', 0, 0.00, '', '2026-05-26 17:05:37', NULL),
+(52, 11, 2, '2026-06-10', '08:45:00', '11:42:00', 3, 1, 3, 150.00, 'Casual Play', 180.00, 'Confirmed', 0, 0.00, '', '2026-06-05 00:42:35', NULL),
+(53, 1, 2, '2026-06-24', '09:00:00', '18:00:00', 9, 0, 0, 0.00, 'Casual Play', 110.00, 'Pending', 0, 0.00, '', '2026-06-05 03:28:27', NULL),
+(54, 1, 2, '2026-06-17', '13:00:00', '18:00:00', 5, 0, 0, 0.00, 'Casual Play', 70.00, 'Pending', 0, 0.00, '', '2026-06-05 13:27:19', NULL),
+(55, 12, 10, '2026-06-09', '17:00:00', '18:00:00', 1, 2, 1, 20.00, 'Casual Play', 298.00, 'Confirmed', 0, 0.00, '', '2026-06-07 14:11:32', NULL),
+(56, 12, 1, '2026-06-08', '08:00:00', '10:00:00', 2, 0, 0, 0.00, 'Casual Play', 719.00, 'Pending', 0, 0.00, '', '2026-06-07 15:14:10', NULL),
+(57, 12, 1, '2026-06-10', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', 0, 10.00, '', '2026-06-10 00:40:22', NULL),
+(58, 12, 2, '2026-06-17', '09:00:00', '10:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', 0, 0.00, '', '2026-06-10 02:48:56', NULL),
+(59, 12, 2, '2026-06-24', '22:00:00', '23:00:00', 1, 0, 0, 0.00, 'Casual Play', 814.00, 'Cancelled', 0, 0.00, '', '2026-06-10 02:56:09', NULL),
+(60, 12, 3, '2026-06-25', '10:00:00', '11:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', 0, 0.00, '', '2026-06-10 02:57:35', NULL),
+(61, 12, 10, '2026-06-10', '12:00:00', '13:00:00', 1, 0, 0, 0.00, 'Casual Play', 10.00, 'Cancelled', 0, 10.00, '', '2026-06-10 02:58:37', NULL),
+(62, 12, 3, '2026-06-25', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 0, 0.00, '', '2026-06-12 02:21:10', NULL),
+(63, 12, 3, '2026-06-12', '10:00:00', '12:00:00', 2, 0, 0, 0.00, 'Casual Play', 20.00, 'Cancelled', 0, 20.00, '', '2026-06-12 02:22:23', NULL);
 
 -- --------------------------------------------------------
 
@@ -565,7 +620,12 @@ INSERT INTO `notifications` (`id`, `recipient_role`, `recipient_id`, `type`, `ti
 (45, 'Admin', NULL, 'new_booking', 'New Booking Pending', 'Booking #49 from John Doe for Court H on 21 May 2026 is waiting for confirmation.', 49, 'booking', 0, '2026-06-07 11:12:50'),
 (46, 'Superadmin', NULL, 'new_booking', 'New Booking Pending', 'Booking #49 from John Doe for Court H on 21 May 2026 is waiting for confirmation.', 49, 'booking', 1, '2026-06-07 11:12:50'),
 (47, 'Admin', NULL, 'cancelled', 'Coach No-Show', 'Booking #49 for John Doe at Court H on 21 May 2026 04:00 PM was marked as a coach no-show (coach never responded). Customer refunded RM 50.00 (incl. compensation). Coach has been suspended for 3 days (strike #1).', 49, 'booking', 0, '2026-06-07 11:12:50'),
-(48, 'Superadmin', NULL, 'cancelled', 'Coach No-Show', 'Booking #49 for John Doe at Court H on 21 May 2026 04:00 PM was marked as a coach no-show (coach never responded). Customer refunded RM 50.00 (incl. compensation). Coach has been suspended for 3 days (strike #1).', 49, 'booking', 1, '2026-06-07 11:12:50');
+(48, 'Superadmin', NULL, 'cancelled', 'Coach No-Show', 'Booking #49 for John Doe at Court H on 21 May 2026 04:00 PM was marked as a coach no-show (coach never responded). Customer refunded RM 50.00 (incl. compensation). Coach has been suspended for 3 days (strike #1).', 49, 'booking', 1, '2026-06-07 11:12:50'),
+(49, 'Admin', NULL, 'cancelled', 'Coach No-Show', 'Booking #52 for wz at Court B on 10 Jun 2026 08:45 AM was marked as a coach no-show (coach never responded). Customer refunded RM 190.00 (incl. compensation). Coach has been suspended for 3 days (strike #1).', 52, 'booking', 0, '2026-06-11 15:11:04'),
+(50, 'Superadmin', NULL, 'cancelled', 'Coach No-Show', 'Booking #52 for wz at Court B on 10 Jun 2026 08:45 AM was marked as a coach no-show (coach never responded). Customer refunded RM 190.00 (incl. compensation). Coach has been suspended for 3 days (strike #1).', 52, 'booking', 1, '2026-06-11 15:11:04'),
+(51, 'Admin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #52 for wz at Court B on 10 Jun 2026 08:45 AM has been confirmed.', 52, 'booking', 0, '2026-06-12 02:52:01'),
+(52, 'Superadmin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #52 for wz at Court B on 10 Jun 2026 08:45 AM has been confirmed.', 52, 'booking', 1, '2026-06-12 02:52:01'),
+(53, 'Coach', 2, 'confirmed', 'Session Confirmed', 'Your coaching session at Court B on 10 Jun 2026 08:45 AM has been confirmed.', 52, 'booking', 0, '2026-06-12 02:52:01');
 
 -- --------------------------------------------------------
 
@@ -636,7 +696,11 @@ INSERT INTO `payments` (`payment_id`, `booking_id`, `amount`, `discount_applied`
 (34, 58, 0.00, 0.00, 10.00, 'Refund', 'success', 'REF_1781060055_58', '2026-06-10 02:54:15'),
 (35, 59, 814.00, 20.00, 794.00, 'App Wallet', 'success', NULL, '2026-06-10 02:56:24'),
 (36, 59, 0.00, 0.00, 814.00, 'Refund', 'success', 'REF_1781060197_59', '2026-06-10 02:56:37'),
-(37, 60, 10.00, 0.00, 10.00, 'App Wallet', 'success', NULL, '2026-06-10 02:57:58');
+(37, 60, 10.00, 0.00, 10.00, 'App Wallet', 'success', NULL, '2026-06-10 02:57:58'),
+(38, 60, 0.00, 0.00, 10.00, 'Refund', 'success', 'REF_1781230809_60', '2026-06-12 02:20:09'),
+(39, 62, 20.00, 0.00, 20.00, 'App Wallet', 'success', NULL, '2026-06-12 02:21:16'),
+(40, 62, 0.00, 0.00, 20.00, 'Refund', 'success', 'REF_1781230881_62', '2026-06-12 02:21:21'),
+(41, 63, 20.00, 0.00, 20.00, 'App Wallet', 'success', NULL, '2026-06-12 02:22:26');
 
 -- --------------------------------------------------------
 
@@ -710,8 +774,8 @@ CREATE TABLE `promo_codes` (
   `code` varchar(50) NOT NULL,
   `discount_type` enum('percentage','fixed') NOT NULL,
   `discount_value` decimal(10,2) NOT NULL,
-  `valid_from` date NOT NULL,
-  `valid_until` date NOT NULL,
+  `valid_from` datetime NOT NULL,
+  `valid_until` datetime NOT NULL,
   `is_active` tinyint(1) DEFAULT 1,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -797,8 +861,8 @@ INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `gender`, `crea
 (8, 'Priya Kumar', 'priya@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60188990011', NULL, '2026-04-30 16:34:47', 0.00, 0, NULL),
 (9, 'Jason Teh', 'jason@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60199001122', NULL, '2026-04-30 16:34:47', 0.00, 0, NULL),
 (10, 'Nurul Huda', 'nurul@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60110101010', NULL, '2026-04-30 16:34:47', 0.00, 0, NULL),
-(11, 'wz', 'zhefurry@gmail.com', '$2y$10$ti8t5iVME5.hWJhMY0cE5ukBX67z0z4xPn8HL0pskzUS9Kn0PL9iS', '+60123456789', NULL, '2026-04-14 03:28:20', 70.00, 0, ''),
-(12, 'CHIN ZHEN XIN', 'chinzx1814@gmail.com', '$2y$10$JCc6Tn0hxcgIcqRxr6q5AeLo071m.WGAWVi6gegpajbaHHmdQid/6', '+60136973118', NULL, '2026-06-07 11:59:31', 1702.00, 1892, NULL);
+(11, 'wz', 'zhefurry@gmail.com', '$2y$10$ti8t5iVME5.hWJhMY0cE5ukBX67z0z4xPn8HL0pskzUS9Kn0PL9iS', '+60123456789', NULL, '2026-04-14 03:28:20', 260.00, 0, ''),
+(12, 'CHIN ZHEN XIN', 'chinzx1814@gmail.com', '$2y$10$JCc6Tn0hxcgIcqRxr6q5AeLo071m.WGAWVi6gegpajbaHHmdQid/6', '+60136973118', NULL, '2026-06-07 11:59:31', 1692.00, 1702, 'Pictures/Admin_Module/users/user_12_1781193862.jpg');
 
 -- --------------------------------------------------------
 
@@ -821,7 +885,9 @@ CREATE TABLE `user_vouchers` (
 INSERT INTO `user_vouchers` (`id`, `user_id`, `voucher_id`, `is_used`, `redeemed_at`) VALUES
 (1, 1, 1, 1, '2026-05-21 04:42:19'),
 (2, 12, 1, 0, '2026-06-07 13:57:04'),
-(3, 12, 3, 1, '2026-06-07 13:57:43');
+(3, 12, 3, 1, '2026-06-07 13:57:43'),
+(4, 12, 2, 0, '2026-06-12 02:45:59'),
+(5, 12, 2, 0, '2026-06-12 02:46:04');
 
 -- --------------------------------------------------------
 
@@ -1009,7 +1075,7 @@ ALTER TABLE `voucher`
 -- AUTO_INCREMENT for table `activity_logs`
 --
 ALTER TABLE `activity_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
 
 --
 -- AUTO_INCREMENT for table `admins`
@@ -1021,7 +1087,7 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=64;
 
 --
 -- AUTO_INCREMENT for table `booking_addons`
@@ -1075,7 +1141,7 @@ ALTER TABLE `court_availability`
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
 
 --
 -- AUTO_INCREMENT for table `otp_codes`
@@ -1087,7 +1153,7 @@ ALTER TABLE `otp_codes`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 
 --
 -- AUTO_INCREMENT for table `products`
@@ -1099,7 +1165,7 @@ ALTER TABLE `products`
 -- AUTO_INCREMENT for table `promo_codes`
 --
 ALTER TABLE `promo_codes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `settings`
@@ -1123,13 +1189,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `user_vouchers`
 --
 ALTER TABLE `user_vouchers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `voucher`
 --
 ALTER TABLE `voucher`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Constraints for dumped tables
@@ -1178,15 +1244,6 @@ ALTER TABLE `court_availability`
 --
 ALTER TABLE `payments`
   ADD CONSTRAINT `fk_payments_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE;
-
--- 1. 添加字段（如果没有）
-ALTER TABLE bookings ADD COLUMN reschedule_count INT DEFAULT 0 AFTER status;
-
--- 2. 重置所有值为0
-UPDATE bookings SET reschedule_count = 0;
-
--- 3. 确认修改
-SELECT id, status, reschedule_count FROM bookings;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
