@@ -327,7 +327,7 @@ body::before {
                                     <option value="Hong Leong Connect">Hong Leong Bank</option>
                                 </select>
                             </div>
-                            
+
                             <div class="form-group">
                                 <label>Online Banking Username</label>
                                 <input type="text" placeholder="e.g. smash_player99" class="gateway-input" required autocomplete="off">
@@ -393,7 +393,7 @@ body::before {
 
                     <?php elseif ($sub_method === 'TNG'): ?>
                         <div class="clone-container" id="tngMainContainer" style="background: #005eb8; color: white; text-align:center; border:none; transition: 0.3s;">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Touch_%27n_Go_eWallet_logo.svg/1200px-Touch_%27n_Go_eWallet_logo.svg.png" width="80" style="background: white; border-radius: 5px; padding: 5px;">
+                            <img src="https://www.contactcenterworld.com/images/company/tng-digital-sdn-bhd-600px-logo.jpg" width="90" style="display: block; margin: 0 auto; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.1)); border-radius: 12px;">
                             
                             <div id="tngScanningView">
                                 <h3 style="margin-top:12px; font-weight:600;"><i class="fas fa-qrcode"></i> Scan with your Mobile Phone</h3>
