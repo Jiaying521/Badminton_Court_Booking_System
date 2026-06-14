@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 12, 2026 at 05:43 AM
+-- Generation Time: Jun 14, 2026 at 02:50 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -101,7 +101,14 @@ INSERT INTO `activity_logs` (`id`, `user_id`, `username`, `role`, `action`, `mod
 (55, 1, 'superadmin', 'Superadmin', 'Create', 'System Settings', 'Created promo code: SAVE20 (percentage 10)', '::1', '2026-06-12 05:34:01'),
 (56, 1, 'superadmin', 'Superadmin', 'Delete', 'System Settings', 'Deleted promo code: SAVE20', '::1', '2026-06-12 05:35:26'),
 (57, 1, 'superadmin', 'Superadmin', 'Create', 'System Settings', 'Created voucher: RM 5.00 Court Discount (RM5, 50 pts)', '::1', '2026-06-12 05:40:41'),
-(58, 1, 'superadmin', 'Superadmin', 'Delete', 'System Settings', 'Deleted voucher: RM 5.00 Court Discount', '::1', '2026-06-12 05:40:48');
+(58, 1, 'superadmin', 'Superadmin', 'Delete', 'System Settings', 'Deleted voucher: RM 5.00 Court Discount', '::1', '2026-06-12 05:40:48'),
+(59, 1, 'superadmin', 'Superadmin', 'Logout', 'Auth', 'User logged out.', '::1', '2026-06-12 05:44:58'),
+(60, 1, 'superadmin', 'Superadmin', 'Login', 'Auth', 'User logged in successfully.', '::1', '2026-06-14 14:00:17'),
+(61, 1, 'superadmin', 'Superadmin', 'Update', 'Admin Management', 'Updated account: CHAI WEN ZHE (CHAI.WEN.ZHE@student.mmu.edu.my)', '::1', '2026-06-14 14:28:06'),
+(62, 1, 'superadmin', 'Superadmin', 'Create', 'Admin Management', 'Created Admin account: GAN JIA YING (GAN.JIA.YING@student.mmu.edu.my)', '::1', '2026-06-14 14:28:50'),
+(63, 1, 'superadmin', 'Superadmin', 'Update', 'Admin Management', 'Updated account: GAN JIA YING (GAN.JIA.YING@student.mmu.edu.my)', '::1', '2026-06-14 14:29:33'),
+(64, 1, 'superadmin', 'Superadmin', 'Update', 'Coach Management', 'Updated coach profile: Coach Wong (ID 2)', '::1', '2026-06-14 14:44:17'),
+(65, 1, 'superadmin', 'Superadmin', 'Update', 'Coach Management', 'Updated coach profile: Coach Tan (ID 3)', '::1', '2026-06-14 14:44:27');
 
 -- --------------------------------------------------------
 
@@ -132,9 +139,10 @@ CREATE TABLE `admins` (
 INSERT INTO `admins` (`id`, `username`, `email`, `password`, `role`, `status`, `specialisation`, `is_coach`, `coach_price_per_hour`, `reset_token`, `token_expiry`, `created_at`, `suspended_until`) VALUES
 (1, 'superadmin', 'chinzx1814@gmail.com', '$2y$10$x5NsQGVwkkp5f4oivtMd..D9tsrJLMICxeSDnSe0peEwVN77QeFGu', 'Superadmin', 'Active', NULL, 0, 0.00, '6e65f2df57e2231428b98e31d6b08f18c8d1acfb3326db32d903e640866bb7fe', '2026-06-05 06:43:54', '2026-04-30 16:17:09', NULL),
 (2, 'Coach Lim', 'coach.lim@smasharena.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Singles Coaching', 1, 50.00, NULL, NULL, '2026-04-30 16:17:09', NULL),
-(3, 'Coach Wong', 'coach.wong@smasharena.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Doubles Coaching', 1, 30.00, NULL, NULL, '2026-04-30 16:17:09', NULL),
-(4, 'Coach Tan', 'coach.tan@smasharena.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Junior Development', 1, 30.00, NULL, NULL, '2026-04-30 16:17:09', NULL),
-(5, 'admin', '', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Admin', 'Active', NULL, 0, 0.00, NULL, NULL, '2026-04-30 16:37:03', NULL);
+(3, 'Coach Wong', 'CoachWong2026@gmail.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Doubles Coaching', 1, 30.00, NULL, NULL, '2026-04-30 16:17:09', NULL),
+(4, 'Coach Tan', 'CoachTan2026@gmail.com', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Coach', 'Active', 'Junior Development', 1, 30.00, NULL, NULL, '2026-04-30 16:17:09', NULL),
+(5, 'CHAI WEN ZHE', 'CHAI.WEN.ZHE@student.mmu.edu.my', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Admin', 'Active', NULL, 0, 0.00, NULL, NULL, '2026-04-30 16:37:03', NULL),
+(10, 'GAN JIA YING', 'GAN.JIA.YING@student.mmu.edu.my', '$2y$10$0lBfa23QtHMftiHohzzAjeQQKBt5qNffLSkbubScELAAKyDJO18PK', 'Admin', 'Active', NULL, 0, 0.00, NULL, NULL, '2026-06-14 12:28:50', NULL);
 
 --
 -- Triggers `admins`
@@ -1075,13 +1083,13 @@ ALTER TABLE `voucher`
 -- AUTO_INCREMENT for table `activity_logs`
 --
 ALTER TABLE `activity_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
 
 --
 -- AUTO_INCREMENT for table `admins`
 --
 ALTER TABLE `admins`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `bookings`

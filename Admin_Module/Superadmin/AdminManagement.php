@@ -122,6 +122,57 @@ if (isset($_POST['add_account'])) {
     }
 }
 
+// Handle edit admin (username + email)
+if (isset($_POST['update_admin'])) {
+    $aid       = intval($_POST['admin_id']);
+    $new_user  = mysqli_real_escape_string($conn, $_POST['username']);
+    $new_email = mysqli_real_escape_string($conn, $_POST['email']);
+
+    // Load the target account to enforce permission rules.
+    $target = mysqli_fetch_assoc(mysqli_query($conn, "SELECT username, role FROM admins WHERE id = $aid"));
+
+    if (!$target) {
+        $toasts[] = ['text' => 'Account not found!', 'type' => 'error'];
+    } elseif ($target['role'] === 'Superadmin' && $target['username'] !== $username) {
+        // A Superadmin account can only be edited by that Superadmin himself.
+        $toasts[] = ['text' => 'You can only edit your own Superadmin account!', 'type' => 'error'];
+    } else {
+        // Make sure the new username / email isn't used by a different account.
+        $dupe = mysqli_query($conn, "SELECT username, email FROM admins WHERE (username = '$new_user' OR email = '$new_email') AND id != $aid");
+        if (mysqli_num_rows($dupe) > 0) {
+            $found = mysqli_fetch_assoc($dupe);
+            if ($found['username'] === $new_user) {
+                $toasts[] = ['text' => 'Username already exists!', 'type' => 'error'];
+            } else {
+                $toasts[] = ['text' => 'Email address already exists!', 'type' => 'error'];
+            }
+        } else {
+            if ($target['role'] === 'Superadmin') {
+                // A Superadmin can only update his own username + email (role/status stay fixed).
+                mysqli_query($conn, "UPDATE admins SET username = '$new_user', email = '$new_email' WHERE id = $aid");
+            } else {
+                // Admin accounts: role and status are editable too.
+                $new_role   = in_array($_POST['role'],   ['Admin', 'Superadmin'])           ? $_POST['role']   : 'Admin';
+                $new_status = in_array($_POST['status'], ['Active', 'Inactive', 'Suspended']) ? $_POST['status'] : 'Inactive';
+                mysqli_query($conn, "UPDATE admins SET username = '$new_user', email = '$new_email', role = '$new_role', status = '$new_status' WHERE id = $aid");
+            }
+
+            // If a coach account shares this admin, keep its display name in sync.
+            mysqli_query($conn, "UPDATE coaches SET name = '$new_user' WHERE admin_id = $aid");
+
+            // If the Superadmin edited his own account, refresh the session name.
+            if ($target['username'] === $username) {
+                $_SESSION['username'] = $new_user;
+                $username = $new_user;
+                $display_name = $new_user;
+            }
+
+            logActivity($conn, 'Update', 'Admin Management', "Updated account: $new_user ($new_email)");
+            $toasts[] = ['text' => 'Account updated successfully!', 'type' => 'success'];
+        }
+    }
+}
+
 // Handle toggle status
 if (isset($_GET['update_id']) && isset($_GET['new_status'])) {
     $uid    = intval($_GET['update_id']);
@@ -282,8 +333,11 @@ $result = mysqli_query($conn, $query);
                     </tr>
                 </thead>
                 <tbody>
-                    <?php while($row = mysqli_fetch_assoc($result)): ?>
-                    <tr>
+                    <?php while($row = mysqli_fetch_assoc($result)):
+                        // Admins are always editable; a Superadmin row is only editable by himself.
+                        $can_edit = ($row['role'] !== 'Superadmin') || ($row['username'] === $username);
+                    ?>
+                    <tr <?php if ($can_edit): ?>onclick="openAdminEditModal(<?php echo $row['id']; ?>, '<?php echo addslashes($row['username']); ?>', '<?php echo addslashes($row['email']); ?>', '<?php echo $row['role']; ?>', '<?php echo $row['status']; ?>')" style="cursor:pointer;"<?php endif; ?>>
                         <td>#<?php echo $row['id']; ?></td>
                         <td>
                             <strong><?php echo htmlspecialchars($row['username']); ?></strong><br>
@@ -298,23 +352,19 @@ $result = mysqli_query($conn, $query);
                             <?php echo date('d M Y', strtotime($row['created_at'])); ?>
                         </td>
 
-                        <td style="text-align:center;" onclick="event.stopPropagation()">
+                        <td style="text-align:center;">
                             <?php if ($row['role'] !== 'Superadmin'): ?>
-                            <select class="status-select <?php
+                            <span class="status-pill <?php
                                 if($row['status'] == 'Active')       echo 'status-active';
                                 elseif($row['status'] == 'Inactive') echo 'status-inactive';
                                 else                                  echo 'status-suspended';
-                            ?>" onchange="location.href='AdminManagement.php?update_id=<?php echo $row['id']; ?>&new_status=' + this.value">
-                                <option value="Active"    <?php echo ($row['status'] == 'Active'    ? 'selected' : ''); ?>>Active</option>
-                                <option value="Inactive"  <?php echo ($row['status'] == 'Inactive'  ? 'selected' : ''); ?>>Inactive</option>
-                                <option value="Suspended" <?php echo ($row['status'] == 'Suspended' ? 'selected' : ''); ?>>Suspended</option>
-                            </select>
+                            ?>"><?php echo $row['status']; ?></span>
                             <?php else: ?>
                                 <span class="status-master">MASTER</span>
                             <?php endif; ?>
                         </td>
 
-                        <td style="text-align:center;">
+                        <td style="text-align:center;" onclick="event.stopPropagation()">
                             <?php if ($row['role'] !== 'Superadmin'): ?>
                             <a href="?delete_id=<?php echo $row['id']; ?>"
                                 onclick="return confirm('Delete permanently?')">
@@ -332,8 +382,60 @@ $result = mysqli_query($conn, $query);
         </div>
     </main>
 
+    <!-- Edit Admin Modal -->
+    <div class="modal-overlay" id="adminEditModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2><i class="fas fa-pen"></i> Edit Account</h2>
+                <button class="modal-close" type="button" onclick="closeAdminEditModal()">&times;</button>
+            </div>
+
+            <form method="POST">
+                <input type="hidden" name="admin_id" id="admin-modal-id">
+
+                <div class="modal-grid">
+                    <div class="modal-field full-width">
+                        <label>Username</label>
+                        <input type="text" name="username" id="admin-modal-username" required>
+                    </div>
+
+                    <div class="modal-field full-width">
+                        <label>Email</label>
+                        <input type="email" name="email" id="admin-modal-email" required>
+                    </div>
+
+                    <!-- Role + Status only apply to Admin accounts; hidden for a Superadmin's own row -->
+                    <div class="modal-field" id="admin-modal-role-wrap">
+                        <label>Role</label>
+                        <select name="role" id="admin-modal-role">
+                            <option value="Admin">Admin</option>
+                            <option value="Superadmin">Superadmin</option>
+                        </select>
+                    </div>
+
+                    <div class="modal-field" id="admin-modal-status-wrap">
+                        <label>Status</label>
+                        <select name="status" id="admin-modal-status">
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                            <option value="Suspended">Suspended</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-modal-cancel" onclick="closeAdminEditModal()">Cancel</button>
+                    <button type="submit" name="update_admin" class="btn-modal-save">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="../Dashboard/Dashboard.js"></script>
     <script src="AdminManagement.js"></script>
+
+    <!-- Modal styling -->
+    <?php include __DIR__ . '/../modal.php'; ?>
 
     <!-- Scroll-to-top -->
     <?php include __DIR__ . '/../scroll_top.php'; ?>
