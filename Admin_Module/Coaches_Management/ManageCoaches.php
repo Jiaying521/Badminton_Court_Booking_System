@@ -141,7 +141,6 @@
     if(isset($_POST['update_coach'])){
         $coach_id       = intval($_POST['coach_id']);
         $name           = mysqli_real_escape_string($conn, $_POST['coach_name']);
-        $email          = mysqli_real_escape_string($conn, $_POST['coach_email']);
         $specialty      = mysqli_real_escape_string($conn, $_POST['specialty']);
         $phone          = mysqli_real_escape_string($conn, $_POST['phone']);
         $gender         = mysqli_real_escape_string($conn, $_POST['gender']);
@@ -177,7 +176,6 @@
 
         mysqli_query($conn, "
             UPDATE admins SET
-                email                = '$email',
                 coach_price_per_hour = $price_per_hour,
                 specialisation       = '$specialty'
             WHERE id = (SELECT admin_id FROM coaches WHERE id = $coach_id)
@@ -313,6 +311,8 @@
                 </div>
             </header>
 
+
+
             <!-- Collapsible Filter Panel -->
             <div class="filter-panel <?php echo $has_filter ? 'open' : ''; ?>" id="filterPanel">
                 <form method="GET" class="filter-grid">
@@ -382,17 +382,16 @@
                         if($filter_age_max   && $age_val    > $filter_age_max) continue;
                     ?>
                     <tr class="main-row"
-                        data-id="<?php echo $row['id']; ?>"
-                        data-name="<?php echo htmlspecialchars($row['name'], ENT_QUOTES); ?>"
-                        data-specialty="<?php echo htmlspecialchars($spec_val, ENT_QUOTES); ?>"
-                        data-phone="<?php echo htmlspecialchars($row['phone'] ?? '', ENT_QUOTES); ?>"
-                        data-gender="<?php echo htmlspecialchars($gender_val, ENT_QUOTES); ?>"
-                        data-age="<?php echo $age_val; ?>"
-                        data-price="<?php echo $row['price_per_hour']; ?>"
-                        data-img="<?php echo htmlspecialchars($row['profile_img'] ?? '', ENT_QUOTES); ?>"
-                        data-email="<?php echo htmlspecialchars($row['email'], ENT_QUOTES); ?>"
-                        onclick="openCoachEditModal(this)"
-                        style="cursor:pointer;">
+                        onclick="openCoachEditModal(
+                            <?php echo $row['id']; ?>,
+                            '<?php echo addslashes($row['name']); ?>',
+                            '<?php echo addslashes($spec_val); ?>',
+                            '<?php echo addslashes($row['phone'] ?? ''); ?>',
+                            '<?php echo addslashes($gender_val); ?>',
+                            '<?php echo $age_val; ?>',
+                            '<?php echo $row['price_per_hour']; ?>',
+                            '<?php echo $row['profile_img'] ?? ''; ?>'
+                        )" style="cursor:pointer;">
                         <td>#<?php echo $row['id']; ?></td>
                         <td>
                             <strong><?php echo htmlspecialchars($row['name']); ?></strong><br>
@@ -550,12 +549,6 @@
                     <div class="modal-field full-width">
                         <label>Name</label>
                         <input type="text" name="coach_name" id="coach-modal-name" required>
-                    </div>
-
-                    <!-- Email (editable) -->
-                    <div class="modal-field full-width">
-                        <label>Email</label>
-                        <input type="email" name="coach_email" id="coach-modal-email" placeholder="coach@example.com" required>
                     </div>
 
                     <!-- Specialty -->

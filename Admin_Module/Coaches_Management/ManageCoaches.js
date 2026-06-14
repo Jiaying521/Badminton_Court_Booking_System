@@ -34,23 +34,20 @@ function toggleFilter() {
     panel.classList.toggle('open');
 }
 
-// ✅ FIX: Uses data attributes on the row element — safely handles emails with dots/special chars
-function openCoachEditModal(row) {
-    const d = row.dataset;
-    document.getElementById('coach-modal-id').value        = d.id;
-    document.getElementById('coach-modal-name').value      = d.name;
-    document.getElementById('coach-modal-email').value     = d.email;
-    document.getElementById('coach-modal-specialty').value = d.specialty;
-    document.getElementById('coach-modal-phone').value     = d.phone;
-    document.getElementById('coach-modal-gender').value    = d.gender;
-    document.getElementById('coach-modal-age').value       = d.age;
-    document.getElementById('coach-modal-price').value     = d.price;
+// Fill the edit modal with the clicked row's data and show it.
+// All values come from the row attributes in the HTML.
+function openCoachEditModal(id, name, specialty, phone, gender, age, price, img) {
+    document.getElementById('coach-modal-id').value        = id;
+    document.getElementById('coach-modal-name').value      = name;
+    document.getElementById('coach-modal-specialty').value = specialty;
+    document.getElementById('coach-modal-phone').value     = phone;
+    document.getElementById('coach-modal-gender').value    = gender;
+    document.getElementById('coach-modal-age').value       = age;
+    document.getElementById('coach-modal-price').value     = price;
     document.getElementById('cropped-img-data').value      = '';
 
     const preview = document.getElementById('coach-modal-img-preview');
-    preview.src = d.img
-        ? '../../Pictures/Admin_Module/coaches/' + d.img
-        : '../../Pictures/Admin_Module/coaches/default.png';
+    preview.src   = img ? '../../Pictures/Admin_Module/coaches/' + img : '../../Pictures/Admin_Module/coaches/default.png';
 
     // Start on the edit panel (not the crop panel).
     document.getElementById('editPanel').style.display = 'block';
