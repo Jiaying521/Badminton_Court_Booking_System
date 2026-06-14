@@ -141,6 +141,7 @@
     if(isset($_POST['update_coach'])){
         $coach_id       = intval($_POST['coach_id']);
         $name           = mysqli_real_escape_string($conn, $_POST['coach_name']);
+        $email          = mysqli_real_escape_string($conn, $_POST['email']);
         $specialty      = mysqli_real_escape_string($conn, $_POST['specialty']);
         $phone          = mysqli_real_escape_string($conn, $_POST['phone']);
         $gender         = mysqli_real_escape_string($conn, $_POST['gender']);
@@ -162,6 +163,14 @@
             }
         }
 
+        // Resolve this coach's admin account and ensure the email isn't used by anyone else.
+        $admin_row = mysqli_fetch_assoc(mysqli_query($conn, "SELECT admin_id FROM coaches WHERE id = $coach_id"));
+        $admin_id  = intval($admin_row['admin_id'] ?? 0);
+
+        $email_taken = mysqli_query($conn, "SELECT id FROM admins WHERE email = '$email' AND id != $admin_id");
+        if(mysqli_num_rows($email_taken) > 0){
+            $toasts[] = ['text' => 'Email address already in use by another account!', 'type' => 'error'];
+        } else {
         mysqli_query($conn, "
             UPDATE coaches SET
                 name           = '$name',
@@ -176,14 +185,16 @@
 
         mysqli_query($conn, "
             UPDATE admins SET
+                email                = '$email',
                 coach_price_per_hour = $price_per_hour,
                 specialisation       = '$specialty'
-            WHERE id = (SELECT admin_id FROM coaches WHERE id = $coach_id)
+            WHERE id = $admin_id
         ");
 
         logActivity($conn, 'Update', 'Coach Management', "Updated coach profile: $name (ID $coach_id)");
         header("Location: ManageCoaches.php?success=1");
         exit();
+        }
     }
 
     //Handle account status change (Active / Inactive / Suspended)
@@ -390,7 +401,8 @@
                             '<?php echo addslashes($gender_val); ?>',
                             '<?php echo $age_val; ?>',
                             '<?php echo $row['price_per_hour']; ?>',
-                            '<?php echo $row['profile_img'] ?? ''; ?>'
+                            '<?php echo $row['profile_img'] ?? ''; ?>',
+                            '<?php echo addslashes($row['email']); ?>'
                         )" style="cursor:pointer;">
                         <td>#<?php echo $row['id']; ?></td>
                         <td>
@@ -549,6 +561,12 @@
                     <div class="modal-field full-width">
                         <label>Name</label>
                         <input type="text" name="coach_name" id="coach-modal-name" required>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="modal-field full-width">
+                        <label>Email</label>
+                        <input type="email" name="email" id="coach-modal-email" required>
                     </div>
 
                     <!-- Specialty -->

@@ -36,9 +36,10 @@ function toggleFilter() {
 
 // Fill the edit modal with the clicked row's data and show it.
 // All values come from the row attributes in the HTML.
-function openCoachEditModal(id, name, specialty, phone, gender, age, price, img) {
+function openCoachEditModal(id, name, specialty, phone, gender, age, price, img, email) {
     document.getElementById('coach-modal-id').value        = id;
     document.getElementById('coach-modal-name').value      = name;
+    document.getElementById('coach-modal-email').value     = email || '';
     document.getElementById('coach-modal-specialty').value = specialty;
     document.getElementById('coach-modal-phone').value     = phone;
     document.getElementById('coach-modal-gender').value    = gender;
