@@ -17,6 +17,16 @@ $booking = $stmt->fetch();
 
 if (!$booking) redirect('dashboard.php');
 
+// ========== 获取已存在的 add-ons（用于回显） ==========
+$existing_addons = [];
+$stmt_existing = $pdo->prepare("SELECT product_id, quantity, price FROM booking_addons WHERE booking_id = ?");
+$stmt_existing->execute([$booking_id]);
+$existing_addons_raw = $stmt_existing->fetchAll();
+
+foreach ($existing_addons_raw as $item) {
+    $existing_addons[$item['product_id']] = $item['quantity'];
+}
+
 // ========== 获取所有产品 ==========
 $products = [
     'racket' => [],
@@ -80,6 +90,9 @@ function getProductImage($product) {
     $category = $product['category'];
     return $defaultImages[$category] ?? 'https://placehold.co/120x120/2b7e3a/white?text=🏸';
 }
+
+// 将 PHP 数组转换为 JavaScript 对象，用于回显已有数量
+$existing_addons_json = json_encode($existing_addons);
 ?>
 <!DOCTYPE html>
 <html>
@@ -488,7 +501,9 @@ function getProductImage($product) {
                     <div class="section-title"><i class="fas fa-table-tennis"></i> 🏸 Badminton Rackets</div>
                     <div class="products-grid">
                         <?php if(count($products['racket']) > 0): ?>
-                            <?php foreach($products['racket'] as $item): ?>
+                            <?php foreach($products['racket'] as $item): 
+                                $existing_qty = $existing_addons[$item['id']] ?? 0;
+                            ?>
                             <div class="product-card">
                                 <div class="product-image"><img src="<?php echo getProductImage($item); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>" onerror="this.src='https://placehold.co/120x120/2b7e3a/white?text=🏸'"></div>
                                 <div class="product-info">
@@ -496,7 +511,7 @@ function getProductImage($product) {
                                     <div class="product-price">RM <?php echo number_format($item['price'], 2); ?></div>
                                     <div class="product-qty">
                                         <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, -1)">-</button>
-                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="0" min="0" max="3" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
+                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_qty; ?>" min="0" max="3" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
                                         <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, 1)">+</button>
                                     </div>
                                 </div>
@@ -515,7 +530,9 @@ function getProductImage($product) {
                     <div class="section-title"><i class="fas fa-shuttlecock"></i> 🏸 Shuttlecocks</div>
                     <div class="products-grid">
                         <?php if(count($products['shuttlecock']) > 0): ?>
-                            <?php foreach($products['shuttlecock'] as $item): ?>
+                            <?php foreach($products['shuttlecock'] as $item): 
+                                $existing_qty = $existing_addons[$item['id']] ?? 0;
+                            ?>
                             <div class="product-card">
                                 <div class="product-image"><img src="<?php echo getProductImage($item); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>" onerror="this.src='https://placehold.co/120x120/2b7e3a/white?text=🏸'"></div>
                                 <div class="product-info">
@@ -523,7 +540,7 @@ function getProductImage($product) {
                                     <div class="product-price">RM <?php echo number_format($item['price'], 2); ?> <small>/ tube</small></div>
                                     <div class="product-qty">
                                         <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, -1)">-</button>
-                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="0" min="0" max="10" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
+                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_qty; ?>" min="0" max="10" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
                                         <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, 1)">+</button>
                                     </div>
                                 </div>
@@ -542,7 +559,9 @@ function getProductImage($product) {
                     <div class="section-title"><i class="fas fa-thread"></i> 🧵 Badminton Strings</div>
                     <div class="products-grid">
                         <?php if(count($products['string']) > 0): ?>
-                            <?php foreach($products['string'] as $item): ?>
+                            <?php foreach($products['string'] as $item): 
+                                $existing_qty = $existing_addons[$item['id']] ?? 0;
+                            ?>
                             <div class="product-card">
                                 <div class="product-image"><img src="<?php echo getProductImage($item); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>" onerror="this.src='https://placehold.co/120x120/2b7e3a/white?text=🧵'"></div>
                                 <div class="product-info">
@@ -550,7 +569,7 @@ function getProductImage($product) {
                                     <div class="product-price">RM <?php echo number_format($item['price'], 2); ?></div>
                                     <div class="product-qty">
                                         <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, -1)">-</button>
-                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="0" min="0" max="10" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
+                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_qty; ?>" min="0" max="10" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
                                         <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, 1)">+</button>
                                     </div>
                                 </div>
@@ -569,7 +588,9 @@ function getProductImage($product) {
                     <div class="section-title"><i class="fas fa-hand-peace"></i> 🎾 Grips / Overgrips</div>
                     <div class="products-grid">
                         <?php if(count($products['grip']) > 0): ?>
-                            <?php foreach($products['grip'] as $item): ?>
+                            <?php foreach($products['grip'] as $item): 
+                                $existing_qty = $existing_addons[$item['id']] ?? 0;
+                            ?>
                             <div class="product-card">
                                 <div class="product-image"><img src="<?php echo getProductImage($item); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>" onerror="this.src='https://placehold.co/120x120/2b7e3a/white?text=🎾'"></div>
                                 <div class="product-info">
@@ -577,7 +598,7 @@ function getProductImage($product) {
                                     <div class="product-price">RM <?php echo number_format($item['price'], 2); ?></div>
                                     <div class="product-qty">
                                         <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, -1)">-</button>
-                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="0" min="0" max="20" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
+                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_qty; ?>" min="0" max="20" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
                                         <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, 1)">+</button>
                                     </div>
                                 </div>
@@ -596,7 +617,9 @@ function getProductImage($product) {
                     <div class="section-title"><i class="fas fa-cookie-bite"></i> 🍪 Snacks</div>
                     <div class="products-grid">
                         <?php if(count($products['snack']) > 0): ?>
-                            <?php foreach($products['snack'] as $item): ?>
+                            <?php foreach($products['snack'] as $item): 
+                                $existing_qty = $existing_addons[$item['id']] ?? 0;
+                            ?>
                             <div class="product-card">
                                 <div class="product-image"><img src="<?php echo getProductImage($item); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>" onerror="this.src='https://placehold.co/120x120/f39c12/white?text=🍪'"></div>
                                 <div class="product-info">
@@ -604,7 +627,7 @@ function getProductImage($product) {
                                     <div class="product-price">RM <?php echo number_format($item['price'], 2); ?></div>
                                     <div class="product-qty">
                                         <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, -1)">-</button>
-                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="0" min="0" max="20" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
+                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_qty; ?>" min="0" max="20" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
                                         <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, 1)">+</button>
                                     </div>
                                 </div>
@@ -623,7 +646,9 @@ function getProductImage($product) {
                     <div class="section-title"><i class="fas fa-tint"></i> 🥤 Drinks</div>
                     <div class="products-grid">
                         <?php if(count($products['drink']) > 0): ?>
-                            <?php foreach($products['drink'] as $item): ?>
+                            <?php foreach($products['drink'] as $item): 
+                                $existing_qty = $existing_addons[$item['id']] ?? 0;
+                            ?>
                             <div class="product-card">
                                 <div class="product-image"><img src="<?php echo getProductImage($item); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>" onerror="this.src='https://placehold.co/120x120/3498db/white?text=🥤'"></div>
                                 <div class="product-info">
@@ -631,7 +656,7 @@ function getProductImage($product) {
                                     <div class="product-price">RM <?php echo number_format($item['price'], 2); ?></div>
                                     <div class="product-qty">
                                         <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, -1)">-</button>
-                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="0" min="0" max="20" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
+                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_qty; ?>" min="0" max="20" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
                                         <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, 1)">+</button>
                                     </div>
                                 </div>
@@ -673,6 +698,9 @@ function getProductImage($product) {
 
 <script>
     let cart = [];
+    
+    // 页面加载时从数据库加载已有 add-ons
+    const existingAddons = <?php echo $existing_addons_json; ?>;
     
     function changeQty(productId, delta) {
         const qtyInput = document.getElementById('qty_' + productId);
@@ -722,11 +750,23 @@ function getProductImage($product) {
         document.getElementById('cartData').value = JSON.stringify(cart);
     });
     
+    // 监听所有数量输入框的变化
     document.querySelectorAll('.qty-input').forEach(input => {
         input.addEventListener('change', function() { updateCart(); });
     });
     
-    updateCart();
+    // 初始化时加载已有数量
+    function loadExistingAddons() {
+        for (const [productId, quantity] of Object.entries(existingAddons)) {
+            const qtyInput = document.getElementById('qty_' + productId);
+            if (qtyInput && quantity > 0) {
+                qtyInput.value = quantity;
+            }
+        }
+        updateCart();
+    }
+    
+    loadExistingAddons();
     
     // Category Filter
     const categoryBtns = document.querySelectorAll('.category-btn');
