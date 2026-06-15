@@ -635,7 +635,7 @@ $peak_price = getSetting('peak_price', '15');
 <!-- Hero Section -->
 <section class="hero">
     <div class="hero-text">
-        <span class="badge"><i class="fas fa-shuttlecock"></i> Malaysia's Premier Badminton Hub</span>
+        <span class="badge"><i class="fas fa-shuttlecock"></i> Smash Arena</span>
         <h1>Smash & Play<br>Book Courts Instantly</h1>
         <p>Professional badminton courts, flexible hours, and secure online booking. Play your best game today.</p>
         <div class="hero-buttons">

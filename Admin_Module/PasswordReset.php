@@ -10,7 +10,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Password Reset - Badminton Hub</title>
+    <title>Password Reset - Smash Arena</title>
     <link rel="stylesheet" href="LoginPage.css">
     <link rel="stylesheet" href="ForgotPassword.css">
     <link rel="stylesheet" href="PasswordReset.css">

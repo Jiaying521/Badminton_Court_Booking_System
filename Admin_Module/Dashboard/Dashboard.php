@@ -353,7 +353,7 @@ if ($q_dates) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Badminton Hub - Dashboard</title>
+    <title>Smash Arena - Dashboard</title>
 
     <!-- External CSS & Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -515,7 +515,7 @@ if ($q_dates) {
         <div class="force-change-card">
             <i class="fas fa-lock" style="font-size: 40px; color: #f59e0b; margin-bottom: 20px;"></i>
             <h2>Security Update</h2>
-            <p>Welcome to Badminton Hub! Since this is your first login, please update your temporary password to activate your account.</p>
+            <p>Welcome to Smash Arena! Since this is your first login, please update your temporary password to activate your account.</p>
             
             <?php if ($update_error !== ""): ?>
                 <div class="error-msg"><?php echo $update_error; ?></div>

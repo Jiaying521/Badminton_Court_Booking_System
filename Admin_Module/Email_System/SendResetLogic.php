@@ -57,12 +57,12 @@ if ($result->num_rows === 0) {
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port       = 587;
 
-            $mail->setFrom('smasharenabadminton@gmail.com', 'Badminton Hub');
+            $mail->setFrom('smasharenabadminton@gmail.com', 'Smash Arena');
             $mail->addAddress($email);
 
             $mail->isHTML(true);
             $mail->CharSet = 'UTF-8';
-            $mail->Subject = 'Reset Your Password - Badminton Hub';
+            $mail->Subject = 'Reset Your Password - Smash Arena';
 
             // 5. Reset link with token
             $resetUrl = "http://localhost/fyp/Admin_Module/PasswordReset.php?token=" . $token;
@@ -74,7 +74,7 @@ if ($result->num_rows === 0) {
                     <!-- Header -->
                     <div style='background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 32px; text-align: center;'>
                         <p style='margin:0; font-size:32px;'>&#127992;</p>
-                        <h1 style='margin: 10px 0 4px; color: #f59e0b; font-size: 22px; letter-spacing: -0.5px;'>Badminton Hub</h1>
+                        <h1 style='margin: 10px 0 4px; color: #f59e0b; font-size: 22px; letter-spacing: -0.5px;'>Smash Arena</h1>
                         <p style='margin:0; color: rgba(255,255,255,0.6); font-size: 13px;'>Admin Portal</p>
                     </div>
 
@@ -82,7 +82,7 @@ if ($result->num_rows === 0) {
                     <div style='padding: 36px 32px;'>
                         <h2 style='margin: 0 0 8px; color: #0f172a; font-size: 20px;'>Password Reset Request</h2>
                         <p style='color: #64748b; font-size: 15px; line-height: 1.6; margin: 0 0 28px;'>
-                            We received a request to reset the password for your Badminton Hub admin account.
+                            We received a request to reset the password for your Smash Arena admin account.
                             Click the button below to set a new password. This link is valid for <strong>10 minutes only</strong>.
                         </p>
 

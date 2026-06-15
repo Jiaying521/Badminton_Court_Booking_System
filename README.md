@@ -2,7 +2,7 @@
 
 # 🏸 Smash Arena
 
-### Malaysia's Premier Badminton Hub
+### Malaysia's Premier Smash Arena
 
 *Professional courts · Flexible hours · Instant online booking*
 

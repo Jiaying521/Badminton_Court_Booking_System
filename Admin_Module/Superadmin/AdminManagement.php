@@ -49,23 +49,23 @@ function sendTemporaryPassword($to_email, $username, $temp_pass) {
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 
-        $mail->setFrom('smasharenabadminton@gmail.com', 'Badminton Hub');
+        $mail->setFrom('smasharenabadminton@gmail.com', 'Smash Arena');
         $mail->addAddress($to_email);
 
         $mail->isHTML(true);
         $mail->CharSet = 'UTF-8';
-        $mail->Subject = 'Badminton Hub Credentials';
+        $mail->Subject = 'Smash Arena Credentials';
         $mail->Body    = "
         <div style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px;'>
             <div style='max-width: 520px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);'>
                 <div style='background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 32px; text-align: center;'>
                     <p style='margin:0; font-size:32px;'>&#127992;</p>
-                    <h1 style='margin: 10px 0 4px; color: #f59e0b; font-size: 22px;'>Badminton Hub</h1>
+                    <h1 style='margin: 10px 0 4px; color: #f59e0b; font-size: 22px;'>Smash Arena</h1>
                     <p style='margin:0; color: rgba(255,255,255,0.6); font-size: 13px;'>Admin Portal</p>
                 </div>
                 <div style='padding: 36px 32px;'>
                     <h2 style='margin: 0 0 8px; color: #0f172a; font-size: 20px;'>Welcome, $username!</h2>
-                    <p style='color: #64748b; font-size: 15px; line-height: 1.6; margin: 0 0 24px;'>Your admin account has been created on Badminton Hub. Use the temporary credentials below to log in for the first time.</p>
+                    <p style='color: #64748b; font-size: 15px; line-height: 1.6; margin: 0 0 24px;'>Your admin account has been created on Smash Arena. Use the temporary credentials below to log in for the first time.</p>
                     <div style='background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 12px; padding: 20px 24px; margin-bottom: 24px;'>
                         <p style='margin: 0 0 8px; font-size: 12px; font-weight: 700; color: #92400e; text-transform: uppercase; letter-spacing: 0.5px;'>Your Temporary Password</p>
                         <p style='margin: 0; font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: 3px; font-family: monospace;'>$temp_pass</p>
@@ -76,7 +76,7 @@ function sendTemporaryPassword($to_email, $username, $temp_pass) {
                     <a href='http://localhost/fyp/Admin_Module/LoginPage.php' style='display: block; text-align: center; padding: 14px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #0f172a; text-decoration: none; border-radius: 50px; font-weight: 800; font-size: 15px;'>Login to Admin Portal</a>
                 </div>
                 <div style='background: #f8fafc; padding: 20px 32px; text-align: center; border-top: 1px solid #e2e8f0;'>
-                    <p style='margin: 0; font-size: 12px; color: #94a3b8;'>This email was sent by Badminton Hub Admin System. If you did not expect this, please contact your system administrator.</p>
+                    <p style='margin: 0; font-size: 12px; color: #94a3b8;'>This email was sent by Smash Arena Admin System. If you did not expect this, please contact your system administrator.</p>
                 </div>
             </div>
         </div>";
@@ -246,7 +246,7 @@ $result = mysqli_query($conn, $query);
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Badminton Hub - Admin Management</title>
+    <title>Smash Arena - Admin Management</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap">
