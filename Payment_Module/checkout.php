@@ -58,6 +58,23 @@ if($booking_id) {
     // Stitch the start time and end time together into a clean slot string
     $time_slot = $booking_data['start_time'] . ' to ' . $booking_data['end_time'];
 
+    // Pull any add-on items the player picked so we can show them in the summary
+    $booking_addons = [];
+    $addons_total = 0.00;
+    $a_sql = "
+        SELECT p.name AS product_name, ba.quantity, ba.price
+        FROM booking_addons ba
+        JOIN products p ON ba.product_id = p.id
+        WHERE ba.booking_id = '$booking_id'
+    ";
+    $a_result = $conn->query($a_sql);
+    if ($a_result) {
+        while ($a_row = $a_result->fetch_assoc()) {
+            $booking_addons[] = $a_row;
+            $addons_total += $a_row['quantity'] * $a_row['price'];
+        }
+    }
+
     // 2. FETCH AVAILABLE UNUSED VOUCHERS REDEEMED BY PLAYER
     // Make an empty list box to store their claimable coupons
     $available_vouchers = [];
@@ -473,6 +490,24 @@ body::before {
                         <div class="summary-item"><strong>Reserved Date:</strong> <span><?php echo date('M j, Y', strtotime($booking_date)); ?></span></div>
                         <div class="summary-item"><strong>Time Windows:</strong> <span><?php echo htmlspecialchars($time_slot); ?></span></div>
                     </div>
+
+                    <?php if (!empty($booking_addons)): ?>
+                    <div style="margin-bottom: 15px;">
+                        <div style="font-family:'Montserrat','Inter',sans-serif; font-size:0.8rem; font-weight:700; color:#2b7e3a; text-transform:uppercase; margin-bottom:6px;">
+                            <i class="fas fa-shopping-bag"></i> Add-ons
+                        </div>
+                        <?php foreach ($booking_addons as $addon): ?>
+                            <div class="summary-item">
+                                <span><?php echo htmlspecialchars($addon['product_name']); ?> x<?php echo (int)$addon['quantity']; ?></span>
+                                <span>RM <?php echo number_format($addon['quantity'] * $addon['price'], 2); ?></span>
+                            </div>
+                        <?php endforeach; ?>
+                        <div class="summary-item" style="font-weight:600; color:#2b7e3a;">
+                            <span>Add-ons Subtotal:</span>
+                            <span>RM <?php echo number_format($addons_total, 2); ?></span>
+                        </div>
+                    </div>
+                    <?php endif; ?>
 
                     <div class="voucher-select-box">
                         <label><i class="fas fa-ticket-alt"></i> Apply Saved Voucher</label>

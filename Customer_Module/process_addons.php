@@ -14,6 +14,16 @@ $booking = $stmt->fetch();
 
 if (!$booking) redirect('dashboard.php');
 
+// 还原场地基础费用（total_price 可能已包含之前加购的金额）
+$stmt = $pdo->prepare("SELECT COALESCE(SUM(quantity * price), 0) AS total FROM booking_addons WHERE booking_id = ?");
+$stmt->execute([$booking_id]);
+$existing_addons_total = $stmt->fetchColumn();
+$base_price = $booking['total_price'] - $existing_addons_total;
+
+// 清除旧的加购记录，避免用户返回后重复插入/重复计费
+$stmt = $pdo->prepare("DELETE FROM booking_addons WHERE booking_id = ?");
+$stmt->execute([$booking_id]);
+
 // 保存加购商品
 $cart = json_decode($cart_data, true);
 $addons_total = 0;
@@ -23,13 +33,13 @@ foreach ($cart as $item) {
     $quantity = $item['qty'];
     $price = $item['price'];
     $addons_total += $quantity * $price;
-    
+
     $stmt = $pdo->prepare("INSERT INTO booking_addons (booking_id, product_id, quantity, price) VALUES (?, ?, ?, ?)");
     $stmt->execute([$booking_id, $product_id, $quantity, $price]);
 }
 
-// 更新预订总价
-$new_total = $booking['total_price'] + $addons_total;
+// 更新预订总价（基础场地费 + 新的加购金额）
+$new_total = $base_price + $addons_total;
 $stmt = $pdo->prepare("UPDATE bookings SET total_price = ? WHERE id = ?");
 $stmt->execute([$new_total, $booking_id]);
 

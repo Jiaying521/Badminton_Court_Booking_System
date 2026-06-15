@@ -47,6 +47,13 @@ $court_type = $_GET['court_type'] ?? '';
 $facility = $_GET['facility'] ?? '';
 $court_name = $_GET['court_name'] ?? '';
 
+// 从 view_coach.php 的 "Book a Session" 带过来的参数，传递给 book_court.php（自动预选日期/教练/时长）
+$prefill_params = [];
+if (!empty($_GET['booking_date']))      $prefill_params['booking_date'] = $_GET['booking_date'];
+if (!empty($_GET['duration']))          $prefill_params['duration'] = $_GET['duration'];
+if (!empty($_GET['preferred_coach_id'])) $prefill_params['preferred_coach_id'] = $_GET['preferred_coach_id'];
+$prefill_query = $prefill_params ? '&' . http_build_query($prefill_params) : '';
+
 $sql = "SELECT * FROM courts WHERE is_active = 1";
 $params = [];
 if ($court_type) {
@@ -987,7 +994,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
                             <div class="price-row"><span><i class="fas fa-sun"></i> Off-Peak</span><span class="price-offpeak">RM <?php echo number_format($c['price_off_peak'], 2); ?> / hour</span></div>
                             <div class="price-row"><span><i class="fas fa-moon"></i> Peak</span><span class="price-peak">RM <?php echo number_format($c['price_peak'], 2); ?> / hour</span></div>
                         </div>
-                        <a href="book_court.php?court_id=<?php echo $c['id']; ?>" class="btn-book"><i class="fas fa-calendar-check"></i> Book Now →</a>
+                        <a href="book_court.php?court_id=<?php echo $c['id']; ?><?php echo $prefill_query; ?>" class="btn-book"><i class="fas fa-calendar-check"></i> Book Now →</a>
                     </div>
                 </div>
             <?php endforeach; ?>

@@ -1167,6 +1167,11 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
                     <div class="receipt-row"><span>Time</span><span>${b.start_time} - ${b.end_time}</span></div>
                     <div class="receipt-row"><span>Duration</span><span>${b.total_hours} hour(s)</span></div>
                     ${b.coach_name ? `<div class="receipt-row"><span>Coach</span><span>${b.coach_name} (${b.coach_hours} hour(s))</span></div>` : ''}
+                    ${(b.addons_items && b.addons_items.length > 0) ? `
+                        <div class="receipt-row" style="font-weight:700; color:#2b7e3a; border-bottom:none; padding-bottom:0;"><span><i class="fas fa-shopping-bag"></i> Add-ons</span><span></span></div>
+                        ${b.addons_items.map(a => `<div class="receipt-row" style="font-size:0.9rem;"><span style="padding-left:1rem;">${a.name} x${a.quantity}</span><span>RM ${parseFloat(a.line_total).toFixed(2)}</span></div>`).join('')}
+                        <div class="receipt-row" style="font-size:0.9rem; color:#2b7e3a;"><span style="padding-left:1rem;">Add-ons Subtotal</span><span>RM ${parseFloat(b.addons_total).toFixed(2)}</span></div>
+                    ` : ''}
                     <div class="receipt-row"><span>Payment Method</span><span><i class="fas fa-wallet"></i> ${b.payment_method || 'Wallet'}</span></div>
                     <div class="receipt-row"><span>Payment Date</span><span>${b.payment_date || 'N/A'}</span></div>
                     <div class="receipt-row"><span>Status</span><span class="status status-${b.status}">${b.status}</span></div>

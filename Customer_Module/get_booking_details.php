@@ -23,11 +23,26 @@ $stmt->execute([$booking_id, $_SESSION['user_id']]);
 $booking = $stmt->fetch();
 
 if($booking) {
-    // 获取 add-ons 总金额
-    $stmt_addons = $pdo->prepare("SELECT SUM(price * quantity) as total_addons FROM booking_addons WHERE booking_id = ?");
+    // 获取 add-ons 明细及总金额
+    $stmt_addons = $pdo->prepare("
+        SELECT p.name AS product_name, ba.quantity, ba.price
+        FROM booking_addons ba
+        JOIN products p ON ba.product_id = p.id
+        WHERE ba.booking_id = ?
+    ");
     $stmt_addons->execute([$booking_id]);
-    $addons_total = $stmt_addons->fetchColumn() ?? 0;
-    
+    $addons_items = [];
+    $addons_total = 0;
+    foreach ($stmt_addons->fetchAll() as $row) {
+        $line_total = $row['quantity'] * $row['price'];
+        $addons_total += $line_total;
+        $addons_items[] = [
+            'name' => $row['product_name'],
+            'quantity' => intval($row['quantity']),
+            'line_total' => floatval($line_total)
+        ];
+    }
+
     echo json_encode([
         'success' => true,
         'booking' => [
@@ -50,6 +65,7 @@ if($booking) {
             'cancellation_fee' => floatval($booking['cancellation_fee'] ?? 0),
             'reschedule_count' => intval($booking['reschedule_count'] ?? 0),
             'addons_total' => floatval($addons_total),
+            'addons_items' => $addons_items,
             'created_at' => date('M j, Y h:i A', strtotime($booking['created_at'])),
             'points_earned' => $booking['payment_date'] ? (int) floor($booking['final_amount'] ?? $booking['total_price']) : 0
         ]

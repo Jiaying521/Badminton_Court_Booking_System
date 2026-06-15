@@ -17,6 +17,19 @@ $booking = $stmt->fetch();
 
 if (!$booking) redirect('dashboard.php');
 
+// ========== 获取已选加购商品（用户返回时回填数量）==========
+$existing_addons = [];      // product_id => quantity
+$existing_addons_total = 0; // 已加购金额（用于还原场地基础费用）
+$stmt = $pdo->prepare("SELECT product_id, quantity, price FROM booking_addons WHERE booking_id = ?");
+$stmt->execute([$booking_id]);
+foreach ($stmt->fetchAll() as $row) {
+    $existing_addons[$row['product_id']] = $row['quantity'];
+    $existing_addons_total += $row['quantity'] * $row['price'];
+}
+
+// total_price 已包含之前加购的金额，这里还原出场地基础费用
+$base_price = $booking['total_price'] - $existing_addons_total;
+
 // ========== 获取所有产品 ==========
 $products = [
     'racket' => [],
@@ -467,7 +480,7 @@ function getProductImage($product) {
     
     <div class="booking-summary">
         <div><i class="fas fa-calendar-alt"></i> <strong><?php echo htmlspecialchars($booking['court_name']); ?></strong><br><?php echo date('M j, Y', strtotime($booking['booking_date'])); ?> • <?php echo date('h:i A', strtotime($booking['start_time'])); ?> - <?php echo date('h:i A', strtotime($booking['end_time'])); ?></div>
-        <div>Court Fee: <strong>RM <?php echo number_format($booking['total_price'], 2); ?></strong></div>
+        <div>Court Fee: <strong>RM <?php echo number_format($base_price, 2); ?></strong></div>
     </div>
     
     <div class="row-2cols">
@@ -496,7 +509,7 @@ function getProductImage($product) {
                                     <div class="product-price">RM <?php echo number_format($item['price'], 2); ?></div>
                                     <div class="product-qty">
                                         <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, -1)">-</button>
-                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="0" min="0" max="3" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
+                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_addons[$item['id']] ?? 0; ?>" min="0" max="3" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
                                         <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, 1)">+</button>
                                     </div>
                                 </div>
@@ -523,7 +536,7 @@ function getProductImage($product) {
                                     <div class="product-price">RM <?php echo number_format($item['price'], 2); ?> <small>/ tube</small></div>
                                     <div class="product-qty">
                                         <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, -1)">-</button>
-                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="0" min="0" max="10" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
+                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_addons[$item['id']] ?? 0; ?>" min="0" max="10" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
                                         <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, 1)">+</button>
                                     </div>
                                 </div>
@@ -550,7 +563,7 @@ function getProductImage($product) {
                                     <div class="product-price">RM <?php echo number_format($item['price'], 2); ?></div>
                                     <div class="product-qty">
                                         <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, -1)">-</button>
-                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="0" min="0" max="10" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
+                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_addons[$item['id']] ?? 0; ?>" min="0" max="10" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
                                         <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, 1)">+</button>
                                     </div>
                                 </div>
@@ -577,7 +590,7 @@ function getProductImage($product) {
                                     <div class="product-price">RM <?php echo number_format($item['price'], 2); ?></div>
                                     <div class="product-qty">
                                         <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, -1)">-</button>
-                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="0" min="0" max="20" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
+                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_addons[$item['id']] ?? 0; ?>" min="0" max="20" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
                                         <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, 1)">+</button>
                                     </div>
                                 </div>
@@ -604,7 +617,7 @@ function getProductImage($product) {
                                     <div class="product-price">RM <?php echo number_format($item['price'], 2); ?></div>
                                     <div class="product-qty">
                                         <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, -1)">-</button>
-                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="0" min="0" max="20" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
+                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_addons[$item['id']] ?? 0; ?>" min="0" max="20" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
                                         <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, 1)">+</button>
                                     </div>
                                 </div>
@@ -631,7 +644,7 @@ function getProductImage($product) {
                                     <div class="product-price">RM <?php echo number_format($item['price'], 2); ?></div>
                                     <div class="product-qty">
                                         <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, -1)">-</button>
-                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="0" min="0" max="20" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
+                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_addons[$item['id']] ?? 0; ?>" min="0" max="20" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
                                         <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, 1)">+</button>
                                     </div>
                                 </div>

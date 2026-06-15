@@ -279,7 +279,7 @@ body {
             <?php else: ?>
                 <div id="tngScanningView">
                     <div class="bank-badge-header" style="background: #005eb8; margin: -40px -40px 25px -40px; padding: 25px; border-radius: 24px 24px 0 0; border: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;">
-                        <img src="https://www.contactcenterworld.com/images/company/tng-digital-sdn-bhd-600px-logo.jpg" width="85" style="background: white; border-radius: 6px; padding: 5px;">
+                        <img src="../image/touchngo.png" width="85" style="border-radius: 24px;">
                         <span class="countdown-text" id="reloadTngTimer">Waiting for scan... (05:00)</span>
                     </div>
                     
