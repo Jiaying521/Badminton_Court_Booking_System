@@ -17,21 +17,6 @@ $booking = $stmt->fetch();
 
 if (!$booking) redirect('dashboard.php');
 
-<<<<<<< HEAD
-// ========== 获取已选加购商品（用户返回时回填数量）==========
-$existing_addons = [];      // product_id => quantity
-$existing_addons_total = 0; // 已加购金额（用于还原场地基础费用）
-$stmt = $pdo->prepare("SELECT product_id, quantity, price FROM booking_addons WHERE booking_id = ?");
-$stmt->execute([$booking_id]);
-foreach ($stmt->fetchAll() as $row) {
-    $existing_addons[$row['product_id']] = $row['quantity'];
-    $existing_addons_total += $row['quantity'] * $row['price'];
-}
-
-// total_price 已包含之前加购的金额，这里还原出场地基础费用
-$base_price = $booking['total_price'] - $existing_addons_total;
-
-=======
 // ========== 获取已存在的 add-ons（用于回显） ==========
 $existing_addons = [];
 $stmt_existing = $pdo->prepare("SELECT product_id, quantity, price FROM booking_addons WHERE booking_id = ?");
@@ -42,7 +27,6 @@ foreach ($existing_addons_raw as $item) {
     $existing_addons[$item['product_id']] = $item['quantity'];
 }
 
->>>>>>> 35c208826440b08b0991da8611a32db4fcc69cb0
 // ========== 获取所有产品 ==========
 $products = [
     'racket' => [],
@@ -107,7 +91,7 @@ function getProductImage($product) {
     return $defaultImages[$category] ?? 'https://placehold.co/120x120/2b7e3a/white?text=🏸';
 }
 
-// 将 PHP 数组转换为 JavaScript 对象，用于回显已有数量
+// 将 PHP 数组转换为 JavaScript 对象
 $existing_addons_json = json_encode($existing_addons);
 ?>
 <!DOCTYPE html>
@@ -158,7 +142,6 @@ $existing_addons_json = json_encode($existing_addons);
         ::-webkit-scrollbar-thumb { background: #2b7e3a; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #1f5a2a; }
         
-        /* Progress Bar */
         .progress-bar {
             display: flex;
             justify-content: space-between;
@@ -265,7 +248,6 @@ $existing_addons_json = json_encode($existing_addons);
             gap: 2rem; 
         }
         
-        /* Category Tabs */
         .category-tabs {
             background: rgba(255,255,255,0.7);
             backdrop-filter: blur(10px);
@@ -317,12 +299,6 @@ $existing_addons_json = json_encode($existing_addons);
             animation: fadeInScale 0.5s ease-out both;
         }
         .product-section:hover { background: rgba(255,255,255,0.8); }
-        .product-section:nth-child(1) { animation-delay: 0.05s; }
-        .product-section:nth-child(2) { animation-delay: 0.1s; }
-        .product-section:nth-child(3) { animation-delay: 0.15s; }
-        .product-section:nth-child(4) { animation-delay: 0.2s; }
-        .product-section:nth-child(5) { animation-delay: 0.25s; }
-        .product-section:nth-child(6) { animation-delay: 0.3s; }
         
         .section-title { 
             font-family: 'Montserrat', 'Poppins', sans-serif;
@@ -395,7 +371,6 @@ $existing_addons_json = json_encode($existing_addons);
             border-radius: 12px; font-weight: 600; background: rgba(254,253,248,0.9);
         }
         
-        /* Cart Summary */
         .cart-summary { 
             background: rgba(255,255,255,0.7);
             backdrop-filter: blur(10px);
@@ -486,7 +461,6 @@ $existing_addons_json = json_encode($existing_addons);
 </head>
 <body>
 <div class="container">
-    <!-- Progress Bar -->
     <div class="progress-bar">
         <div class="progress-step completed"><div class="step-number"><i class="fas fa-check"></i></div><div class="step-label">Court</div></div>
         <div class="progress-step completed"><div class="step-number"><i class="fas fa-check"></i></div><div class="step-label">Time</div></div>
@@ -496,7 +470,7 @@ $existing_addons_json = json_encode($existing_addons);
     
     <div class="booking-summary">
         <div><i class="fas fa-calendar-alt"></i> <strong><?php echo htmlspecialchars($booking['court_name']); ?></strong><br><?php echo date('M j, Y', strtotime($booking['booking_date'])); ?> • <?php echo date('h:i A', strtotime($booking['start_time'])); ?> - <?php echo date('h:i A', strtotime($booking['end_time'])); ?></div>
-        <div>Court Fee: <strong>RM <?php echo number_format($base_price, 2); ?></strong></div>
+        <div>Court Fee: <strong>RM <?php echo number_format($booking['total_price'], 2); ?></strong></div>
     </div>
     
     <div class="row-2cols">
@@ -511,14 +485,32 @@ $existing_addons_json = json_encode($existing_addons);
                 <button class="category-btn" data-category="drink"><i class="fas fa-tint"></i> Drinks</button>
             </div>
             
-            <!-- Rackets Section -->
-            <div id="category-racket" class="product-category-section">
+            <?php foreach(['racket', 'shuttlecock', 'string', 'grip', 'snack', 'drink'] as $cat): 
+                $sectionTitle = [
+                    'racket' => '🏸 Badminton Rackets',
+                    'shuttlecock' => '🏸 Shuttlecocks',
+                    'string' => '🧵 Badminton Strings',
+                    'grip' => '🎾 Grips / Overgrips',
+                    'snack' => '🍪 Snacks',
+                    'drink' => '🥤 Drinks'
+                ];
+                $iconMap = [
+                    'racket' => 'fa-table-tennis',
+                    'shuttlecock' => 'fa-shuttlecock',
+                    'string' => 'fa-thread',
+                    'grip' => 'fa-hand-peace',
+                    'snack' => 'fa-cookie-bite',
+                    'drink' => 'fa-tint'
+                ];
+            ?>
+            <div id="category-<?php echo $cat; ?>" class="product-category-section">
                 <div class="product-section">
-                    <div class="section-title"><i class="fas fa-table-tennis"></i> 🏸 Badminton Rackets</div>
+                    <div class="section-title"><i class="fas <?php echo $iconMap[$cat]; ?>"></i> <?php echo $sectionTitle[$cat]; ?></div>
                     <div class="products-grid">
-                        <?php if(count($products['racket']) > 0): ?>
-                            <?php foreach($products['racket'] as $item): 
+                        <?php if(count($products[$cat]) > 0): ?>
+                            <?php foreach($products[$cat] as $item): 
                                 $existing_qty = $existing_addons[$item['id']] ?? 0;
+                                $maxQty = ($cat == 'racket') ? 3 : (($cat == 'shuttlecock') ? 10 : 20);
                             ?>
                             <div class="product-card">
                                 <div class="product-image"><img src="<?php echo getProductImage($item); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>" onerror="this.src='https://placehold.co/120x120/2b7e3a/white?text=🏸'"></div>
@@ -526,188 +518,20 @@ $existing_addons_json = json_encode($existing_addons);
                                     <div class="product-name"><?php echo htmlspecialchars($item['name']); ?></div>
                                     <div class="product-price">RM <?php echo number_format($item['price'], 2); ?></div>
                                     <div class="product-qty">
-                                        <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, -1)">-</button>
-<<<<<<< HEAD
-                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_addons[$item['id']] ?? 0; ?>" min="0" max="3" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
-=======
-                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_qty; ?>" min="0" max="3" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
->>>>>>> 35c208826440b08b0991da8611a32db4fcc69cb0
-                                        <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, 1)">+</button>
+                                        <button type="button" class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, -1)">-</button>
+                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_qty; ?>" min="0" max="<?php echo $maxQty; ?>" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
+                                        <button type="button" class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, 1)">+</button>
                                     </div>
                                 </div>
                             </div>
                             <?php endforeach; ?>
                         <?php else: ?>
-                            <div class="product-card" style="text-align:center; color:#888;">No rackets available</div>
+                            <div class="product-card" style="text-align:center; color:#888;">No items available</div>
                         <?php endif; ?>
                     </div>
                 </div>
             </div>
-            
-            <!-- Shuttlecocks Section -->
-            <div id="category-shuttlecock" class="product-category-section">
-                <div class="product-section">
-                    <div class="section-title"><i class="fas fa-shuttlecock"></i> 🏸 Shuttlecocks</div>
-                    <div class="products-grid">
-                        <?php if(count($products['shuttlecock']) > 0): ?>
-                            <?php foreach($products['shuttlecock'] as $item): 
-                                $existing_qty = $existing_addons[$item['id']] ?? 0;
-                            ?>
-                            <div class="product-card">
-                                <div class="product-image"><img src="<?php echo getProductImage($item); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>" onerror="this.src='https://placehold.co/120x120/2b7e3a/white?text=🏸'"></div>
-                                <div class="product-info">
-                                    <div class="product-name"><?php echo htmlspecialchars($item['name']); ?></div>
-                                    <div class="product-price">RM <?php echo number_format($item['price'], 2); ?> <small>/ tube</small></div>
-                                    <div class="product-qty">
-                                        <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, -1)">-</button>
-<<<<<<< HEAD
-                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_addons[$item['id']] ?? 0; ?>" min="0" max="10" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
-=======
-                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_qty; ?>" min="0" max="10" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
->>>>>>> 35c208826440b08b0991da8611a32db4fcc69cb0
-                                        <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, 1)">+</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <div class="product-card" style="text-align:center; color:#888;">No shuttlecocks available</div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Strings Section -->
-            <div id="category-string" class="product-category-section">
-                <div class="product-section">
-                    <div class="section-title"><i class="fas fa-thread"></i> 🧵 Badminton Strings</div>
-                    <div class="products-grid">
-                        <?php if(count($products['string']) > 0): ?>
-                            <?php foreach($products['string'] as $item): 
-                                $existing_qty = $existing_addons[$item['id']] ?? 0;
-                            ?>
-                            <div class="product-card">
-                                <div class="product-image"><img src="<?php echo getProductImage($item); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>" onerror="this.src='https://placehold.co/120x120/2b7e3a/white?text=🧵'"></div>
-                                <div class="product-info">
-                                    <div class="product-name"><?php echo htmlspecialchars($item['name']); ?></div>
-                                    <div class="product-price">RM <?php echo number_format($item['price'], 2); ?></div>
-                                    <div class="product-qty">
-                                        <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, -1)">-</button>
-<<<<<<< HEAD
-                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_addons[$item['id']] ?? 0; ?>" min="0" max="10" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
-=======
-                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_qty; ?>" min="0" max="10" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
->>>>>>> 35c208826440b08b0991da8611a32db4fcc69cb0
-                                        <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, 1)">+</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <div class="product-card" style="text-align:center; color:#888;">No strings available</div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Grips Section -->
-            <div id="category-grip" class="product-category-section">
-                <div class="product-section">
-                    <div class="section-title"><i class="fas fa-hand-peace"></i> 🎾 Grips / Overgrips</div>
-                    <div class="products-grid">
-                        <?php if(count($products['grip']) > 0): ?>
-                            <?php foreach($products['grip'] as $item): 
-                                $existing_qty = $existing_addons[$item['id']] ?? 0;
-                            ?>
-                            <div class="product-card">
-                                <div class="product-image"><img src="<?php echo getProductImage($item); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>" onerror="this.src='https://placehold.co/120x120/2b7e3a/white?text=🎾'"></div>
-                                <div class="product-info">
-                                    <div class="product-name"><?php echo htmlspecialchars($item['name']); ?></div>
-                                    <div class="product-price">RM <?php echo number_format($item['price'], 2); ?></div>
-                                    <div class="product-qty">
-                                        <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, -1)">-</button>
-<<<<<<< HEAD
-                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_addons[$item['id']] ?? 0; ?>" min="0" max="20" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
-=======
-                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_qty; ?>" min="0" max="20" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
->>>>>>> 35c208826440b08b0991da8611a32db4fcc69cb0
-                                        <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, 1)">+</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <div class="product-card" style="text-align:center; color:#888;">No grips available</div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Snacks Section -->
-            <div id="category-snack" class="product-category-section">
-                <div class="product-section">
-                    <div class="section-title"><i class="fas fa-cookie-bite"></i> 🍪 Snacks</div>
-                    <div class="products-grid">
-                        <?php if(count($products['snack']) > 0): ?>
-                            <?php foreach($products['snack'] as $item): 
-                                $existing_qty = $existing_addons[$item['id']] ?? 0;
-                            ?>
-                            <div class="product-card">
-                                <div class="product-image"><img src="<?php echo getProductImage($item); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>" onerror="this.src='https://placehold.co/120x120/f39c12/white?text=🍪'"></div>
-                                <div class="product-info">
-                                    <div class="product-name"><?php echo htmlspecialchars($item['name']); ?></div>
-                                    <div class="product-price">RM <?php echo number_format($item['price'], 2); ?></div>
-                                    <div class="product-qty">
-                                        <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, -1)">-</button>
-<<<<<<< HEAD
-                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_addons[$item['id']] ?? 0; ?>" min="0" max="20" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
-=======
-                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_qty; ?>" min="0" max="20" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
->>>>>>> 35c208826440b08b0991da8611a32db4fcc69cb0
-                                        <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, 1)">+</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <div class="product-card" style="text-align:center; color:#888;">No snacks available</div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Drinks Section -->
-            <div id="category-drink" class="product-category-section">
-                <div class="product-section">
-                    <div class="section-title"><i class="fas fa-tint"></i> 🥤 Drinks</div>
-                    <div class="products-grid">
-                        <?php if(count($products['drink']) > 0): ?>
-                            <?php foreach($products['drink'] as $item): 
-                                $existing_qty = $existing_addons[$item['id']] ?? 0;
-                            ?>
-                            <div class="product-card">
-                                <div class="product-image"><img src="<?php echo getProductImage($item); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>" onerror="this.src='https://placehold.co/120x120/3498db/white?text=🥤'"></div>
-                                <div class="product-info">
-                                    <div class="product-name"><?php echo htmlspecialchars($item['name']); ?></div>
-                                    <div class="product-price">RM <?php echo number_format($item['price'], 2); ?></div>
-                                    <div class="product-qty">
-                                        <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, -1)">-</button>
-<<<<<<< HEAD
-                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_addons[$item['id']] ?? 0; ?>" min="0" max="20" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
-=======
-                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_qty; ?>" min="0" max="20" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
->>>>>>> 35c208826440b08b0991da8611a32db4fcc69cb0
-                                        <button class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, 1)">+</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <div class="product-card" style="text-align:center; color:#888;">No drinks available</div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
+            <?php endforeach; ?>
         </div>
         
         <div>
@@ -738,8 +562,6 @@ $existing_addons_json = json_encode($existing_addons);
 
 <script>
     let cart = [];
-    
-    // 页面加载时从数据库加载已有 add-ons
     const existingAddons = <?php echo $existing_addons_json; ?>;
     
     function changeQty(productId, delta) {
@@ -761,7 +583,7 @@ $existing_addons_json = json_encode($existing_addons);
                 const id = input.getAttribute('data-id');
                 const name = input.getAttribute('data-name');
                 const price = parseFloat(input.getAttribute('data-price'));
-                cart.push({ id, name, qty, price });
+                cart.push({ id: parseInt(id), name: name, qty: qty, price: price });
             }
         });
         displayCart();
@@ -790,12 +612,10 @@ $existing_addons_json = json_encode($existing_addons);
         document.getElementById('cartData').value = JSON.stringify(cart);
     });
     
-    // 监听所有数量输入框的变化
     document.querySelectorAll('.qty-input').forEach(input => {
         input.addEventListener('change', function() { updateCart(); });
     });
     
-    // 初始化时加载已有数量
     function loadExistingAddons() {
         for (const [productId, quantity] of Object.entries(existingAddons)) {
             const qtyInput = document.getElementById('qty_' + productId);
@@ -808,7 +628,6 @@ $existing_addons_json = json_encode($existing_addons);
     
     loadExistingAddons();
     
-    // Category Filter
     const categoryBtns = document.querySelectorAll('.category-btn');
     const categorySections = {
         'racket': document.getElementById('category-racket'),
