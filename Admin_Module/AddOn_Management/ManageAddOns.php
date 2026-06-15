@@ -21,6 +21,7 @@ if (isset($_GET['success']) && $_GET['success'] === 'added')   { $toasts[] = ['t
 if (isset($_GET['success']) && $_GET['success'] === 'updated') { $toasts[] = ['text' => 'Product updated successfully!', 'type' => 'success']; }
 if (isset($_GET['deleted']))                                    { $toasts[] = ['text' => 'Product removed successfully.', 'type' => 'pending']; }
 if (isset($_GET['error']) && $_GET['error'] === 'image')        { $toasts[] = ['text' => 'Invalid image file type.',      'type' => 'error'];   }
+if (isset($_GET['bulk']))                                       { $toasts[] = ['text' => 'Selected products updated.',     'type' => 'success']; }
 
 $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
 
@@ -178,6 +179,92 @@ function getProductImagePath($image_url) {
             font-weight: 700;
             cursor: pointer;
         }
+        /* ── Select toggle button (consistent with Manage Bookings) ── */
+        .btn-bulk-toggle {
+            padding: 11px 22px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #1e293b;
+            border: none;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            transition: all 0.25s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(245,158,11,0.3);
+        }
+        .btn-bulk-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245,158,11,0.45);
+        }
+        .btn-bulk-toggle.active {
+            background: #fff;
+            color: #d97706;
+            border: 2px solid #f59e0b;
+            box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
+        }
+        /* ── Checkbox column ── */
+        .bulk-col { display: none; width: 40px; padding: 12px 8px 12px 14px; }
+        .bulk-col input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: #f59e0b; }
+        /* ── Bulk action bar (animated, consistent with Manage Bookings) ── */
+        .bulk-action-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fff;
+            border-left: 4px solid #f59e0b;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 0 20px;
+            margin-bottom: 12px;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height 0.35s ease, opacity 0.35s ease, padding 0.35s ease;
+        }
+        .bulk-action-bar.show { max-height: 60px; padding: 12px 20px; opacity: 1; }
+        #bulkCount { font-size: 14px; font-weight: 700; color: #d97706; }
+        .bulk-action-btns { display: flex; gap: 8px; }
+        .bulk-btn {
+            padding: 7px 18px;
+            border: none;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .bulk-activate { background: #fff; color: #16a34a; border: 1.5px solid #16a34a; }
+        .bulk-activate:hover { background: #16a34a; color: #fff; }
+        .bulk-deactivate { background: #fff; color: #475569; border: 1.5px solid #cbd5e1; }
+        .bulk-deactivate:hover { background: #f1f5f9; border-color: #94a3b8; }
+        .bulk-delete { background: #fff; color: #dc2626; border: 1.5px solid #dc2626; }
+        .bulk-delete:hover { background: #dc2626; color: #fff; }
+        /* ── Inline status pill dropdown (no border) ── */
+        .data-table select.status-select {
+            border-radius: 50px !important;
+            padding: 6px 14px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            border: none !important;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+        .data-table select.status-select.st-active   { background-color: #dcfce7; color: #16a34a; }
+        .data-table select.status-select.st-inactive { background-color: #fef3c7; color: #d97706; }
+        .data-table select.status-select:hover { filter: brightness(0.97); }
     </style>
 </head>
 <body>
@@ -195,6 +282,9 @@ function getProductImagePath($image_url) {
                 <div class="btn-add-group">
                     <button class="btn-filter-toggle" onclick="toggleFilter()">
                         <i class="fas fa-filter"></i> Filter
+                    </button>
+                    <button type="button" class="btn-bulk-toggle" id="selectToggleBtn" onclick="toggleSelectMode()">
+                        <i class="fas fa-check-square"></i> <span id="selToggleText">Select</span>
                     </button>
                     <button type="button" class="btn-add-account" onclick="openAddAddonModal()">
                         <i class="fas fa-plus"></i> Add Product
@@ -236,10 +326,24 @@ function getProductImagePath($image_url) {
                 </form>
             </div>
 
+            <!-- Bulk Action Bar -->
+            <div class="bulk-action-bar" id="bulkBar">
+                <span id="bulkCount">0 selected</span>
+                <div class="bulk-action-btns">
+                    <button type="button" class="bulk-btn bulk-activate" onclick="bulkSubmit('activate')"><i class="fas fa-check"></i> Set Active</button>
+                    <button type="button" class="bulk-btn bulk-deactivate" onclick="bulkSubmit('deactivate')"><i class="fas fa-ban"></i> Set Inactive</button>
+                    <button type="button" class="bulk-btn bulk-delete" onclick="bulkSubmit('delete')"><i class="fas fa-trash"></i> Delete</button>
+                </div>
+            </div>
+
             <!-- Products Table -->
+            <form id="bulkForm" action="save_addon.php" method="POST">
+            <input type="hidden" name="bulk_action" value="1">
+            <input type="hidden" name="bulk_type" id="bulkType">
             <table class="data-table">
                 <thead>
                     <tr>
+                        <th class="bulk-col"><input type="checkbox" id="selectAll" onclick="toggleAll(this)"></th>
                         <th><?php echo addonSortLink('ID', 'id', $sort_col, $sort_dir, $next_dir, $filter_category, $filter_status, $filter_search); ?></th>
                         <th><?php echo addonSortLink('Product', 'name', $sort_col, $sort_dir, $next_dir, $filter_category, $filter_status, $filter_search); ?></th>
                         <th><?php echo addonSortLink('Category', 'category', $sort_col, $sort_dir, $next_dir, $filter_category, $filter_status, $filter_search); ?></th>
@@ -260,6 +364,9 @@ function getProductImagePath($image_url) {
                         '<?php echo addslashes($row['description'] ?? ''); ?>',
                         '<?php echo addslashes($row['image_url'] ?? ''); ?>'
                     )">
+                        <td class="bulk-col" onclick="event.stopPropagation()">
+                            <input type="checkbox" name="ids[]" value="<?php echo $row['id']; ?>" class="row-check" onchange="updateSelCount()">
+                        </td>
                         <td>#<?php echo $row['id']; ?></td>
                         <td>
                             <div class="product-cell">
@@ -283,18 +390,19 @@ function getProductImagePath($image_url) {
                         <td style="text-transform: capitalize;"><?php echo htmlspecialchars($row['category']); ?></td>
                         <td>RM <?php echo number_format($row['price'], 2); ?></td>
                         <td><?php echo $row['stock']; ?></td>
-                        <td>
-                            <?php if ($row['is_active'] == 1): ?>
-                                <span class="badge success">Active</span>
-                            <?php else: ?>
-                                <span class="badge pending">Inactive</span>
-                            <?php endif; ?>
+                        <td onclick="event.stopPropagation()">
+                            <select class="status-select <?php echo $row['is_active'] == 1 ? 'st-active' : 'st-inactive'; ?>"
+                                    onchange="toggleStatus(<?php echo $row['id']; ?>, this.value)">
+                                <option value="1" <?php echo $row['is_active'] == 1 ? 'selected' : ''; ?>>Active</option>
+                                <option value="0" <?php echo $row['is_active'] == 0 ? 'selected' : ''; ?>>Inactive</option>
+                            </select>
                         </td>
                     </tr>
 
                     <?php endwhile; ?>
                 </tbody>
             </table>
+            </form>
 
         </div>
     </main>
@@ -461,6 +569,49 @@ function getProductImagePath($image_url) {
             </div>
         </div>
     </div>
+
+    <!-- Hidden form for single status toggle -->
+    <form id="statusForm" action="save_addon.php" method="POST" style="display:none;">
+        <input type="hidden" name="toggle_status" value="1">
+        <input type="hidden" name="product_id" id="statusProductId">
+        <input type="hidden" name="new_status" id="statusNewStatus">
+    </form>
+
+    <script>
+        function toggleSelectMode() {
+            const on = document.body.classList.toggle('select-mode');
+            document.querySelectorAll('.bulk-col').forEach(el => el.style.display = on ? 'table-cell' : 'none');
+            document.getElementById('bulkBar').classList.toggle('show', on);
+            document.getElementById('selectToggleBtn').classList.toggle('active', on);
+            document.getElementById('selToggleText').textContent = on ? 'Done' : 'Select';
+            if (!on) {
+                document.querySelectorAll('.row-check').forEach(c => c.checked = false);
+                const sa = document.getElementById('selectAll');
+                if (sa) sa.checked = false;
+                updateSelCount();
+            }
+        }
+        function toggleAll(master) {
+            document.querySelectorAll('.row-check').forEach(c => c.checked = master.checked);
+            updateSelCount();
+        }
+        function updateSelCount() {
+            document.getElementById('bulkCount').textContent =
+                document.querySelectorAll('.row-check:checked').length + ' selected';
+        }
+        function bulkSubmit(type) {
+            const n = document.querySelectorAll('.row-check:checked').length;
+            if (n === 0) { alert('Please select at least one product.'); return; }
+            if (type === 'delete' && !confirm('Delete the selected products? Products with order history will be deactivated instead.')) return;
+            document.getElementById('bulkType').value = type;
+            document.getElementById('bulkForm').submit();
+        }
+        function toggleStatus(id, val) {
+            document.getElementById('statusProductId').value = id;
+            document.getElementById('statusNewStatus').value = val;
+            document.getElementById('statusForm').submit();
+        }
+    </script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
     <script src="ManageAddOns.js"></script>

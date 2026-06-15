@@ -132,5 +132,52 @@ if (isset($_POST['delete_product'])) {
     exit();
 }
 
+/* Toggle a single product's active status */
+if (isset($_POST['toggle_status'])) {
+    $id  = intval($_POST['product_id']);
+    $new = intval($_POST['new_status']) === 1 ? 1 : 0;
+
+    mysqli_query($conn, "UPDATE products SET is_active = $new WHERE id = $id");
+
+    $tg_row  = mysqli_fetch_assoc(mysqli_query($conn, "SELECT name FROM products WHERE id = $id"));
+    $tg_name = $tg_row['name'] ?? "ID $id";
+    $label   = $new ? 'Active' : 'Inactive';
+    logActivity($conn, 'Update', 'Add-On Management', "Set product '$tg_name' to $label");
+
+    header("Location: ManageAddOns.php?success=updated");
+    exit();
+}
+
+/* Bulk actions: activate / deactivate / delete selected products */
+if (isset($_POST['bulk_action'])) {
+    $ids  = isset($_POST['ids']) ? array_map('intval', (array)$_POST['ids']) : [];
+    $type = $_POST['bulk_type'] ?? '';
+
+    if (!empty($ids)) {
+        $in = implode(',', $ids);
+
+        if ($type === 'activate') {
+            mysqli_query($conn, "UPDATE products SET is_active = 1 WHERE id IN ($in)");
+            logActivity($conn, 'Update', 'Add-On Management', "Bulk set " . count($ids) . " product(s) to Active");
+        } elseif ($type === 'deactivate') {
+            mysqli_query($conn, "UPDATE products SET is_active = 0 WHERE id IN ($in)");
+            logActivity($conn, 'Update', 'Add-On Management', "Bulk set " . count($ids) . " product(s) to Inactive");
+        } elseif ($type === 'delete') {
+            foreach ($ids as $pid) {
+                $check = mysqli_query($conn, "SELECT id FROM booking_addons WHERE product_id = $pid LIMIT 1");
+                if ($check && mysqli_num_rows($check) > 0) {
+                    mysqli_query($conn, "UPDATE products SET is_active = 0 WHERE id = $pid");
+                } else {
+                    mysqli_query($conn, "DELETE FROM products WHERE id = $pid");
+                }
+            }
+            logActivity($conn, 'Delete', 'Add-On Management', "Bulk removed " . count($ids) . " product(s)");
+        }
+    }
+
+    header("Location: ManageAddOns.php?bulk=done");
+    exit();
+}
+
 header("Location: ManageAddOns.php");
 exit();
