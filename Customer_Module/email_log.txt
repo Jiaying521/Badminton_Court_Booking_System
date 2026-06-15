@@ -1,0 +1,24 @@
+2026-06-15 09:04:14 - To: gan.jia.ying@student.mmu.edu.my - Subject: Booking Created - #67
+2026-06-15 09:04:14 - To: chinzx1814@gmail.com - Subject: 🆕 New Booking Pending - #67
+2026-06-15 09:04:14 - To: CHAI.WEN.ZHE@student.mmu.edu.my - Subject: 🆕 New Booking Pending - #67
+2026-06-15 09:04:14 - To: GAN.JIA.YING@student.mmu.edu.my - Subject: 🆕 New Booking Pending - #67
+2026-06-15 09:04:14 - To: CoachWong2026@gmail.com - Subject: 🆕 New Coaching Session - #67
+2026-06-15 09:05:24 - To: gan.jia.ying@student.mmu.edu.my - Subject: Booking Cancelled - #67
+2026-06-15 09:05:24 - To: chinzx1814@gmail.com - Subject: ⚠️ Booking Cancelled - #67
+2026-06-15 09:05:24 - To: CHAI.WEN.ZHE@student.mmu.edu.my - Subject: ⚠️ Booking Cancelled - #67
+2026-06-15 09:05:24 - To: GAN.JIA.YING@student.mmu.edu.my - Subject: ⚠️ Booking Cancelled - #67
+2026-06-15 09:05:24 - To: CoachWong2026@gmail.com - Subject: Session Cancelled - Booking #67
+2026-06-15 09:09:51 - To: gan.jia.ying@student.mmu.edu.my - Subject: Booking Created - #68
+2026-06-15 09:09:51 - To: chinzx1814@gmail.com - Subject: 🆕 New Booking Pending - #68
+2026-06-15 09:09:51 - To: CHAI.WEN.ZHE@student.mmu.edu.my - Subject: 🆕 New Booking Pending - #68
+2026-06-15 09:09:51 - To: GAN.JIA.YING@student.mmu.edu.my - Subject: 🆕 New Booking Pending - #68
+2026-06-15 09:09:51 - To: CoachWong2026@gmail.com - Subject: 🆕 New Coaching Session - #68
+2026-06-15 09:47:42 - To: gan.jia.ying@student.mmu.edu.my - Subject: Add-ons Added - Booking #73
+2026-06-15 09:47:42 - To: chinzx1814@gmail.com - Subject: 🛍️ Add-ons Added - Booking #73
+2026-06-15 09:47:42 - To: CHAI.WEN.ZHE@student.mmu.edu.my - Subject: 🛍️ Add-ons Added - Booking #73
+2026-06-15 09:47:42 - To: GAN.JIA.YING@student.mmu.edu.my - Subject: 🛍️ Add-ons Added - Booking #73
+2026-06-15 10:14:07 - To: gan.jia.ying@student.mmu.edu.my - Subject: Booking Cancelled - #70
+2026-06-15 10:14:07 - To: chinzx1814@gmail.com - Subject: ⚠️ Booking Cancelled - #70
+2026-06-15 10:14:07 - To: CHAI.WEN.ZHE@student.mmu.edu.my - Subject: ⚠️ Booking Cancelled - #70
+2026-06-15 10:14:07 - To: GAN.JIA.YING@student.mmu.edu.my - Subject: ⚠️ Booking Cancelled - #70
+2026-06-15 10:14:07 - To: CoachWong2026@gmail.com - Subject: Session Cancelled - Booking #70

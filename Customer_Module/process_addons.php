@@ -1,5 +1,7 @@
 <?php
 require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/functions.php';
+
 if (!isLoggedIn()) redirect('homepage.php');
 
 $booking_id = $_POST['booking_id'] ?? 0;
@@ -14,13 +16,13 @@ $booking = $stmt->fetch();
 
 if (!$booking) redirect('dashboard.php');
 
-// 还原场地基础费用（total_price 可能已包含之前加购的金额）
+// 还原场地基础费用
 $stmt = $pdo->prepare("SELECT COALESCE(SUM(quantity * price), 0) AS total FROM booking_addons WHERE booking_id = ?");
 $stmt->execute([$booking_id]);
 $existing_addons_total = $stmt->fetchColumn();
 $base_price = $booking['total_price'] - $existing_addons_total;
 
-// 清除旧的加购记录，避免用户返回后重复插入/重复计费
+// 清除旧的加购记录
 $stmt = $pdo->prepare("DELETE FROM booking_addons WHERE booking_id = ?");
 $stmt->execute([$booking_id]);
 
@@ -38,12 +40,12 @@ foreach ($cart as $item) {
     $stmt->execute([$booking_id, $product_id, $quantity, $price]);
 }
 
-// 更新预订总价（基础场地费 + 新的加购金额）
+// 更新预订总价
 $new_total = $base_price + $addons_total;
 $stmt = $pdo->prepare("UPDATE bookings SET total_price = ? WHERE id = ?");
 $stmt->execute([$new_total, $booking_id]);
 
-// 跳转到支付页面
+// 跳转到支付页面（不发送邮件）
 header("Location: ../Payment_Module/checkout.php?booking_id=$booking_id&amount=$new_total");
 exit;
 ?>

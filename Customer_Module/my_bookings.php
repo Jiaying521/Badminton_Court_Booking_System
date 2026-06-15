@@ -1,15 +1,24 @@
-<?php
+﻿<?php
+// ============================================================
+// my_bookings.php - Customer Booking Management Page
+// Displays all user bookings with options to pay, reschedule, or cancel
+// ============================================================
+
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/functions.php';
+
+// Redirect to homepage if user is not logged in
 if(!isLoggedIn()) redirect('homepage.php');
 
 $user_id = $_SESSION['user_id'];
 
-// 直接使用 functions.php 中的 getSetting() 函数
+// Get cancellation policy settings from database
 $cancellation_hours = getSetting('cancellation_hours', '2');
 $cancellation_fee = getSetting('cancellation_fee', '10.00');
 
-// 获取用户所有预订记录
+// ============================================================
+// FETCH ALL USER BOOKINGS
+// ============================================================
 $stmt = $pdo->prepare("
     SELECT b.*, c.court_name, c.court_type, c.location,
            co.name as coach_name
@@ -22,12 +31,14 @@ $stmt = $pdo->prepare("
 $stmt->execute([$user_id]);
 $bookings = $stmt->fetchAll();
 
-// 获取用户信息（包含头像字段）
+// ============================================================
+// FETCH USER PROFILE INFORMATION
+// ============================================================
 $userStmt = $pdo->prepare("SELECT name, profile_picture FROM users WHERE id = ?");
 $userStmt->execute([$user_id]);
 $user = $userStmt->fetch();
 
-// 获取用户头像
+// Setup user avatar path
 $profile_picture = isset($user['profile_picture']) ? $user['profile_picture'] : '';
 $defaultAvatarPath = '../image/default_image.png';
 $avatarPath = $defaultAvatarPath;
@@ -40,7 +51,7 @@ if (!empty($profile_picture)) {
     }
 }
 
-// 确保默认头像存在
+// Create default avatar if it doesn't exist
 $defaultAvatarFullPath = __DIR__ . '/../image/default_image.png';
 if (!file_exists($defaultAvatarFullPath)) {
     $imageDir = __DIR__ . '/../image/';
@@ -53,7 +64,9 @@ if (!file_exists($defaultAvatarFullPath)) {
     }
 }
 
-// 获取取消次数（兼容旧数据库）
+// ============================================================
+// GET CANCELLATION COUNT (for penalty tracking)
+// ============================================================
 $cancellation_count = 0;
 try {
     $checkCol = $pdo->query("SHOW COLUMNS FROM users LIKE 'cancellation_count'");
@@ -68,20 +81,22 @@ try {
 }
 $user['cancellation_count'] = $cancellation_count;
 
-// 获取钱包余额
+// Get user's wallet balance
 $stmt_bal = $pdo->prepare("SELECT wallet_balance FROM users WHERE id = ?");
 $stmt_bal->execute([$user_id]);
 $balance_row = $stmt_bal->fetch();
 $real_balance = $balance_row['wallet_balance'] ?? 0.00;
 
-// 获取系统设置用于 footer 显示
+// ============================================================
+// GET SYSTEM SETTINGS FOR FOOTER DISPLAY
+// ============================================================
 $open_time = getSetting('open_time', '08:00');
 $close_time = getSetting('close_time', '01:00');
 $peak_start = getSetting('peak_start', '15:00');
 $off_peak_price = getSetting('off_peak_price', '10');
 $peak_price = getSetting('peak_price', '15');
 
-// 格式化时间显示
+// Format times for display
 $open_time_display = date('h:i A', strtotime($open_time));
 $close_time_display = date('h:i A', strtotime($close_time));
 $peak_start_display = date('h:i A', strtotime($peak_start));
@@ -98,8 +113,10 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* Reset and base styles */
         * { margin:0; padding:0; box-sizing:border-box; }
         
+        /* Main body with gradient background */
         body { 
             font-family: 'Inter', 'Poppins', 'Montserrat', sans-serif; 
             background: radial-gradient(circle at 10% 20%, rgba(240,245,236,1) 0%, rgba(226,236,217,1) 100%);
@@ -109,13 +126,12 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             position: relative;
         }
         
+        /* Background pattern overlay */
         body::before {
             content: '';
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background-image: radial-gradient(rgba(43,126,58,0.08) 1px, transparent 1px);
             background-size: 40px 40px;
             pointer-events: none;
@@ -129,12 +145,15 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             z-index: 1;
         }
         
+        /* Custom scrollbar styling */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #e0e8dc; border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: #2b7e3a; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #1f5a2a; }
         
-        /* Glassmorphism Navbar */
+        /* ============================================================
+           GLASSMORPHISM NAVBAR
+        ============================================================ */
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -151,11 +170,13 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             animation: fadeInDown 0.6s ease-out;
         }
         
+        /* Fade in animation for navbar */
         @keyframes fadeInDown {
             from { opacity: 0; transform: translateY(-30px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
+        /* Logo area with hover effect */
         .logo-area { 
             display: flex; 
             align-items: center; 
@@ -185,6 +206,8 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             transition: transform 0.3s ease;
         }
         .logo-area:hover img { transform: scale(1.02) rotate(5deg); }
+        
+        /* Gradient text logo */
         .logo-text { 
             font-family: 'Montserrat', 'Inter', sans-serif;
             font-size: 1.5rem; 
@@ -203,6 +226,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             color: transparent;
         }
         
+        /* Navigation links */
         .nav-links { 
             display: flex; 
             align-items: center; 
@@ -222,6 +246,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             overflow: hidden;
         }
         
+        /* Sliding effect on nav links */
         .nav-links a::before {
             content: '';
             position: absolute;
@@ -242,7 +267,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             border-radius: 50px;
         }
         
-        /* 用户头像区域 - 可点击跳转 profile */
+        /* User profile area - clickable to edit profile */
         .user-profile {
             display: flex;
             align-items: center;
@@ -287,6 +312,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             font-weight: 600;
         }
         
+        /* Logout button */
         .btn-logout { 
             background: #fee2e2; 
             color: #e67e22; 
@@ -306,7 +332,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             border-radius: 50px;
         }
         
-        /* Page Header */
+        /* ============================================================
+           PAGE HEADER
+        ============================================================ */
         .page-header { 
             display: flex; 
             justify-content: space-between; 
@@ -330,6 +358,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         }
         .page-header h1 i { color: #2b7e3a; margin-right: 0.5rem; }
         
+        /* Book new court button */
         .btn-book { 
             background: linear-gradient(135deg, #2b7e3a, #1f5a2a);
             color: white; 
@@ -349,6 +378,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             overflow: hidden;
         }
         
+        /* Sliding shine effect on book button */
         .btn-book::before {
             content: '';
             position: absolute;
@@ -367,7 +397,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             border-radius: 60px;
         }
         
-        /* Warning Banner */
+        /* ============================================================
+           WARNING BANNER (for cancellation penalties)
+        ============================================================ */
         .warning-banner {
             background: linear-gradient(135deg, #fff3cd, #ffe69e);
             border-left: 5px solid #e67e22;
@@ -398,7 +430,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             font-size: 0.8rem;
         }
         
-        /* Wallet Card */
+        /* ============================================================
+           WALLET BALANCE CARD
+        ============================================================ */
         .wallet-card { 
             background: linear-gradient(135deg, #2b7e3a, #1b5e2a);
             color: white; 
@@ -414,6 +448,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             overflow: hidden;
         }
         
+        /* Pulsing animation for wallet card */
         .wallet-card::before {
             content: '';
             position: absolute;
@@ -439,7 +474,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         .wallet-card i { font-size: 1.2rem; }
         .wallet-card .amount { font-weight: 800; font-size: 1.1rem; }
         
-        /* Stats Cards */
+        /* ============================================================
+           STATISTICS CARDS
+        ============================================================ */
         .stats-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
@@ -462,6 +499,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         .stat-card:nth-child(3) { animation-delay: 0.15s; }
         .stat-card:nth-child(4) { animation-delay: 0.2s; }
         
+        /* Hover effect for stat cards */
         .stat-card:hover { 
             transform: translateY(-8px) scale(1.02);
             box-shadow: 0 20px 40px rgba(43,126,58,0.15);
@@ -481,7 +519,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             font-weight: 500;
         }
         
-        /* Filter Tabs */
+        /* ============================================================
+           FILTER TABS
+        ============================================================ */
         .filter-tabs { 
             display: flex; 
             gap: 0.6rem; 
@@ -511,7 +551,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             border-radius: 50px;
         }
         
-        /* Bookings Table */
+        /* ============================================================
+           BOOKINGS TABLE
+        ============================================================ */
         .bookings-table { 
             background: rgba(255,255,255,0.7);
             backdrop-filter: blur(10px);
@@ -521,6 +563,8 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             border: 1px solid rgba(255,255,255,0.3);
         }
         table { width:100%; border-collapse:collapse; }
+        
+        /* Table header with green background */
         th { 
             background: #2b7e3a; 
             color: white; 
@@ -537,6 +581,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         tr { transition: background 0.3s; }
         tr:hover { background: rgba(43,126,58,0.05); }
         
+        /* Status badge styling */
         .status { 
             display: inline-block; 
             padding: 0.25rem 0.8rem; 
@@ -550,6 +595,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         .status-Cancelled { background: #f8d7da; color: #721c24; }
         .status-Completed { background: #cce5ff; color: #004085; }
         
+        /* Court type badge */
         .court-badge { 
             display: inline-block; 
             background: #eaf5e6; 
@@ -561,12 +607,15 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             font-weight: 600;
         }
         
+        /* Action buttons container */
         .action-btns { 
             display: flex; 
             gap: 0.6rem; 
             flex-wrap: wrap;
             align-items: center;
         }
+        
+        /* View receipt button */
         .btn-view { 
             background: rgba(232,240,229,0.8);
             color: #2c4a2e; 
@@ -603,6 +652,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             border-radius: 50px;
         }
         
+        /* Pay Now button */
         .btn-pay-now { 
             background: linear-gradient(135deg, #2b7e3a, #1f5a2a);
             color: white; 
@@ -639,6 +689,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             border-radius: 50px;
         }
 
+        /* Cancel button */
         .btn-cancel { 
             background: #fee2e2; 
             color: #e67e22; 
@@ -661,6 +712,8 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             box-shadow: 0 4px 10px rgba(230,126,34,0.3);
             border-radius: 50px;
         }
+        
+        /* Disabled cancel button */
         .btn-cancel-disabled { 
             background: #e0e0e0; 
             color: #888; 
@@ -675,6 +728,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             font-family: 'Montserrat', sans-serif;
         }
         
+        /* Reschedule button */
         .btn-reschedule { 
             background: #e8f0e5; 
             color: #2b7e3a; 
@@ -696,6 +750,8 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             transform: translateY(-2px);
             border-radius: 50px;
         }
+        
+        /* Disabled reschedule button */
         .btn-reschedule-disabled { 
             background: #e0e0e0; 
             color: #888; 
@@ -710,7 +766,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             font-family: 'Montserrat', sans-serif;
         }
         
-        /* Modal */
+        /* ============================================================
+           MODAL STYLES (Receipt, Reschedule, Cancellation Choice)
+        ============================================================ */
         .modal { 
             display: none; 
             position: fixed; 
@@ -750,8 +808,12 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         .modal-close { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; transition: transform 0.3s; }
         .modal-close:hover { transform: rotate(90deg); }
         .modal-body { padding: 1.5rem; max-height: 60vh; overflow-y: auto; }
+        
+        /* Receipt row styling */
         .receipt-row { display: flex; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid rgba(224,224,224,0.5); }
         .receipt-total { display: flex; justify-content: space-between; padding: 0.8rem 0 0; margin-top: 0.5rem; border-top: 2px solid #2b7e3a; font-weight: 800; font-size: 1.1rem; color: #2b7e3a; }
+        
+        /* Print button */
         .print-btn { 
             background: linear-gradient(135deg, #2b7e3a, #1f5a2a);
             color: white; 
@@ -780,7 +842,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         .print-btn:hover::before { left: 100%; }
         .print-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(43,126,58,0.3); border-radius: 60px; }
         
-        /* Reschedule Modal specific */
+        /* Form group for reschedule modal */
         .form-group { margin-bottom: 1rem; }
         .form-group label { 
             display: block; 
@@ -797,6 +859,8 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             background: rgba(254,253,248,0.9);
             font-family: 'Inter', sans-serif;
         }
+        
+        /* Save button for reschedule */
         .btn-save {
             background: linear-gradient(135deg, #2b7e3a, #1f5a2a);
             color: white;
@@ -815,6 +879,8 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             box-shadow: 0 4px 12px rgba(43,126,58,0.3);
             border-radius: 50px;
         }
+        
+        /* Message display */
         .message {
             padding: 0.8rem;
             border-radius: 16px;
@@ -832,7 +898,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             border-left: 4px solid #e67e22;
         }
         
-        /* Empty State */
+        /* Empty state styling */
         .empty-state { 
             text-align: center; 
             padding: 4rem; 
@@ -845,7 +911,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         .empty-state h3 { color: #5a6e5c; margin-bottom: 0.5rem; }
         .empty-state p { color: #888; margin-bottom: 1.5rem; }
         
-        /* Footer */
+        /* ============================================================
+           FOOTER
+        ============================================================ */
         .footer { 
             background: #0f1f12; 
             color: #cbd5c0; 
@@ -866,6 +934,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         .social-icons a:hover { background: #2b7e3a; transform: translateY(-5px) rotate(360deg); border-radius: 50%; }
         .footer-bottom { text-align: center; border-top: 1px solid #2c4a2e; padding-top: 1.5rem; font-size: 0.8rem; }
         
+        /* ============================================================
+           RESPONSIVE DESIGN (Mobile & Tablet)
+        ============================================================ */
         @media (max-width: 768px) { 
             body { padding: 1rem; } 
             th, td { padding: 0.5rem; font-size: 0.8rem; } 
@@ -885,6 +956,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
 </head>
 <body>
 <div class="container">
+    <!-- ============================================================
+         NAVIGATION BAR
+    ============================================================ -->
     <div class="navbar">
         <a href="dashboard.php" class="logo-area">
             <img src="../Pictures/Admin_Module/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
@@ -895,12 +969,13 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             <a href="my_bookings.php" class="active"><i class="fas fa-bookmark"></i> My Bookings</a>
             <a href="../Payment_Module/wallet.php"><i class="fas fa-wallet"></i> Wallet</a>
             <a href="coaches.php"><i class="fas fa-user-tie"></i> Coaches</a>
+            <!-- User profile area - click to edit profile -->
             <a href="edit_profile.php" class="user-profile">
                 <div class="user-avatar">
                     <img src="<?php echo htmlspecialchars($avatarPath); ?>" alt="Avatar">
                 </div>
                 <div class="user-info">
-                    <div class="user-namephp"><?php echo htmlspecialchars($user['name'] ?? 'Player'); ?></div>
+                    <div class="user-name"><?php echo htmlspecialchars($user['name'] ?? 'Player'); ?></div>
                     <div class="user-balance">💰 RM <?php echo number_format($real_balance, 2); ?></div>
                 </div>
             </a>
@@ -908,11 +983,17 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         </div>
     </div>
     
+    <!-- ============================================================
+         PAGE HEADER
+    ============================================================ -->
     <div class="page-header">
         <h1><i class="fas fa-bookmark"></i> My Bookings</h1>
         <a href="dashboard.php" class="btn-book"><i class="fas fa-plus"></i> Book New Court</a>
     </div>
     
+    <!-- ============================================================
+         CANCELLATION WARNING BANNER (shows if user has cancellations)
+    ============================================================ -->
     <?php if($cancellation_count >= 1): ?>
     <div class="warning-banner">
         <i class="fas fa-exclamation-triangle"></i>
@@ -927,11 +1008,17 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
     </div>
     <?php endif; ?>
     
+    <!-- ============================================================
+         WALLET BALANCE CARD
+    ============================================================ -->
     <div class="wallet-card">
         <i class="fas fa-wallet"></i>
         <span>Wallet Balance: <span class="amount">RM <?php echo number_format($real_balance, 2); ?></span></span>
     </div>
     
+    <!-- ============================================================
+         STATISTICS CARDS (Total, Upcoming, Completed, Spent)
+    ============================================================ -->
     <?php 
     $total_spent = 0;
     $completed_count = 0;
@@ -952,6 +1039,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         <div class="stat-card"><div class="stat-number">RM <?php echo number_format($total_spent, 2); ?></div><div class="stat-label">Total Spent</div></div>
     </div>
     
+    <!-- ============================================================
+         FILTER TABS (All, Confirmed, Pending, Completed, Cancelled)
+    ============================================================ -->
     <div class="filter-tabs">
         <button class="filter-btn active" data-filter="all">All</button>
         <button class="filter-btn" data-filter="Confirmed">Confirmed</button>
@@ -960,6 +1050,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         <button class="filter-btn" data-filter="Cancelled">Cancelled</button>
     </div>
     
+    <!-- ============================================================
+         BOOKINGS TABLE
+    ============================================================ -->
     <?php if(count($bookings) > 0): ?>
     <div class="bookings-table">
         <table id="bookingsTable">
@@ -968,6 +1061,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             </thead>
             <tbody>
                 <?php foreach($bookings as $b): 
+                    // Format dates and times for display
                     $booking_date = date('M j, Y', strtotime($b['booking_date']));
                     $start_time = date('h:i A', strtotime($b['start_time']));
                     $end_time = date('h:i A', strtotime($b['end_time']));
@@ -975,8 +1069,10 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
                     $booking_timestamp = strtotime($booking_datetime);
                     $current_timestamp = time();
                     $hours_until_booking = ($booking_timestamp - $current_timestamp) / 3600;
+                    
+                    // Check if cancellation is allowed (at least 2 hours notice)
                     $can_cancel = ($b['status'] == 'Pending' || $b['status'] == 'Confirmed') && $hours_until_booking >= 2;
-                    $can_cancel = ($b['status'] == 'Pending' || $b['status'] == 'Confirmed') && $hours_until_booking >= 2;
+                    // Check if reschedule is allowed (at least 24 hours notice and not rescheduled before)
                     $can_reschedule = ($b['status'] == 'Pending' || $b['status'] == 'Confirmed') && $hours_until_booking >= 24;
                     $reschedule_count = $b['reschedule_count'] ?? 0;
                     $has_rescheduled = $reschedule_count >= 1;
@@ -990,12 +1086,14 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
                     <td>RM <?php echo number_format($b['total_price'], 2); ?></td>
                     <td><span class="status status-<?php echo $b['status']; ?>"><?php echo $b['status']; ?></span></td>
                     <td class="action-btns">
+                        <!-- Pay Now button - only for Pending bookings -->
                         <?php if($b['status'] === 'Pending'): ?>
                             <a href="../Payment_Module/checkout.php?booking_id=<?php echo $b['id']; ?>&amount=<?php echo $b['total_price']; ?>" class="btn-pay-now"><i class="fas fa-credit-card"></i> Pay Now</a>
                         <?php else: ?>
                             <button class="btn-view" onclick="viewReceipt(<?php echo $b['id']; ?>)"><i class="fas fa-receipt"></i> Receipt</button>
                         <?php endif; ?>
                         
+                        <!-- Reschedule and Cancel buttons - only for Pending or Confirmed bookings -->
                         <?php if($b['status'] == 'Pending' || $b['status'] == 'Confirmed'): ?>
                             <?php if($can_reschedule && !$has_rescheduled): ?>
                                 <button class="btn-reschedule" onclick="openRescheduleModal(<?php echo $b['id']; ?>, <?php echo $b['court_id']; ?>, '<?php echo $b['booking_date']; ?>', '<?php echo $b['start_time']; ?>', <?php echo $b['total_hours']; ?>, <?php echo $reschedule_count; ?>)">
@@ -1021,17 +1119,21 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
                                 </button>
                             <?php endif; ?>
                         <?php endif; ?>
-                    </div>
+                    </td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
     </div>
     <?php else: ?>
+    <!-- Empty state when no bookings exist -->
     <div class="empty-state"><i class="fas fa-calendar-alt"></i><h3>No Bookings Yet</h3><p>You haven't made any court bookings.</p><a href="dashboard.php" class="btn-book">Book Your First Court</a></div>
     <?php endif; ?>
 </div>
 
+<!-- ============================================================
+     RECEIPT MODAL
+============================================================ -->
 <div id="receiptModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -1042,6 +1144,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
     </div>
 </div>
 
+<!-- ============================================================
+     RESCHEDULE MODAL
+============================================================ -->
 <div id="rescheduleModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -1068,6 +1173,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
     </div>
 </div>
 
+<!-- ============================================================
+     CANCELLATION CHOICE MODAL (when booking has add-ons)
+============================================================ -->
 <div id="cancelChoiceModal" class="modal" style="display: none;">
     <div class="modal-content" style="max-width: 440px; margin: 12% auto; text-align: center;">
         <div class="modal-header" style="background: linear-gradient(135deg, #2b7e3a, #1f5a2a);">
@@ -1078,7 +1186,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             <p id="cancelChoiceText" style="font-size: 14px; color: #5a6e5c; margin-bottom: 25px; line-height: 1.5; text-align: left;"></p>
             
             <button onclick="executeCancelAction('all')" style="background: #ff4d4d; color: white; width: 100%; padding: 12px; margin-bottom: 12px; border: none; border-radius: 50px; font-weight: 700; cursor: pointer; font-family: 'Montserrat', sans-serif;">
-                <i class="fas fa-trash-alt"></i> Cancel Whole Booking (Full Refund)
+                <i class="fas fa-trash-alt"></i> Cancel Whole Booking
             </button>
             
             <button onclick="executeCancelAction('addons')" style="background: #e67e22; color: white; width: 100%; padding: 12px; margin-bottom: 20px; border: none; border-radius: 50px; font-weight: 700; cursor: pointer; font-family: 'Montserrat', sans-serif;">
@@ -1091,6 +1199,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
     </div>
 </div>
 
+<!-- ============================================================
+     FOOTER
+============================================================ -->
 <footer class="footer">
     <div class="footer-container">
         <div class="footer-col">
@@ -1130,7 +1241,13 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
     <div class="footer-bottom"><p>&copy; 2025 Smash Arena – Your Game, Our Court. All rights reserved.</p></div>
 </footer>
 
+<!-- ============================================================
+     JAVASCRIPT FUNCTIONS
+============================================================ -->
 <script>
+    // ============================================================
+    // FILTER FUNCTIONALITY - Toggle table rows by status
+    // ============================================================
     const filterBtns = document.querySelectorAll('.filter-btn');
     const tableRows = document.querySelectorAll('#bookingsTable tbody tr');
     filterBtns.forEach(btn => {
@@ -1144,6 +1261,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         });
     });
     
+    // ============================================================
+    // VIEW RECEIPT - Fetch and display booking receipt
+    // ============================================================
     async function viewReceipt(bookingId) {
         try {
             const response = await fetch(`get_booking_details.php?id=${bookingId}`);
@@ -1153,6 +1273,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
                 const isRefund = b.status === 'Cancelled' && b.cancellation_fee > 0;
                 const refundAmount = isRefund ? (parseFloat(b.total_price) - parseFloat(b.cancellation_fee)) : 0;
                 
+                // Build receipt HTML
                 document.getElementById('receiptBody').innerHTML = `
                     <div style="text-align:center; margin-bottom:1rem;">
                         <img src="../Pictures/Admin_Module/logo.png" style="height:40px;">
@@ -1197,16 +1318,21 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         }
     }
     
+    // Close receipt modal
     function closeModal() { 
         document.getElementById('receiptModal').style.display = 'none'; 
     }
     
+    // Close modals when clicking outside
     window.onclick = (e) => { 
         if(e.target === document.getElementById('receiptModal')) closeModal();
         if(e.target === document.getElementById('rescheduleModal')) closeRescheduleModal();
         if(e.target === document.getElementById('cancelChoiceModal')) closeCancelChoiceModal();
     };
     
+    // ============================================================
+    // RESCHEDULE FUNCTIONALITY
+    // ============================================================
     let currentBookingId = null;
     let currentCourtId = null;
     let currentHours = null;
@@ -1214,6 +1340,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
     let currentTime = null;
     
     function openRescheduleModal(bookingId, courtId, date, time, hours, rescheduleCount) {
+        // Check if already rescheduled
         if (rescheduleCount >= 1) {
             alert('⚠️ This booking has already been rescheduled.\n\nEach booking can only be rescheduled once.\n\nPlease make a new booking if you need a different time.');
             return;
@@ -1240,6 +1367,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         document.getElementById('rescheduleModal').style.display = 'none';
     }
     
+    // Load available time slots when date is selected
     document.getElementById('reschedule_date').addEventListener('change', async function() {
         const date = this.value;
         const courtId = document.getElementById('reschedule_court_id').value;
@@ -1304,8 +1432,6 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             });
             const data = await response.json();
             
-            console.log('Response:', data);
-            
             if (data.success) {
                 messageDiv.className = 'message success';
                 messageDiv.innerHTML = data.message.replace(/\n/g, '<br>');
@@ -1323,7 +1449,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         }
     }
     
-    // EASY HUMAN COMMENT: Global tracking handles for our modern multi-option interception modal loop
+    // ============================================================
+    // CANCELLATION FUNCTIONALITY
+    // ============================================================
     let globalCancelBookingId = null;
     let globalCancelPolicyMessage = '';
 
@@ -1334,10 +1462,8 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
     async function executeCancelAction(choiceType) {
         closeCancelChoiceModal();
         if (choiceType === 'all') {
-            // Process the standard full cancel script sequence
             await proceedCancel(globalCancelBookingId, 'all');
         } else if (choiceType === 'addons') {
-            // Process the items-only partial cancel request
             await proceedCancel(globalCancelBookingId, 'addons');
         }
     }
@@ -1354,6 +1480,19 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
                 const hasCoach = booking.coach_name && booking.coach_name !== '';
                 const addonsTotal = parseFloat(booking.addons_total || 0);
                 
+                // ============================================================
+                // SPECIAL HANDLING: PENDING STATUS (UNPAID) - Cancel without refund
+                // ============================================================
+                if (booking.status === 'Pending') {
+                    if(confirm('⚠️ Cancel this booking?\n\nThis booking has NOT been paid yet.\n\n• The booking will be cancelled immediately\n• No refund needed (you haven\'t paid)\n• The court time will be released\n\nDo you want to proceed?')) {
+                        await proceedCancel(bookingId, 'all');
+                    }
+                    return;
+                }
+                
+                // ============================================================
+                // CONFIRMED STATUS (PAID) - Calculate refund based on policy
+                // ============================================================
                 let confirmMessage = '';
                 
                 if (hoursDiff >= 48) {
@@ -1429,7 +1568,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
                         `💰 No refund will be issued.`;
                 }
                 
-                // EASY HUMAN COMMENT: If the booking has items, show our modal instead of firing a plain confirm popup
+                // If booking has add-ons, show choice modal
                 if (addonsTotal > 0) {
                     globalCancelBookingId = bookingId;
                     document.getElementById('cancelChoiceText').innerText = `We found active equipment or snack add-ons (Value: RM ${addonsTotal.toFixed(2)}) linked to this court booking.\n\nWould you like to cancel your entire session, or just drop the extra items while keeping your court confirmed?`;
@@ -1452,7 +1591,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         }
     }
     
-    // EASY HUMAN COMMENT: Added cancelType payload forwarding parameters to talk with the modified background handler
+    // ============================================================
+    // PROCEED WITH CANCELLATION - Send request to server
+    // ============================================================
     async function proceedCancel(bookingId, cancelType = 'all') {
         try {
             const response = await fetch(`cancel_booking.php`, {
@@ -1476,5 +1617,6 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         }
     }
 </script>
+<?php include 'footer.php'; ?>
 </body>
 </html>

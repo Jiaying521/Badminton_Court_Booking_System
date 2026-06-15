@@ -83,17 +83,24 @@ while ($row = mysqli_fetch_assoc($result)) {
         continue;
     }
 
+    // 获取正确的 coaches.id（因为通知表存的是 coaches.id，不是 admins.id）
+    $coach_id_query = mysqli_query($conn, "SELECT id FROM coaches WHERE admin_id = $coach_admin_id");
+    $coach_id_data = mysqli_fetch_assoc($coach_id_query);
+    $actual_coach_id = $coach_id_data ? (int)$coach_id_data['id'] : 0;
+
     // Create in-app reminder notification for coach
-    createNotification(
-        $conn,
-        'Coach',
-        'Upcoming Session Tomorrow',
-        "Reminder: Your coaching session at $court_name is scheduled for tomorrow, $date_fmt at $time_fmt.",
-        'reminder',
-        $booking_id,
-        'booking',
-        $coach_admin_id
-    );
+    if ($actual_coach_id > 0) {
+        createNotification(
+            $conn,
+            'Coach',
+            'Upcoming Session Tomorrow',
+            "Reminder: Your coaching session at $court_name is scheduled for tomorrow, $date_fmt at $time_fmt.",
+            'reminder',
+            $booking_id,
+            'booking',
+            $actual_coach_id
+        );
+    }
 
     // Send reminder email
     sendCoachReminderEmail($conn, $booking_id);

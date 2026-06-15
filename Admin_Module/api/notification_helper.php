@@ -71,44 +71,55 @@ function sendCoachBookingEmail($conn, $booking_id) {
         $mail->addAddress($coachEmail, $coachName);
 
         $mail->isHTML(true);
-        $mail->Subject = "✅ New Session Confirmed – $date";
+        $mail->Subject = "New Session Confirmed – $date";
         $mail->Body    = "
-        <div style='font-family: Arial, sans-serif; max-width:600px; margin:auto; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden;'>
-            <div style='background:#e85d04; padding:24px; text-align:center;'>
-                <h2 style='color:white; margin:0;'>🏸 Smash Arena</h2>
-                <p style='color:#ffe0cc; margin:6px 0 0;'>Session Booking Confirmed</p>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset='UTF-8'>
+            <title>New Session Confirmed</title>
+        </head>
+        <body style='margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; background-color: #f0f2f0;'>
+            <div style='max-width: 550px; margin: 0 auto; padding: 20px;'>
+                <div style='background: white; border-radius: 8px; overflow: hidden; border: 1px solid #ddd;'>
+                    <div style='background: #e85d04; padding: 20px; text-align: center;'>
+                        <h2 style='color: white; margin: 0;'>Smash Arena</h2>
+                        <p style='color: #ffe0cc; margin: 5px 0 0;'>Session Booking Confirmed</p>
+                    </div>
+                    <div style='padding: 25px;'>
+                        <p>Hi <strong>$coachName</strong>,</p>
+                        <p>A coaching session has been <strong style='color: #10b981;'>confirmed</strong> for you. Here are the details:</p>
+                        <table style='width: 100%; border-collapse: collapse; margin: 20px 0;'>
+                            <tr style='background: #f9fafb;'>
+                                <td style='padding: 10px; font-weight: 600; color: #555; width: 40%;'>Date:</td>
+                                <td style='padding: 10px;'>$date</td>
+                            </tr>
+                            <tr>
+                                <td style='padding: 10px; font-weight: 600; color: #555;'>Time:</td>
+                                <td style='padding: 10px;'>$start – $end</td>
+                            </tr>
+                            <tr style='background: #f9fafb;'>
+                                <td style='padding: 10px; font-weight: 600; color: #555;'>Court:</td>
+                                <td style='padding: 10px;'>$court</td>
+                            </tr>
+                            <tr>
+                                <td style='padding: 10px; font-weight: 600; color: #555;'>Session Type:</td>
+                                <td style='padding: 10px;'>$session</td>
+                            </tr>
+                            <tr style='background: #f9fafb;'>
+                                <td style='padding: 10px; font-weight: 600; color: #555;'>Notes:</td>
+                                <td style='padding: 10px;'>$notes</td>
+                            </tr>
+                        </table>
+                        <p style='color: #888; font-size: 13px;'>Please log in to <strong>Smash Arena</strong> to manage your session.</p>
+                    </div>
+                    <div style='background: #f3f4f6; padding: 12px; text-align: center; font-size: 11px; color: #aaa;'>
+                        © " . date('Y') . " Smash Arena · This is an automated notification
+                    </div>
+                </div>
             </div>
-            <div style='padding:28px;'>
-                <p>Hi <strong>$coachName</strong>,</p>
-                <p>A coaching session has been <strong style='color:#10b981;'>confirmed</strong> for you. Here are the details:</p>
-                <table style='width:100%; border-collapse:collapse; margin:20px 0;'>
-                    <tr style='background:#f9fafb;'>
-                        <td style='padding:10px 14px; font-weight:600; color:#555; width:40%;'>📅 Date</td>
-                        <td style='padding:10px 14px;'>$date</td>
-                    </tr>
-                    <tr>
-                        <td style='padding:10px 14px; font-weight:600; color:#555;'>⏰ Time</td>
-                        <td style='padding:10px 14px;'>$start – $end</td>
-                    </tr>
-                    <tr style='background:#f9fafb;'>
-                        <td style='padding:10px 14px; font-weight:600; color:#555;'>🏟️ Court</td>
-                        <td style='padding:10px 14px;'>$court</td>
-                    </tr>
-                    <tr>
-                        <td style='padding:10px 14px; font-weight:600; color:#555;'>🎯 Session Type</td>
-                        <td style='padding:10px 14px;'>$session</td>
-                    </tr>
-                    <tr style='background:#f9fafb;'>
-                        <td style='padding:10px 14px; font-weight:600; color:#555;'>📝 Notes</td>
-                        <td style='padding:10px 14px;'>$notes</td>
-                    </tr>
-                </table>
-                <p style='color:#888; font-size:13px;'>Please log in to <strong>Smash Arena</strong> to manage your session.</p>
-            </div>
-            <div style='background:#f3f4f6; padding:14px; text-align:center; font-size:12px; color:#aaa;'>
-                © " . date('Y') . " Smash Arena · This is an automated notification
-            </div>
-        </div>";
+        </body>
+        </html>";
 
         $mail->send();
         return true;
@@ -169,44 +180,55 @@ function sendCoachReminderEmail($conn, $booking_id) {
         $mail->addAddress($coachEmail, $coachName);
 
         $mail->isHTML(true);
-        $mail->Subject = "⏰ Reminder: Coaching Session Tomorrow – $date";
+        $mail->Subject = "Reminder: Coaching Session Tomorrow – $date";
         $mail->Body    = "
-        <div style='font-family: Arial, sans-serif; max-width:600px; margin:auto; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden;'>
-            <div style='background:#0f172a; padding:24px; text-align:center;'>
-                <h2 style='color:#f59e0b; margin:0;'>🏸 Smash Arena</h2>
-                <p style='color:#94a3b8; margin:6px 0 0;'>Upcoming Session Reminder</p>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset='UTF-8'>
+            <title>Session Reminder</title>
+        </head>
+        <body style='margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; background-color: #f0f2f0;'>
+            <div style='max-width: 550px; margin: 0 auto; padding: 20px;'>
+                <div style='background: white; border-radius: 8px; overflow: hidden; border: 1px solid #ddd;'>
+                    <div style='background: #0f172a; padding: 20px; text-align: center;'>
+                        <h2 style='color: #f59e0b; margin: 0;'>Smash Arena</h2>
+                        <p style='color: #94a3b8; margin: 5px 0 0;'>Upcoming Session Reminder</p>
+                    </div>
+                    <div style='padding: 25px;'>
+                        <p>Hi <strong>$coachName</strong>,</p>
+                        <p>This is a reminder that you have a <strong style='color: #f59e0b;'>coaching session tomorrow</strong>. Here are the details:</p>
+                        <table style='width: 100%; border-collapse: collapse; margin: 20px 0;'>
+                            <tr style='background: #f9fafb;'>
+                                <td style='padding: 10px; font-weight: 600; color: #555; width: 40%;'>Date:</td>
+                                <td style='padding: 10px;'>$date</td>
+                            </tr>
+                            <tr>
+                                <td style='padding: 10px; font-weight: 600; color: #555;'>Time:</td>
+                                <td style='padding: 10px;'>$start – $end</td>
+                            </tr>
+                            <tr style='background: #f9fafb;'>
+                                <td style='padding: 10px; font-weight: 600; color: #555;'>Court:</td>
+                                <td style='padding: 10px;'>$court</td>
+                            </tr>
+                            <tr>
+                                <td style='padding: 10px; font-weight: 600; color: #555;'>Session Type:</td>
+                                <td style='padding: 10px;'>$session</td>
+                            </tr>
+                            <tr style='background: #f9fafb;'>
+                                <td style='padding: 10px; font-weight: 600; color: #555;'>Notes:</td>
+                                <td style='padding: 10px;'>$notes</td>
+                            </tr>
+                        </table>
+                        <p style='color: #888; font-size: 13px;'>Please log in to <strong>Smash Arena</strong> to view or manage your session.</p>
+                    </div>
+                    <div style='background: #f3f4f6; padding: 12px; text-align: center; font-size: 11px; color: #aaa;'>
+                        © " . date('Y') . " Smash Arena · Automated reminder — do not reply
+                    </div>
+                </div>
             </div>
-            <div style='padding:28px;'>
-                <p>Hi <strong>$coachName</strong>,</p>
-                <p>This is a reminder that you have a <strong style='color:#f59e0b;'>coaching session tomorrow</strong>. Here are the details:</p>
-                <table style='width:100%; border-collapse:collapse; margin:20px 0;'>
-                    <tr style='background:#f9fafb;'>
-                        <td style='padding:10px 14px; font-weight:600; color:#555; width:40%;'>📅 Date</td>
-                        <td style='padding:10px 14px;'>$date</td>
-                    </tr>
-                    <tr>
-                        <td style='padding:10px 14px; font-weight:600; color:#555;'>⏰ Time</td>
-                        <td style='padding:10px 14px;'>$start – $end</td>
-                    </tr>
-                    <tr style='background:#f9fafb;'>
-                        <td style='padding:10px 14px; font-weight:600; color:#555;'>🏟️ Court</td>
-                        <td style='padding:10px 14px;'>$court</td>
-                    </tr>
-                    <tr>
-                        <td style='padding:10px 14px; font-weight:600; color:#555;'>🎯 Session Type</td>
-                        <td style='padding:10px 14px;'>$session</td>
-                    </tr>
-                    <tr style='background:#f9fafb;'>
-                        <td style='padding:10px 14px; font-weight:600; color:#555;'>📝 Notes</td>
-                        <td style='padding:10px 14px;'>$notes</td>
-                    </tr>
-                </table>
-                <p style='color:#888; font-size:13px;'>Please log in to <strong>Smash Arena</strong> to view or manage your session.</p>
-            </div>
-            <div style='background:#f3f4f6; padding:14px; text-align:center; font-size:12px; color:#aaa;'>
-                © " . date('Y') . " Smash Arena · Automated reminder — do not reply
-            </div>
-        </div>";
+        </body>
+        </html>";
 
         $mail->send();
         return true;

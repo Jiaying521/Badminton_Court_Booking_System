@@ -1252,6 +1252,30 @@ ALTER TABLE `court_availability`
 --
 ALTER TABLE `payments`
   ADD CONSTRAINT `fk_payments_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE;
+
+-- 1. 添加 cancellation_count 到 users 表
+ALTER TABLE `users` ADD COLUMN IF NOT EXISTS `cancellation_count` INT DEFAULT 0 AFTER `loyalty_points`;
+
+-- 2. 添加 description 字段到 coaches 表（如果要用到）
+ALTER TABLE `coaches` ADD COLUMN IF NOT EXISTS `description` TEXT AFTER `specialty`;
+
+-- 3. 添加 cancelled_at 字段到 bookings 表（可选，用于记录取消时间）
+ALTER TABLE `bookings` ADD COLUMN IF NOT EXISTS `cancelled_at` DATETIME NULL AFTER `status`;
+
+CREATE TABLE IF NOT EXISTS `email_queue` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `to_email` varchar(255) NOT NULL,
+  `subject` varchar(255) NOT NULL,
+  `body` text NOT NULL,
+  `is_html` tinyint(1) DEFAULT 0,
+  `status` enum('pending','sent','failed') DEFAULT 'pending',
+  `retry_count` int(11) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `sent_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

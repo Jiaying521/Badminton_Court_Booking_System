@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/functions.php';
 if (!isLoggedIn()) redirect('homepage.php');
@@ -1045,5 +1045,6 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         <p>&copy; 2025 Smash Arena – Your Game, Our Court.</p>
     </div>
 </footer>
+<?php include 'footer.php'; ?>
 </body>
 </html>

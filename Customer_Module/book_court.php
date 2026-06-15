@@ -1162,5 +1162,6 @@ $court_photos = getAllCourtImages($court);
         document.getElementById('bookingForm').submit();
     });
 </script>
+<?php include 'footer.php'; ?>
 </body>
 </html>
