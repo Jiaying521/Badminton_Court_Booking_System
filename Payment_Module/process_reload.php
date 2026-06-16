@@ -28,6 +28,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         die("Invalid transaction request."); // Crash the script immediately if data is bad
     }
 
+    // Maximum balance a wallet is allowed to hold
+    $max_balance = 99999;
+
+    // Read the current balance so we can block any top-up that pushes it over the limit
+    $bal_stmt = $conn->prepare("SELECT wallet_balance FROM users WHERE id = ?");
+    $bal_stmt->bind_param("i", $user_id);
+    $bal_stmt->execute();
+    $bal_res = $bal_stmt->get_result();
+    $bal_row = $bal_res->fetch_assoc();
+    $current_balance = $bal_row['wallet_balance'] ?? 0;
+
+    if ($current_balance + $amt > $max_balance) {
+        die("Top-up declined. Your wallet balance cannot exceed RM " . number_format($max_balance, 2) . ".");
+    }
+
     // DATABASE UPDATE
     // Prepare our SQL statement to add the top-up cash amount straight into their current wallet balance
     $sql = "UPDATE users SET wallet_balance = wallet_balance + ? WHERE id = ?";
