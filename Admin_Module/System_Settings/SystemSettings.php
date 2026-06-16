@@ -222,8 +222,8 @@ if (isset($_POST['add_voucher'])) {
     }
 
     // Reject non-positive points.
-    if ($points_required < 1) {
-        $toasts[] = ['text' => 'Points required must be at least 1.', 'type' => 'error'];
+    if ($points_required < 0) {
+        $toasts[] = ['text' => 'Points cannot be negative value.', 'type' => 'error'];
         goto after_voucher;
     }
 
@@ -286,7 +286,7 @@ if (isset($_POST['edit_voucher'])) {
     }
 
     // Reject non-positive points.
-    if ($points_required < 1) {
+    if ($points_required < 0) {
         $toasts[] = ['text' => 'Points required must be at least 1.', 'type' => 'error'];
         goto after_edit_voucher;
     }
@@ -785,7 +785,7 @@ $vouchers = mysqli_query($conn, "
                         <div class="settings-field">
                             <label>Points Required</label>
                             <input type="number" name="points_required" class="form-control"
-                                placeholder="e.g. 50" min="1" required>
+                                placeholder="e.g. 50" min="0" required>
                         </div>
 
                         <div class="settings-field">
@@ -926,7 +926,7 @@ $vouchers = mysqli_query($conn, "
 
                     <div class="modal-field">
                         <label>Points Required</label>
-                        <input type="number" name="points_required" id="ev-points" min="1" required>
+                        <input type="number" name="points_required" id="ev-points" min="0" required>
                     </div>
 
                     <div class="modal-field">
