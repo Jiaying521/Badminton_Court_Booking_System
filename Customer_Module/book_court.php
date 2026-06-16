@@ -1,21 +1,36 @@
 ﻿<?php
+// ============================================================
+// book_court.php - Court Booking Page
+// Allows users to select date, time, duration, and coach for a court booking
+// ============================================================
+
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/functions.php';
+
+// Check if user is logged in, redirect to homepage if not
 if(!isLoggedIn()) redirect('homepage.php');
+
 $court_id = $_GET['court_id'] ?? 0;
 if(!$court_id) redirect('dashboard.php');
 
+// ============================================================
+// FETCH COURT INFORMATION
+// ============================================================
 $stmt = $pdo->prepare("SELECT * FROM courts WHERE id = ?");
 $stmt->execute([$court_id]);
 $court = $stmt->fetch();
 if(!$court) redirect('dashboard.php');
 
-// 从 GET 参数获取预选教练、日期、时长（从 view_coach.php 跳转过来）
+// ============================================================
+// GET PREFILLED PARAMETERS (from view_coach.php or other pages)
+// ============================================================
 $preferred_coach_id = isset($_GET['preferred_coach_id']) ? (int)$_GET['preferred_coach_id'] : 0;
 $preferred_duration = isset($_GET['duration']) ? (int)$_GET['duration'] : 0;
 $preferred_date = isset($_GET['booking_date']) ? $_GET['booking_date'] : '';
 
-// 获取球场照片
+// ============================================================
+// HELPER FUNCTION: GET COURT IMAGE
+// ============================================================
 function getCourtImage($court) {
     $possibleFields = ['court_image', 'photo', 'image', 'photo_path'];
     $imageField = null;
@@ -65,6 +80,9 @@ function getCourtImage($court) {
     return null;
 }
 
+// ============================================================
+// HELPER FUNCTION: GET ALL COURT IMAGES FOR GALLERY
+// ============================================================
 function getAllCourtImages($court) {
     $images = [];
     $mainImage = getCourtImage($court);
@@ -88,13 +106,18 @@ function getAllCourtImages($court) {
     return $images;
 }
 
-// 如果是 Training Court，获取教练列表
+// ============================================================
+// FETCH COACHES FOR TRAINING COURTS
+// ============================================================
 $coaches = [];
 if($court['court_type'] == 'Training') {
     $coachStmt = $pdo->query("SELECT * FROM coaches WHERE is_active = 1 ORDER BY price_per_hour");
     $coaches = $coachStmt->fetchAll();
 }
 
+// ============================================================
+// HELPER FUNCTION: GET COACH IMAGE
+// ============================================================
 function getCoachImage($coach) {
     $basePath = '../Pictures/Admin_Module/coaches/';
     if (!empty($coach['profile_img'])) {
@@ -108,6 +131,9 @@ function getCoachImage($coach) {
     return '../Pictures/Admin_Module/coaches/default.png';
 }
 
+// ============================================================
+// GET COURT PHOTOS FOR GALLERY
+// ============================================================
 $court_photos = getAllCourtImages($court);
 ?>
 <!DOCTYPE html>
@@ -124,6 +150,9 @@ $court_photos = getAllCourtImages($court);
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* ============================================================
+           RESET & BASE STYLES
+        ============================================================ */
         * { margin:0; padding:0; box-sizing:border-box; }
         
         body { 
@@ -160,7 +189,9 @@ $court_photos = getAllCourtImages($court);
         ::-webkit-scrollbar-thumb { background: #2b7e3a; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #1f5a2a; }
         
-        /* Progress Bar */
+        /* ============================================================
+           PROGRESS BAR
+        ============================================================ */
         .progress-bar {
             display: flex;
             justify-content: space-between;
@@ -250,7 +281,9 @@ $court_photos = getAllCourtImages($court);
             color: #2b7e3a;
         }
         
-        /* Booking Summary Banner */
+        /* ============================================================
+           BOOKING SUMMARY BANNER
+        ============================================================ */
         .booking-summary { 
             background: linear-gradient(135deg, rgba(43,126,58,0.9), rgba(27,94,42,0.9));
             backdrop-filter: blur(5px);
@@ -267,14 +300,18 @@ $court_photos = getAllCourtImages($court);
             border: 1px solid rgba(255,255,255,0.2);
         }
         
-        /* 两栏布局 */
+        /* ============================================================
+           TWO COLUMN LAYOUT
+        ============================================================ */
         .row-2cols { 
             display: grid; 
             grid-template-columns: 2fr 1fr; 
             gap: 2rem; 
         }
         
-        /* 左侧卡片样式 */
+        /* ============================================================
+           LEFT COLUMN - PRODUCT SECTIONS (Cards)
+        ============================================================ */
         .product-section { 
             background: rgba(255,255,255,0.7);
             backdrop-filter: blur(10px);
@@ -303,7 +340,9 @@ $court_photos = getAllCourtImages($court);
             gap: 0.6rem;
         }
         
-        /* 球场信息网格 */
+        /* ============================================================
+           COURT INFORMATION
+        ============================================================ */
         .info-grid {
             display: flex;
             flex-direction: column;
@@ -343,7 +382,9 @@ $court_photos = getAllCourtImages($court);
             color: #e67e22;
         }
         
-        /* 照片横向滚动 */
+        /* ============================================================
+           COURT PHOTOS GALLERY
+        ============================================================ */
         .photos-scroll {
             display: flex;
             gap: 1rem;
@@ -383,7 +424,9 @@ $court_photos = getAllCourtImages($court);
             color: #aaa;
         }
         
-        /* 日期选择器 */
+        /* ============================================================
+           DATE PICKER
+        ============================================================ */
         #datepicker {
             width: 100%;
             padding: 0.9rem 1rem;
@@ -401,7 +444,9 @@ $court_photos = getAllCourtImages($court);
             box-shadow: 0 0 0 3px rgba(43,126,58,0.1);
         }
         
-        /* 时间 & 小时 双栏 */
+        /* ============================================================
+           TIME & HOURS SELECTION
+        ============================================================ */
         .time-hours-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -513,7 +558,9 @@ $court_photos = getAllCourtImages($court);
             font-size: 0.8rem;
         }
         
-        /* 右侧边栏 - 统一卡片 */
+        /* ============================================================
+           RIGHT COLUMN - BOOKING SUMMARY CARD
+        ============================================================ */
         .cart-summary { 
             background: rgba(255,255,255,0.7);
             backdrop-filter: blur(10px);
@@ -552,7 +599,9 @@ $court_photos = getAllCourtImages($court);
             color: #2b7e3a;
         }
         
-        /* 教练选择 - 整合在同一个卡片内 */
+        /* ============================================================
+           COACH SELECTION
+        ============================================================ */
         .coach-divider {
             margin: 1.2rem 0 1rem 0;
             border-top: 2px solid rgba(234,245,230,0.8);
@@ -661,6 +710,9 @@ $court_photos = getAllCourtImages($court);
             color: white;
         }
         
+        /* ============================================================
+           BUTTONS
+        ============================================================ */
         .btn-continue { 
             background: linear-gradient(135deg, #2b7e3a, #1f5a2a);
             color: white; border: none; padding: 1rem; border-radius: 60px;
@@ -695,6 +747,9 @@ $court_photos = getAllCourtImages($court);
             font-weight: 600;
         }
         
+        /* ============================================================
+           RESPONSIVE DESIGN
+        ============================================================ */
         @media (max-width: 768px) {
             body { padding: 1rem; }
             .row-2cols { grid-template-columns: 1fr; }
@@ -711,7 +766,9 @@ $court_photos = getAllCourtImages($court);
 <body>
 <div class="container">
     
-    <!-- Progress Bar -->
+    <!-- ============================================================
+         PROGRESS BAR
+    ============================================================ -->
     <div class="progress-bar">
         <div class="progress-step active"><div class="step-number">1</div><div class="step-label">Book Court</div></div>
         <div class="progress-step"><div class="step-number">2</div><div class="step-label">Add-ons</div></div>
@@ -719,7 +776,9 @@ $court_photos = getAllCourtImages($court);
         <div class="progress-step"><div class="step-number">4</div><div class="step-label">Payment</div></div>
     </div>
     
-    <!-- Booking Summary Banner -->
+    <!-- ============================================================
+         BOOKING SUMMARY BANNER
+    ============================================================ -->
     <div class="booking-summary">
         <div>
             <div style="font-size:1.2rem; font-weight:800;">🏸 <?=htmlspecialchars($court['court_name'])?></div>
@@ -735,9 +794,13 @@ $court_photos = getAllCourtImages($court);
     </div>
     
     <div class="row-2cols">
-        <!-- 左侧主内容 -->
+        <!-- ============================================================
+             LEFT COLUMN - MAIN CONTENT
+        ============================================================ -->
         <div>
-            <!-- Court Information 卡片 -->
+            <!-- ============================================================
+                 COURT INFORMATION CARD
+            ============================================================ -->
             <div class="product-section">
                 <div class="section-title"><i class="fas fa-info-circle"></i> Court Information</div>
                 <div class="info-grid">
@@ -751,7 +814,9 @@ $court_photos = getAllCourtImages($court);
                 </div>
             </div>
             
-            <!-- Court Photos 卡片 -->
+            <!-- ============================================================
+                 COURT PHOTOS CARD
+            ============================================================ -->
             <div class="product-section">
                 <div class="section-title"><i class="fas fa-images"></i> Court Photos</div>
                 <?php if(empty($court_photos)): ?>
@@ -767,7 +832,9 @@ $court_photos = getAllCourtImages($court);
                 <?php endif; ?>
             </div>
             
-            <!-- Date & Time 卡片 -->
+            <!-- ============================================================
+                 DATE & TIME SELECTION CARD
+            ============================================================ -->
             <div class="product-section">
                 <div class="section-title"><i class="fas fa-calendar-alt"></i> Select Date & Time</div>
                 <input type="text" id="datepicker" placeholder="Click to select a date" required readonly>
@@ -791,7 +858,9 @@ $court_photos = getAllCourtImages($court);
             </div>
         </div>
         
-        <!-- 右侧边栏 - 统一卡片 -->
+        <!-- ============================================================
+             RIGHT COLUMN - BOOKING SUMMARY CARD
+        ============================================================ -->
         <div>
             <div class="cart-summary">
                 <h3><i class="fas fa-receipt"></i> Booking Summary</h3>
@@ -802,6 +871,9 @@ $court_photos = getAllCourtImages($court);
                     </div>
                 </div>
                 
+                <!-- ============================================================
+                     COACH SELECTION (Only for Training Courts)
+                ============================================================ -->
                 <?php if($court['court_type'] == 'Training' && !empty($coaches)): ?>
                 <div id="coachSection" style="display: none;">
                     <div class="coach-divider"></div>
@@ -832,12 +904,18 @@ $court_photos = getAllCourtImages($court);
                 </div>
                 <?php endif; ?>
                 
+                <!-- ============================================================
+                     SUBMIT BUTTON
+                ============================================================ -->
                 <button id="submitBtn" class="btn-continue" disabled>Proceed to Add-ons →</button>
                 <a href="dashboard.php" class="btn-back-link">← Back to Courts</a>
             </div>
         </div>
     </div>
     
+    <!-- ============================================================
+         BOOKING FORM (Hidden - Submits to process_booking.php)
+    ============================================================ -->
     <form id="bookingForm" action="process_booking.php" method="POST" style="display: none;">
         <input type="hidden" name="court_id" value="<?=$court_id?>">
         <input type="hidden" id="booking_date" name="booking_date">
@@ -851,17 +929,26 @@ $court_photos = getAllCourtImages($court);
     </form>
 </div>
 
+<!-- ============================================================
+     JAVASCRIPT FUNCTIONS
+============================================================ -->
 <script>
+    // ============================================================
+    // CONFIGURATION
+    // ============================================================
     const courtId = <?=$court_id?>;
     const courtType = '<?=$court['court_type']?>';
     const offPeakPrice = <?=$court['price_off_peak']?>;
     const peakPrice = <?=$court['price_peak']?>;
     
-    // 预选参数
+    // Prefilled parameters
     const preferredCoachId = <?php echo $preferred_coach_id; ?>;
     const preferredDuration = <?php echo $preferred_duration; ?>;
     const preferredDate = '<?php echo $preferred_date; ?>';
     
+    // ============================================================
+    // STATE VARIABLES
+    // ============================================================
     let availableSlots = [];
     let selectedDate = null;
     let selectedStartHour = null;
@@ -873,7 +960,9 @@ $court_photos = getAllCourtImages($court);
     let selectedCoachName = '';
     let selectedCoachHours = 0;
     
-    // DOM 元素
+    // ============================================================
+    // DOM REFERENCES
+    // ============================================================
     const dateInput = document.getElementById('datepicker');
     const timeSection = document.getElementById('timeSection');
     const slotList = document.getElementById('slotList');
@@ -887,7 +976,9 @@ $court_photos = getAllCourtImages($court);
     const coachHoursSection = document.getElementById('coachHoursSection');
     const coachHoursList = document.getElementById('coachHoursList');
     
-    // 照片点击高亮
+    // ============================================================
+    // PHOTO GALLERY - Click to highlight
+    // ============================================================
     document.querySelectorAll('.photo-card').forEach(card => {
         card.addEventListener('click', function() {
             document.querySelectorAll('.photo-card').forEach(c => c.classList.remove('active'));
@@ -895,7 +986,9 @@ $court_photos = getAllCourtImages($court);
         });
     });
     
-    // 教练选择
+    // ============================================================
+    // COACH SELECTION
+    // ============================================================
     if(document.getElementById('coachList')) {
         document.querySelectorAll('.coach-item').forEach(item => {
             item.addEventListener('click', function() {
@@ -920,7 +1013,7 @@ $court_photos = getAllCourtImages($court);
         });
     }
     
-    // 自动预选教练
+    // Auto-select preferred coach
     if(preferredCoachId > 0) {
         setTimeout(function() {
             const preferredCoach = document.querySelector('.coach-item[data-coach-id="' + preferredCoachId + '"]');
@@ -932,7 +1025,9 @@ $court_photos = getAllCourtImages($court);
     
     let flatpickrInstance = null;
     
-    // 日期选择器（支持预填日期）
+    // ============================================================
+    // DATE PICKER - Flatpickr with prefill support
+    // ============================================================
     const flatpickrConfig = {
         dateFormat: "Y-m-d",
         minDate: "today",
@@ -950,7 +1045,6 @@ $court_photos = getAllCourtImages($court);
     if(preferredDate) {
         flatpickrInstance = flatpickr(dateInput, flatpickrConfig);
         flatpickrInstance.setDate(preferredDate);
-        // 触发加载时间槽
         setTimeout(() => {
             if(preferredDate) {
                 loadSlots(preferredDate);
@@ -960,6 +1054,9 @@ $court_photos = getAllCourtImages($court);
         flatpickr(dateInput, flatpickrConfig);
     }
     
+    // ============================================================
+    // LOAD AVAILABLE TIME SLOTS
+    // ============================================================
     async function loadSlots(date) {
         timeSection.style.display = 'block';
         slotList.innerHTML = '<div class="help-text">Loading...</div>';
@@ -1015,7 +1112,7 @@ $court_photos = getAllCourtImages($court);
                 });
             });
             
-            // 自动预选时长
+            // Auto-select preferred duration
             if(preferredDuration > 0) {
                 setTimeout(function() {
                     const hourBtns = document.querySelectorAll('.hour-btn');
@@ -1032,6 +1129,9 @@ $court_photos = getAllCourtImages($court);
         }
     }
     
+    // ============================================================
+    // CALCULATE MAX AVAILABLE HOURS
+    // ============================================================
     function calculateMaxHours(startHour) {
         let maxHours = 0;
         let checkHour = startHour;
@@ -1047,6 +1147,9 @@ $court_photos = getAllCourtImages($court);
         maxHoursInfo.innerHTML = `📢 Maximum available: ${maxAvailableHours} hour${maxAvailableHours > 1 ? 's' : ''}`;
     }
     
+    // ============================================================
+    // GENERATE HOUR BUTTONS
+    // ============================================================
     function generateHourButtons() {
         if(maxAvailableHours === 0) {
             hoursList.innerHTML = '<div class="error-msg">No more hours available</div>';
@@ -1072,6 +1175,9 @@ $court_photos = getAllCourtImages($court);
         });
     }
     
+    // ============================================================
+    // GENERATE COACH HOUR BUTTONS
+    // ============================================================
     function generateCoachHourButtons() {
         let maxCoachHours = selectedCourtHours || maxAvailableHours;
         if(maxCoachHours === 0) maxCoachHours = 1;
@@ -1098,6 +1204,9 @@ $court_photos = getAllCourtImages($court);
         });
     }
     
+    // ============================================================
+    // CALCULATE TOTAL PRICE
+    // ============================================================
     function calculatePrice() {
         if(!selectedStartHour || !selectedCourtHours) return;
         let breakdownHtml = '';
@@ -1126,10 +1235,16 @@ $court_photos = getAllCourtImages($court);
         submitBtn.disabled = false;
     }
     
+    // ============================================================
+    // UPDATE BREAKDOWN PLACEHOLDER
+    // ============================================================
     function updateBreakdownPlaceholder() {
         breakdownContainer.innerHTML = '<div style="text-align: center; padding: 1.5rem 0; color: #aaa;"><i class="fas fa-calendar-alt" style="font-size: 2rem; display: block; margin-bottom: 0.5rem; opacity: 0.3;"></i>Select a date and time</div>';
     }
     
+    // ============================================================
+    // FORMAT HOUR (12-hour format)
+    // ============================================================
     function formatHour(hour) {
         let h = hour % 24;
         if(h >= 12) {
@@ -1141,6 +1256,9 @@ $court_photos = getAllCourtImages($court);
         }
     }
     
+    // ============================================================
+    // RESET SELECTION
+    // ============================================================
     function resetSelection() {
         selectedStartTime = null;
         selectedStartHour = null;
@@ -1157,7 +1275,9 @@ $court_photos = getAllCourtImages($court);
         submitBtn.disabled = true;
     }
     
-    // 表单提交
+    // ============================================================
+    // FORM SUBMISSION
+    // ============================================================
     document.getElementById('submitBtn').addEventListener('click', () => {
         document.getElementById('bookingForm').submit();
     });

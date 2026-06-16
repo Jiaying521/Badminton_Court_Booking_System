@@ -1,11 +1,20 @@
 ﻿<?php
+// ============================================================
+// addons.php - Customer Add-ons Selection Page
+// Allows users to add products (rackets, shuttlecocks, etc.) to their booking
+// ============================================================
+
 require_once __DIR__ . '/../config.php';
+
+// Check if user is logged in, redirect to homepage if not
 if (!isLoggedIn()) redirect('homepage.php');
 
 $booking_id = $_GET['booking_id'] ?? 0;
 if (!$booking_id) redirect('dashboard.php');
 
-// 获取预订详情
+// ============================================================
+// FETCH BOOKING DETAILS
+// ============================================================
 $stmt = $pdo->prepare("
     SELECT b.*, c.court_name, c.court_type 
     FROM bookings b 
@@ -17,7 +26,9 @@ $booking = $stmt->fetch();
 
 if (!$booking) redirect('dashboard.php');
 
-// ========== 获取已存在的 add-ons（用于回显） ==========
+// ============================================================
+// FETCH EXISTING ADD-ONS (for pre-filling)
+// ============================================================
 $existing_addons = [];
 $stmt_existing = $pdo->prepare("SELECT product_id, quantity, price FROM booking_addons WHERE booking_id = ?");
 $stmt_existing->execute([$booking_id]);
@@ -27,7 +38,9 @@ foreach ($existing_addons_raw as $item) {
     $existing_addons[$item['product_id']] = $item['quantity'];
 }
 
-// ========== 获取所有产品 ==========
+// ============================================================
+// FETCH ALL PRODUCTS BY CATEGORY
+// ============================================================
 $products = [
     'racket' => [],
     'shuttlecock' => [],
@@ -37,37 +50,39 @@ $products = [
     'drink' => []
 ];
 
-// 获取球拍
+// Rackets
 $stmt = $pdo->prepare("SELECT * FROM products WHERE category = 'racket' AND is_active = 1 ORDER BY price");
 $stmt->execute();
 $products['racket'] = $stmt->fetchAll();
 
-// 获取羽毛球
+// Shuttlecocks
 $stmt = $pdo->prepare("SELECT * FROM products WHERE category = 'shuttlecock' AND is_active = 1 ORDER BY price");
 $stmt->execute();
 $products['shuttlecock'] = $stmt->fetchAll();
 
-// 获取手胶
+// Grips
 $stmt = $pdo->prepare("SELECT * FROM products WHERE category = 'grip' AND is_active = 1 ORDER BY price");
 $stmt->execute();
 $products['grip'] = $stmt->fetchAll();
 
-// 获取球线
+// Strings
 $stmt = $pdo->prepare("SELECT * FROM products WHERE category = 'string' AND is_active = 1 ORDER BY price");
 $stmt->execute();
 $products['string'] = $stmt->fetchAll();
 
-// 获取零食
+// Snacks
 $stmt = $pdo->prepare("SELECT * FROM products WHERE category = 'snack' AND is_active = 1 ORDER BY price");
 $stmt->execute();
 $products['snack'] = $stmt->fetchAll();
 
-// 获取饮料
+// Drinks
 $stmt = $pdo->prepare("SELECT * FROM products WHERE category = 'drink' AND is_active = 1 ORDER BY price");
 $stmt->execute();
 $products['drink'] = $stmt->fetchAll();
 
-// 获取产品图片
+// ============================================================
+// HELPER FUNCTION: GET PRODUCT IMAGE
+// ============================================================
 function getProductImage($product) {
     if (!empty($product['image_url'])) {
         $imagePath = $product['image_url'];
@@ -91,7 +106,7 @@ function getProductImage($product) {
     return $defaultImages[$category] ?? 'https://placehold.co/120x120/2b7e3a/white?text=🏸';
 }
 
-// 将 PHP 数组转换为 JavaScript 对象
+// Convert PHP array to JavaScript object
 $existing_addons_json = json_encode($existing_addons);
 ?>
 <!DOCTYPE html>
@@ -158,6 +173,16 @@ $existing_addons_json = json_encode($existing_addons);
         @keyframes fadeInDown {
             from { opacity: 0; transform: translateY(-30px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
         }
         
         .progress-step {
@@ -237,11 +262,6 @@ $existing_addons_json = json_encode($existing_addons);
             border: 1px solid rgba(255,255,255,0.2);
         }
         
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
         .row-2cols { 
             display: grid; 
             grid-template-columns: 2fr 1fr; 
@@ -261,11 +281,6 @@ $existing_addons_json = json_encode($existing_addons);
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             border: 1px solid rgba(255,255,255,0.3);
             animation: fadeInScale 0.5s ease-out 0.15s both;
-        }
-        
-        @keyframes fadeInScale {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
         }
         
         .category-btn {
@@ -367,8 +382,25 @@ $existing_addons_json = json_encode($existing_addons);
         }
         .qty-btn:hover { background: #2b7e3a; color: white; border-color: #2b7e3a; transform: scale(1.05); }
         .qty-input { 
-            width: 55px; text-align: center; padding: 0.4rem; border: 1px solid #ddd;
-            border-radius: 12px; font-weight: 600; background: rgba(254,253,248,0.9);
+            width: 55px; 
+            text-align: center; 
+            padding: 0.4rem; 
+            border: 1px solid #ddd;
+            border-radius: 12px; 
+            font-weight: 600; 
+            background: rgba(254,253,248,0.9);
+            /* Prevent number input arrows from showing on some browsers */
+            -moz-appearance: textfield;
+        }
+        /* Hide number input arrows */
+        .qty-input::-webkit-outer-spin-button,
+        .qty-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        /* Prevent text selection cursor on number input */
+        .qty-input[type="number"] {
+            -moz-appearance: textfield;
         }
         
         .cart-summary { 
@@ -461,6 +493,9 @@ $existing_addons_json = json_encode($existing_addons);
 </head>
 <body>
 <div class="container">
+    <!-- ============================================================
+         PROGRESS BAR
+    ============================================================ -->
     <div class="progress-bar">
         <div class="progress-step completed"><div class="step-number"><i class="fas fa-check"></i></div><div class="step-label">Court</div></div>
         <div class="progress-step completed"><div class="step-number"><i class="fas fa-check"></i></div><div class="step-label">Time</div></div>
@@ -468,13 +503,20 @@ $existing_addons_json = json_encode($existing_addons);
         <div class="progress-step"><div class="step-number">4</div><div class="step-label">Payment</div></div>
     </div>
     
+    <!-- ============================================================
+         BOOKING SUMMARY BANNER
+    ============================================================ -->
     <div class="booking-summary">
         <div><i class="fas fa-calendar-alt"></i> <strong><?php echo htmlspecialchars($booking['court_name']); ?></strong><br><?php echo date('M j, Y', strtotime($booking['booking_date'])); ?> • <?php echo date('h:i A', strtotime($booking['start_time'])); ?> - <?php echo date('h:i A', strtotime($booking['end_time'])); ?></div>
         <div>Court Fee: <strong>RM <?php echo number_format($booking['total_price'], 2); ?></strong></div>
     </div>
     
     <div class="row-2cols">
+        <!-- ============================================================
+             LEFT COLUMN - PRODUCTS
+        ============================================================ -->
         <div>
+            <!-- Category Tabs -->
             <div class="category-tabs">
                 <button class="category-btn active" data-category="all"><i class="fas fa-th-large"></i> All</button>
                 <button class="category-btn" data-category="racket"><i class="fas fa-table-tennis"></i> Rackets</button>
@@ -485,6 +527,7 @@ $existing_addons_json = json_encode($existing_addons);
                 <button class="category-btn" data-category="drink"><i class="fas fa-tint"></i> Drinks</button>
             </div>
             
+            <!-- Product Sections -->
             <?php foreach(['racket', 'shuttlecock', 'string', 'grip', 'snack', 'drink'] as $cat): 
                 $sectionTitle = [
                     'racket' => '🏸 Badminton Rackets',
@@ -519,7 +562,7 @@ $existing_addons_json = json_encode($existing_addons);
                                     <div class="product-price">RM <?php echo number_format($item['price'], 2); ?></div>
                                     <div class="product-qty">
                                         <button type="button" class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, -1)">-</button>
-                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_qty; ?>" min="0" max="<?php echo $maxQty; ?>" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
+                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_qty; ?>" min="0" max="<?php echo $maxQty; ?>" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>" data-max="<?php echo $maxQty; ?>">
                                         <button type="button" class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, 1)">+</button>
                                     </div>
                                 </div>
@@ -534,6 +577,9 @@ $existing_addons_json = json_encode($existing_addons);
             <?php endforeach; ?>
         </div>
         
+        <!-- ============================================================
+             RIGHT COLUMN - CART SUMMARY
+        ============================================================ -->
         <div>
             <div class="cart-summary">
                 <h3><i class="fas fa-shopping-cart"></i> Your Cart</h3>
@@ -560,25 +606,77 @@ $existing_addons_json = json_encode($existing_addons);
     </div>
 </div>
 
+<!-- ============================================================
+     JAVASCRIPT FUNCTIONS
+============================================================ -->
 <script>
+    // ============================================================
+    // STATE VARIABLES
+    // ============================================================
     let cart = [];
     const existingAddons = <?php echo $existing_addons_json; ?>;
     
+    // ============================================================
+    // CHANGE QUANTITY (with validation)
+    // ============================================================
     function changeQty(productId, delta) {
         const qtyInput = document.getElementById('qty_' + productId);
         if (!qtyInput) return;
-        let newVal = parseInt(qtyInput.value) + delta;
-        if (newVal < 0) newVal = 0;
+        
+        // Get current value and clean it
+        let currentVal = parseInt(qtyInput.value) || 0;
+        let newVal = currentVal + delta;
+        
+        // Validate against min and max
         const max = parseInt(qtyInput.getAttribute('max')) || 10;
+        if (newVal < 0) newVal = 0;
         if (newVal > max) newVal = max;
+        
         qtyInput.value = newVal;
         updateCart();
     }
     
+    // ============================================================
+    // VALIDATE SINGLE INPUT (called on blur/change)
+    // ============================================================
+    function validateQtyInput(input) {
+        // Get raw value and clean it - remove any non-numeric characters
+        let rawValue = input.value.trim();
+        
+        // Remove any non-digit characters (letters, symbols, spaces, etc.)
+        rawValue = rawValue.replace(/[^0-9]/g, '');
+        
+        // If empty, set to 0
+        if (rawValue === '') {
+            rawValue = '0';
+        }
+        
+        let val = parseInt(rawValue, 10);
+        const max = parseInt(input.getAttribute('max')) || 10;
+        const min = parseInt(input.getAttribute('min')) || 0;
+        
+        // Validate range
+        if (isNaN(val) || val < min) {
+            val = 0;
+        }
+        if (val > max) {
+            val = max;
+        }
+        
+        input.value = val;
+        updateCart();
+    }
+    
+    // ============================================================
+    // UPDATE CART
+    // ============================================================
     function updateCart() {
         cart = [];
         document.querySelectorAll('.qty-input').forEach(input => {
-            const qty = parseInt(input.value);
+            // Clean the value before parsing
+            let val = input.value.trim().replace(/[^0-9]/g, '');
+            const qty = parseInt(val) || 0;
+            
             if (qty > 0) {
                 const id = input.getAttribute('data-id');
                 const name = input.getAttribute('data-name');
@@ -589,6 +687,9 @@ $existing_addons_json = json_encode($existing_addons);
         displayCart();
     }
     
+    // ============================================================
+    // DISPLAY CART
+    // ============================================================
     function displayCart() {
         const cartDiv = document.getElementById('cartItems');
         let total = 0;
@@ -608,14 +709,16 @@ $existing_addons_json = json_encode($existing_addons);
         document.getElementById('cartTotal').innerHTML = `<span>Add-ons Total:</span><span>RM ${total.toFixed(2)}</span>`;
     }
     
+    // ============================================================
+    // FORM SUBMISSION
+    // ============================================================
     document.getElementById('addonsForm').addEventListener('submit', function(e) {
         document.getElementById('cartData').value = JSON.stringify(cart);
     });
     
-    document.querySelectorAll('.qty-input').forEach(input => {
-        input.addEventListener('change', function() { updateCart(); });
-    });
-    
+    // ============================================================
+    // LOAD EXISTING ADD-ONS
+    // ============================================================
     function loadExistingAddons() {
         for (const [productId, quantity] of Object.entries(existingAddons)) {
             const qtyInput = document.getElementById('qty_' + productId);
@@ -626,8 +729,61 @@ $existing_addons_json = json_encode($existing_addons);
         updateCart();
     }
     
-    loadExistingAddons();
+    // ============================================================
+    // EVENT LISTENERS FOR INPUT VALIDATION
+    // ============================================================
+    document.querySelectorAll('.qty-input').forEach(input => {
+        // Validate on blur (when user leaves the input)
+        input.addEventListener('blur', function() {
+            validateQtyInput(this);
+        });
+        
+        // Validate on change (when user presses Enter or clicks away)
+        input.addEventListener('change', function() {
+            validateQtyInput(this);
+        });
+        
+        // Real-time cleaning on input
+        input.addEventListener('input', function() {
+            // Remove any non-digit characters as user types
+            this.value = this.value.replace(/[^0-9]/g, '');
+            
+            // If empty, keep it empty (will be fixed on blur)
+            // This prevents weird characters from appearing
+        });
+        
+        // Prevent pasting non-numeric content
+        input.addEventListener('paste', function(e) {
+            const pastedData = (e.clipboardData || window.clipboardData).getData('text');
+            if (!/^\d*$/.test(pastedData)) {
+                e.preventDefault();
+            }
+        });
+        
+        // Allow only digits and navigation keys
+        input.addEventListener('keydown', function(e) {
+            // Allow: backspace, delete, tab, escape, enter, arrow keys
+            const allowedKeys = [
+                'Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 
+                'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'
+            ];
+            if (allowedKeys.includes(e.key)) {
+                return;
+            }
+            // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+            if (e.ctrlKey && ['a', 'c', 'v', 'x'].includes(e.key.toLowerCase())) {
+                return;
+            }
+            // Allow: numbers 0-9
+            if (!/^[0-9]$/.test(e.key)) {
+                e.preventDefault();
+            }
+        });
+    });
     
+    // ============================================================
+    // CATEGORY FILTER
+    // ============================================================
     const categoryBtns = document.querySelectorAll('.category-btn');
     const categorySections = {
         'racket': document.getElementById('category-racket'),
@@ -659,6 +815,10 @@ $existing_addons_json = json_encode($existing_addons);
         btn.addEventListener('click', function() { showCategory(this.getAttribute('data-category')); });
     });
     
+    // ============================================================
+    // INITIALIZE
+    // ============================================================
+    loadExistingAddons();
     showCategory('all');
 </script>
 </body>

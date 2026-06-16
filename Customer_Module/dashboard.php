@@ -1,80 +1,125 @@
 ﻿<?php
+// ============================================================
+// dashboard.php - Customer Dashboard Page
+// Displays available courts with filtering options and user statistics
+// ============================================================
+
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/functions.php';
+
+// Check if user is logged in, redirect to homepage if not
 if (!isLoggedIn()) redirect('homepage.php');
 
 $user_id = $_SESSION['user_id'];
 
-// 获取用户信息
+// ============================================================
+// GET USER INFORMATION
+// ============================================================
+
+// Fetch user details from database
 $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch();
+
+// If user not found, destroy session and redirect to homepage
 if (!$user) {
     session_destroy();
     redirect('homepage.php');
 }
 
-// 获取钱包余额
+// ============================================================
+// GET USER WALLET BALANCE
+// ============================================================
+
 $stmt_bal = $pdo->prepare("SELECT wallet_balance FROM users WHERE id = ?");
 $stmt_bal->execute([$user_id]);
 $balance_row = $stmt_bal->fetch();
 $real_balance = $balance_row['wallet_balance'] ?? 0.00;
 
-// 获取统计数据
+// ============================================================
+// GET USER STATISTICS (Bookings count, total spent, points)
+// ============================================================
+
+// Count upcoming bookings (today or future, not cancelled)
 $stmt = $pdo->prepare("SELECT COUNT(*) FROM bookings WHERE user_id = ? AND booking_date >= CURDATE() AND status IN ('Pending', 'Confirmed')");
 $stmt->execute([$user_id]);
 $upcomingCount = $stmt->fetchColumn();
 
+// Count total bookings for this user
 $stmt = $pdo->prepare("SELECT COUNT(*) FROM bookings WHERE user_id = ?");
 $stmt->execute([$user_id]);
 $totalBookings = $stmt->fetchColumn();
 
+// Calculate total amount spent on confirmed bookings
 $stmt = $pdo->prepare("SELECT SUM(total_price) FROM bookings WHERE user_id = ? AND status = 'Confirmed'");
 $stmt->execute([$user_id]);
 $totalSpent = $stmt->fetchColumn() ?? 0;
 
+// Get current loyalty points balance
 $currentPointsBalance = (int)($user['loyalty_points'] ?? 0);
 
-// 获取所有场地类型
+// ============================================================
+// GET COURT FILTER OPTIONS
+// ============================================================
+
+// Get all available court types for filter dropdown
 $types = [];
 $typeResult = $pdo->query("SELECT DISTINCT court_type FROM courts WHERE is_active = 1");
 if ($typeResult) {
     $types = $typeResult->fetchAll(PDO::FETCH_COLUMN);
 }
 
-// 筛选条件
+// ============================================================
+// PROCESS FILTER PARAMETERS
+// ============================================================
+
+// Get filter values from URL parameters
 $court_type = $_GET['court_type'] ?? '';
 $facility = $_GET['facility'] ?? '';
 $court_name = $_GET['court_name'] ?? '';
 
-// 从 view_coach.php 的 "Book a Session" 带过来的参数，传递给 book_court.php（自动预选日期/教练/时长）
+// Prepare prefilled parameters for booking page (from coach page)
 $prefill_params = [];
 if (!empty($_GET['booking_date']))      $prefill_params['booking_date'] = $_GET['booking_date'];
 if (!empty($_GET['duration']))          $prefill_params['duration'] = $_GET['duration'];
 if (!empty($_GET['preferred_coach_id'])) $prefill_params['preferred_coach_id'] = $_GET['preferred_coach_id'];
 $prefill_query = $prefill_params ? '&' . http_build_query($prefill_params) : '';
 
+// ============================================================
+// BUILD COURT QUERY WITH FILTERS
+// ============================================================
+
 $sql = "SELECT * FROM courts WHERE is_active = 1";
 $params = [];
+
+// Apply court type filter
 if ($court_type) {
     $sql .= " AND court_type = ?";
     $params[] = $court_type;
 }
+
+// Apply facility filter (partial match)
 if ($facility) {
     $sql .= " AND facilities LIKE ?";
     $params[] = "%$facility%";
 }
+
+// Apply court name search (partial match)
 if ($court_name) {
     $sql .= " AND court_name LIKE ?";
     $params[] = "%$court_name%";
 }
+
 $sql .= " ORDER BY court_name";
 
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $courts = $stmt->fetchAll();
 
-// 获取所有设施
+// ============================================================
+// GET DISTINCT FACILITIES FOR FILTER DROPDOWN
+// ============================================================
+
 $facilities = [];
 $facRes = $pdo->query("SELECT DISTINCT facilities FROM courts WHERE is_active = 1 AND facilities IS NOT NULL AND facilities != ''");
 if ($facRes) {
@@ -92,10 +137,19 @@ if ($facRes) {
 }
 sort($facilities);
 
-// 获取场地图片路径
+// ============================================================
+// HELPER FUNCTION: GET COURT IMAGE PATH
+// ============================================================
+
+/**
+ * Get the image path for a court
+ * @param array $court Court data array
+ * @return string|null Image path or null if not found
+ */
 function getCourtImage($court) {
     $imageField = isset($court['court_image']) ? $court['court_image'] : null;
     
+    // If court has an image field, try to find the file
     if (!empty($imageField)) {
         $imagePath = $imageField;
         $possiblePaths = [
@@ -112,6 +166,7 @@ function getCourtImage($court) {
         return '../Pictures/Admin_Module/courts/' . $imagePath;
     }
     
+    // If no image field, try to find by court name
     $courtName = $court['court_name'];
     $possibleImageNames = [
         strtolower(str_replace(' ', '_', $courtName)) . '.png',
@@ -136,25 +191,24 @@ function getCourtImage($court) {
     return null;
 }
 
-// 获取用户头像
-$profile_picture = isset($user['profile_picture']) ? $user['profile_picture'] : '';
-$defaultAvatarPath = '../image/default_image.png';
-$avatarPath = $defaultAvatarPath;
+// ============================================================
+// GET USER AVATAR PATH (Using unified function from functions.php)
+// ============================================================
 
-if (!empty($profile_picture)) {
-    $fullPath = __DIR__ . '/../' . $profile_picture;
-    if (file_exists($fullPath)) {
-        $fileTime = filemtime($fullPath);
-        $avatarPath = '../' . $profile_picture . '?v=' . $fileTime;
-    }
-}
+// Get user avatar using unified function
+$avatarPath = getUserAvatar($user_id);
 
-// 获取系统设置用于 footer 显示
+// ============================================================
+// GET SYSTEM SETTINGS FOR FOOTER DISPLAY
+// ============================================================
+
 $open_time = getSetting('open_time', '08:00');
 $close_time = getSetting('close_time', '01:00');
 $peak_start = getSetting('peak_start', '15:00');
 $off_peak_price = getSetting('off_peak_price', '10');
 $peak_price = getSetting('peak_price', '15');
+
+// Format times for display
 $open_time_display = date('h:i A', strtotime($open_time));
 $close_time_display = date('h:i A', strtotime($close_time));
 $peak_start_display = date('h:i A', strtotime($peak_start));
@@ -172,8 +226,12 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* ============================================================
+           RESET & BASE STYLES
+        ============================================================ */
         * { margin:0; padding:0; box-sizing:border-box; }
         
+        /* Main body with gradient background */
         body { 
             font-family: 'Inter', 'Poppins', 'Montserrat', sans-serif; 
             background: radial-gradient(circle at 10% 20%, rgba(240,245,236,1) 0%, rgba(226,236,217,1) 100%);
@@ -183,13 +241,12 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             position: relative;
         }
         
+        /* Background pattern overlay */
         body::before {
             content: '';
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background-image: radial-gradient(rgba(43,126,58,0.08) 1px, transparent 1px);
             background-size: 40px 40px;
             pointer-events: none;
@@ -203,19 +260,22 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             z-index: 1;
         }
         
+        /* Custom scrollbar styling */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #e0e8dc; border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: #2b7e3a; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #1f5a2a; }
         
-        /* 玻璃态导航栏 */
-        .navbar { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 2rem; 
-            flex-wrap: wrap; 
-            gap: 1rem; 
+        /* ============================================================
+           GLASSMORPHISM NAVBAR
+        ============================================================ */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
             background: rgba(255,255,255,0.7);
             backdrop-filter: blur(15px);
             padding: 0.8rem 1.8rem;
@@ -225,11 +285,13 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             animation: fadeInDown 0.6s ease-out;
         }
         
+        /* Fade in animation for navbar */
         @keyframes fadeInDown {
             from { opacity: 0; transform: translateY(-30px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
+        /* Logo area with hover effect */
         .logo-area { 
             display: flex; 
             align-items: center; 
@@ -259,6 +321,8 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             transition: transform 0.3s ease;
         }
         .logo-area:hover img { transform: scale(1.02) rotate(5deg); }
+        
+        /* Gradient text logo */
         .logo-text { 
             font-family: 'Montserrat', 'Inter', sans-serif;
             font-size: 1.5rem; 
@@ -268,7 +332,6 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             background-clip: text; 
             color: transparent;
             letter-spacing: -1px;
-            transition: transform 0.3s ease;
             text-transform: uppercase;
         }
         .logo-text span { 
@@ -278,10 +341,11 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             color: transparent;
         }
         
+        /* Navigation links */
         .nav-links { 
             display: flex; 
             align-items: center; 
-            gap: 0.8rem; 
+            gap: 0.5rem; 
             flex-wrap: wrap; 
         }
         .nav-links a { 
@@ -295,9 +359,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             border-radius: 50px;
             position: relative;
             overflow: hidden;
-            display: inline-block;
         }
         
+        /* Sliding effect on nav links */
         .nav-links a::before {
             content: '';
             position: absolute;
@@ -318,16 +382,14 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             border-radius: 50px;
         }
         
-        /* 用户头像区域 - 可点击跳转 profile */
-        .nav-links a.user-profile,
+        /* User profile area - clickable to edit profile */
         .user-profile {
-            display: flex !important;
+            display: flex;
             align-items: center;
-            flex-wrap: nowrap;
-            gap: 0.6rem;
+            gap: 0.8rem;
             cursor: pointer;
             background: rgba(234,245,230,0.6);
-            padding: 0.2rem 0.8rem 0.2rem 0.3rem;
+            padding: 0.3rem 1rem 0.3rem 0.5rem;
             border-radius: 50px;
             transition: all 0.3s ease;
             text-decoration: none;
@@ -338,13 +400,11 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             border-radius: 50px;
         }
         .user-avatar {
-            width: 32px;
-            height: 32px;
-            min-width: 32px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             overflow: hidden;
             background: #2b7e3a;
-            flex-shrink: 0;
         }
         .user-avatar img {
             width: 100%;
@@ -356,18 +416,18 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         }
         .user-name {
             font-family: 'Montserrat', sans-serif;
-            font-weight: 600;
-            font-size: 0.75rem;
+            font-weight: 700;
+            font-size: 0.85rem;
             color: #1e3a2a;
-            white-space: nowrap;
         }
         .user-balance {
             font-family: 'DM Sans', sans-serif;
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             color: #2b7e3a;
-            font-weight: 500;
+            font-weight: 600;
         }
         
+        /* Logout button */
         .btn-logout { 
             background: #fee2e2; 
             color: #e67e22; 
@@ -387,7 +447,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             border-radius: 50px;
         }
         
-        /* 欢迎横幅 */
+        /* ============================================================
+           WELCOME BANNER
+        ============================================================ */
         .welcome-banner { 
             background: linear-gradient(135deg, #2b7e3a, #1b5e2a);
             color: white; 
@@ -434,6 +496,8 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             margin-bottom: 0.2rem; 
         }
         .welcome-banner p { opacity: 0.9; font-size: 0.85rem; }
+        
+        /* My Bookings button */
         .btn-my-bookings { 
             background: white; 
             color: #2b7e3a; 
@@ -456,7 +520,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             border-radius: 50px;
         }
         
-        /* 统计卡片 */
+        /* ============================================================
+           STATISTICS CARDS
+        ============================================================ */
         .stats-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
@@ -523,7 +589,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             font-weight: 500;
         }
         
-        /* 筛选表单 */
+        /* ============================================================
+           FILTER FORM
+        ============================================================ */
         .filter-form { 
             background: rgba(255,255,255,0.7);
             backdrop-filter: blur(10px);
@@ -583,7 +651,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             border-radius: 60px;
         }
         
-        /* 场地网格 */
+        /* ============================================================
+           COURTS GRID
+        ============================================================ */
         .courts-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
@@ -740,39 +810,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             border-radius: 50px;
         }
         
-        /* 快捷操作 */
-        .quick-actions { 
-            display: flex; 
-            gap: 1rem; 
-            flex-wrap: wrap; 
-            margin-top: 2rem; 
-        }
-        .action-btn { 
-            background: rgba(255,255,255,0.7);
-            backdrop-filter: blur(5px);
-            border: 1.5px solid rgba(43,126,58,0.3); 
-            padding: 0.6rem 1.2rem; 
-            border-radius: 60px; 
-            color: #2b7e3a; 
-            text-decoration: none; 
-            font-family: 'Montserrat', 'Inter', sans-serif;
-            font-weight: 600; 
-            transition: all 0.3s ease; 
-            display: inline-flex; 
-            align-items: center; 
-            gap: 0.5rem;
-            font-size: 0.85rem;
-        }
-        .action-btn:hover { 
-            background: #2b7e3a; 
-            color: white; 
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 18px rgba(43,126,58,0.25);
-            border-color: transparent;
-            border-radius: 60px;
-        }
-        
-        /* 页脚 */
+        /* ============================================================
+           FOOTER
+        ============================================================ */
         .footer { 
             background: #0f1f12; 
             color: #cbd5c0; 
@@ -847,6 +887,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             font-size: 0.7rem; 
         }
 
+        /* ============================================================
+           RESPONSIVE DESIGN
+        ============================================================ */
         @media (max-width: 768px) { 
             body { padding: 1rem; } 
             .filter-form { grid-template-columns: 1fr; } 
@@ -870,7 +913,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
 </head>
 <body>
 <div class="container">
-    <!-- Navbar -->
+    <!-- ============================================================
+         NAVIGATION BAR
+    ============================================================ -->
     <div class="navbar">
         <a href="dashboard.php" class="logo-area">
             <img src="../Pictures/Admin_Module/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
@@ -881,7 +926,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
             <a href="my_bookings.php"><i class="fas fa-bookmark"></i> My Bookings</a>
             <a href="../Payment_Module/wallet.php"><i class="fas fa-wallet"></i> Wallet</a>
             <a href="coaches.php"><i class="fas fa-user-tie"></i> Coaches</a>
-            <!-- 用户头像 + 名字区域（点击跳转 Edit Profile） -->
+            <!-- User profile area - click to edit profile -->
             <a href="edit_profile.php" class="user-profile">
                 <div class="user-avatar">
                     <img src="<?php echo htmlspecialchars($avatarPath); ?>" alt="Avatar">
@@ -895,7 +940,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         </div>
     </div>
     
-    <!-- Welcome Banner -->
+    <!-- ============================================================
+         WELCOME BANNER
+    ============================================================ -->
     <div class="welcome-banner">
         <div>
             <h1>Ready to play, <?php echo htmlspecialchars($user['name'] ?? 'Player'); ?>! 🏸</h1>
@@ -904,7 +951,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         <a href="my_bookings.php" class="btn-my-bookings"><i class="fas fa-bookmark"></i> My Bookings</a>
     </div>
     
-    <!-- Stats Cards -->
+    <!-- ============================================================
+         STATISTICS CARDS
+    ============================================================ -->
     <div class="stats-grid">
         <div class="stat-card" onclick="window.location.href='my_bookings.php';">
             <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
@@ -936,7 +985,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         </div>
     </div>
     
-    <!-- Filter Form -->
+    <!-- ============================================================
+         FILTER FORM
+    ============================================================ -->
     <div class="filter-form">
         <form method="GET" style="display:contents;">
             <div class="filter-group">
@@ -968,7 +1019,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         </form>
     </div>
     
-    <!-- Courts Grid -->
+    <!-- ============================================================
+         COURTS GRID
+    ============================================================ -->
     <div class="courts-grid">
         <?php if (count($courts) > 0): ?>
             <?php foreach ($courts as $c): 
@@ -1005,7 +1058,9 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
     
 </div>
 
-<!-- Footer -->
+<!-- ============================================================
+     FOOTER
+============================================================ -->
 <footer class="footer">
     <div class="footer-container">
         <div class="footer-col">

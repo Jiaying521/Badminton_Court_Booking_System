@@ -1,20 +1,31 @@
 ﻿<?php
+// ============================================================
+// edit_profile.php - Customer Profile Management Page
+// Allows users to view and edit their profile information, change password, and upload avatar
+// ============================================================
+
 require_once __DIR__ . '/../config.php';
+
+// Check if user is logged in, redirect to homepage if not
 if (!isLoggedIn()) redirect('homepage.php');
 
 $user_id = $_SESSION['user_id'];
 
-// 先检查并添加 profile_picture 字段（如果不存在）
+// ============================================================
+// CHECK AND ADD PROFILE_PICTURE COLUMN IF NOT EXISTS
+// ============================================================
 try {
     $stmt = $pdo->query("SHOW COLUMNS FROM users LIKE 'profile_picture'");
     if ($stmt->rowCount() == 0) {
         $pdo->exec("ALTER TABLE `users` ADD COLUMN `profile_picture` VARCHAR(255) NULL AFTER `wallet_balance`");
     }
 } catch (PDOException $e) {
-    // 字段可能已存在，忽略错误
+    // Column may already exist, ignore error
 }
 
-// 获取用户信息
+// ============================================================
+// FETCH USER INFORMATION
+// ============================================================
 $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch();
@@ -24,14 +35,16 @@ if (!$user) {
     redirect('homepage.php');
 }
 
-// 获取钱包余额
+// Get wallet balance
 $real_balance = $user['wallet_balance'] ?? 0.00;
 
-// 检查是否已验证身份
+// ============================================================
+// VERIFY USER IDENTITY (Password check before editing)
+// ============================================================
 $verified = isset($_SESSION['profile_verified']) && $_SESSION['profile_verified'] === true;
 $verify_error = '';
 
-// 处理密码验证
+// Handle password verification
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'verify') {
     $verify_password = $_POST['verify_password'] ?? '';
     
@@ -45,47 +58,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     }
 }
 
-// 获取用户头像
-$profile_picture = isset($user['profile_picture']) ? $user['profile_picture'] : '';
+// ============================================================
+// GET USER AVATAR PATH (Using unified function from functions.php)
+// ============================================================
 
-$defaultAvatarPath = '../image/default_image.png';
+// Get user avatar using unified function
+$avatarPath = getUserAvatar($user_id);
 
-// 构建正确的头像路径
-$avatarPath = $defaultAvatarPath;
-
-if (!empty($profile_picture)) {
-    $fullPath = __DIR__ . '/../' . $profile_picture;
-    if (file_exists($fullPath)) {
-        $fileTime = filemtime($fullPath);
-        $avatarPath = '../' . $profile_picture . '?v=' . $fileTime;
-    }
-}
-
-// 检查默认头像是否存在，如果不存在则创建
-$defaultAvatarFullPath = __DIR__ . '/../image/default_image.png';
-if (!file_exists($defaultAvatarFullPath)) {
-    $imageDir = __DIR__ . '/../image/';
-    if (!file_exists($imageDir)) {
-        mkdir($imageDir, 0777, true);
-    }
-    if (function_exists('imagecreate')) {
-        $img = imagecreate(200, 200);
-        $bgColor = imagecolorallocate($img, 43, 126, 58);
-        $textColor = imagecolorallocate($img, 255, 255, 255);
-        imagefilledrectangle($img, 0, 0, 200, 200, $bgColor);
-        $text = "👤";
-        imagestring($img, 5, 85, 90, $text, $textColor);
-        imagepng($img, $defaultAvatarFullPath);
-        imagedestroy($img);
-    } else {
-        $sourcePath = __DIR__ . '/../Pictures/Admin_Module/coaches/default.png';
-        if (file_exists($sourcePath)) {
-            copy($sourcePath, $defaultAvatarFullPath);
-        }
-    }
-}
-
-// 处理头像上传
+// ============================================================
+// HANDLE AVATAR UPLOAD
+// ============================================================
 $avatar_message = '';
 $avatar_error = '';
 
@@ -109,6 +91,7 @@ if ($verified && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])
             $upload_path = $upload_dir . $new_filename;
             
             if (move_uploaded_file($_FILES['profile_picture']['tmp_name'], $upload_path)) {
+                // Delete old avatar if exists
                 if (!empty($profile_picture) && strpos($profile_picture, 'default') === false) {
                     $old_path = __DIR__ . '/../' . $profile_picture;
                     if (file_exists($old_path)) {
@@ -137,7 +120,9 @@ if ($verified && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])
     }
 }
 
-// 处理删除头像
+// ============================================================
+// HANDLE AVATAR DELETION
+// ============================================================
 if ($verified && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'delete_avatar') {
     if (!empty($profile_picture) && strpos($profile_picture, 'default') === false) {
         $old_path = __DIR__ . '/../' . $profile_picture;
@@ -158,14 +143,16 @@ if ($verified && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])
     }
 }
 
-// 如果已验证，处理表单提交
+// ============================================================
+// HANDLE PROFILE UPDATE & PASSWORD CHANGE (if verified)
+// ============================================================
 $message = '';
 $error = '';
 $password_message = '';
 $password_error = '';
 
 if ($verified) {
-    // 处理个人信息更新
+    // Handle profile information update
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'update_profile') {
         $name = trim($_POST['name'] ?? '');
         $email = trim($_POST['email'] ?? '');
@@ -178,11 +165,13 @@ if ($verified) {
         } elseif (strlen($phone) < 5) {
             $error = 'Please enter a valid phone number';
         } else {
+            // Check if email is already used by another account
             $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
             $stmt->execute([$email, $user_id]);
             if ($stmt->fetch()) {
                 $error = 'Email already used by another account';
             } else {
+                // Check if name is already taken by another user
                 $stmt = $pdo->prepare("SELECT id FROM users WHERE name = ? AND id != ?");
                 $stmt->execute([$name, $user_id]);
                 if ($stmt->fetch()) {
@@ -202,7 +191,7 @@ if ($verified) {
         }
     }
     
-    // 处理密码更新
+    // Handle password change
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'change_password') {
         $current_password = $_POST['current_password'] ?? '';
         $new_password = $_POST['new_password'] ?? '';
@@ -240,13 +229,14 @@ if ($verified) {
     <title>Edit Profile | Smash Arena</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- 时尚字体导入 -->
+    <!-- Modern font imports -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* Reset and base styles */
         * { margin:0; padding:0; box-sizing:border-box; }
         
         body { 
@@ -258,7 +248,7 @@ if ($verified) {
             position: relative;
         }
         
-        /* 动态粒子背景 */
+        /* Dynamic background pattern */
         body::before {
             content: '';
             position: fixed;
@@ -285,7 +275,9 @@ if ($verified) {
         ::-webkit-scrollbar-thumb { background: #2b7e3a; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #1f5a2a; }
         
-        /* Glassmorphism Navbar - 与 dashboard 一致 */
+        /* ============================================================
+           GLASSMORPHISM NAVBAR
+        ============================================================ */
         .navbar { 
             display: flex; 
             justify-content: space-between; 
@@ -394,7 +386,7 @@ if ($verified) {
             border-radius: 50px;
         }
         
-        /* 用户头像区域 - 可点击跳转 profile */
+        /* User profile area - clickable to edit profile */
         .user-profile {
             display: flex;
             align-items: center;
@@ -458,7 +450,9 @@ if ($verified) {
             border-radius: 50px;
         }
         
-        /* Profile Card - 玻璃态，宽度与 dashboard 卡片一致 */
+        /* ============================================================
+           PROFILE CARD - Glassmorphism
+        ============================================================ */
         .profile-card { 
             background: rgba(255,255,255,0.7);
             backdrop-filter: blur(10px);
@@ -475,7 +469,7 @@ if ($verified) {
             to { opacity: 1; transform: scale(1); }
         }
         
-        /* Verify Card - 玻璃态 */
+        /* Verify Card - Glassmorphism */
         .verify-card { 
             background: rgba(255,255,255,0.7);
             backdrop-filter: blur(10px);
@@ -624,7 +618,9 @@ if ($verified) {
         .profile-header p { opacity: 0.9; font-size: 0.9rem; }
         .profile-body { padding: 2rem; }
         
-        /* Modal - 玻璃态 */
+        /* ============================================================
+           MODAL - Glassmorphism
+        ============================================================ */
         .modal { 
             display: none; 
             position: fixed; 
@@ -700,6 +696,9 @@ if ($verified) {
         .btn-cancel-modal { background: #e0e0e0; color: #333; }
         .btn-cancel-modal:hover { transform: translateY(-2px); }
         
+        /* ============================================================
+           FORM SECTIONS
+        ============================================================ */
         .form-section { 
             margin-bottom: 2rem; 
             padding-bottom: 2rem; 
@@ -809,6 +808,9 @@ if ($verified) {
         .strength-meter-fill { height: 100%; width: 0%; transition: width 0.2s; border-radius: 3px; }
         .strength-text { font-size: 0.7rem; text-align: right; color: #888; margin-top: 0.2rem; }
         
+        /* ============================================================
+           RESPONSIVE DESIGN
+        ============================================================ */
         @media (max-width: 768px) { 
             body { padding: 1rem; } 
             .navbar { flex-direction: column; border-radius: 28px; }
@@ -822,7 +824,9 @@ if ($verified) {
 </head>
 <body>
 <div class="container">
-    <!-- Navbar -->
+    <!-- ============================================================
+         NAVIGATION BAR
+    ============================================================ -->
     <div class="navbar">
         <a href="dashboard.php" class="logo-area">
             <img src="../Pictures/Admin_Module/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
@@ -833,7 +837,7 @@ if ($verified) {
             <a href="my_bookings.php"><i class="fas fa-bookmark"></i> My Bookings</a>
             <a href="../Payment_Module/wallet.php"><i class="fas fa-wallet"></i> Wallet</a>
             <a href="coaches.php"><i class="fas fa-user-tie"></i> Coaches</a>
-            <!-- 用户头像 + 名字区域（点击跳转 Edit Profile） -->
+            <!-- User profile area - click to edit profile -->
             <a href="edit_profile.php" class="user-profile">
                 <div class="user-avatar">
                     <img src="<?php echo htmlspecialchars($avatarPath); ?>" alt="Avatar">
@@ -848,6 +852,9 @@ if ($verified) {
     </div>
     
     <?php if (!$verified): ?>
+        <!-- ============================================================
+             VERIFY IDENTITY CARD (Show when not verified)
+        ============================================================ -->
         <div class="verify-card">
             <div class="verify-header">
                 <div class="icon"><i class="fas fa-shield-alt"></i></div>
@@ -869,6 +876,9 @@ if ($verified) {
             </div>
         </div>
     <?php else: ?>
+        <!-- ============================================================
+             PROFILE CARD (Show when verified)
+        ============================================================ -->
         <div class="profile-card">
             <div class="profile-header">
                 <div class="avatar" onclick="openAvatarModal()">
@@ -881,12 +891,16 @@ if ($verified) {
                 <p>Member since <?php echo date('F Y', strtotime($user['created_at'])); ?></p>
             </div>
             <div class="profile-body">
+                <!-- Wallet Balance Display -->
                 <div class="wallet-info">
                     <span><i class="fas fa-wallet"></i> Wallet Balance</span>
                     <span>RM <?php echo number_format($real_balance, 2); ?></span>
                     <a href="../Payment_Module/wallet.php">Top Up</a>
                 </div>
                 
+                <!-- ============================================================
+                     PERSONAL INFORMATION SECTION
+                ============================================================ -->
                 <div class="form-section">
                     <h3><i class="fas fa-user-edit"></i> Personal Information</h3>
                     
@@ -924,6 +938,9 @@ if ($verified) {
                     </form>
                 </div>
                 
+                <!-- ============================================================
+                     CHANGE PASSWORD SECTION
+                ============================================================ -->
                 <div class="form-section">
                     <h3><i class="fas fa-key"></i> Change Password (Optional)</h3>
                     
@@ -966,6 +983,9 @@ if ($verified) {
     <?php endif; ?>
 </div>
 
+<!-- ============================================================
+     AVATAR MODAL
+============================================================ -->
 <div id="avatarModal" class="modal">
     <div class="modal-content">
         <h3><i class="fas fa-camera"></i> Change Profile Picture</h3>
@@ -998,11 +1018,16 @@ if ($verified) {
     </div>
 </div>
 
+<!-- ============================================================
+     JAVASCRIPT FUNCTIONS
+============================================================ -->
 <script>
+    // Open avatar modal
     function openAvatarModal() {
         document.getElementById('avatarModal').style.display = 'flex';
     }
     
+    // Close avatar modal
     function closeAvatarModal() {
         document.getElementById('avatarModal').style.display = 'none';
         document.getElementById('avatarInput').value = '';
@@ -1011,6 +1036,7 @@ if ($verified) {
         previewImage.src = currentAvatar;
     }
     
+    // Preview image before upload
     function previewImage(input) {
         var previewImage = document.getElementById('previewImage');
         if (input.files && input.files[0]) {
@@ -1022,12 +1048,14 @@ if ($verified) {
         }
     }
     
+    // Delete avatar
     function deleteAvatar() {
         if (confirm('Are you sure you want to remove your profile picture?')) {
             document.getElementById('deleteAvatarForm').submit();
         }
     }
     
+    // Close modal when clicking outside
     window.onclick = function(event) {
         var modal = document.getElementById('avatarModal');
         if (event.target == modal) {
@@ -1035,6 +1063,7 @@ if ($verified) {
         }
     }
     
+    // Check password strength
     function checkPasswordStrength() {
         var password = document.getElementById('new_password').value;
         var strengthFill = document.getElementById('strengthFill');
@@ -1088,6 +1117,7 @@ if ($verified) {
         strengthText.style.color = color;
     }
     
+    // Check password match
     function checkPasswordMatch() {
         var newPassword = document.getElementById('new_password').value;
         var confirmPassword = document.getElementById('confirm_password').value;
@@ -1104,6 +1134,7 @@ if ($verified) {
         }
     }
     
+    // Validate password form before submission
     function validatePasswordForm() {
         var newPassword = document.getElementById('new_password').value;
         var confirmPassword = document.getElementById('confirm_password').value;
