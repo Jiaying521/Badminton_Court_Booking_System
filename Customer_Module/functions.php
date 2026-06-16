@@ -266,6 +266,51 @@ if (!function_exists('calculateBookingPrice')) {
 }
 
 // ============================================================
+// GET USER AVATAR PATH (Unified function for all pages)
+// ============================================================
+if (!function_exists('getUserAvatar')) {
+    /**
+     * Get user avatar path with cache-busting timestamp
+     * 
+     * @param int $user_id The user ID
+     * @return string The avatar URL path
+     */
+    function getUserAvatar($user_id) {
+        global $pdo;
+        
+        // Default avatar path
+        $defaultAvatar = '../image/default_image.png';
+        
+        try {
+            // Get user's profile picture from database
+            $stmt = $pdo->prepare("SELECT profile_picture FROM users WHERE id = ?");
+            $stmt->execute([$user_id]);
+            $user = $stmt->fetch();
+            
+            if (!$user || empty($user['profile_picture'])) {
+                return $defaultAvatar;
+            }
+            
+            $profile_picture = $user['profile_picture'];
+            
+            // Build full file path to check if file exists
+            $fullPath = __DIR__ . '/../' . $profile_picture;
+            
+            if (file_exists($fullPath)) {
+                $fileTime = filemtime($fullPath);
+                return '../' . $profile_picture . '?v=' . $fileTime;
+            }
+            
+            // If file doesn't exist, return default avatar
+            return $defaultAvatar;
+            
+        } catch (Exception $e) {
+            return $defaultAvatar;
+        }
+    }
+}
+
+// ============================================================
 // EMAIL TEMPLATE FUNCTIONS (Outlook Compatible - No Emojis)
 // ============================================================
 
@@ -980,3 +1025,4 @@ function getAddonsAddedEmailTemplate($data) {
     </html>
     ";
 }
+?>

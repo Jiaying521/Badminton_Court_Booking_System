@@ -1,7 +1,13 @@
 ﻿<?php
+// ============================================================
+// view_coach.php - Customer Coach Profile Page
+// Displays detailed coach information, ratings, and booking options
+// ============================================================
+
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/functions.php';
 
+// Check if user is logged in, redirect to homepage if not
 if (!isLoggedIn()) redirect('homepage.php');
 
 $coach_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
@@ -9,29 +15,27 @@ if ($coach_id <= 0) {
     redirect('coaches.php');
 }
 
-// Get current user
+// ============================================================
+// GET CURRENT USER INFORMATION
+// ============================================================
 $user_id = $_SESSION['user_id'];
 $userStmt = $pdo->prepare("SELECT name, profile_picture, wallet_balance, loyalty_points FROM users WHERE id = ?");
 $userStmt->execute([$user_id]);
 $user = $userStmt->fetch();
 
-// Get user avatar
-$profile_picture = isset($user['profile_picture']) ? $user['profile_picture'] : '';
-$defaultAvatarPath = '../image/default_image.png';
-$avatarPath = $defaultAvatarPath;
+// ============================================================
+// GET USER AVATAR PATH (Using unified function from functions.php)
+// ============================================================
 
-if (!empty($profile_picture)) {
-    $fullPath = __DIR__ . '/../' . $profile_picture;
-    if (file_exists($fullPath)) {
-        $fileTime = filemtime($fullPath);
-        $avatarPath = '../' . $profile_picture . '?v=' . $fileTime;
-    }
-}
+// Get user avatar using unified function
+$avatarPath = getUserAvatar($user_id);
 
 $real_balance = $user['wallet_balance'] ?? 0.00;
 $currentPointsBalance = (int)($user['loyalty_points'] ?? 0);
 
-// Fetch coach with proper join
+// ============================================================
+// FETCH COACH DETAILS
+// ============================================================
 $stmt = $pdo->prepare("
     SELECT c.*, a.email
     FROM coaches c
@@ -46,12 +50,16 @@ if (!$coach) {
     redirect('coaches.php');
 }
 
-// Get coach image
+// ============================================================
+// GET COACH IMAGE
+// ============================================================
 $profile_img = !empty($coach['profile_img'])
     ? '../Pictures/Admin_Module/coaches/' . htmlspecialchars($coach['profile_img'])
     : '../Pictures/Admin_Module/coaches/default.png';
 
-// Availability mapping
+// ============================================================
+// AVAILABILITY STATUS MAPPING
+// ============================================================
 $avail = $coach['availability_status'] ?? 'Available';
 $avail_map = [
     'Available' => ['color' => '#16a34a', 'bg' => '#dcfce7', 'icon' => '●', 'text' => 'Available for booking'],
@@ -60,6 +68,10 @@ $avail_map = [
     'Off Day'   => ['color' => '#64748b', 'bg' => '#f1f5f9', 'icon' => '●', 'text' => 'Off day'],
 ];
 $ac = $avail_map[$avail] ?? $avail_map['Available'];
+
+// ============================================================
+// GET COACH STATISTICS
+// ============================================================
 
 // Get coach's completed sessions count
 $stmt_bookings = $pdo->prepare("
@@ -70,7 +82,9 @@ $stmt_bookings = $pdo->prepare("
 $stmt_bookings->execute([$coach_id]);
 $total_sessions = $stmt_bookings->fetchColumn() ?? 0;
 
-// Default rating values
+// ============================================================
+// GET COACH RATINGS
+// ============================================================
 $rating = 4.9;
 $total_reviews = 12;
 
@@ -89,7 +103,9 @@ try {
     // Table doesn't exist, use default values
 }
 
-// Get system settings for footer
+// ============================================================
+// GET SYSTEM SETTINGS FOR FOOTER DISPLAY
+// ============================================================
 $open_time = getSetting('open_time', '08:00');
 $close_time = getSetting('close_time', '01:00');
 $peak_start = getSetting('peak_start', '15:00');
@@ -105,7 +121,9 @@ $experience_years = date('Y') - 2018;
 // Get min date for booking (tomorrow)
 $min_date = date('Y-m-d', strtotime('+1 day'));
 
-// Get coach fields with fallback
+// ============================================================
+// COACH FIELDS WITH FALLBACK VALUES
+// ============================================================
 $coach_description = isset($coach['description']) && !empty($coach['description']) 
     ? $coach['description'] 
     : 'Professional badminton coach dedicated to helping players of all levels improve their game. Specializing in technique, footwork, and match strategy.';
@@ -138,6 +156,7 @@ $coach_age = isset($coach['age']) ? (int)$coach['age'] : 0;
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* Reset and base styles */
         * { margin:0; padding:0; box-sizing:border-box; }
         
         body { 
@@ -148,6 +167,7 @@ $coach_age = isset($coach['age']) ? (int)$coach['age'] : 0;
             position: relative;
         }
         
+        /* Background pattern overlay */
         body::before {
             content: '';
             position: fixed;
@@ -169,11 +189,15 @@ $coach_age = isset($coach['age']) ? (int)$coach['age'] : 0;
             padding: 2rem;
         }
         
+        /* Custom scrollbar styling */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #e0e8dc; border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: #2b7e3a; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #1f5a2a; }
         
+        /* ============================================================
+           GLASSMORPHISM NAVBAR
+        ============================================================ */
         .navbar { 
             display: flex; 
             justify-content: space-between; 
@@ -283,6 +307,7 @@ $coach_age = isset($coach['age']) ? (int)$coach['age'] : 0;
             border-radius: 50px;
         }
         
+        /* User profile area - clickable to edit profile */
         .nav-links a.user-profile,
         .user-profile {
             display: flex !important;
@@ -351,12 +376,18 @@ $coach_age = isset($coach['age']) ? (int)$coach['age'] : 0;
             border-radius: 50px;
         }
         
+        /* ============================================================
+           MAIN CONTENT - 2 Column Layout
+        ============================================================ */
         .main-content {
             display: grid;
             grid-template-columns: 1fr 380px;
             gap: 2rem;
         }
         
+        /* ============================================================
+           PROFILE CARD - Left Column
+        ============================================================ */
         .profile-card {
             background: rgba(255,255,255,0.7);
             backdrop-filter: blur(10px);
@@ -513,6 +544,9 @@ $coach_age = isset($coach['age']) ? (int)$coach['age'] : 0;
             color: #5a6e5c;
         }
         
+        /* ============================================================
+           BOOKING SIDEBAR - Right Column
+        ============================================================ */
         .booking-sidebar {
             background: rgba(255,255,255,0.7);
             backdrop-filter: blur(10px);
@@ -641,6 +675,9 @@ $coach_age = isset($coach['age']) ? (int)$coach['age'] : 0;
             margin-right: 0.3rem;
         }
         
+        /* ============================================================
+           FOOTER
+        ============================================================ */
         .footer { 
             background: #0f1f12; 
             color: #cbd5c0; 
@@ -712,6 +749,9 @@ $coach_age = isset($coach['age']) ? (int)$coach['age'] : 0;
             font-size: 0.7rem; 
         }
         
+        /* ============================================================
+           RESPONSIVE DESIGN
+        ============================================================ */
         @media (max-width: 968px) {
             .main-content {
                 grid-template-columns: 1fr;
@@ -739,7 +779,9 @@ $coach_age = isset($coach['age']) ? (int)$coach['age'] : 0;
 </head>
 <body>
 <div class="container">
-    <!-- Navbar -->
+    <!-- ============================================================
+         NAVIGATION BAR
+    ============================================================ -->
     <div class="navbar">
         <a href="dashboard.php" class="logo-area">
             <img src="../Pictures/Admin_Module/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
@@ -750,6 +792,7 @@ $coach_age = isset($coach['age']) ? (int)$coach['age'] : 0;
             <a href="my_bookings.php"><i class="fas fa-bookmark"></i> My Bookings</a>
             <a href="../Payment_Module/wallet.php"><i class="fas fa-wallet"></i> Wallet</a>
             <a href="coaches.php" class="active"><i class="fas fa-user-tie"></i> Coaches</a>
+            <!-- User profile area - click to edit profile -->
             <a href="edit_profile.php" class="user-profile">
                 <div class="user-avatar">
                     <img src="<?php echo htmlspecialchars($avatarPath); ?>" alt="Avatar">
@@ -763,9 +806,13 @@ $coach_age = isset($coach['age']) ? (int)$coach['age'] : 0;
         </div>
     </div>
     
-    <!-- Main Content -->
+    <!-- ============================================================
+         MAIN CONTENT
+    ============================================================ -->
     <div class="main-content">
-        <!-- Left Column - Coach Profile -->
+        <!-- ============================================================
+             LEFT COLUMN - COACH PROFILE
+        ============================================================ -->
         <div class="profile-card">
             <div class="coach-hero">
                 <img src="<?php echo $profile_img; ?>" alt="<?php echo htmlspecialchars($coach['name']); ?>" class="coach-avatar"
@@ -780,10 +827,12 @@ $coach_age = isset($coach['age']) ? (int)$coach['age'] : 0;
             </div>
             
             <div class="coach-body">
+                <!-- About Section -->
                 <div class="section-title">
                     <i class="fas fa-user-circle"></i> About the Coach
                 </div>
                 
+                <!-- Coach Information Grid -->
                 <div class="info-grid">
                     <div class="info-item highlight">
                         <div class="label"><i class="fas fa-tag"></i> Rate</div>
@@ -815,6 +864,7 @@ $coach_age = isset($coach['age']) ? (int)$coach['age'] : 0;
                     </div>
                 </div>
                 
+                <!-- Statistics Badges -->
                 <div class="stats-row">
                     <div class="stat-badge">
                         <div class="number"><?php echo $total_sessions; ?>+</div>
@@ -830,6 +880,7 @@ $coach_age = isset($coach['age']) ? (int)$coach['age'] : 0;
                     </div>
                 </div>
                 
+                <!-- Coach Description -->
                 <div class="bio-text">
                     <i class="fas fa-quote-left" style="color:#2b7e3a; margin-right:0.5rem;"></i>
                     <?php echo htmlspecialchars($coach_description); ?>
@@ -837,22 +888,27 @@ $coach_age = isset($coach['age']) ? (int)$coach['age'] : 0;
             </div>
         </div>
         
-        <!-- Right Column - Booking Sidebar -->
+        <!-- ============================================================
+             RIGHT COLUMN - BOOKING SIDEBAR
+        ============================================================ -->
         <div class="booking-sidebar">
             <div class="sidebar-title">
                 <i class="fas fa-calendar-alt" style="color:#2b7e3a;"></i> Book a Session
             </div>
             
+            <!-- Price Display -->
             <div class="price-display">
                 <span class="price-amount">RM <?php echo number_format($coach['price_per_hour'], 2); ?></span>
                 <span class="price-unit">/ hour</span>
             </div>
             
+            <!-- Info Banner -->
             <div class="info-banner">
                 <i class="fas fa-info-circle"></i> Coach sessions require a Training Court booking
             </div>
             
             <?php if ($avail === 'Available'): ?>
+                <!-- Booking Form -->
                 <form action="dashboard.php" method="GET" class="booking-form" id="bookingForm">
                     <input type="hidden" name="preferred_coach_id" value="<?php echo $coach_id; ?>">
                     <input type="hidden" name="court_type" value="Training">
@@ -870,17 +926,21 @@ $coach_age = isset($coach['age']) ? (int)$coach['age'] : 0;
                             <option value="4">4 hours</option>
                         </select>
                     </div>
+                    <!-- Wallet Balance Display -->
                     <div class="wallet-info-sidebar">
                         <i class="fas fa-wallet"></i> Your Balance: <strong>RM <?php echo number_format($real_balance, 2); ?></strong>
                     </div>
+                    <!-- Submit Button -->
                     <button type="submit" class="btn-book-now" id="bookNowBtn">
                         <i class="fas fa-calendar-plus"></i> Choose a Training Court
                     </button>
+                    <!-- Note -->
                     <div class="note-text">
                         <i class="fas fa-info-circle"></i> You will be shown only Training Courts to book with this coach
                     </div>
                 </form>
             <?php else: ?>
+                <!-- Unavailable State -->
                 <button class="btn-book-now disabled" disabled>
                     <i class="fas fa-calendar-xmark"></i> Not Available
                 </button>
@@ -892,7 +952,9 @@ $coach_age = isset($coach['age']) ? (int)$coach['age'] : 0;
     </div>
 </div>
 
-<!-- Footer -->
+<!-- ============================================================
+     FOOTER
+============================================================ -->
 <footer class="footer">
     <div class="footer-container">
         <div class="footer-col">
@@ -933,25 +995,33 @@ $coach_age = isset($coach['age']) ? (int)$coach['age'] : 0;
     </div>
 </footer>
 
+<!-- ============================================================
+     JAVASCRIPT FUNCTIONS
+============================================================ -->
 <script>
-    // 简单的客户端验证
+    // ============================================================
+    // BOOKING FORM VALIDATION
+    // ============================================================
     document.getElementById('bookingForm')?.addEventListener('submit', function(e) {
+        // Get form values
         const date = document.getElementById('booking_date')?.value;
         const duration = document.getElementById('duration')?.value;
         
+        // Validate date is selected
         if (!date) {
             e.preventDefault();
             alert('Please select a date');
             return false;
         }
         
+        // Validate duration is selected
         if (!duration) {
             e.preventDefault();
             alert('Please select duration');
             return false;
         }
         
-        // 验证日期不能是今天（必须至少明天）
+        // Validate date must be at least tomorrow (not today)
         const selectedDate = new Date(date);
         const today = new Date();
         today.setHours(0, 0, 0, 0);

@@ -1,11 +1,20 @@
-<?php
+﻿<?php
+// ============================================================
+// coaches.php - Customer Coaches Listing Page
+// Displays all active coaches with their details and booking options
+// ============================================================
+
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/functions.php';
+
+// Check if user is logged in, redirect to homepage if not
 if (!isLoggedIn()) redirect('homepage.php');
 
 $user_id = $_SESSION['user_id'];
 
-// 获取用户信息（包含头像字段）
+// ============================================================
+// FETCH USER INFORMATION
+// ============================================================
 $stmt = $pdo->prepare("SELECT name, profile_picture, wallet_balance FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch();
@@ -15,47 +24,32 @@ if (!$user) {
     redirect('homepage.php');
 }
 
-// 获取用户头像
-$profile_picture = isset($user['profile_picture']) ? $user['profile_picture'] : '';
-$defaultAvatarPath = '../image/default_image.png';
-$avatarPath = $defaultAvatarPath;
+// ============================================================
+// GET USER AVATAR PATH (Using unified function from functions.php)
+// ============================================================
 
-if (!empty($profile_picture)) {
-    $fullPath = __DIR__ . '/../' . $profile_picture;
-    if (file_exists($fullPath)) {
-        $fileTime = filemtime($fullPath);
-        $avatarPath = '../' . $profile_picture . '?v=' . $fileTime;
-    }
-}
-
-// 确保默认头像存在
-$defaultAvatarFullPath = __DIR__ . '/../image/default_image.png';
-if (!file_exists($defaultAvatarFullPath)) {
-    $imageDir = __DIR__ . '/../image/';
-    if (!file_exists($imageDir)) {
-        mkdir($imageDir, 0777, true);
-    }
-    $sourcePath = __DIR__ . '/../Pictures/Admin_Module/coaches/default.png';
-    if (file_exists($sourcePath)) {
-        copy($sourcePath, $defaultAvatarFullPath);
-    }
-}
+// Get user avatar using unified function
+$avatarPath = getUserAvatar($user_id);
 
 $real_balance = $user['wallet_balance'] ?? 0.00;
 
-// 获取系统设置用于 footer 显示
+// ============================================================
+// GET SYSTEM SETTINGS FOR FOOTER DISPLAY
+// ============================================================
 $open_time = getSetting('open_time', '08:00');
 $close_time = getSetting('close_time', '01:00');
 $peak_start = getSetting('peak_start', '15:00');
 $off_peak_price = getSetting('off_peak_price', '10');
 $peak_price = getSetting('peak_price', '15');
 
-// 格式化时间显示
+// Format times for display
 $open_time_display = date('h:i A', strtotime($open_time));
 $close_time_display = date('h:i A', strtotime($close_time));
 $peak_start_display = date('h:i A', strtotime($peak_start));
 
-// Fetch all active coaches
+// ============================================================
+// FETCH ALL ACTIVE COACHES
+// ============================================================
 $coaches = $pdo->query("
     SELECT c.*, a.email
     FROM coaches c
@@ -64,6 +58,7 @@ $coaches = $pdo->query("
     ORDER BY c.name ASC
 ")->fetchAll();
 
+// Availability status mapping with colors
 $avail_map = [
     'Available' => ['color' => '#16a34a', 'bg' => '#dcfce7'],
     'On Leave'  => ['color' => '#d97706', 'bg' => '#fef3c7'],
@@ -71,7 +66,7 @@ $avail_map = [
     'Off Day'   => ['color' => '#64748b', 'bg' => '#f1f5f9'],
 ];
 
-// 获取最小日期（明天）
+// Get minimum date for booking (tomorrow)
 $min_date = date('Y-m-d', strtotime('+1 day'));
 ?>
 <!DOCTYPE html>
@@ -86,6 +81,7 @@ $min_date = date('Y-m-d', strtotime('+1 day'));
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* Reset and base styles */
         * { margin:0; padding:0; box-sizing:border-box; }
         
         body { 
@@ -97,6 +93,7 @@ $min_date = date('Y-m-d', strtotime('+1 day'));
             position: relative;
         }
         
+        /* Background pattern overlay */
         body::before {
             content: '';
             position: fixed;
@@ -117,12 +114,15 @@ $min_date = date('Y-m-d', strtotime('+1 day'));
             z-index: 1;
         }
         
+        /* Custom scrollbar styling */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #e0e8dc; border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: #2b7e3a; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #1f5a2a; }
         
-        /* Glassmorphism Navbar */
+        /* ============================================================
+           GLASSMORPHISM NAVBAR
+        ============================================================ */
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -231,7 +231,7 @@ $min_date = date('Y-m-d', strtotime('+1 day'));
             border-radius: 50px;
         }
         
-        /* 用户头像区域 - 可点击跳转 profile */
+        /* User profile area - clickable to edit profile */
         .user-profile {
             display: flex;
             align-items: center;
@@ -295,7 +295,9 @@ $min_date = date('Y-m-d', strtotime('+1 day'));
             border-radius: 50px;
         }
         
-        /* Page Header */
+        /* ============================================================
+           PAGE HEADER
+        ============================================================ */
         .page-header {
             text-align: center;
             margin-bottom: 2rem;
@@ -321,7 +323,9 @@ $min_date = date('Y-m-d', strtotime('+1 day'));
             font-size: 1rem;
         }
         
-        /* Coaches Grid */
+        /* ============================================================
+           COACHES GRID
+        ============================================================ */
         .coaches-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -539,7 +543,9 @@ $min_date = date('Y-m-d', strtotime('+1 day'));
             box-shadow: none;
         }
         
-        /* 弹窗样式 */
+        /* ============================================================
+           BOOKING MODAL
+        ============================================================ */
         .book-modal {
             display: none;
             position: fixed;
@@ -648,7 +654,9 @@ $min_date = date('Y-m-d', strtotime('+1 day'));
             box-shadow: 0 6px 14px rgba(43,126,58,0.3);
         }
         
-        /* Footer */
+        /* ============================================================
+           FOOTER
+        ============================================================ */
         .footer { 
             background: #0f1f12; 
             color: #cbd5c0; 
@@ -722,6 +730,9 @@ $min_date = date('Y-m-d', strtotime('+1 day'));
             font-size: 0.8rem; 
         }
         
+        /* ============================================================
+           RESPONSIVE DESIGN
+        ============================================================ */
         @media (max-width: 768px) {
             body { padding: 1rem; }
             .coaches-grid { grid-template-columns: 1fr; }
@@ -738,7 +749,9 @@ $min_date = date('Y-m-d', strtotime('+1 day'));
 </head>
 <body>
 <div class="container">
-    <!-- Navbar -->
+    <!-- ============================================================
+         NAVIGATION BAR
+    ============================================================ -->
     <div class="navbar">
         <a href="dashboard.php" class="logo-area">
             <img src="../Pictures/Admin_Module/logo.png" alt="Smash Arena" onerror="this.style.display='none'">
@@ -749,7 +762,7 @@ $min_date = date('Y-m-d', strtotime('+1 day'));
             <a href="my_bookings.php"><i class="fas fa-bookmark"></i> My Bookings</a>
             <a href="../Payment_Module/wallet.php"><i class="fas fa-wallet"></i> Wallet</a>
             <a href="coaches.php" class="active"><i class="fas fa-user-tie"></i> Coaches</a>
-            <!-- 用户头像 + 名字区域（点击跳转 Edit Profile） -->
+            <!-- User profile area - click to edit profile -->
             <a href="edit_profile.php" class="user-profile">
                 <div class="user-avatar">
                     <img src="<?php echo htmlspecialchars($avatarPath); ?>" alt="Avatar">
@@ -763,13 +776,17 @@ $min_date = date('Y-m-d', strtotime('+1 day'));
         </div>
     </div>
     
-    <!-- Header -->
+    <!-- ============================================================
+         PAGE HEADER
+    ============================================================ -->
     <div class="page-header">
         <h1><i class="fas fa-user-tie" style="color:#2b7e3a;"></i> Our Coaches</h1>
         <p>Browse our professional coaches and book a training session</p>
     </div>
     
-    <!-- Grid -->
+    <!-- ============================================================
+         COACHES GRID
+    ============================================================ -->
     <?php if (empty($coaches)): ?>
         <div class="empty-state" style="text-align:center; padding:60px; background:rgba(255,255,255,0.7); backdrop-filter:blur(10px); border-radius:28px;">
             <i class="fas fa-user-slash" style="font-size:3rem; color:#cbd5c0; margin-bottom:1rem; display:block;"></i>
@@ -839,7 +856,9 @@ $min_date = date('Y-m-d', strtotime('+1 day'));
     <?php endif; ?>
 </div>
 
-<!-- Booking Modal -->
+<!-- ============================================================
+     BOOKING MODAL
+============================================================ -->
 <div id="bookingModal" class="book-modal">
     <div class="book-modal-content">
         <div class="book-modal-header">
@@ -875,7 +894,9 @@ $min_date = date('Y-m-d', strtotime('+1 day'));
     </div>
 </div>
 
-<!-- Footer -->
+<!-- ============================================================
+     FOOTER
+============================================================ -->
 <footer class="footer">
     <div class="footer-container">
         <div class="footer-col">
@@ -915,9 +936,13 @@ $min_date = date('Y-m-d', strtotime('+1 day'));
     <div class="footer-bottom"><p>&copy; 2025 Smash Arena – Your Game, Our Court. All rights reserved.</p></div>
 </footer>
 
+<!-- ============================================================
+     JAVASCRIPT FUNCTIONS
+============================================================ -->
 <script>
     let currentCoachId = null;
     
+    // Open booking modal
     function openBookingModal(coachId, coachName, coachPrice) {
         currentCoachId = coachId;
         document.getElementById('preferred_coach_id').value = coachId;
@@ -926,18 +951,19 @@ $min_date = date('Y-m-d', strtotime('+1 day'));
         document.getElementById('bookingModal').style.display = 'flex';
     }
     
+    // Close booking modal
     function closeBookingModal() {
         document.getElementById('bookingModal').style.display = 'none';
     }
     
-    // 点击模态框背景关闭
+    // Close modal when clicking outside
     document.getElementById('bookingModal').addEventListener('click', function(e) {
         if (e.target === this) {
             closeBookingModal();
         }
     });
     
-    // 表单验证
+    // Validate booking form before submission
     document.getElementById('bookingForm').addEventListener('submit', function(e) {
         const date = document.getElementById('booking_date').value;
         const duration = document.getElementById('duration').value;
@@ -954,7 +980,7 @@ $min_date = date('Y-m-d', strtotime('+1 day'));
             return false;
         }
         
-        // 验证日期不能是今天（必须至少明天）
+        // Validate date must be at least tomorrow
         const selectedDate = new Date(date);
         const today = new Date();
         today.setHours(0, 0, 0, 0);

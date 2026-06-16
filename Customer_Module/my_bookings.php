@@ -38,31 +38,12 @@ $userStmt = $pdo->prepare("SELECT name, profile_picture FROM users WHERE id = ?"
 $userStmt->execute([$user_id]);
 $user = $userStmt->fetch();
 
-// Setup user avatar path
-$profile_picture = isset($user['profile_picture']) ? $user['profile_picture'] : '';
-$defaultAvatarPath = '../image/default_image.png';
-$avatarPath = $defaultAvatarPath;
+// ============================================================
+// GET USER AVATAR PATH (Using unified function from functions.php)
+// ============================================================
 
-if (!empty($profile_picture)) {
-    $fullPath = __DIR__ . '/../' . $profile_picture;
-    if (file_exists($fullPath)) {
-        $fileTime = filemtime($fullPath);
-        $avatarPath = '../' . $profile_picture . '?v=' . $fileTime;
-    }
-}
-
-// Create default avatar if it doesn't exist
-$defaultAvatarFullPath = __DIR__ . '/../image/default_image.png';
-if (!file_exists($defaultAvatarFullPath)) {
-    $imageDir = __DIR__ . '/../image/';
-    if (!file_exists($imageDir)) {
-        mkdir($imageDir, 0777, true);
-    }
-    $sourcePath = __DIR__ . '/../Pictures/Admin_Module/coaches/default.png';
-    if (file_exists($sourcePath)) {
-        copy($sourcePath, $defaultAvatarFullPath);
-    }
-}
+// Get user avatar using unified function
+$avatarPath = getUserAvatar($user_id);
 
 // ============================================================
 // GET CANCELLATION COUNT (for penalty tracking)
