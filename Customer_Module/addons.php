@@ -61,48 +61,34 @@ foreach ($categories as $category) {
 $categoryConfig = [
     'racket' => [
         'icon' => 'fa-table-tennis',
-        'label' => '🏸 Badminton Rackets',
-        'max_qty' => 3,
-        'default_img' => 'https://placehold.co/120x120/2b7e3a/white?text=🏸'
+        'max_qty' => 3
     ],
     'shuttlecock' => [
         'icon' => 'fa-shuttlecock',
-        'label' => '🏸 Shuttlecocks',
-        'max_qty' => 10,
-        'default_img' => 'https://placehold.co/120x120/2b7e3a/white?text=🏸'
+        'max_qty' => 10
     ],
     'grip' => [
         'icon' => 'fa-hand-peace',
-        'label' => '🎾 Grips / Overgrips',
-        'max_qty' => 20,
-        'default_img' => 'https://placehold.co/120x120/2b7e3a/white?text=🎾'
+        'max_qty' => 20
     ],
     'string' => [
         'icon' => 'fa-thread',
-        'label' => '🧵 Badminton Strings',
-        'max_qty' => 20,
-        'default_img' => 'https://placehold.co/120x120/2b7e3a/white?text=🧵'
+        'max_qty' => 20
     ],
     'snack' => [
         'icon' => 'fa-cookie-bite',
-        'label' => '🍪 Snacks',
-        'max_qty' => 20,
-        'default_img' => 'https://placehold.co/120x120/f39c12/white?text=🍪'
+        'max_qty' => 20
     ],
     'drink' => [
         'icon' => 'fa-tint',
-        'label' => '🥤 Drinks',
-        'max_qty' => 20,
-        'default_img' => 'https://placehold.co/120x120/3498db/white?text=🥤'
+        'max_qty' => 20
     ]
 ];
 
 // Default config for unknown categories
 $defaultConfig = [
     'icon' => 'fa-cube',
-    'label' => '📦 Products',
-    'max_qty' => 10,
-    'default_img' => 'https://placehold.co/120x120/2b7e3a/white?text=📦'
+    'max_qty' => 20
 ];
 
 // ============================================================
@@ -147,9 +133,16 @@ function getProductImage($product) {
 // ============================================================
 // GET CATEGORY CONFIG
 // ============================================================
-function getCategoryConfig($category) {
+function getCategoryConfig($category)
+{
     global $categoryConfig, $defaultConfig;
-    return $categoryConfig[$category] ?? $defaultConfig;
+
+    return [
+        'icon' => $categoryConfig[$category]['icon'] ?? $defaultConfig['icon'],
+        'label' => ucfirst(str_replace('_', ' ', $category)),
+        'max_qty' => $categoryConfig[$category]['max_qty'] ?? $defaultConfig['max_qty'],
+        'default_img' => 'https://placehold.co/120x120/2b7e3a/white?text=' . urlencode(ucfirst($category))
+    ];
 }
 
 // Convert PHP array to JavaScript object
