@@ -39,60 +39,98 @@ foreach ($existing_addons_raw as $item) {
 }
 
 // ============================================================
-// FETCH ALL PRODUCTS BY CATEGORY
+// FETCH ALL PRODUCTS FROM DATABASE GROUPED BY CATEGORY
 // ============================================================
-$products = [
-    'racket' => [],
-    'shuttlecock' => [],
-    'grip' => [],
-    'string' => [],
-    'snack' => [],
-    'drink' => []
+$products = [];
+
+// Get all distinct categories from products table
+$stmt = $pdo->prepare("SELECT DISTINCT category FROM products WHERE is_active = 1 ORDER BY category");
+$stmt->execute();
+$categories = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+// Fetch products for each category
+foreach ($categories as $category) {
+    $stmt = $pdo->prepare("SELECT * FROM products WHERE category = ? AND is_active = 1 ORDER BY price");
+    $stmt->execute([$category]);
+    $products[$category] = $stmt->fetchAll();
+}
+
+// ============================================================
+// CATEGORY DISPLAY CONFIGURATION
+// ============================================================
+$categoryConfig = [
+    'racket' => [
+        'icon' => 'fa-table-tennis',
+        'label' => '🏸 Badminton Rackets',
+        'max_qty' => 3,
+        'default_img' => 'https://placehold.co/120x120/2b7e3a/white?text=🏸'
+    ],
+    'shuttlecock' => [
+        'icon' => 'fa-shuttlecock',
+        'label' => '🏸 Shuttlecocks',
+        'max_qty' => 10,
+        'default_img' => 'https://placehold.co/120x120/2b7e3a/white?text=🏸'
+    ],
+    'grip' => [
+        'icon' => 'fa-hand-peace',
+        'label' => '🎾 Grips / Overgrips',
+        'max_qty' => 20,
+        'default_img' => 'https://placehold.co/120x120/2b7e3a/white?text=🎾'
+    ],
+    'string' => [
+        'icon' => 'fa-thread',
+        'label' => '🧵 Badminton Strings',
+        'max_qty' => 20,
+        'default_img' => 'https://placehold.co/120x120/2b7e3a/white?text=🧵'
+    ],
+    'snack' => [
+        'icon' => 'fa-cookie-bite',
+        'label' => '🍪 Snacks',
+        'max_qty' => 20,
+        'default_img' => 'https://placehold.co/120x120/f39c12/white?text=🍪'
+    ],
+    'drink' => [
+        'icon' => 'fa-tint',
+        'label' => '🥤 Drinks',
+        'max_qty' => 20,
+        'default_img' => 'https://placehold.co/120x120/3498db/white?text=🥤'
+    ]
 ];
 
-// Rackets
-$stmt = $pdo->prepare("SELECT * FROM products WHERE category = 'racket' AND is_active = 1 ORDER BY price");
-$stmt->execute();
-$products['racket'] = $stmt->fetchAll();
-
-// Shuttlecocks
-$stmt = $pdo->prepare("SELECT * FROM products WHERE category = 'shuttlecock' AND is_active = 1 ORDER BY price");
-$stmt->execute();
-$products['shuttlecock'] = $stmt->fetchAll();
-
-// Grips
-$stmt = $pdo->prepare("SELECT * FROM products WHERE category = 'grip' AND is_active = 1 ORDER BY price");
-$stmt->execute();
-$products['grip'] = $stmt->fetchAll();
-
-// Strings
-$stmt = $pdo->prepare("SELECT * FROM products WHERE category = 'string' AND is_active = 1 ORDER BY price");
-$stmt->execute();
-$products['string'] = $stmt->fetchAll();
-
-// Snacks
-$stmt = $pdo->prepare("SELECT * FROM products WHERE category = 'snack' AND is_active = 1 ORDER BY price");
-$stmt->execute();
-$products['snack'] = $stmt->fetchAll();
-
-// Drinks
-$stmt = $pdo->prepare("SELECT * FROM products WHERE category = 'drink' AND is_active = 1 ORDER BY price");
-$stmt->execute();
-$products['drink'] = $stmt->fetchAll();
+// Default config for unknown categories
+$defaultConfig = [
+    'icon' => 'fa-cube',
+    'label' => '📦 Products',
+    'max_qty' => 10,
+    'default_img' => 'https://placehold.co/120x120/2b7e3a/white?text=📦'
+];
 
 // ============================================================
 // HELPER FUNCTION: GET PRODUCT IMAGE
 // ============================================================
 function getProductImage($product) {
+    // Check if image exists in Pictures folder
     if (!empty($product['image_url'])) {
-        $imagePath = $product['image_url'];
-        $fullPath = '../Pictures/Admin_Module/products/' . $imagePath;
-        if (file_exists(__DIR__ . '/' . $fullPath)) {
-            return $fullPath;
+        // Try different path variations
+        $paths = [
+            '../Pictures/Admin_Module/products/' . $product['image_url'],
+            '../Pictures/Admin_Module/products/' . basename($product['image_url']),
+            '../Pictures/' . $product['image_url']
+        ];
+        
+        foreach ($paths as $path) {
+            if (file_exists(__DIR__ . '/' . $path)) {
+                return $path;
+            }
         }
-        return $fullPath;
+        
+        // If file doesn't exist but we have a URL, return it
+        if (filter_var($product['image_url'], FILTER_VALIDATE_URL)) {
+            return $product['image_url'];
+        }
     }
     
+    // Default images based on category
     $defaultImages = [
         'racket' => 'https://placehold.co/120x120/2b7e3a/white?text=🏸',
         'shuttlecock' => 'https://placehold.co/120x120/2b7e3a/white?text=🏸',
@@ -102,8 +140,16 @@ function getProductImage($product) {
         'drink' => 'https://placehold.co/120x120/3498db/white?text=🥤'
     ];
     
-    $category = $product['category'];
+    $category = $product['category'] ?? 'racket';
     return $defaultImages[$category] ?? 'https://placehold.co/120x120/2b7e3a/white?text=🏸';
+}
+
+// ============================================================
+// GET CATEGORY CONFIG
+// ============================================================
+function getCategoryConfig($category) {
+    global $categoryConfig, $defaultConfig;
+    return $categoryConfig[$category] ?? $defaultConfig;
 }
 
 // Convert PHP array to JavaScript object
@@ -389,16 +435,13 @@ $existing_addons_json = json_encode($existing_addons);
             border-radius: 12px; 
             font-weight: 600; 
             background: rgba(254,253,248,0.9);
-            /* Prevent number input arrows from showing on some browsers */
             -moz-appearance: textfield;
         }
-        /* Hide number input arrows */
         .qty-input::-webkit-outer-spin-button,
         .qty-input::-webkit-inner-spin-button {
             -webkit-appearance: none;
             margin: 0;
         }
-        /* Prevent text selection cursor on number input */
         .qty-input[type="number"] {
             -moz-appearance: textfield;
         }
@@ -478,6 +521,7 @@ $existing_addons_json = json_encode($existing_addons);
         .empty-cart i { font-size: 3rem; margin-bottom: 0.5rem; opacity: 0.5; }
         
         .product-category-section { display: block; }
+        .no-products-msg { text-align: center; padding: 1.5rem; color: #999; font-style: italic; }
         
         @media (max-width: 768px) {
             body { padding: 1rem; }
@@ -516,60 +560,60 @@ $existing_addons_json = json_encode($existing_addons);
              LEFT COLUMN - PRODUCTS
         ============================================================ -->
         <div>
-            <!-- Category Tabs -->
+            <!-- Category Tabs - Dynamically generated -->
             <div class="category-tabs">
                 <button class="category-btn active" data-category="all"><i class="fas fa-th-large"></i> All</button>
-                <button class="category-btn" data-category="racket"><i class="fas fa-table-tennis"></i> Rackets</button>
-                <button class="category-btn" data-category="shuttlecock"><i class="fas fa-shuttlecock"></i> Shuttlecocks</button>
-                <button class="category-btn" data-category="string"><i class="fas fa-thread"></i> Strings</button>
-                <button class="category-btn" data-category="grip"><i class="fas fa-hand-peace"></i> Grips</button>
-                <button class="category-btn" data-category="snack"><i class="fas fa-cookie-bite"></i> Snacks</button>
-                <button class="category-btn" data-category="drink"><i class="fas fa-tint"></i> Drinks</button>
+                <?php foreach ($categories as $cat): 
+                    $config = getCategoryConfig($cat);
+                ?>
+                <button class="category-btn" data-category="<?php echo htmlspecialchars($cat); ?>">
+                    <i class="fas <?php echo htmlspecialchars($config['icon']); ?>"></i> 
+                    <?php echo ucfirst(htmlspecialchars($cat)); ?>
+                </button>
+                <?php endforeach; ?>
             </div>
             
-            <!-- Product Sections -->
-            <?php foreach(['racket', 'shuttlecock', 'string', 'grip', 'snack', 'drink'] as $cat): 
-                $sectionTitle = [
-                    'racket' => '🏸 Badminton Rackets',
-                    'shuttlecock' => '🏸 Shuttlecocks',
-                    'string' => '🧵 Badminton Strings',
-                    'grip' => '🎾 Grips / Overgrips',
-                    'snack' => '🍪 Snacks',
-                    'drink' => '🥤 Drinks'
-                ];
-                $iconMap = [
-                    'racket' => 'fa-table-tennis',
-                    'shuttlecock' => 'fa-shuttlecock',
-                    'string' => 'fa-thread',
-                    'grip' => 'fa-hand-peace',
-                    'snack' => 'fa-cookie-bite',
-                    'drink' => 'fa-tint'
-                ];
+            <!-- Product Sections - Dynamically generated -->
+            <?php foreach ($categories as $cat): 
+                $config = getCategoryConfig($cat);
+                $catProducts = $products[$cat] ?? [];
             ?>
-            <div id="category-<?php echo $cat; ?>" class="product-category-section">
+            <div id="category-<?php echo htmlspecialchars($cat); ?>" class="product-category-section">
                 <div class="product-section">
-                    <div class="section-title"><i class="fas <?php echo $iconMap[$cat]; ?>"></i> <?php echo $sectionTitle[$cat]; ?></div>
+                    <div class="section-title">
+                        <i class="fas <?php echo htmlspecialchars($config['icon']); ?>"></i> 
+                        <?php echo htmlspecialchars($config['label']); ?>
+                    </div>
                     <div class="products-grid">
-                        <?php if(count($products[$cat]) > 0): ?>
-                            <?php foreach($products[$cat] as $item): 
+                        <?php if(count($catProducts) > 0): ?>
+                            <?php foreach($catProducts as $item): 
                                 $existing_qty = $existing_addons[$item['id']] ?? 0;
-                                $maxQty = ($cat == 'racket') ? 3 : (($cat == 'shuttlecock') ? 10 : 20);
+                                $maxQty = $config['max_qty'];
+                                $imgSrc = getProductImage($item);
                             ?>
                             <div class="product-card">
-                                <div class="product-image"><img src="<?php echo getProductImage($item); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>" onerror="this.src='https://placehold.co/120x120/2b7e3a/white?text=🏸'"></div>
+                                <div class="product-image">
+                                    <img src="<?php echo htmlspecialchars($imgSrc); ?>" 
+                                         alt="<?php echo htmlspecialchars($item['name']); ?>" 
+                                         onerror="this.src='<?php echo htmlspecialchars($config['default_img']); ?>'">
+                                </div>
                                 <div class="product-info">
                                     <div class="product-name"><?php echo htmlspecialchars($item['name']); ?></div>
                                     <div class="product-price">RM <?php echo number_format($item['price'], 2); ?></div>
                                     <div class="product-qty">
                                         <button type="button" class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, -1)">-</button>
-                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" value="<?php echo $existing_qty; ?>" min="0" max="<?php echo $maxQty; ?>" data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>" data-max="<?php echo $maxQty; ?>">
+                                        <input type="number" class="qty-input" id="qty_<?php echo $item['id']; ?>" 
+                                               value="<?php echo $existing_qty; ?>" min="0" max="<?php echo $maxQty; ?>" 
+                                               data-id="<?php echo $item['id']; ?>" data-price="<?php echo $item['price']; ?>" 
+                                               data-name="<?php echo htmlspecialchars($item['name']); ?>" 
+                                               data-max="<?php echo $maxQty; ?>">
                                         <button type="button" class="qty-btn" onclick="changeQty(<?php echo $item['id']; ?>, 1)">+</button>
                                     </div>
                                 </div>
                             </div>
                             <?php endforeach; ?>
                         <?php else: ?>
-                            <div class="product-card" style="text-align:center; color:#888;">No items available</div>
+                            <div class="no-products-msg">No items available in this category</div>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -623,11 +667,8 @@ $existing_addons_json = json_encode($existing_addons);
         const qtyInput = document.getElementById('qty_' + productId);
         if (!qtyInput) return;
         
-        // Get current value and clean it
         let currentVal = parseInt(qtyInput.value) || 0;
         let newVal = currentVal + delta;
-        
-        // Validate against min and max
         const max = parseInt(qtyInput.getAttribute('max')) || 10;
         if (newVal < 0) newVal = 0;
         if (newVal > max) newVal = max;
@@ -640,28 +681,16 @@ $existing_addons_json = json_encode($existing_addons);
     // VALIDATE SINGLE INPUT (called on blur/change)
     // ============================================================
     function validateQtyInput(input) {
-        // Get raw value and clean it - remove any non-numeric characters
         let rawValue = input.value.trim();
-        
-        // Remove any non-digit characters (letters, symbols, spaces, etc.)
         rawValue = rawValue.replace(/[^0-9]/g, '');
-        
-        // If empty, set to 0
-        if (rawValue === '') {
-            rawValue = '0';
-        }
+        if (rawValue === '') rawValue = '0';
         
         let val = parseInt(rawValue, 10);
         const max = parseInt(input.getAttribute('max')) || 10;
         const min = parseInt(input.getAttribute('min')) || 0;
         
-        // Validate range
-        if (isNaN(val) || val < min) {
-            val = 0;
-        }
-        if (val > max) {
-            val = max;
-        }
+        if (isNaN(val) || val < min) val = 0;
+        if (val > max) val = max;
         
         input.value = val;
         updateCart();
@@ -673,7 +702,6 @@ $existing_addons_json = json_encode($existing_addons);
     function updateCart() {
         cart = [];
         document.querySelectorAll('.qty-input').forEach(input => {
-            // Clean the value before parsing
             let val = input.value.trim().replace(/[^0-9]/g, '');
             const qty = parseInt(val) || 0;
             
@@ -733,26 +761,18 @@ $existing_addons_json = json_encode($existing_addons);
     // EVENT LISTENERS FOR INPUT VALIDATION
     // ============================================================
     document.querySelectorAll('.qty-input').forEach(input => {
-        // Validate on blur (when user leaves the input)
         input.addEventListener('blur', function() {
             validateQtyInput(this);
         });
         
-        // Validate on change (when user presses Enter or clicks away)
         input.addEventListener('change', function() {
             validateQtyInput(this);
         });
         
-        // Real-time cleaning on input
         input.addEventListener('input', function() {
-            // Remove any non-digit characters as user types
             this.value = this.value.replace(/[^0-9]/g, '');
-            
-            // If empty, keep it empty (will be fixed on blur)
-            // This prevents weird characters from appearing
         });
         
-        // Prevent pasting non-numeric content
         input.addEventListener('paste', function(e) {
             const pastedData = (e.clipboardData || window.clipboardData).getData('text');
             if (!/^\d*$/.test(pastedData)) {
@@ -760,21 +780,13 @@ $existing_addons_json = json_encode($existing_addons);
             }
         });
         
-        // Allow only digits and navigation keys
         input.addEventListener('keydown', function(e) {
-            // Allow: backspace, delete, tab, escape, enter, arrow keys
             const allowedKeys = [
                 'Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 
                 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'
             ];
-            if (allowedKeys.includes(e.key)) {
-                return;
-            }
-            // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
-            if (e.ctrlKey && ['a', 'c', 'v', 'x'].includes(e.key.toLowerCase())) {
-                return;
-            }
-            // Allow: numbers 0-9
+            if (allowedKeys.includes(e.key)) return;
+            if (e.ctrlKey && ['a', 'c', 'v', 'x'].includes(e.key.toLowerCase())) return;
             if (!/^[0-9]$/.test(e.key)) {
                 e.preventDefault();
             }
@@ -785,14 +797,11 @@ $existing_addons_json = json_encode($existing_addons);
     // CATEGORY FILTER
     // ============================================================
     const categoryBtns = document.querySelectorAll('.category-btn');
-    const categorySections = {
-        'racket': document.getElementById('category-racket'),
-        'shuttlecock': document.getElementById('category-shuttlecock'),
-        'string': document.getElementById('category-string'),
-        'grip': document.getElementById('category-grip'),
-        'snack': document.getElementById('category-snack'),
-        'drink': document.getElementById('category-drink')
-    };
+    const categorySections = {};
+    
+    <?php foreach ($categories as $cat): ?>
+    categorySections['<?php echo htmlspecialchars($cat); ?>'] = document.getElementById('category-<?php echo htmlspecialchars($cat); ?>');
+    <?php endforeach; ?>
     
     function showCategory(category) {
         if (category === 'all') {

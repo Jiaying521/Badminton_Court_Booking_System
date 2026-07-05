@@ -25,10 +25,32 @@ if (isset($_GET['bulk']))                                       { $toasts[] = ['
 
 $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
 
+// ============================================================
+// ★★★ 获取所有分类（优先从 category_config 读取） ★★★
+// ============================================================
 $all_categories = [];
-$cat_result = mysqli_query($conn, "SELECT DISTINCT category FROM products WHERE category <> '' ORDER BY category ASC");
-while ($cat_row = mysqli_fetch_assoc($cat_result)) {
-    $all_categories[] = $cat_row['category'];
+
+// 检查 category_config 表是否存在
+$tableCheck = mysqli_query($conn, "SHOW TABLES LIKE 'category_config'");
+if (mysqli_num_rows($tableCheck) > 0) {
+    // 从 category_config 获取分类（过滤空值）
+    $cat_result = mysqli_query($conn, "SELECT category FROM category_config WHERE is_active = 1 AND category != '' AND category IS NOT NULL ORDER BY sort_order, category");
+    while ($cat_row = mysqli_fetch_assoc($cat_result)) {
+        $all_categories[] = $cat_row['category'];
+    }
+}
+
+// 如果 category_config 没有数据，从 products 表获取
+if (empty($all_categories)) {
+    $cat_result = mysqli_query($conn, "SELECT DISTINCT category FROM products WHERE category != '' AND category IS NOT NULL ORDER BY category ASC");
+    while ($cat_row = mysqli_fetch_assoc($cat_result)) {
+        $all_categories[] = $cat_row['category'];
+    }
+}
+
+// 如果还是没有，使用默认分类
+if (empty($all_categories)) {
+    $all_categories = ['racket', 'shuttlecock', 'grip', 'string', 'snack', 'drink'];
 }
 
 $username     = $_SESSION['username'];
@@ -185,7 +207,7 @@ function getProductImagePath($image_url) {
             font-weight: 700;
             cursor: pointer;
         }
-        /* ── Select toggle button (consistent with Manage Bookings) ── */
+        /* ── Select toggle button ── */
         .btn-bulk-toggle {
             padding: 11px 22px;
             background: linear-gradient(135deg, #f59e0b, #d97706);
@@ -226,7 +248,7 @@ function getProductImagePath($image_url) {
             accent-color: #f59e0b; 
         }
 
-        /* ── Bulk action bar (animated, consistent with Manage Bookings) ── */
+        /* ── Bulk action bar ── */
         .bulk-action-bar {
             display: flex;
             align-items: center;
@@ -306,7 +328,7 @@ function getProductImagePath($image_url) {
             color: #fff; 
         }
 
-        /* ── Inline status pill dropdown (no border) ── */
+        /* ── Inline status pill dropdown ── */
         .data-table select.status-select {
             border-radius: 50px !important;
             padding: 6px 14px;

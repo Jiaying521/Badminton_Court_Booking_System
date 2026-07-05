@@ -1012,6 +1012,35 @@ INSERT INTO `voucher` (`id`, `title`, `discount_amount`, `points_required`, `des
 (6, 'RM 20 New User Voucher', 20.00, 0, 'For new customer user', NULL, NULL, NULL, 1);
 
 --
+-- Table structure for table `category_config`
+--
+CREATE TABLE IF NOT EXISTS `category_config` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `category` varchar(50) NOT NULL,
+  `icon` varchar(50) DEFAULT 'fa-cube',
+  `label` varchar(100) DEFAULT NULL,
+  `max_qty` int(11) DEFAULT 10,
+  `default_image` varchar(255) DEFAULT NULL,
+  `sort_order` int(11) DEFAULT 0,
+  `is_active` tinyint(1) DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_category` (`category`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- 
+-- Dumping data for table `category_config`
+--
+INSERT INTO `category_config` (`category`, `icon`, `label`, `max_qty`, `sort_order`, `is_active`) VALUES
+('racket', 'fa-table-tennis', '🏸 Badminton Rackets', 3, 1, 1),
+('shuttlecock', 'fa-shuttlecock', '🏸 Shuttlecocks', 10, 2, 1),
+('grip', 'fa-hand-peace', '🎾 Grips / Overgrips', 20, 3, 1),
+('string', 'fa-thread', '🧵 Badminton Strings', 20, 4, 1),
+('snack', 'fa-cookie-bite', '🍪 Snacks', 20, 5, 1),
+('drink', 'fa-tint', '🥤 Drinks', 20, 6, 1);
+
+--
 -- Indexes for dumped tables
 --
 

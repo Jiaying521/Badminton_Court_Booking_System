@@ -50,14 +50,151 @@ function uploadImage($file, $category, $upload_base, $category_folders) {
     return false;
 }
 
-/* Add new product */
+// ============================================================
+// ★★★ 自动创建分类配置函数（确保能工作） ★★★
+// ============================================================
+function autoCreateCategoryConfig($conn, $category) {
+    // 如果分类为空，直接返回
+    if (empty($category) || trim($category) === '') {
+        return;
+    }
+    
+    $category_escaped = mysqli_real_escape_string($conn, trim($category));
+    $category_clean = str_replace(['_', '-'], ' ', $category_escaped);
+    $label = '📦 ' . ucfirst($category_clean);
+    
+    // 1. 确保 category_config 表存在
+    mysqli_query($conn, "
+        CREATE TABLE IF NOT EXISTS `category_config` (
+            `id` int(11) NOT NULL AUTO_INCREMENT,
+            `category` varchar(50) NOT NULL,
+            `icon` varchar(50) DEFAULT 'fa-cube',
+            `label` varchar(100) DEFAULT NULL,
+            `max_qty` int(11) DEFAULT 10,
+            `default_image` varchar(255) DEFAULT NULL,
+            `sort_order` int(11) DEFAULT 0,
+            `is_active` tinyint(1) DEFAULT 1,
+            `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+            `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+            PRIMARY KEY (`id`),
+            UNIQUE KEY `unique_category` (`category`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+    ");
+    
+    // 2. 检查分类是否已有配置
+    $check = mysqli_query($conn, "SELECT COUNT(*) FROM category_config WHERE category = '$category_escaped'");
+    $row = mysqli_fetch_row($check);
+    if ($row[0] > 0) {
+        return; // 已有配置，跳过
+    }
+    
+    // 3. 智能匹配图标和标签
+    $lowerCat = strtolower($category_escaped);
+    
+    // 图标映射
+    $iconMap = [
+        'racket' => 'fa-table-tennis',
+        'shuttlecock' => 'fa-shuttlecock',
+        'grip' => 'fa-hand-peace',
+        'string' => 'fa-thread',
+        'snack' => 'fa-cookie-bite',
+        'drink' => 'fa-tint',
+        'shoe' => 'fa-shoe-prints',
+        'shoes' => 'fa-shoe-prints',
+        'footwear' => 'fa-shoe-prints',
+        'cloth' => 'fa-tshirt',
+        'clothes' => 'fa-tshirt',
+        'apparel' => 'fa-tshirt',
+        'jersey' => 'fa-tshirt',
+        'bag' => 'fa-bag-shopping',
+        'bags' => 'fa-bag-shopping',
+        'accessory' => 'fa-headphones',
+        'accessories' => 'fa-headphones',
+        'ball' => 'fa-futbol',
+        'book' => 'fa-book',
+        'equipment' => 'fa-tools',
+        'gear' => 'fa-tools',
+    ];
+    
+    // 标签映射（带 emoji）
+    $labelMap = [
+        'racket' => '🏸 Badminton Rackets',
+        'shuttlecock' => '🏸 Shuttlecocks',
+        'grip' => '🎾 Grips / Overgrips',
+        'string' => '🧵 Badminton Strings',
+        'snack' => '🍪 Snacks',
+        'drink' => '🥤 Drinks',
+        'shoe' => '👟 Badminton Shoes',
+        'shoes' => '👟 Badminton Shoes',
+        'footwear' => '👟 Footwear',
+        'cloth' => '👕 Apparel',
+        'clothes' => '👕 Apparel',
+        'apparel' => '👕 Apparel',
+        'jersey' => '👕 Jerseys',
+        'bag' => '🎒 Bags',
+        'bags' => '🎒 Bags',
+        'accessory' => '🧤 Accessories',
+        'accessories' => '🧤 Accessories',
+        'ball' => '⚽ Balls',
+        'book' => '📚 Books',
+        'equipment' => '🔧 Equipment',
+        'gear' => '🔧 Gear',
+    ];
+    
+    $icon = 'fa-cube';
+    $label_final = '📦 ' . ucfirst($category_clean);
+    
+    foreach ($iconMap as $key => $value) {
+        if (strpos($lowerCat, $key) !== false) {
+            $icon = $value;
+            break;
+        }
+    }
+    
+    foreach ($labelMap as $key => $value) {
+        if (strpos($lowerCat, $key) !== false) {
+            $label_final = $value;
+            break;
+        }
+    }
+    
+    // 4. 获取最大排序
+    $sortResult = mysqli_query($conn, "SELECT MAX(sort_order) as max_order FROM category_config");
+    $sortRow = mysqli_fetch_assoc($sortResult);
+    $sortOrder = ($sortRow['max_order'] ?? 0) + 1;
+    
+    // 5. 插入配置
+    $icon_escaped = mysqli_real_escape_string($conn, $icon);
+    $label_escaped = mysqli_real_escape_string($conn, $label_final);
+    
+    $insert = mysqli_query($conn, "
+        INSERT INTO category_config (category, icon, label, max_qty, sort_order, is_active) 
+        VALUES ('$category_escaped', '$icon_escaped', '$label_escaped', 10, $sortOrder, 1)
+    ");
+    
+    // 6. 记录日志
+    if ($insert) {
+        logActivity($conn, 'Create', 'Category Config', "Auto-created category config: $category (icon: $icon, label: $label_final)");
+    }
+    
+    return $insert;
+}
+
+// ============================================================
+// ADD NEW PRODUCT
+// ============================================================
 if (isset($_POST['add_product'])) {
     $name        = mysqli_real_escape_string($conn, trim($_POST['name']));
-    $category    = mysqli_real_escape_string($conn, $_POST['category']);
+    $category    = mysqli_real_escape_string($conn, trim($_POST['category']));
     $price       = floatval($_POST['price']);
     $stock       = intval($_POST['stock']);
     $description = mysqli_real_escape_string($conn, trim($_POST['description']));
     $is_active   = ($stock > 0) ? 1 : 0;
+
+    // 如果分类为空，使用默认值
+    if (empty($category)) {
+        $category = 'uncategorized';
+    }
 
     $image_url = '';
     if (!empty($_FILES['image']['name'])) {
@@ -69,25 +206,45 @@ if (isset($_POST['add_product'])) {
         $image_url = $result;
     }
 
-    mysqli_query($conn, "
+    // 插入产品
+    $insert_product = mysqli_query($conn, "
         INSERT INTO products (category, name, description, price, image_url, stock, is_active)
         VALUES ('$category', '$name', '$description', '$price', '$image_url', '$stock', '$is_active')
     ");
+
+    if (!$insert_product) {
+        // 插入失败，记录错误
+        error_log("Product insert failed: " . mysqli_error($conn));
+        header("Location: ManageAddOns.php?error=db");
+        exit();
+    }
+
+    // ============================================================
+    // ★★★ 自动创建分类配置（核心功能） ★★★
+    // ============================================================
+    autoCreateCategoryConfig($conn, $category);
 
     logActivity($conn, 'Create', 'Add-On Management', "Added product: $name (category: $category, price: RM$price)");
     header("Location: ManageAddOns.php?success=added");
     exit();
 }
 
-/* Update existing product */
+// ============================================================
+// UPDATE PRODUCT
+// ============================================================
 if (isset($_POST['update_product'])) {
     $id          = intval($_POST['product_id']);
     $name        = mysqli_real_escape_string($conn, trim($_POST['name']));
-    $category    = mysqli_real_escape_string($conn, $_POST['category']);
+    $category    = mysqli_real_escape_string($conn, trim($_POST['category']));
     $price       = floatval($_POST['price']);
     $stock       = intval($_POST['stock']);
     $description = mysqli_real_escape_string($conn, trim($_POST['description']));
     $is_active   = ($stock > 0) ? 1 : 0;
+
+    // 如果分类为空，使用默认值
+    if (empty($category)) {
+        $category = 'uncategorized';
+    }
 
     $image_sql = '';
     if (!empty($_FILES['image']['name'])) {
@@ -112,12 +269,19 @@ if (isset($_POST['update_product'])) {
         WHERE id = $id
     ");
 
+    // ============================================================
+    // ★★★ 自动创建分类配置（如果分类改变了） ★★★
+    // ============================================================
+    autoCreateCategoryConfig($conn, $category);
+
     logActivity($conn, 'Update', 'Add-On Management', "Updated product: $name (ID $id)");
     header("Location: ManageAddOns.php?success=updated");
     exit();
 }
 
-/* Delete product */
+// ============================================================
+// DELETE PRODUCT
+// ============================================================
 if (isset($_POST['delete_product'])) {
     $id = intval($_POST['product_id_delete']);
 
@@ -137,7 +301,9 @@ if (isset($_POST['delete_product'])) {
     exit();
 }
 
-/* Toggle a single product's active status */
+// ============================================================
+// TOGGLE STATUS
+// ============================================================
 if (isset($_POST['toggle_status'])) {
     $id  = intval($_POST['product_id']);
     $new = intval($_POST['new_status']) === 1 ? 1 : 0;
@@ -153,7 +319,9 @@ if (isset($_POST['toggle_status'])) {
     exit();
 }
 
-/* Bulk actions: activate / deactivate / delete selected products */
+// ============================================================
+// BULK ACTIONS
+// ============================================================
 if (isset($_POST['bulk_action'])) {
     $ids  = isset($_POST['ids']) ? array_map('intval', (array)$_POST['ids']) : [];
     $type = $_POST['bulk_type'] ?? '';
@@ -186,3 +354,4 @@ if (isset($_POST['bulk_action'])) {
 
 header("Location: ManageAddOns.php");
 exit();
+?>
