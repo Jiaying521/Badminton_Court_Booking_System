@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 16, 2026 at 08:59 AM
+-- Generation Time: Jul 05, 2026 at 09:40 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -119,7 +119,26 @@ INSERT INTO `activity_logs` (`id`, `user_id`, `username`, `role`, `action`, `mod
 (73, 1, 'superadmin', 'Superadmin', 'Status Change', 'Booking Management', 'Booking #64 (Chai Ming En at Court A): Confirmed → Cancelled', '::1', '2026-06-16 08:50:17'),
 (74, 1, 'superadmin', 'Superadmin', 'Delete', 'Booking Management', 'Bulk deleted 1 booking(s): IDs 64', '::1', '2026-06-16 08:50:27'),
 (75, 1, 'superadmin', 'Superadmin', 'Logout', 'Auth', 'User logged out.', '::1', '2026-06-16 08:51:44'),
-(76, 10, 'GAN JIA YING', 'Admin', 'Login', 'Auth', 'User logged in successfully.', '::1', '2026-06-16 08:51:48');
+(76, 10, 'GAN JIA YING', 'Admin', 'Login', 'Auth', 'User logged in successfully.', '::1', '2026-06-16 08:51:48'),
+(77, 1, 'superadmin', 'Superadmin', 'Login', 'Auth', 'User logged in successfully.', '::1', '2026-06-20 15:21:44'),
+(78, 1, 'superadmin', 'Superadmin', 'Logout', 'Auth', 'User logged out.', '::1', '2026-06-20 15:54:54'),
+(79, 1, 'superadmin', 'Superadmin', 'Login', 'Auth', 'User logged in successfully.', '::1', '2026-06-22 16:05:32'),
+(80, 1, 'superadmin', 'Superadmin', 'Login', 'Auth', 'User logged in successfully.', '::1', '2026-06-25 06:36:56'),
+(81, NULL, 'superadmin', NULL, 'Login Failed', 'Auth', 'Failed login attempt for username: superadmin', '::1', '2026-06-29 11:03:30'),
+(82, 1, 'superadmin', 'Superadmin', 'Login', 'Auth', 'User logged in successfully.', '::1', '2026-06-29 11:03:34'),
+(83, 1, 'superadmin', 'Superadmin', 'Logout', 'Auth', 'User logged out.', '::1', '2026-06-29 11:14:07'),
+(84, 2, 'Coach Lim', 'Coach', 'Login', 'Auth', 'User logged in successfully.', '::1', '2026-06-29 11:14:11'),
+(85, 2, 'Coach Lim', 'Coach', 'Logout', 'Auth', 'User logged out.', '::1', '2026-06-29 11:14:18'),
+(86, 2, 'Coach Lim', 'Coach', 'Login', 'Auth', 'User logged in successfully.', '::1', '2026-06-29 11:14:26'),
+(87, 2, 'Coach Lim', 'Coach', 'Logout', 'Auth', 'User logged out.', '::1', '2026-06-29 11:14:38'),
+(88, NULL, 'superadmin', NULL, 'Login Failed', 'Auth', 'Failed login attempt for username: superadmin', '::1', '2026-06-29 11:14:43'),
+(89, 1, 'superadmin', 'Superadmin', 'Login', 'Auth', 'User logged in successfully.', '::1', '2026-06-29 11:14:46'),
+(90, 1, 'superadmin', 'Superadmin', 'Logout', 'Auth', 'User logged out.', '::1', '2026-06-29 11:19:01'),
+(91, 2, 'Coach Lim', 'Coach', 'Login', 'Auth', 'User logged in successfully.', '::1', '2026-06-29 11:19:05'),
+(92, 1, 'superadmin', 'Superadmin', 'Login', 'Auth', 'User logged in successfully.', '::1', '2026-07-01 10:49:46'),
+(93, 1, 'superadmin', 'Superadmin', 'Login', 'Auth', 'User logged in successfully.', '::1', '2026-07-02 16:47:19'),
+(94, 1, 'superadmin', 'Superadmin', 'Login', 'Auth', 'User logged in successfully.', '::1', '2026-07-03 15:08:15'),
+(95, 1, 'superadmin', 'Superadmin', 'Login', 'Auth', 'User logged in successfully.', '::1', '2026-07-05 09:04:46');
 
 -- --------------------------------------------------------
 
@@ -689,13 +708,13 @@ INSERT INTO `notifications` (`id`, `recipient_role`, `recipient_id`, `type`, `ti
 (54, 'Admin', NULL, 'confirmed', 'Booking Paid & Confirmed', 'Booking #66 from Chai Ming En has been paid and confirmed.', 66, 'booking', 0, '2026-06-16 06:33:07'),
 (55, 'Superadmin', NULL, 'confirmed', 'Booking Paid & Confirmed', 'Booking #66 from Chai Ming En has been paid and confirmed.', 66, 'booking', 1, '2026-06-16 06:33:07'),
 (56, 'Admin', NULL, 'cancelled', 'Booking Cancelled', 'Booking #64 for Chai Ming En at Court A on 23 Jun 2026 has been cancelled.', 64, 'booking', 0, '2026-06-16 06:50:03'),
-(57, 'Superadmin', NULL, 'cancelled', 'Booking Cancelled', 'Booking #64 for Chai Ming En at Court A on 23 Jun 2026 has been cancelled.', 64, 'booking', 0, '2026-06-16 06:50:03'),
+(57, 'Superadmin', NULL, 'cancelled', 'Booking Cancelled', 'Booking #64 for Chai Ming En at Court A on 23 Jun 2026 has been cancelled.', 64, 'booking', 1, '2026-06-16 06:50:03'),
 (58, 'Admin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #64 for Chai Ming En at Court A on 23 Jun 2026 10:00 AM has been confirmed.', 64, 'booking', 0, '2026-06-16 06:50:14'),
-(59, 'Superadmin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #64 for Chai Ming En at Court A on 23 Jun 2026 10:00 AM has been confirmed.', 64, 'booking', 0, '2026-06-16 06:50:14'),
+(59, 'Superadmin', NULL, 'confirmed', 'Booking Confirmed', 'Booking #64 for Chai Ming En at Court A on 23 Jun 2026 10:00 AM has been confirmed.', 64, 'booking', 1, '2026-06-16 06:50:14'),
 (60, 'Admin', NULL, 'cancelled', 'Booking Cancelled', 'Booking #64 for Chai Ming En at Court A on 23 Jun 2026 has been cancelled.', 64, 'booking', 0, '2026-06-16 06:50:17'),
-(61, 'Superadmin', NULL, 'cancelled', 'Booking Cancelled', 'Booking #64 for Chai Ming En at Court A on 23 Jun 2026 has been cancelled.', 64, 'booking', 0, '2026-06-16 06:50:17'),
+(61, 'Superadmin', NULL, 'cancelled', 'Booking Cancelled', 'Booking #64 for Chai Ming En at Court A on 23 Jun 2026 has been cancelled.', 64, 'booking', 1, '2026-06-16 06:50:17'),
 (62, 'Admin', NULL, 'confirmed', 'Booking Paid & Confirmed', 'Booking #68 from Chai Ming En has been paid and confirmed. Add-ons: RM 55.00', 68, 'booking', 0, '2026-06-16 06:57:25'),
-(63, 'Superadmin', NULL, 'confirmed', 'Booking Paid & Confirmed', 'Booking #68 from Chai Ming En has been paid and confirmed.', 68, 'booking', 0, '2026-06-16 06:57:25');
+(63, 'Superadmin', NULL, 'confirmed', 'Booking Paid & Confirmed', 'Booking #68 from Chai Ming En has been paid and confirmed.', 68, 'booking', 1, '2026-06-16 06:57:25');
 
 -- --------------------------------------------------------
 
@@ -782,7 +801,7 @@ INSERT INTO `payments` (`payment_id`, `booking_id`, `amount`, `discount_applied`
 
 CREATE TABLE `products` (
   `id` int(11) NOT NULL,
-  `category` enum('racket','string','shuttlecock','grip','snack','drink') NOT NULL,
+  `category` varchar(50) NOT NULL,
   `name` varchar(100) NOT NULL,
   `description` text DEFAULT NULL,
   `price` decimal(10,2) NOT NULL,
@@ -935,7 +954,7 @@ INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `gender`, `crea
 (9, 'Jason Teh', 'jason@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60199001122', NULL, '2026-04-30 16:34:47', 0.00, 0, 0, NULL),
 (10, 'Nurul Huda', 'nurul@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2...', '+60110101010', NULL, '2026-04-30 16:34:47', 0.00, 0, 0, NULL),
 (11, 'wz', 'zhefurry@gmail.com', '$2y$10$ti8t5iVME5.hWJhMY0cE5ukBX67z0z4xPn8HL0pskzUS9Kn0PL9iS', '+60123456789', NULL, '2026-04-14 03:28:20', 260.00, 0, 0, ''),
-(12, 'CHIN ZHEN XIN', 'chinzx1814@gmail.com', '$2y$10$JCc6Tn0hxcgIcqRxr6q5AeLo071m.WGAWVi6gegpajbaHHmdQid/6', '+60136973118', NULL, '2026-06-07 11:59:31', 1692.00, 1702, 0, 'Pictures/Admin_Module/users/user_12_1781193862.jpg'),
+(12, 'CHIN ZHEN XIN', 'chinzx1814@gmail.com', '$2y$10$JCc6Tn0hxcgIcqRxr6q5AeLo071m.WGAWVi6gegpajbaHHmdQid/6', '+60136973118', NULL, '2026-06-07 11:59:31', 1692.00, 1702, 0, 'Pictures/Admin_Module/users/user_12_1781628507.png'),
 (13, 'Chai Ming En', 'chaimingen1@gmail.com', '$2y$10$R6yA3mQlUTusSw85hd3rz.AeU0F5W7b5289TrLcB7QEVLpLIh8w8i', '+60163560830', NULL, '2026-06-16 06:26:58', 99945.00, 55, 0, NULL);
 
 -- --------------------------------------------------------
@@ -1158,7 +1177,7 @@ ALTER TABLE `voucher`
 -- AUTO_INCREMENT for table `activity_logs`
 --
 ALTER TABLE `activity_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=77;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=96;
 
 --
 -- AUTO_INCREMENT for table `admins`

@@ -25,7 +25,12 @@ $category_folders = [
 function uploadImage($file, $category, $upload_base, $category_folders) {
     if (empty($file['name'])) return null;
 
-    $subfolder = isset($category_folders[$category]) ? $category_folders[$category] : '';
+    if (isset($category_folders[$category])) {
+        $subfolder = $category_folders[$category];
+    } else {
+        $safe_cat  = preg_replace('/[^a-z0-9]/', '', strtolower($category));
+        $subfolder = $safe_cat !== '' ? $safe_cat . 's/' : '';
+    }
     $dir       = $upload_base . $subfolder;
 
     if (!is_dir($dir)) mkdir($dir, 0755, true);

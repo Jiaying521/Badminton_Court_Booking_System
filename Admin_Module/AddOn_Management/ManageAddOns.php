@@ -25,6 +25,12 @@ if (isset($_GET['bulk']))                                       { $toasts[] = ['
 
 $conn = mysqli_connect("localhost", "root", "", "badminton_hub");
 
+$all_categories = [];
+$cat_result = mysqli_query($conn, "SELECT DISTINCT category FROM products WHERE category <> '' ORDER BY category ASC");
+while ($cat_row = mysqli_fetch_assoc($cat_result)) {
+    $all_categories[] = $cat_row['category'];
+}
+
 $username     = $_SESSION['username'];
 $role         = $_SESSION['role'];
 $display_name = $username;
@@ -207,8 +213,19 @@ function getProductImagePath($image_url) {
             box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
         }
         /* ── Checkbox column ── */
-        .bulk-col { display: none; width: 40px; padding: 12px 8px 12px 14px; }
-        .bulk-col input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: #f59e0b; }
+        .bulk-col { 
+            display: none; 
+            width: 40px; 
+            padding: 12px 8px 12px 14px; 
+        }
+
+        .bulk-col input[type="checkbox"] { 
+            width: 16px; 
+            height: 16px; 
+            cursor: pointer; 
+            accent-color: #f59e0b; 
+        }
+
         /* ── Bulk action bar (animated, consistent with Manage Bookings) ── */
         .bulk-action-bar {
             display: flex;
@@ -225,9 +242,23 @@ function getProductImagePath($image_url) {
             opacity: 0;
             transition: max-height 0.35s ease, opacity 0.35s ease, padding 0.35s ease;
         }
-        .bulk-action-bar.show { max-height: 60px; padding: 12px 20px; opacity: 1; }
-        #bulkCount { font-size: 14px; font-weight: 700; color: #d97706; }
-        .bulk-action-btns { display: flex; gap: 8px; }
+        .bulk-action-bar.show { 
+            max-height: 60px; 
+            padding: 12px 20px; 
+            opacity: 1; 
+        }
+
+        #bulkCount { 
+            font-size: 14px; 
+            font-weight: 700; 
+            color: #d97706; 
+        }
+
+        .bulk-action-btns { 
+            display: flex; 
+            gap: 8px; 
+        }
+
         .bulk-btn {
             padding: 7px 18px;
             border: none;
@@ -241,12 +272,40 @@ function getProductImagePath($image_url) {
             gap: 6px;
             transition: all 0.2s;
         }
-        .bulk-activate { background: #fff; color: #16a34a; border: 1.5px solid #16a34a; }
-        .bulk-activate:hover { background: #16a34a; color: #fff; }
-        .bulk-deactivate { background: #fff; color: #475569; border: 1.5px solid #cbd5e1; }
-        .bulk-deactivate:hover { background: #f1f5f9; border-color: #94a3b8; }
-        .bulk-delete { background: #fff; color: #dc2626; border: 1.5px solid #dc2626; }
-        .bulk-delete:hover { background: #dc2626; color: #fff; }
+
+        .bulk-activate { 
+            background: #fff; 
+            color: #16a34a; 
+            border: 1.5px solid #16a34a; 
+        }
+
+        .bulk-activate:hover { 
+            background: #16a34a; 
+            color: #fff; 
+        }
+
+        .bulk-deactivate { 
+            background: #fff; 
+            color: #475569; 
+            border: 1.5px solid #cbd5e1; 
+        }
+
+        .bulk-deactivate:hover { 
+            background: #f1f5f9; 
+            border-color: #94a3b8; 
+        }
+
+        .bulk-delete { 
+            background: #fff; 
+            color: #dc2626; 
+            border: 1.5px solid #dc2626; 
+        }
+
+        .bulk-delete:hover { 
+            background: #dc2626; 
+            color: #fff; 
+        }
+
         /* ── Inline status pill dropdown (no border) ── */
         .data-table select.status-select {
             border-radius: 50px !important;
@@ -262,9 +321,81 @@ function getProductImagePath($image_url) {
             -moz-appearance: none;
             appearance: none;
         }
-        .data-table select.status-select.st-active   { background-color: #dcfce7; color: #16a34a; }
-        .data-table select.status-select.st-inactive { background-color: #fef3c7; color: #d97706; }
-        .data-table select.status-select:hover { filter: brightness(0.97); }
+        .data-table select.status-select.st-active { 
+            background-color: #dcfce7; 
+            color: #16a34a; 
+        }
+
+        .data-table select.status-select.st-inactive { 
+            background-color: #fef3c7; 
+            color: #d97706; 
+        }
+
+        .data-table select.status-select:hover { 
+            filter: brightness(0.97); 
+        }
+
+        .cat-dropdown { 
+            position: relative; 
+        }
+
+        .cat-dropdown-input {
+            width: 100%;
+            padding: 9px 13px;
+            border: 1.5px solid var(--border);
+            border-radius: 9px;
+            font-size: 13px;
+            font-family: 'Outfit', sans-serif;
+            outline: none;
+            background-color: #fff;
+            color: #1f2937;
+            box-sizing: border-box;
+        }
+        .cat-dropdown.open .cat-dropdown-input,
+        .cat-dropdown-input:focus { 
+            border-color: var(--primary); 
+        }
+
+        .cat-dropdown-panel {
+            display: none;
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0; right: 0;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            z-index: 50;
+            max-height: 240px;
+            overflow-y: auto;
+            padding: 6px;
+        }
+        .cat-dropdown.open .cat-dropdown-panel { 
+            display: block; 
+        }
+
+        .cat-option {
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1f2937;
+            cursor: pointer;
+            text-transform: capitalize;
+        }
+        .cat-option:hover { 
+            background: #fff7e6; 
+        }
+
+        .cat-option.selected {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #fff;
+        }
+        .cat-option-new {
+            color: #d97706;
+            border-top: 1px solid var(--border);
+            margin-top: 4px;
+            padding-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -303,12 +434,11 @@ function getProductImagePath($image_url) {
                         <label>Category</label>
                         <select name="category">
                             <option value="">All Categories</option>
-                            <option value="racket"      <?php echo ($filter_category === 'racket')      ? 'selected' : ''; ?>>Racket</option>
-                            <option value="shuttlecock" <?php echo ($filter_category === 'shuttlecock') ? 'selected' : ''; ?>>Shuttlecock</option>
-                            <option value="string"      <?php echo ($filter_category === 'string')      ? 'selected' : ''; ?>>String</option>
-                            <option value="grip"        <?php echo ($filter_category === 'grip')        ? 'selected' : ''; ?>>Grip</option>
-                            <option value="snack"       <?php echo ($filter_category === 'snack')       ? 'selected' : ''; ?>>Snack</option>
-                            <option value="drink"       <?php echo ($filter_category === 'drink')       ? 'selected' : ''; ?>>Drink</option>
+                            <?php foreach ($all_categories as $cat): ?>
+                                <option value="<?php echo htmlspecialchars($cat); ?>" <?php echo ($filter_category === $cat) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars(ucfirst($cat)); ?>
+                                </option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="filter-field">
@@ -355,15 +485,14 @@ function getProductImagePath($image_url) {
                 <tbody>
                     <?php while ($row = mysqli_fetch_assoc($result)): ?>
 
-                    <tr class="main-row" onclick="openAddonModal(
-                        <?php echo $row['id']; ?>,
-                        '<?php echo addslashes($row['name']); ?>',
-                        '<?php echo addslashes($row['category']); ?>',
-                        '<?php echo $row['price']; ?>',
-                        '<?php echo $row['stock']; ?>',
-                        '<?php echo addslashes($row['description'] ?? ''); ?>',
-                        '<?php echo addslashes($row['image_url'] ?? ''); ?>'
-                    )">
+                    <tr class="main-row"
+                        data-id="<?php echo $row['id']; ?>"
+                        data-name="<?php echo htmlspecialchars($row['name'], ENT_QUOTES); ?>"
+                        data-category="<?php echo htmlspecialchars($row['category'], ENT_QUOTES); ?>"
+                        data-price="<?php echo $row['price']; ?>"
+                        data-stock="<?php echo $row['stock']; ?>"
+                        data-description="<?php echo htmlspecialchars($row['description'] ?? '', ENT_QUOTES); ?>"
+                        data-image="<?php echo htmlspecialchars($row['image_url'] ?? '', ENT_QUOTES); ?>">
                         <td class="bulk-col" onclick="event.stopPropagation()">
                             <input type="checkbox" name="ids[]" value="<?php echo $row['id']; ?>" class="row-check" onchange="updateSelCount()">
                         </td>
@@ -416,7 +545,7 @@ function getProductImagePath($image_url) {
                 <button class="modal-close" onclick="closeAddonModal()">✕</button>
             </div>
 
-            <form action="save_addon.php" method="POST" enctype="multipart/form-data">
+            <form action="save_addon.php" method="POST" enctype="multipart/form-data" onsubmit="return validateCategorySelected('edit')">
                 <input type="hidden" name="product_id" id="modal-product-id">
 
                 <div class="modal-grid">
@@ -428,14 +557,21 @@ function getProductImagePath($image_url) {
 
                     <div class="modal-field">
                         <label>Category</label>
-                        <select name="category" id="modal-category" required>
-                            <option value="racket">Racket</option>
-                            <option value="shuttlecock">Shuttlecock</option>
-                            <option value="string">String</option>
-                            <option value="grip">Grip</option>
-                            <option value="snack">Snack</option>
-                            <option value="drink">Drink</option>
-                        </select>
+                        <div class="cat-dropdown" id="edit-cat-dropdown">
+                            <input type="text" class="cat-dropdown-input" id="edit-cat-input"
+                                placeholder="Search or type new category" autocomplete="off"
+                                oninput="filterCatDropdown('edit')"
+                                onfocus="openCatDropdown('edit')">
+                            <input type="hidden" name="category" id="edit-cat-value">
+                            <div class="cat-dropdown-panel" id="edit-cat-panel">
+                                <?php foreach ($all_categories as $cat): ?>
+                                    <div class="cat-option" data-value="<?php echo htmlspecialchars($cat); ?>"
+                                        onclick="selectCatOption('edit', '<?php echo htmlspecialchars(addslashes($cat)); ?>')">
+                                        <?php echo htmlspecialchars($cat); ?>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="modal-field">
@@ -490,7 +626,7 @@ function getProductImagePath($image_url) {
                 <button class="modal-close" type="button" onclick="closeAddAddonModal()">✕</button>
             </div>
 
-            <form action="save_addon.php" method="POST" enctype="multipart/form-data">
+            <form action="save_addon.php" method="POST" enctype="multipart/form-data" onsubmit="return validateCategorySelected('add')">
                 <div class="modal-grid">
 
                     <div class="modal-field">
@@ -500,15 +636,21 @@ function getProductImagePath($image_url) {
 
                     <div class="modal-field">
                         <label>Category</label>
-                        <select name="category" required>
-                            <option value="" disabled selected>Select Category</option>
-                            <option value="racket">Racket</option>
-                            <option value="shuttlecock">Shuttlecock</option>
-                            <option value="string">String</option>
-                            <option value="grip">Grip</option>
-                            <option value="snack">Snack</option>
-                            <option value="drink">Drink</option>
-                        </select>
+                        <div class="cat-dropdown" id="add-cat-dropdown">
+                            <input type="text" class="cat-dropdown-input" id="add-cat-input"
+                                placeholder="Search or type new category" autocomplete="off"
+                                oninput="filterCatDropdown('add')"
+                                onfocus="openCatDropdown('add')">
+                            <input type="hidden" name="category" id="add-cat-value">
+                            <div class="cat-dropdown-panel" id="add-cat-panel">
+                                <?php foreach ($all_categories as $cat): ?>
+                                    <div class="cat-option" data-value="<?php echo htmlspecialchars($cat); ?>"
+                                        onclick="selectCatOption('add', '<?php echo htmlspecialchars(addslashes($cat)); ?>')">
+                                        <?php echo htmlspecialchars($cat); ?>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="modal-field">

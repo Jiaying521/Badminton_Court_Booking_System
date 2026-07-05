@@ -2,6 +2,7 @@
 session_start();
 
 /* --- Logout Logic --- */
+// === 意思是强制不要自动转换格式，因为 == php有时候会自己转换格式，误把string串当成int，导致判断错误
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
     if (isset($_SESSION['username'])) {
         $log_conn = mysqli_connect("localhost", "root", "", "badminton_hub");
@@ -378,7 +379,7 @@ if ($q_dates) {
     <main class="content">
         <header class="dashboard-header">
             <div class="welcome-section">
-                <h1>Welcome, <?php echo htmlspecialchars($display_name); ?>!</h1>
+                <h1>Welcome, <?php echo htmlspecialchars($display_name); ?>!</h1> <!-- htmlspecialchars() 是把符号转换成普通string 例如：“ 变成&quot来传去其他地方调用，这可以避免XSS攻击-->
                 <p>Status: <span class="status-online">● Online</span> | Role: <?php echo strtoupper($role); ?></p>
             </div>
             
@@ -566,8 +567,8 @@ if ($q_dates) {
     <!-- Dashboard Scripts -->
     <script src="Dashboard.js"></script>
 
-    <!-- Scroll-to-top -->
-    <?php include __DIR__ . '/../scroll_top.php'; ?>
+    <!-- Scroll-to-top (DIR意思：自动补这个文件所在的文件夹路径；如果是FILE：是自动补文件的完整路径包括它本身)-->
+    <?php include __DIR__ . '/../scroll_top.php'; ?>  
 
     <!-- Toast notifications -->
     <?php include __DIR__ . '/../toast/toast.php'; ?>

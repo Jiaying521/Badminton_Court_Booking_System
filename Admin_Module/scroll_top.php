@@ -40,8 +40,8 @@
 (function () {
     const btn = document.getElementById('scrollTopBtn');
     if (!btn) return;
-    window.addEventListener('scroll', function () {
-        btn.classList.toggle('show', window.scrollY > 300);
+    window.addEventListener('scroll', function () { // 监听website滚动事件
+        btn.classList.toggle('show', window.scrollY > 300); // Scroll超过多少才会显示
     });
 })();
 </script>
