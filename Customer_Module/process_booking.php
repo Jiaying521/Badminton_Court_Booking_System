@@ -24,21 +24,21 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     $end_time = date('H:i:s', strtotime($start_time) + ($total_hours * 3600));
     
-    // 获取场地信息
+    // get court details
     $court_stmt = $pdo->prepare("SELECT court_name, court_type FROM courts WHERE id = ?");
     $court_stmt->execute([$court_id]);
     $court = $court_stmt->fetch();
     $court_name = $court['court_name'] ?? 'Court';
     $court_type = $court['court_type'] ?? 'Standard';
     
-    // 获取用户信息
+    // get user details
     $user_stmt = $pdo->prepare("SELECT name, email FROM users WHERE id = ?");
     $user_stmt->execute([$user_id]);
     $user = $user_stmt->fetch();
     $user_name = $user['name'] ?? 'Customer';
     $user_email = $user['email'] ?? '';
     
-    // 检查时段是否已被预订
+    // check if the time slot is available
     $check = $pdo->prepare("
         SELECT id FROM bookings 
         WHERE court_id = ? AND booking_date = ? AND status NOT IN ('Cancelled')
@@ -74,7 +74,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
         $booking_id = $pdo->lastInsertId();
         $pdo->commit();
         
-        // 只重定向到 add-ons 页面，不发送任何邮件
+        // only redirect to the add-ons page, do not send any emails
         header("Location: addons.php?booking_id=" . $booking_id);
         exit;
         
