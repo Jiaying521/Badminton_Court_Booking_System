@@ -425,6 +425,138 @@ $court_photos = getAllCourtImages($court);
         }
         
         /* ============================================================
+           LIGHTBOX STYLES
+        ============================================================ */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .lightbox.active {
+            display: flex;
+            opacity: 1;
+        }
+        
+        .lightbox-content {
+            max-width: 90%;
+            max-height: 85vh;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+            object-fit: contain;
+        }
+        
+        .lightbox.active .lightbox-content {
+            transform: scale(1);
+        }
+        
+        .lightbox-close {
+            position: fixed;
+            top: 25px;
+            right: 35px;
+            color: white;
+            font-size: 40px;
+            font-weight: 300;
+            cursor: pointer;
+            z-index: 10000;
+            background: none;
+            border: none;
+            transition: transform 0.3s ease;
+        }
+        
+        .lightbox-close:hover {
+            transform: rotate(90deg);
+        }
+        
+        .lightbox-caption {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            font-weight: 500;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px 20px;
+            border-radius: 30px;
+            backdrop-filter: blur(5px);
+            z-index: 10000;
+            text-align: center;
+        }
+        
+        .lightbox-nav {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-size: 45px;
+            cursor: pointer;
+            z-index: 10000;
+            background: rgba(0, 0, 0, 0.3);
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+        
+        .lightbox-nav:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        .lightbox-nav.prev {
+            left: 25px;
+        }
+        
+        .lightbox-nav.next {
+            right: 25px;
+        }
+        
+        .lightbox-counter {
+            position: fixed;
+            top: 25px;
+            left: 35px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 16px;
+            font-weight: 500;
+            z-index: 10000;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 6px 16px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+        }
+        
+        @media (max-width: 768px) {
+            .lightbox-nav {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+            }
+            .lightbox-nav.prev { left: 10px; }
+            .lightbox-nav.next { right: 10px; }
+            .lightbox-close { top: 15px; right: 20px; font-size: 30px; }
+            .lightbox-counter { top: 15px; left: 20px; font-size: 12px; }
+            .lightbox-caption { font-size: 12px; padding: 6px 16px; bottom: 20px; }
+        }
+        
+        /* ============================================================
            DATE PICKER
         ============================================================ */
         #datepicker {
@@ -939,6 +1071,18 @@ $court_photos = getAllCourtImages($court);
 </div>
 
 <!-- ============================================================
+     LIGHTBOX - Photo Viewer
+============================================================ -->
+<div class="lightbox" id="lightbox">
+    <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+    <span class="lightbox-counter" id="lightboxCounter">1 / 1</span>
+    <button class="lightbox-nav prev" onclick="navigateLightbox(-1)">&#10094;</button>
+    <button class="lightbox-nav next" onclick="navigateLightbox(1)">&#10095;</button>
+    <img class="lightbox-content" id="lightboxImage" src="" alt="Court photo">
+    <div class="lightbox-caption" id="lightboxCaption">Court Photo</div>
+</div>
+
+<!-- ============================================================
      JAVASCRIPT FUNCTIONS
 ============================================================ -->
 <script>
@@ -986,13 +1130,89 @@ $court_photos = getAllCourtImages($court);
     const coachHoursList = document.getElementById('coachHoursList');
     
     // ============================================================
-    // PHOTO GALLERY - Click to highlight
+    // LIGHTBOX - Photo Viewer (修复版)
     // ============================================================
-    document.querySelectorAll('.photo-card').forEach(card => {
-        card.addEventListener('click', function() {
-            document.querySelectorAll('.photo-card').forEach(c => c.classList.remove('active'));
-            this.classList.add('active');
+    let lightboxImages = [];
+    let currentImageIndex = 0;
+
+    // 点击图片打开 Lightbox
+    document.querySelectorAll('.photo-card').forEach((card, index) => {
+        card.addEventListener('click', function(e) {
+            if (e.target.tagName === 'IMG' || e.target.closest('img')) {
+                openLightbox(index);
+            }
         });
+    });
+
+    function openLightbox(index) {
+        const photoCards = document.querySelectorAll('.photo-card img');
+        lightboxImages = [];
+        photoCards.forEach(img => {
+            lightboxImages.push(img.src);
+        });
+        
+        if (lightboxImages.length === 0) return;
+        
+        currentImageIndex = index;
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImage = document.getElementById('lightboxImage');
+        const lightboxCounter = document.getElementById('lightboxCounter');
+        const lightboxCaption = document.getElementById('lightboxCaption');
+        
+        lightboxImage.src = lightboxImages[index];
+        lightboxCounter.textContent = (index + 1) + ' / ' + lightboxImages.length;
+        lightboxCaption.textContent = 'Court Photo ' + (index + 1);
+        
+        // 显示/隐藏导航按钮
+        const showNav = lightboxImages.length > 1;
+        document.querySelectorAll('.lightbox-nav').forEach(el => {
+            el.style.display = showNav ? 'flex' : 'none';
+        });
+        
+        lightbox.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+        const lightbox = document.getElementById('lightbox');
+        lightbox.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function navigateLightbox(direction) {
+        const newIndex = currentImageIndex + direction;
+        if (newIndex < 0 || newIndex >= lightboxImages.length) return;
+        
+        currentImageIndex = newIndex;
+        const lightboxImage = document.getElementById('lightboxImage');
+        const lightboxCounter = document.getElementById('lightboxCounter');
+        const lightboxCaption = document.getElementById('lightboxCaption');
+        
+        lightboxImage.src = lightboxImages[newIndex];
+        lightboxCounter.textContent = (newIndex + 1) + ' / ' + lightboxImages.length;
+        lightboxCaption.textContent = 'Court Photo ' + (newIndex + 1);
+    }
+
+    // 点击背景关闭 Lightbox
+    document.getElementById('lightbox').addEventListener('click', function(e) {
+        // 如果点击的是背景（lightbox 本身），关闭
+        if (e.target === this) {
+            closeLightbox();
+        }
+    });
+
+    // 键盘快捷键
+    document.addEventListener('keydown', function(e) {
+        const lightbox = document.getElementById('lightbox');
+        if (!lightbox.classList.contains('active')) return;
+        
+        if (e.key === 'Escape') {
+            closeLightbox();
+        } else if (e.key === 'ArrowLeft') {
+            navigateLightbox(-1);
+        } else if (e.key === 'ArrowRight') {
+            navigateLightbox(1);
+        }
     });
     
     // ============================================================
