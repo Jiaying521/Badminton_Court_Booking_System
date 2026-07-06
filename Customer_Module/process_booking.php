@@ -55,6 +55,23 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
         redirect('book_court.php?court_id=' . $court_id);
     }
     
+
+    $stmt = $pdo->prepare("
+    SELECT COUNT(*)
+    FROM bookings
+    WHERE user_id = ?
+    AND booking_date = ?
+    AND status NOT IN ('Cancelled')
+    ");
+    $stmt->execute([$user_id, $booking_date]);
+    
+    $bookingCount = $stmt->fetchColumn();
+    
+    if ($bookingCount >= 5) {
+        $_SESSION['error'] = 'You can only make up to 5 bookings per day.';
+        redirect('book_court.php?court_id=' . $court_id);
+        }
+
     try {
         $pdo->beginTransaction();
         

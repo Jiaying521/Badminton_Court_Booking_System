@@ -764,6 +764,15 @@ $court_photos = getAllCourtImages($court);
     </style>
 </head>
 <body>
+    <?php if(isset($_SESSION['error'])): ?>
+    <div class="error-msg" style="margin:15px;">
+        <?php
+            echo $_SESSION['error'];
+            unset($_SESSION['error']);
+        ?>
+    </div>
+<?php endif; ?>
+
 <div class="container">
     
     <!-- ============================================================
