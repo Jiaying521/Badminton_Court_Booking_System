@@ -256,8 +256,8 @@
     $filter_gender    = isset($_GET['gender'])    ? $_GET['gender']    : '';
     $filter_specialty = isset($_GET['specialty']) ? $_GET['specialty'] : '';
     $filter_search    = isset($_GET['search'])    ? mysqli_real_escape_string($conn, $_GET['search']) : '';
-    $filter_age_min   = isset($_GET['age_min'])   ? intval($_GET['age_min'])   : '';
-    $filter_age_max   = isset($_GET['age_max'])   ? intval($_GET['age_max'])   : '';
+    $filter_age_min   = (isset($_GET['age_min']) && $_GET['age_min'] !== '') ? intval($_GET['age_min']) : '';
+$filter_age_max   = (isset($_GET['age_max']) && $_GET['age_max'] !== '') ? intval($_GET['age_max']) : '';
 
     $has_filter = ($filter_gender || $filter_specialty || $filter_search || $filter_age_min || $filter_age_max);
 
@@ -266,6 +266,31 @@
     $sort_col = isset($_GET['sort']) && in_array($_GET['sort'], $allowed_sorts) ? $_GET['sort'] : 'id';
     $sort_dir = isset($_GET['dir']) && $_GET['dir'] === 'asc' ? 'ASC' : 'DESC';
     $next_dir = ($sort_dir === 'ASC') ? 'desc' : 'asc';
+
+    // Build WHERE clause (moved out of the PHP while-loop so pagination counts are correct)
+    $where_parts = [];
+    if($filter_search    !== '') $where_parts[] = "coaches.name LIKE '%$filter_search%'";
+    if($filter_gender    !== '') $where_parts[] = "coaches.gender = '$filter_gender'";
+    if($filter_specialty !== '') $where_parts[] = "coaches.specialty = '" . mysqli_real_escape_string($conn, $filter_specialty) . "'";
+    if($filter_age_min   !== '') $where_parts[] = "coaches.age >= " . intval($filter_age_min);
+    if($filter_age_max   !== '') $where_parts[] = "coaches.age <= " . intval($filter_age_max);
+
+    $where_sql = count($where_parts) > 0 ? "WHERE " . implode(" AND ", $where_parts) : "";
+
+    // Pagination
+    $per_page    = 15;
+    $page        = max(1, (int)($_GET['page'] ?? 1));
+
+    $count_res   = mysqli_query($conn, "
+        SELECT COUNT(*) AS cnt
+        FROM coaches
+        JOIN admins ON coaches.admin_id = admins.id
+        $where_sql
+    ");
+    $total_rows  = (int)mysqli_fetch_assoc($count_res)['cnt'];
+    $total_pages = max(1, (int)ceil($total_rows / $per_page));
+    $page        = min($page, $total_pages);
+    $offset      = ($page - 1) * $per_page;
 
     //Get coach data from database
     $result = mysqli_query($conn, "
@@ -276,8 +301,20 @@
             admins.status AS account_status, admins.suspended_until
         FROM coaches
         JOIN admins ON coaches.admin_id = admins.id
+        $where_sql
         ORDER BY coaches.$sort_col $sort_dir
+        LIMIT $per_page OFFSET $offset
     ");
+
+    function coachPageQS($p, $sort, $dir, $filter_gender, $filter_specialty, $filter_search, $filter_age_min, $filter_age_max) {
+        $params = ['page' => $p, 'sort' => $sort, 'dir' => $dir];
+        if ($filter_gender    !== '') $params['gender']    = $filter_gender;
+        if ($filter_specialty !== '') $params['specialty'] = $filter_specialty;
+        if ($filter_search    !== '') $params['search']    = $filter_search;
+        if ($filter_age_min   !== '') $params['age_min']   = $filter_age_min;
+        if ($filter_age_max   !== '') $params['age_max']   = $filter_age_max;
+        return http_build_query($params);
+    }
 ?>
 
 <!DOCTYPE html>
@@ -384,13 +421,6 @@
                         $gender_val = $row['gender'] ?? '';
                         $spec_val   = $row['specialty'] ?? '';
                         $age_val    = $row['age'] ?? '';
-
-                        // Apply PHP-side filters
-                        if($filter_search    && stripos($row['name'], $filter_search) === false) continue;
-                        if($filter_gender    && $gender_val !== $filter_gender) continue;
-                        if($filter_specialty && $spec_val   !== $filter_specialty) continue;
-                        if($filter_age_min   && $age_val    < $filter_age_min) continue;
-                        if($filter_age_max   && $age_val    > $filter_age_max) continue;
                     ?>
                     <tr class="main-row"
                         onclick="openCoachEditModal(
@@ -460,6 +490,39 @@
                     <?php endwhile; ?>
                 </tbody>
             </table>
+
+            <?php if ($total_pages > 1): ?>
+            <div class="log-pagination">
+                <?php if ($page > 1): ?>
+                    <a href="?<?php echo coachPageQS($page - 1, $sort_col, strtolower($sort_dir), $filter_gender, $filter_specialty, $filter_search, $filter_age_min, $filter_age_max); ?>" class="page-btn">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                <?php else: ?>
+                    <span class="page-btn disabled"><i class="fas fa-chevron-left"></i></span>
+                <?php endif; ?>
+
+                <form method="GET" class="page-jump-form">
+                    <input type="number" name="page" class="page-jump-input"
+                           value="<?php echo $page; ?>" min="1" max="<?php echo $total_pages; ?>">
+                    <span class="page-jump-of">/ <?php echo $total_pages; ?></span>
+                    <input type="hidden" name="sort" value="<?php echo $sort_col; ?>">
+                    <input type="hidden" name="dir"  value="<?php echo strtolower($sort_dir); ?>">
+                    <?php if ($filter_gender    !== '') echo '<input type="hidden" name="gender" value="'    . htmlspecialchars($filter_gender)    . '">'; ?>
+                    <?php if ($filter_specialty !== '') echo '<input type="hidden" name="specialty" value="' . htmlspecialchars($filter_specialty) . '">'; ?>
+                    <?php if ($filter_search    !== '') echo '<input type="hidden" name="search" value="'    . htmlspecialchars($filter_search)    . '">'; ?>
+                    <?php if ($filter_age_min   !== '') echo '<input type="hidden" name="age_min" value="'   . htmlspecialchars($filter_age_min)   . '">'; ?>
+                    <?php if ($filter_age_max   !== '') echo '<input type="hidden" name="age_max" value="'   . htmlspecialchars($filter_age_max)   . '">'; ?>
+                </form>
+
+                <?php if ($page < $total_pages): ?>
+                    <a href="?<?php echo coachPageQS($page + 1, $sort_col, strtolower($sort_dir), $filter_gender, $filter_specialty, $filter_search, $filter_age_min, $filter_age_max); ?>" class="page-btn">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                <?php else: ?>
+                    <span class="page-btn disabled"><i class="fas fa-chevron-right"></i></span>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
 
         </div>
     </main>

@@ -27,14 +27,6 @@
     box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45);
 }
 
-.filter-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #0f172a;
-    display: inline-block;
-    flex-shrink: 0;
-}
 
 /* ---- Filter Panel ---- */
 .filter-panel {

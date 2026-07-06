@@ -14,7 +14,7 @@ $base_path    = '../';
 
 $db = mysqli_connect("localhost", "root", "", "badminton_hub");
 
-$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01'); // default to first day of current month
+$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01', strtotime('-2 months')); // default to first day (start of 3-month range)
 $end_date   = isset($_GET['end_date'])   ? $_GET['end_date']   : date('Y-m-t');  // default to last day of current month
 
 $s = mysqli_real_escape_string($db, $start_date); // start date (prevent sql injection)

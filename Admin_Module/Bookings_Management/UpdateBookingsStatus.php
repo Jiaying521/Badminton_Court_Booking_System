@@ -218,6 +218,36 @@
     // Set coach_id to NULL if no coach selected
     $coach_value = ($coach_id === 0) ? "NULL" : $coach_id;
 
+    // Prevent editing a booking to a date/time that has already passed
+    $booking_datetime = strtotime($booking_date . ' ' . $start_time);
+    if ($booking_datetime < time()) {
+        header("Location: ManageBookings.php?invalid_date=past");
+        exit();
+    }
+
+    // End time must be after start time
+    if ($end_time <= $start_time) {
+        header("Location: ManageBookings.php?invalid_date=range");
+        exit();
+    }
+
+    // Conflict detection — check if court is already booked at that time by ANOTHER booking
+    $conflict = mysqli_query($conn, "
+        SELECT id FROM bookings
+        WHERE court_id = $court_id
+        AND booking_date = '$booking_date'
+        AND status NOT IN ('Cancelled')
+        AND id != $booking_id
+        AND (
+            (start_time < '$end_time' AND end_time > '$start_time')
+        )
+    ");
+
+    if (mysqli_num_rows($conflict) > 0) {
+        header("Location: ManageBookings.php?conflict=1");
+        exit();
+    }
+
     // Update booking in database
     mysqli_query($conn, "
         UPDATE bookings SET

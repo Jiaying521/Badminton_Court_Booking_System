@@ -237,9 +237,29 @@ $sort_col = isset($_GET['sort']) && in_array($_GET['sort'], $allowed_sorts) ? $_
 $sort_dir = isset($_GET['dir']) && $_GET['dir'] === 'asc' ? 'ASC' : 'DESC';
 $next_dir = ($sort_dir === 'ASC') ? 'desc' : 'asc';
 
-$query = "SELECT * FROM admins WHERE " . implode(" AND ", $where_parts) . " ORDER BY $sort_col $sort_dir";
+$where_sql = implode(" AND ", $where_parts);
+
+// Pagination
+$per_page    = 15;
+$page        = max(1, (int)($_GET['page'] ?? 1));
+
+$count_res   = mysqli_query($conn, "SELECT COUNT(*) AS cnt FROM admins WHERE $where_sql");
+$total_rows  = (int)mysqli_fetch_assoc($count_res)['cnt'];
+$total_pages = max(1, (int)ceil($total_rows / $per_page));
+$page        = min($page, $total_pages);
+$offset      = ($page - 1) * $per_page;
+
+$query = "SELECT * FROM admins WHERE $where_sql ORDER BY $sort_col $sort_dir LIMIT $per_page OFFSET $offset";
 
 $result = mysqli_query($conn, $query);
+
+function adminPageQS($p, $sort, $dir, $filter_role, $filter_status, $filter_search) {
+    $params = ['page' => $p, 'sort' => $sort, 'dir' => $dir];
+    if ($filter_role   !== 'All') $params['filter'] = $filter_role;
+    if ($filter_status  !== '')   $params['status'] = $filter_status;
+    if ($filter_search  !== '')   $params['search'] = $filter_search;
+    return http_build_query($params);
+}
 ?>
 
 <!DOCTYPE html>
@@ -378,6 +398,37 @@ $result = mysqli_query($conn, $query);
                     <?php endwhile; ?>
                 </tbody>
             </table>
+
+            <?php if ($total_pages > 1): ?>
+            <div class="log-pagination">
+                <?php if ($page > 1): ?>
+                    <a href="?<?php echo adminPageQS($page - 1, $sort_col, strtolower($sort_dir), $filter_role, $filter_status, $filter_search); ?>" class="page-btn">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                <?php else: ?>
+                    <span class="page-btn disabled"><i class="fas fa-chevron-left"></i></span>
+                <?php endif; ?>
+
+                <form method="GET" class="page-jump-form">
+                    <input type="number" name="page" class="page-jump-input"
+                           value="<?php echo $page; ?>" min="1" max="<?php echo $total_pages; ?>">
+                    <span class="page-jump-of">/ <?php echo $total_pages; ?></span>
+                    <input type="hidden" name="sort" value="<?php echo $sort_col; ?>">
+                    <input type="hidden" name="dir"  value="<?php echo strtolower($sort_dir); ?>">
+                    <?php if ($filter_role   !== 'All') echo '<input type="hidden" name="filter" value="' . htmlspecialchars($filter_role)   . '">'; ?>
+                    <?php if ($filter_status !== '')    echo '<input type="hidden" name="status" value="' . htmlspecialchars($filter_status) . '">'; ?>
+                    <?php if ($filter_search !== '')    echo '<input type="hidden" name="search" value="' . htmlspecialchars($filter_search) . '">'; ?>
+                </form>
+
+                <?php if ($page < $total_pages): ?>
+                    <a href="?<?php echo adminPageQS($page + 1, $sort_col, strtolower($sort_dir), $filter_role, $filter_status, $filter_search); ?>" class="page-btn">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                <?php else: ?>
+                    <span class="page-btn disabled"><i class="fas fa-chevron-right"></i></span>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
 
         </div>
     </main>

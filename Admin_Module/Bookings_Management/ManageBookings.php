@@ -34,6 +34,13 @@
     if (isset($_GET['added']))       { $toasts[] = ['text' => 'Booking added successfully!',          'type' => 'success']; }
     if (isset($_GET['conflict']))    { $toasts[] = ['text' => 'This time slot is already booked. Please choose another time.', 'type' => 'pending']; }
     if (isset($_GET['proof_error'])) { $toasts[] = ['text' => 'Photo upload failed. Please use JPG/PNG under 5MB.', 'type' => 'error']; }
+    if (isset($_GET['invalid_date'])) {
+        if ($_GET['invalid_date'] === 'past') {
+            $toasts[] = ['text' => 'That time slot is in the past. Please choose a future date/time.', 'type' => 'error'];
+        } elseif ($_GET['invalid_date'] === 'range') {
+            $toasts[] = ['text' => 'End time must be after start time.', 'type' => 'error'];
+        }
+    }
 
     // Handle bulk action
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['ids'])) {
@@ -188,6 +195,29 @@
 
     $where_sql = count($where_parts) > 0 ? "WHERE " . implode(" AND ", $where_parts) : "";
 
+    // Pagination
+    $per_page   = 15;
+    $page       = max(1, (int)($_GET['page'] ?? 1));
+
+    $count_res  = mysqli_query($conn, "
+        SELECT COUNT(*) AS cnt
+        FROM bookings
+        JOIN users  ON bookings.user_id  = users.id
+        JOIN courts ON bookings.court_id = courts.id
+        $where_sql
+    ");
+    $total_rows  = (int)mysqli_fetch_assoc($count_res)['cnt'];
+    $total_pages = max(1, (int)ceil($total_rows / $per_page));
+    $page        = min($page, $total_pages);
+    $offset      = ($page - 1) * $per_page;
+
+    function bookingPageQS($p, $sort, $dir, $extra) {
+        $params = array_merge($extra, ['page' => $p, 'sort' => $sort, 'dir' => $dir]);
+        // Strip empty values so URL stays clean
+        $params = array_filter($params, fn($v) => $v !== '' && $v !== 0 && $v !== '0');
+        return http_build_query($params);
+    }
+
     // Fetch booking data with player name, court name, coach name, session type and notes
     $result = mysqli_query($conn, "
         SELECT
@@ -223,6 +253,7 @@
         $where_sql
 
         ORDER BY $order_col $sort_dir
+        LIMIT $per_page OFFSET $offset
     ");
 
     // Load add-on line items per booking for the price breakdown modal
@@ -609,6 +640,38 @@
 
                 </tbody>
             </table>
+
+            <?php if ($total_pages > 1): ?>
+            <div class="log-pagination">
+                <?php if ($page > 1): ?>
+                    <a href="?<?php echo bookingPageQS($page - 1, $sort_col, strtolower($sort_dir), $extra); ?>" class="page-btn">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                <?php else: ?>
+                    <span class="page-btn disabled"><i class="fas fa-chevron-left"></i></span>
+                <?php endif; ?>
+
+                <form method="GET" class="page-jump-form">
+                    <input type="number" name="page" class="page-jump-input"
+                           value="<?php echo $page; ?>" min="1" max="<?php echo $total_pages; ?>">
+                    <span class="page-jump-of">/ <?php echo $total_pages; ?></span>
+                    <input type="hidden" name="sort" value="<?php echo $sort_col; ?>">
+                    <input type="hidden" name="dir"  value="<?php echo strtolower($sort_dir); ?>">
+                    <?php foreach ($extra as $k => $v): if ($v !== '' && $v !== 0 && $v !== '0'): ?>
+                        <input type="hidden" name="<?php echo htmlspecialchars($k); ?>" value="<?php echo htmlspecialchars($v); ?>">
+                    <?php endif; endforeach; ?>
+                </form>
+
+                <?php if ($page < $total_pages): ?>
+                    <a href="?<?php echo bookingPageQS($page + 1, $sort_col, strtolower($sort_dir), $extra); ?>" class="page-btn">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                <?php else: ?>
+                    <span class="page-btn disabled"><i class="fas fa-chevron-right"></i></span>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
+
         </div>
 
         <button id="scrollTopBtn" onclick="window.scrollTo({top:0, behavior:'smooth'})">
@@ -698,14 +761,20 @@
                         <input type="date" name="booking_date" id="modal-booking-date" required>
                     </div>
 
-                    <div class="modal-field">
+                    <div class="modal-field full-width">
                         <label>Start Time</label>
-                        <input type="time" name="start_time" id="modal-start-time" required>
+                        <div class="slot-picker" id="editSlotPicker">
+                            <div class="slot-picker-hint">Select a court and date first</div>
+                        </div>
+                        <input type="hidden" name="start_time" id="edit-start-time" required>
                     </div>
 
-                    <div class="modal-field">
-                        <label>End Time</label>
-                        <input type="time" name="end_time" id="modal-end-time" required>
+                    <div class="modal-field full-width">
+                        <label>Court Hours</label>
+                        <div class="hours-picker" id="editHoursPicker">
+                            <div class="slot-picker-hint">Select a start time first</div>
+                        </div>
+                        <input type="hidden" name="end_time" id="edit-end-time" required>
                     </div>
 
                     <div class="modal-field">
@@ -798,17 +867,23 @@
 
                     <div class="modal-field full-width">
                         <label>Booking Date</label>
-                        <input type="date" name="booking_date" required>
+                        <input type="date" name="booking_date" id="add-booking-date" required>
                     </div>
 
-                    <div class="modal-field">
+                    <div class="modal-field full-width">
                         <label>Start Time</label>
-                        <input type="time" name="start_time" required>
+                        <div class="slot-picker" id="addSlotPicker">
+                            <div class="slot-picker-hint">Select a court and date first</div>
+                        </div>
+                        <input type="hidden" name="start_time" id="add-start-time" required>
                     </div>
 
-                    <div class="modal-field">
-                        <label>End Time</label>
-                        <input type="time" name="end_time" required>
+                    <div class="modal-field full-width">
+                        <label>Court Hours</label>
+                        <div class="hours-picker" id="addHoursPicker">
+                            <div class="slot-picker-hint">Select a start time first</div>
+                        </div>
+                        <input type="hidden" name="end_time" id="add-end-time" required>
                     </div>
 
                     <div class="modal-field">

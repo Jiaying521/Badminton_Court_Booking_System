@@ -149,6 +149,16 @@
     if($filter_joined_to)   $where_parts[] = "DATE(created_at) <= '$filter_joined_to'";
     $where_sql = count($where_parts) > 0 ? "WHERE " . implode(" AND ", $where_parts) : "";
 
+    // ── Pagination ────────────────────────────────────────────────────────────
+    $per_page    = 15;
+    $page        = max(1, (int)($_GET['page'] ?? 1));
+
+    $count_res   = mysqli_query($conn, "SELECT COUNT(*) AS cnt FROM users $where_sql");
+    $total_rows  = (int)mysqli_fetch_assoc($count_res)['cnt'];
+    $total_pages = max(1, (int)ceil($total_rows / $per_page));
+    $page        = min($page, $total_pages);
+    $offset      = ($page - 1) * $per_page;
+
     // ── Fetch customers ───────────────────────────────────────────────────────
     $result = mysqli_query($conn, "
         SELECT id, name, email, phone, gender, created_at,
@@ -156,7 +166,19 @@
         FROM users
         $where_sql
         ORDER BY $sort_col $sort_dir
+        LIMIT $per_page OFFSET $offset
     ");
+
+    function customerPageQS($p, $sort, $dir, $fn, $fp, $fe, $fg, $fjf, $fjt) {
+        $params = ['page' => $p, 'sort' => $sort, 'dir' => $dir];
+        if ($fn  !== '') $params['search_name']  = $fn;
+        if ($fp  !== '') $params['search_phone'] = $fp;
+        if ($fe  !== '') $params['search_email'] = $fe;
+        if ($fg  !== '') $params['gender']       = $fg;
+        if ($fjf !== '') $params['joined_from']  = $fjf;
+        if ($fjt !== '') $params['joined_to']    = $fjt;
+        return http_build_query($params);
+    }
 
     // ── Stats ─────────────────────────────────────────────────────────────────
     $total_customers = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS cnt FROM users"))['cnt'] ?? 0;
@@ -321,9 +343,6 @@
             <div class="filter-btn-wrapper">
                 <button class="btn-filter-toggle" onclick="toggleFilter()">
                     <i class="fas fa-filter"></i> Filter
-                    <?php if($has_filter): ?>
-                        <span class="filter-dot"></span>
-                    <?php endif; ?>
                 </button>
             </div>
 
@@ -467,6 +486,40 @@
                     <?php endif; ?>
                 </tbody>
             </table>
+
+            <?php if ($total_pages > 1): ?>
+            <div class="log-pagination">
+                <?php if ($page > 1): ?>
+                    <a href="?<?php echo customerPageQS($page - 1, $sort_col, strtolower($sort_dir), $filter_name, $filter_phone, $filter_email, $filter_gender, $filter_joined_from, $filter_joined_to); ?>" class="page-btn">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                <?php else: ?>
+                    <span class="page-btn disabled"><i class="fas fa-chevron-left"></i></span>
+                <?php endif; ?>
+
+                <form method="GET" class="page-jump-form">
+                    <input type="number" name="page" class="page-jump-input"
+                           value="<?php echo $page; ?>" min="1" max="<?php echo $total_pages; ?>">
+                    <span class="page-jump-of">/ <?php echo $total_pages; ?></span>
+                    <input type="hidden" name="sort" value="<?php echo $sort_col; ?>">
+                    <input type="hidden" name="dir"  value="<?php echo strtolower($sort_dir); ?>">
+                    <?php if ($filter_name        !== '') echo '<input type="hidden" name="search_name" value="'  . htmlspecialchars($filter_name)        . '">'; ?>
+                    <?php if ($filter_phone       !== '') echo '<input type="hidden" name="search_phone" value="' . htmlspecialchars($filter_phone)       . '">'; ?>
+                    <?php if ($filter_email       !== '') echo '<input type="hidden" name="search_email" value="' . htmlspecialchars($filter_email)       . '">'; ?>
+                    <?php if ($filter_gender      !== '') echo '<input type="hidden" name="gender" value="'       . htmlspecialchars($filter_gender)      . '">'; ?>
+                    <?php if ($filter_joined_from !== '') echo '<input type="hidden" name="joined_from" value="'  . htmlspecialchars($filter_joined_from) . '">'; ?>
+                    <?php if ($filter_joined_to   !== '') echo '<input type="hidden" name="joined_to" value="'    . htmlspecialchars($filter_joined_to)   . '">'; ?>
+                </form>
+
+                <?php if ($page < $total_pages): ?>
+                    <a href="?<?php echo customerPageQS($page + 1, $sort_col, strtolower($sort_dir), $filter_name, $filter_phone, $filter_email, $filter_gender, $filter_joined_from, $filter_joined_to); ?>" class="page-btn">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                <?php else: ?>
+                    <span class="page-btn disabled"><i class="fas fa-chevron-right"></i></span>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
 
         </div>
     </main>

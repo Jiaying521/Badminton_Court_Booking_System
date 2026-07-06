@@ -47,3 +47,12 @@ document.addEventListener('DOMContentLoaded', function () {
         if (e.target === this) closeAdminEditModal();
     });
 });
+
+document.querySelectorAll('.page-jump-input').forEach(function (input) {
+    input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            input.closest('form').submit();
+        }
+    });
+});
