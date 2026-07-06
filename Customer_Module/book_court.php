@@ -150,9 +150,6 @@ $court_photos = getAllCourtImages($court);
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* ============================================================
-           RESET & BASE STYLES
-        ============================================================ */
         * { margin:0; padding:0; box-sizing:border-box; }
         
         body { 
@@ -189,9 +186,6 @@ $court_photos = getAllCourtImages($court);
         ::-webkit-scrollbar-thumb { background: #2b7e3a; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #1f5a2a; }
         
-        /* ============================================================
-           PROGRESS BAR
-        ============================================================ */
         .progress-bar {
             display: flex;
             justify-content: space-between;
@@ -281,9 +275,6 @@ $court_photos = getAllCourtImages($court);
             color: #2b7e3a;
         }
         
-        /* ============================================================
-           BOOKING SUMMARY BANNER
-        ============================================================ */
         .booking-summary { 
             background: linear-gradient(135deg, rgba(43,126,58,0.9), rgba(27,94,42,0.9));
             backdrop-filter: blur(5px);
@@ -300,18 +291,12 @@ $court_photos = getAllCourtImages($court);
             border: 1px solid rgba(255,255,255,0.2);
         }
         
-        /* ============================================================
-           TWO COLUMN LAYOUT
-        ============================================================ */
         .row-2cols { 
             display: grid; 
             grid-template-columns: 2fr 1fr; 
             gap: 2rem; 
         }
         
-        /* ============================================================
-           LEFT COLUMN - PRODUCT SECTIONS (Cards)
-        ============================================================ */
         .product-section { 
             background: rgba(255,255,255,0.7);
             backdrop-filter: blur(10px);
@@ -323,9 +308,6 @@ $court_photos = getAllCourtImages($court);
             animation: fadeInScale 0.5s ease-out both;
         }
         .product-section:hover { background: rgba(255,255,255,0.8); }
-        .product-section:nth-child(1) { animation-delay: 0.05s; }
-        .product-section:nth-child(2) { animation-delay: 0.1s; }
-        .product-section:nth-child(3) { animation-delay: 0.15s; }
         
         .section-title { 
             font-family: 'Montserrat', 'Poppins', sans-serif;
@@ -340,9 +322,6 @@ $court_photos = getAllCourtImages($court);
             gap: 0.6rem;
         }
         
-        /* ============================================================
-           COURT INFORMATION
-        ============================================================ */
         .info-grid {
             display: flex;
             flex-direction: column;
@@ -382,9 +361,6 @@ $court_photos = getAllCourtImages($court);
             color: #e67e22;
         }
         
-        /* ============================================================
-           COURT PHOTOS GALLERY
-        ============================================================ */
         .photos-scroll {
             display: flex;
             gap: 1rem;
@@ -424,9 +400,6 @@ $court_photos = getAllCourtImages($court);
             color: #aaa;
         }
         
-        /* ============================================================
-           LIGHTBOX STYLES
-        ============================================================ */
         .lightbox {
             display: none;
             position: fixed;
@@ -556,9 +529,6 @@ $court_photos = getAllCourtImages($court);
             .lightbox-caption { font-size: 12px; padding: 6px 16px; bottom: 20px; }
         }
         
-        /* ============================================================
-           DATE PICKER
-        ============================================================ */
         #datepicker {
             width: 100%;
             padding: 0.9rem 1rem;
@@ -576,9 +546,6 @@ $court_photos = getAllCourtImages($court);
             box-shadow: 0 0 0 3px rgba(43,126,58,0.1);
         }
         
-        /* ============================================================
-           TIME & HOURS SELECTION
-        ============================================================ */
         .time-hours-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -690,9 +657,6 @@ $court_photos = getAllCourtImages($court);
             font-size: 0.8rem;
         }
         
-        /* ============================================================
-           RIGHT COLUMN - BOOKING SUMMARY CARD
-        ============================================================ */
         .cart-summary { 
             background: rgba(255,255,255,0.7);
             backdrop-filter: blur(10px);
@@ -731,9 +695,6 @@ $court_photos = getAllCourtImages($court);
             color: #2b7e3a;
         }
         
-        /* ============================================================
-           COACH SELECTION
-        ============================================================ */
         .coach-divider {
             margin: 1.2rem 0 1rem 0;
             border-top: 2px solid rgba(234,245,230,0.8);
@@ -766,7 +727,7 @@ $court_photos = getAllCourtImages($court);
             transition: all 0.3s ease;
             background: rgba(255,255,255,0.5);
         }
-        .coach-item:hover {
+        .coach-item:hover:not(.disabled) {
             border-color: #2b7e3a;
             background: rgba(234,245,230,0.8);
             transform: translateX(5px);
@@ -776,6 +737,32 @@ $court_photos = getAllCourtImages($court);
             background: rgba(224,240,220,0.8);
             box-shadow: 0 4px 15px rgba(43,126,58,0.1);
         }
+        
+        .coach-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed !important;
+            pointer-events: none;
+            border-color: #e0e0e0 !important;
+            background: #f5f5f5 !important;
+        }
+        .coach-item.disabled .coach-name {
+            color: #999 !important;
+        }
+        .coach-item .coach-status {
+            display: block;
+            margin-top: 2px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .coach-item.has-booking {
+            border-color: #f39c12 !important;
+            background: rgba(243, 156, 18, 0.05) !important;
+        }
+        .coach-item.has-booking:hover:not(.disabled) {
+            border-color: #f39c12 !important;
+            background: rgba(243, 156, 18, 0.1) !important;
+        }
+        
         .coach-avatar {
             width: 50px;
             height: 50px;
@@ -842,9 +829,6 @@ $court_photos = getAllCourtImages($court);
             color: white;
         }
         
-        /* ============================================================
-           BUTTONS
-        ============================================================ */
         .btn-continue { 
             background: linear-gradient(135deg, #2b7e3a, #1f5a2a);
             color: white; border: none; padding: 1rem; border-radius: 60px;
@@ -879,9 +863,6 @@ $court_photos = getAllCourtImages($court);
             font-weight: 600;
         }
         
-        /* ============================================================
-           RESPONSIVE DESIGN
-        ============================================================ */
         @media (max-width: 768px) {
             body { padding: 1rem; }
             .row-2cols { grid-template-columns: 1fr; }
@@ -907,9 +888,6 @@ $court_photos = getAllCourtImages($court);
 
 <div class="container">
     
-    <!-- ============================================================
-         PROGRESS BAR
-    ============================================================ -->
     <div class="progress-bar">
         <div class="progress-step active"><div class="step-number">1</div><div class="step-label">Book Court</div></div>
         <div class="progress-step"><div class="step-number">2</div><div class="step-label">Add-ons</div></div>
@@ -917,9 +895,6 @@ $court_photos = getAllCourtImages($court);
         <div class="progress-step"><div class="step-number">4</div><div class="step-label">Payment</div></div>
     </div>
     
-    <!-- ============================================================
-         BOOKING SUMMARY BANNER
-    ============================================================ -->
     <div class="booking-summary">
         <div>
             <div style="font-size:1.2rem; font-weight:800;">🏸 <?=htmlspecialchars($court['court_name'])?></div>
@@ -935,13 +910,7 @@ $court_photos = getAllCourtImages($court);
     </div>
     
     <div class="row-2cols">
-        <!-- ============================================================
-             LEFT COLUMN - MAIN CONTENT
-        ============================================================ -->
         <div>
-            <!-- ============================================================
-                 COURT INFORMATION CARD
-            ============================================================ -->
             <div class="product-section">
                 <div class="section-title"><i class="fas fa-info-circle"></i> Court Information</div>
                 <div class="info-grid">
@@ -955,9 +924,6 @@ $court_photos = getAllCourtImages($court);
                 </div>
             </div>
             
-            <!-- ============================================================
-                 COURT PHOTOS CARD
-            ============================================================ -->
             <div class="product-section">
                 <div class="section-title"><i class="fas fa-images"></i> Court Photos</div>
                 <?php if(empty($court_photos)): ?>
@@ -973,9 +939,6 @@ $court_photos = getAllCourtImages($court);
                 <?php endif; ?>
             </div>
             
-            <!-- ============================================================
-                 DATE & TIME SELECTION CARD
-            ============================================================ -->
             <div class="product-section">
                 <div class="section-title"><i class="fas fa-calendar-alt"></i> Select Date & Time</div>
                 <input type="text" id="datepicker" placeholder="Click to select a date" required readonly>
@@ -999,9 +962,6 @@ $court_photos = getAllCourtImages($court);
             </div>
         </div>
         
-        <!-- ============================================================
-             RIGHT COLUMN - BOOKING SUMMARY CARD
-        ============================================================ -->
         <div>
             <div class="cart-summary">
                 <h3><i class="fas fa-receipt"></i> Booking Summary</h3>
@@ -1012,11 +972,8 @@ $court_photos = getAllCourtImages($court);
                     </div>
                 </div>
                 
-                <!-- ============================================================
-                     COACH SELECTION (Only for Training Courts)
-                ============================================================ -->
                 <?php if($court['court_type'] == 'Training' && !empty($coaches)): ?>
-                <div id="coachSection" style="display: none;">
+                <div id="coachSection" style="display: <?php echo ($preferred_coach_id > 0 || $court['court_type'] == 'Training') ? 'block' : 'none'; ?>;">
                     <div class="coach-divider"></div>
                     <div class="coach-section-title"><i class="fas fa-user-tie"></i> Select Coach (Optional)</div>
                     <div id="coachList" class="coach-container">
@@ -1032,8 +989,15 @@ $court_photos = getAllCourtImages($court);
                              data-coach-price="<?=$coach['price_per_hour']?>" 
                              data-coach-name="<?=htmlspecialchars($coach['name'])?>">
                             <div class="coach-avatar"><img src="<?=htmlspecialchars(getCoachImage($coach))?>" alt="<?=htmlspecialchars($coach['name'])?>" onerror="this.src='../Pictures/Admin_Module/coaches/default.png'"></div>
-                            <div class="coach-info"><div class="coach-name"><?=htmlspecialchars($coach['name'])?></div><div class="coach-specialty"><?=htmlspecialchars($coach['specialty'])?></div></div>
-                            <div class="coach-price"><div class="price">RM <?=number_format($coach['price_per_hour'], 2)?></div><div class="unit">/ hr</div></div>
+                            <div class="coach-info">
+                                <div class="coach-name"><?=htmlspecialchars($coach['name'])?></div>
+                                <div class="coach-specialty"><?=htmlspecialchars($coach['specialty'])?></div>
+                                <div class="coach-status" id="coach-status-<?=$coach['id']?>">⏳ Checking availability...</div>
+                            </div>
+                            <div class="coach-price">
+                                <div class="price">RM <?=number_format($coach['price_per_hour'], 2)?></div>
+                                <div class="unit">/ hr</div>
+                            </div>
                         </div>
                         <?php endforeach; ?>
                     </div>
@@ -1045,18 +1009,12 @@ $court_photos = getAllCourtImages($court);
                 </div>
                 <?php endif; ?>
                 
-                <!-- ============================================================
-                     SUBMIT BUTTON
-                ============================================================ -->
                 <button id="submitBtn" class="btn-continue" disabled>Proceed to Add-ons →</button>
                 <a href="dashboard.php" class="btn-back-link">← Back to Courts</a>
             </div>
         </div>
     </div>
     
-    <!-- ============================================================
-         BOOKING FORM (Hidden - Submits to process_booking.php)
-    ============================================================ -->
     <form id="bookingForm" action="process_booking.php" method="POST" style="display: none;">
         <input type="hidden" name="court_id" value="<?=$court_id?>">
         <input type="hidden" id="booking_date" name="booking_date">
@@ -1070,9 +1028,6 @@ $court_photos = getAllCourtImages($court);
     </form>
 </div>
 
-<!-- ============================================================
-     LIGHTBOX - Photo Viewer
-============================================================ -->
 <div class="lightbox" id="lightbox">
     <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
     <span class="lightbox-counter" id="lightboxCounter">1 / 1</span>
@@ -1082,9 +1037,6 @@ $court_photos = getAllCourtImages($court);
     <div class="lightbox-caption" id="lightboxCaption">Court Photo</div>
 </div>
 
-<!-- ============================================================
-     JAVASCRIPT FUNCTIONS
-============================================================ -->
 <script>
     // ============================================================
     // CONFIGURATION
@@ -1094,10 +1046,11 @@ $court_photos = getAllCourtImages($court);
     const offPeakPrice = <?=$court['price_off_peak']?>;
     const peakPrice = <?=$court['price_peak']?>;
     
-    // Prefilled parameters
     const preferredCoachId = <?php echo $preferred_coach_id; ?>;
     const preferredDuration = <?php echo $preferred_duration; ?>;
     const preferredDate = '<?php echo $preferred_date; ?>';
+    
+    console.log('🔵 Page loaded with:', { preferredCoachId, preferredDuration, preferredDate, courtType });
     
     // ============================================================
     // STATE VARIABLES
@@ -1130,12 +1083,11 @@ $court_photos = getAllCourtImages($court);
     const coachHoursList = document.getElementById('coachHoursList');
     
     // ============================================================
-    // LIGHTBOX - Photo Viewer (修复版)
+    // LIGHTBOX - Photo Viewer
     // ============================================================
     let lightboxImages = [];
     let currentImageIndex = 0;
 
-    // 点击图片打开 Lightbox
     document.querySelectorAll('.photo-card').forEach((card, index) => {
         card.addEventListener('click', function(e) {
             if (e.target.tagName === 'IMG' || e.target.closest('img')) {
@@ -1163,7 +1115,6 @@ $court_photos = getAllCourtImages($court);
         lightboxCounter.textContent = (index + 1) + ' / ' + lightboxImages.length;
         lightboxCaption.textContent = 'Court Photo ' + (index + 1);
         
-        // 显示/隐藏导航按钮
         const showNav = lightboxImages.length > 1;
         document.querySelectorAll('.lightbox-nav').forEach(el => {
             el.style.display = showNav ? 'flex' : 'none';
@@ -1193,15 +1144,12 @@ $court_photos = getAllCourtImages($court);
         lightboxCaption.textContent = 'Court Photo ' + (newIndex + 1);
     }
 
-    // 点击背景关闭 Lightbox
     document.getElementById('lightbox').addEventListener('click', function(e) {
-        // 如果点击的是背景（lightbox 本身），关闭
         if (e.target === this) {
             closeLightbox();
         }
     });
 
-    // 键盘快捷键
     document.addEventListener('keydown', function(e) {
         const lightbox = document.getElementById('lightbox');
         if (!lightbox.classList.contains('active')) return;
@@ -1216,11 +1164,171 @@ $court_photos = getAllCourtImages($court);
     });
     
     // ============================================================
+    // ★★★ CHECK COACH AVAILABILITY ★★★
+    // ============================================================
+    async function checkCoachAvailability(coachId, date, startTime, duration) {
+        try {
+            const res = await fetch(`ajax_check_coach_availability.php?coach_id=${coachId}&date=${date}&start_time=${startTime}&duration=${duration}`);
+            const data = await res.json();
+            return data;
+        } catch(e) {
+            console.error('Error checking coach availability:', e);
+            return { available: false, count: 0 };
+        }
+    }
+
+    async function updateAllCoachAvailability() {
+        console.log('🔍 updateAllCoachAvailability called');
+        console.log('📊 Current state:', {
+            selectedDate: selectedDate,
+            selectedStartTime: selectedStartTime,
+            selectedCourtHours: selectedCourtHours
+        });
+        
+        // 如果缺少数据，尝试从 DOM 获取
+        if (!selectedDate) {
+            selectedDate = document.getElementById('booking_date')?.value || null;
+        }
+        if (!selectedStartTime) {
+            const selectedSlot = document.querySelector('.slot-btn.selected');
+            if (selectedSlot) {
+                selectedStartTime = selectedSlot.dataset.time;
+                selectedStartHour = parseInt(selectedSlot.dataset.hour);
+                console.log('🔄 Retrieved start time from DOM:', selectedStartTime);
+            }
+        }
+        if (!selectedCourtHours) {
+            const selectedHour = document.querySelector('.hour-btn.selected');
+            if (selectedHour) {
+                selectedCourtHours = parseInt(selectedHour.dataset.hours);
+                console.log('🔄 Retrieved court hours from DOM:', selectedCourtHours);
+            }
+        }
+        
+        if (!selectedDate || !selectedStartTime || !selectedCourtHours) {
+            console.log('⚠️ Missing selection, skipping update');
+            return;
+        }
+
+        console.log('🔄 Updating coach availability for:', {
+            date: selectedDate,
+            start: selectedStartTime,
+            duration: selectedCourtHours
+        });
+
+        const coachItems = document.querySelectorAll('.coach-item[data-coach-id]');
+        console.log('📋 Found ' + coachItems.length + ' coach items');
+        
+        for (const item of coachItems) {
+            const coachId = parseInt(item.dataset.coachId);
+            if (coachId === 0) continue;
+            
+            const statusEl = document.getElementById('coach-status-' + coachId);
+            if (!statusEl) {
+                console.warn('⚠️ Status element not found for coach:', coachId);
+                continue;
+            }
+            
+            statusEl.textContent = '⏳ Checking...';
+            statusEl.style.color = '#888';
+            
+            try {
+                const url = `ajax_check_coach_availability.php?coach_id=${coachId}&date=${selectedDate}&start_time=${selectedStartTime}&duration=${selectedCourtHours}`;
+                console.log('📡 Fetching: ' + url);
+                
+                const res = await fetch(url);
+                const text = await res.text();
+                console.log('📥 Raw response for coach ' + coachId + ':', text);
+                
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    console.error('❌ Failed to parse JSON for coach ' + coachId + ':', text);
+                    statusEl.textContent = '⚠️ Error parsing';
+                    statusEl.style.color = '#f39c12';
+                    continue;
+                }
+                
+                console.log('✅ Coach ' + coachId + ' data:', data);
+                
+                if (data.count === 0) {
+                    item.classList.remove('disabled', 'has-booking');
+                    item.style.opacity = '1';
+                    item.style.pointerEvents = 'auto';
+                    statusEl.textContent = '✅ Available';
+                    statusEl.style.color = '#16a34a';
+                    console.log('✅ Coach ' + coachId + ' is AVAILABLE');
+                } else {
+                    item.classList.add('disabled', 'has-booking');
+                    statusEl.textContent = '❌ Booked (has ' + data.count + ' session' + (data.count > 1 ? 's' : '') + ')';
+                    statusEl.style.color = '#dc2626';
+                    console.log('❌ Coach ' + coachId + ' is BOOKED (' + data.count + ' sessions)');
+                    
+                    if (selectedCoachId === coachId) {
+                        const noCoachItem = document.querySelector('.coach-item[data-coach-id="0"]');
+                        if (noCoachItem) {
+                            noCoachItem.click();
+                        }
+                        showToast('This coach is not available at the selected time. Please choose another coach or time.', 'warning');
+                    }
+                }
+            } catch(e) {
+                console.error('❌ Error checking coach ' + coachId + ':', e);
+                if (statusEl) {
+                    statusEl.textContent = '⚠️ Error: ' + e.message;
+                    statusEl.style.color = '#f39c12';
+                }
+            }
+        }
+        
+        console.log('✅ Coach availability update complete');
+    }
+
+    function showToast(message, type) {
+        let toast = document.getElementById('customToast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'customToast';
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 30px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: ${type === 'warning' ? '#f39c12' : '#2b7e3a'};
+                color: white;
+                padding: 15px 30px;
+                border-radius: 12px;
+                font-weight: 600;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+                z-index: 99999;
+                max-width: 90%;
+                text-align: center;
+                animation: fadeInUp 0.3s ease;
+                font-family: 'Inter', sans-serif;
+            `;
+            document.body.appendChild(toast);
+        }
+        toast.textContent = message;
+        toast.style.display = 'block';
+        
+        clearTimeout(toast._timeout);
+        toast._timeout = setTimeout(() => {
+            toast.style.display = 'none';
+        }, 5000);
+    }
+    
+    // ============================================================
     // COACH SELECTION
     // ============================================================
     if(document.getElementById('coachList')) {
         document.querySelectorAll('.coach-item').forEach(item => {
             item.addEventListener('click', function() {
+                if (this.classList.contains('disabled')) {
+                    showToast('This coach is not available at the selected time.', 'warning');
+                    return;
+                }
+                
                 document.querySelectorAll('.coach-item').forEach(i => i.classList.remove('selected'));
                 this.classList.add('selected');
                 selectedCoachId = parseInt(this.dataset.coachId);
@@ -1242,16 +1350,6 @@ $court_photos = getAllCourtImages($court);
         });
     }
     
-    // Auto-select preferred coach
-    if(preferredCoachId > 0) {
-        setTimeout(function() {
-            const preferredCoach = document.querySelector('.coach-item[data-coach-id="' + preferredCoachId + '"]');
-            if(preferredCoach) {
-                preferredCoach.click();
-            }
-        }, 100);
-    }
-    
     let flatpickrInstance = null;
     
     // ============================================================
@@ -1263,6 +1361,7 @@ $court_photos = getAllCourtImages($court);
         maxDate: new Date().fp_incr(30),
         onChange: (dates, dateStr) => {
             if(dateStr) {
+                console.log('📅 Flatpickr onChange triggered:', dateStr);
                 selectedDate = dateStr;
                 document.getElementById('booking_date').value = dateStr;
                 loadSlots(dateStr);
@@ -1270,15 +1369,24 @@ $court_photos = getAllCourtImages($court);
             }
         }
     };
-    
+
     if(preferredDate) {
+        console.log('📅 Setting preferred date:', preferredDate);
         flatpickrInstance = flatpickr(dateInput, flatpickrConfig);
-        flatpickrInstance.setDate(preferredDate);
+        // ★★★ 关键修复：setDate 第二个参数 true 触发 onChange ★★★
+        flatpickrInstance.setDate(preferredDate, true);
+        
+        // 手动设置变量并加载 slots（作为备选，防止 onChange 不触发）
         setTimeout(() => {
             if(preferredDate) {
-                loadSlots(preferredDate);
+                console.log('📅 Manual fallback - loading slots for:', preferredDate);
+                if (!selectedDate) {
+                    selectedDate = preferredDate;
+                    document.getElementById('booking_date').value = preferredDate;
+                    loadSlots(preferredDate);
+                }
             }
-        }, 200);
+        }, 400);
     } else {
         flatpickr(dateInput, flatpickrConfig);
     }
@@ -1287,12 +1395,12 @@ $court_photos = getAllCourtImages($court);
     // LOAD AVAILABLE TIME SLOTS
     // ============================================================
     async function loadSlots(date) {
+        console.log('🔄 loadSlots called for date:', date);
         timeSection.style.display = 'block';
         slotList.innerHTML = '<div class="help-text">Loading...</div>';
         noSlotsMessage.style.display = 'none';
         hoursList.innerHTML = '';
         maxHoursInfo.innerHTML = '';
-        if(coachSection) coachSection.style.display = 'none';
         dateHint.style.display = 'none';
         resetSelection();
         
@@ -1330,7 +1438,10 @@ $court_photos = getAllCourtImages($court);
                     document.getElementById('start_time').value = selectedStartTime;
                     calculateMaxHours(selectedStartHour);
                     generateHourButtons();
-                    if(courtType === 'Training' && coachSection) coachSection.style.display = 'block';
+                    if(courtType === 'Training' && coachSection) {
+                        coachSection.style.display = 'block';
+                        console.log('✅ Coach section displayed');
+                    }
                     selectedCourtHours = null;
                     selectedCoachHours = 0;
                     document.getElementById('coach_hours').value = 0;
@@ -1338,20 +1449,105 @@ $court_photos = getAllCourtImages($court);
                     if(coachHoursSection) coachHoursSection.style.display = 'none';
                     updateBreakdownPlaceholder();
                     submitBtn.disabled = true;
+                    
+                    if (courtType === 'Training') {
+                        setTimeout(() => {
+                            updateAllCoachAvailability();
+                        }, 500);
+                    }
                 });
             });
             
-            // Auto-select preferred duration
-            if(preferredDuration > 0) {
+            // ★★★ 从 Coach 页面跳转过来的自动处理 ★★★
+            console.log('🔄 Checking for preferred coach:', preferredCoachId, 'preferredDate:', preferredDate);
+            
+            // 如果有预填日期，但没有选择时间，自动选择第一个可用时间
+            if (preferredDate && !selectedStartTime) {
+                setTimeout(function() {
+                    const firstSlot = document.querySelector('.slot-btn:not(.disabled)');
+                    if (firstSlot) {
+                        console.log('⏳ Auto-selecting first available slot');
+                        firstSlot.click();
+                    }
+                }, 400);
+            }
+            
+            // 自动选择预填的时长
+            if (preferredDuration > 0) {
                 setTimeout(function() {
                     const hourBtns = document.querySelectorAll('.hour-btn');
                     hourBtns.forEach(btn => {
                         if(parseInt(btn.dataset.hours) === preferredDuration) {
                             btn.click();
+                            console.log('⏳ Auto-selected duration:', preferredDuration);
                         }
                     });
-                }, 300);
+                }, 600);
             }
+            
+            // ★★★ 如果有预填教练，自动选择并检查可用性 ★★★
+            if (preferredCoachId > 0 && courtType === 'Training') {
+                console.log('🔄 Auto-selecting preferred coach:', preferredCoachId);
+                
+                setTimeout(function() {
+                    if (coachSection) {
+                        coachSection.style.display = 'block';
+                        console.log('✅ Coach section forced to display');
+                    }
+                    
+                    const preferredCoach = document.querySelector('.coach-item[data-coach-id="' + preferredCoachId + '"]');
+                    if (preferredCoach) {
+                        if (!preferredCoach.classList.contains('disabled')) {
+                            preferredCoach.click();
+                            console.log('✅ Auto-selected coach:', preferredCoachId);
+                        } else {
+                            console.log('⚠️ Preferred coach is disabled');
+                            showToast('This coach is not available at the selected time. Please choose another coach.', 'warning');
+                        }
+                    } else {
+                        console.log('⚠️ Coach item not found, retrying...');
+                        setTimeout(function() {
+                            const coachRetry = document.querySelector('.coach-item[data-coach-id="' + preferredCoachId + '"]');
+                            if (coachRetry) {
+                                coachRetry.click();
+                                console.log('✅ Auto-selected coach (retry):', preferredCoachId);
+                            }
+                        }, 500);
+                    }
+                    
+                    setTimeout(function() {
+                        console.log('🔄 Running updateAllCoachAvailability...');
+                        updateAllCoachAvailability();
+                    }, 700);
+                }, 1000);
+            }
+            
+            // ★★★ 强制触发教练可用性检查（作为备选） ★★★
+            if (courtType === 'Training') {
+                setTimeout(function() {
+                    if (!selectedStartTime) {
+                        const selectedSlot = document.querySelector('.slot-btn.selected');
+                        if (selectedSlot) {
+                            selectedStartTime = selectedSlot.dataset.time;
+                            selectedStartHour = parseInt(selectedSlot.dataset.hour);
+                            console.log('🔄 Retrieved start time from DOM (fallback):', selectedStartTime);
+                        }
+                    }
+                    if (!selectedCourtHours) {
+                        const selectedHour = document.querySelector('.hour-btn.selected');
+                        if (selectedHour) {
+                            selectedCourtHours = parseInt(selectedHour.dataset.hours);
+                            console.log('🔄 Retrieved court hours from DOM (fallback):', selectedCourtHours);
+                        }
+                    }
+                    // 如果现在有数据，执行更新
+                    if (selectedDate && selectedStartTime && selectedCourtHours) {
+                        console.log('🔄 Running updateAllCoachAvailability (fallback)...');
+                        updateAllCoachAvailability();
+                    }
+                }, 2000);
+            }
+            
         } catch(e) {
             console.error(e);
             slotList.innerHTML = '<div class="error-msg">Error loading slots</div>';
@@ -1400,6 +1596,12 @@ $court_photos = getAllCourtImages($court);
                     coachHoursSection.style.display = 'block';
                 }
                 calculatePrice();
+                
+                if (courtType === 'Training') {
+                    setTimeout(() => {
+                        updateAllCoachAvailability();
+                    }, 500);
+                }
             });
         });
     }
@@ -1502,13 +1704,82 @@ $court_photos = getAllCourtImages($court);
         if(coachHoursSection) coachHoursSection.style.display = 'none';
         updateBreakdownPlaceholder();
         submitBtn.disabled = true;
+        
+        document.querySelectorAll('.coach-status').forEach(el => {
+            if (el) {
+                el.textContent = '⏳ Checking availability...';
+                el.style.color = '#888';
+            }
+        });
+        document.querySelectorAll('.coach-item').forEach(el => {
+            el.classList.remove('disabled', 'has-booking');
+            el.style.opacity = '1';
+            el.style.pointerEvents = 'auto';
+        });
     }
     
     // ============================================================
     // FORM SUBMISSION
     // ============================================================
     document.getElementById('submitBtn').addEventListener('click', () => {
+        if (selectedCoachId > 0) {
+            const selectedCoachItem = document.querySelector('.coach-item[data-coach-id="' + selectedCoachId + '"]');
+            if (selectedCoachItem && selectedCoachItem.classList.contains('disabled')) {
+                showToast('Selected coach is not available at this time. Please choose another coach.', 'warning');
+                return;
+            }
+        }
         document.getElementById('bookingForm').submit();
+    });
+    
+    // ============================================================
+    // ★★★ 页面加载完成后额外触发（备选方案） ★★★
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('📄 DOMContentLoaded - preferredCoachId:', preferredCoachId);
+        
+        if (preferredCoachId > 0 && preferredDate && courtType === 'Training') {
+            console.log('🔄 Will auto-select coach after page load');
+            
+            const coachSectionEl = document.getElementById('coachSection');
+            if (coachSectionEl) {
+                coachSectionEl.style.display = 'block';
+                console.log('✅ Coach section forced to display');
+            }
+            
+            setTimeout(function() {
+                if (selectedDate && selectedStartTime && selectedCourtHours) {
+                    console.log('✅ All data ready, updating coach availability (DOMContentLoaded)');
+                    updateAllCoachAvailability();
+                } else {
+                    console.log('⏳ Waiting for data...');
+                    setTimeout(function() {
+                        if (selectedDate && selectedStartTime && selectedCourtHours) {
+                            console.log('✅ All data ready (2nd attempt), updating coach availability');
+                            updateAllCoachAvailability();
+                        } else {
+                            console.log('⚠️ Still waiting, forcing update...');
+                            if (!selectedStartTime) {
+                                const slot = document.querySelector('.slot-btn.selected');
+                                if (slot) {
+                                    selectedStartTime = slot.dataset.time;
+                                    selectedStartHour = parseInt(slot.dataset.hour);
+                                }
+                            }
+                            if (!selectedCourtHours) {
+                                const hour = document.querySelector('.hour-btn.selected');
+                                if (hour) {
+                                    selectedCourtHours = parseInt(hour.dataset.hours);
+                                }
+                            }
+                            if (selectedDate && selectedStartTime && selectedCourtHours) {
+                                updateAllCoachAvailability();
+                            }
+                        }
+                    }, 2000);
+                }
+            }, 1500);
+        }
     });
 </script>
 <?php include 'footer.php'; ?>
