@@ -1,16 +1,16 @@
 <?php
 // send_email.php - Email helper function using PHPMailer
 
-// 引入 PHPMailer
+// require_once __DIR__ . '/../config.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// 引入 PHPMailer 类文件
+// require_once __DIR__ . '/../Admin_Module/Email_System/phpmailer/src/PHPMailer.php';
 require_once __DIR__ . '/../Admin_Module/Email_System/phpmailer/src/PHPMailer.php';
 require_once __DIR__ . '/../Admin_Module/Email_System/phpmailer/src/SMTP.php';
 require_once __DIR__ . '/../Admin_Module/Email_System/phpmailer/src/Exception.php';
 
-// 通用邮件发送函数（使用 SMTP）
+// sendEmail function to send emails using PHPMailer
 function sendEmail($to, $subject, $body, $isHTML = true) {
     if (empty($to) || !filter_var($to, FILTER_VALIDATE_EMAIL)) {
         return false;
@@ -46,6 +46,4 @@ function sendEmail($to, $subject, $body, $isHTML = true) {
     }
 }
 
-// 注意：不要在这里定义 createNotification 和 getBaseUrl！
-// 这些函数已经在 functions.php 中定义了
 ?>

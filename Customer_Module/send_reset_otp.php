@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../config.php';
 header('Content-Type: application/json');
 
-// 设置时区
+// set timezone to Kuala Lumpur
 date_default_timezone_set('Asia/Kuala_Lumpur');
 
 $data = json_decode(file_get_contents('php://input'), true);
@@ -13,7 +13,7 @@ if (empty($email)) {
     exit;
 }
 
-// 验证邮箱是否存在
+// validate email format
 $stmt = $pdo->prepare("SELECT id, name FROM users WHERE email = ?");
 $stmt->execute([$email]);
 $user = $stmt->fetch();
@@ -23,21 +23,21 @@ if (!$user) {
     exit;
 }
 
-// 生成6位随机码
+// generate a 6-digit OTP code
 $code = sprintf("%06d", mt_rand(0, 999999));
 
-// 计算过期时间（当前时间 + 10分钟）
+// calculate expiration time (current time + 10 minutes)   
 $now = date('Y-m-d H:i:s');
 $expires = date('Y-m-d H:i:s', strtotime('+10 minutes'));
 
-// 删除旧的 reset OTP
+// delete any existing reset OTP for this email
 $pdo->prepare("DELETE FROM otp_codes WHERE email = ? AND type = 'reset'")->execute([$email]);
 
-// 插入新 OTP
+// insert new OTP
 $stmt = $pdo->prepare("INSERT INTO otp_codes (email, code, type, expires_at) VALUES (?, ?, 'reset', ?)");
 $stmt->execute([$email, $code, $expires]);
 
-// 发送邮件
+// send email
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 

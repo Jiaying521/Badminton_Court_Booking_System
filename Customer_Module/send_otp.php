@@ -25,19 +25,19 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit;
 }
 
-// 生成6位随机码
+// deepcode: generate a 6-digit OTP code
 $code = sprintf("%06d", mt_rand(0, 999999));
 $expires = date('Y-m-d H:i:s', strtotime('+10 minutes'));
 
 try {
-    // 删除旧的同类型 OTP
+    // delete any existing OTP for this email and type
     $pdo->prepare("DELETE FROM otp_codes WHERE email=? AND type=?")->execute([$email, $type]);
     
-    // 插入新 OTP
+    // insert new OTP
     $stmt = $pdo->prepare("INSERT INTO otp_codes (email, code, type, expires_at) VALUES (?,?,?,?)");
     $stmt->execute([$email, $code, $type, $expires]);
     
-    // 配置邮件
+    // send the OTP via email
     $mail = new PHPMailer(true);
     $mail->isSMTP();
     $mail->Host       = 'smtp.gmail.com';
@@ -64,11 +64,11 @@ try {
     
     $mail->send();
     
-    // 成功 - 只返回成功信息，不返回 debug_code
+    // success response
     echo json_encode(['success' => true, 'message' => 'OTP sent to your email']);
     
 } catch (Exception $e) {
-    // 失败时才返回调试码
+    // error response
     echo json_encode(['success' => false, 'message' => 'Failed to send OTP: ' . $mail->ErrorInfo]);
 } catch (PDOException $e) {
     echo json_encode(['success' => false, 'message' => 'Database error']);

@@ -7,7 +7,7 @@ $email = $data['email'] ?? '';
 $code = $data['code'] ?? '';
 $type = $data['type'] ?? 'register';
 
-// 查找匹配的 OTP
+// validate email format
 $stmt = $pdo->prepare("SELECT id, code, expires_at FROM otp_codes WHERE email = ? AND type = ? ORDER BY id DESC LIMIT 1");
 $stmt->execute([$email, $type]);
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -28,7 +28,7 @@ if ($row['expires_at'] < $now) {
     exit;
 }
 
-// 验证成功，删除 OTP
+// delete the OTP after successful verification
 $pdo->prepare("DELETE FROM otp_codes WHERE email = ? AND type = ?")->execute([$email, $type]);
 
 echo json_encode(['success' => true, 'message' => 'Verified successfully']);
