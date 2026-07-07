@@ -70,6 +70,13 @@ if ($is_late) {
 mysqli_query($conn, "UPDATE users SET wallet_balance = wallet_balance + $refund_amount WHERE id = $user_id");
 mysqli_query($conn, "UPDATE bookings SET status = 'Cancelled' WHERE id = $booking_id");
 
+/* Record the refund so ManageBookings breakdown modal can display it */
+$refund_trans_id = 'REF_COACH_' . time() . '_' . $booking_id;
+mysqli_query($conn, "
+    INSERT INTO payments (booking_id, amount, final_amount, payment_method, payment_status, transaction_id, payment_date)
+    VALUES ($booking_id, 0, $refund_amount, 'Refund - Coach Decline', 'success', '$refund_trans_id', NOW())
+");
+
 require_once '../api/notification_helper.php';
 require_once __DIR__ . '/../log_activity.php';
 

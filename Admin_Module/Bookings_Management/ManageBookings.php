@@ -34,7 +34,14 @@
     if (isset($_GET['added']))       { $toasts[] = ['text' => 'Booking added successfully!',          'type' => 'success']; }
     if (isset($_GET['conflict']))    { $toasts[] = ['text' => 'This time slot is already booked. Please choose another time.', 'type' => 'pending']; }
     if (isset($_GET['locked']))      { $toasts[] = ['text' => 'This booking is already cancelled or completed and can no longer be edited.', 'type' => 'error']; }
-    if (isset($_GET['invalid_price'])){ $toasts[] = ['text' => 'Price cannot be negative. Please enter a valid amount or leave it blank to auto-calculate.', 'type' => 'error']; }    
+    if (isset($_GET['invalid_price'])){
+        if ($_GET['invalid_price'] === 'low') {
+            $min = isset($_GET['min']) ? number_format((float)$_GET['min'], 2) : '';
+            $toasts[] = ['text' => "Manual price cannot be lower than the auto-calculated price" . ($min ? " (RM $min)" : "") . ". Leave blank to auto-calculate.", 'type' => 'error'];
+        } else {
+            $toasts[] = ['text' => 'Price cannot be negative. Please enter a valid amount or leave it blank to auto-calculate.', 'type' => 'error'];
+        }
+    }
     if (isset($_GET['proof_error'])) { $toasts[] = ['text' => 'Photo upload failed. Please use JPG/PNG under 5MB.', 'type' => 'error']; }
     if (isset($_GET['invalid_date'])) {
         if ($_GET['invalid_date'] === 'past') {
@@ -243,14 +250,21 @@
             payments.payment_method,
             payments.payment_status,
             payments.payment_date,
-            payments.transaction_id
+            payments.transaction_id,
+            payments.final_amount AS payment_final_amount
 
         FROM bookings
 
         JOIN users   ON bookings.user_id  = users.id
         JOIN courts  ON bookings.court_id = courts.id
         LEFT JOIN coaches  ON bookings.coach_id = coaches.id
-        LEFT JOIN payments ON payments.booking_id = bookings.id
+        LEFT JOIN (
+            SELECT p1.*
+            FROM payments p1
+            WHERE p1.payment_id = (
+                SELECT MAX(p2.payment_id) FROM payments p2 WHERE p2.booking_id = p1.booking_id
+            )
+        ) payments ON payments.booking_id = bookings.id
 
         $where_sql
 
@@ -459,12 +473,13 @@
                         }
                         $coach_fee = (float)$row['coach_price_total'];
                         $breakdowns[$row['id']] = [
-                            'court'            => (float)$row['total_price'] - $coach_fee - $addon_sum,
+                            'court'            => max(0, (float)$row['total_price'] - $coach_fee - $addon_sum),
                             'coach'            => $coach_fee,
                             'addons'           => $addon_items,
                             'total'            => (float)$row['total_price'],
                             'status'           => $row['status'],
                             'cancellation_fee' => (float)($row['cancellation_fee'] ?? 0),
+                            'refund_amount'    => (stripos((string)$row['payment_method'], 'Refund') === 0) ? (float)$row['payment_final_amount'] : 0,
                         ];
                     ?>
 
@@ -1007,6 +1022,10 @@
 
         if (b.status === 'Cancelled' && b.cancellation_fee > 0) {
             html += rmRow('Cancellation Fee', b.cancellation_fee, true);
+        }
+
+        if (b.status === 'Cancelled' && b.refund_amount > 0) {
+            html += '<div class="bd-row" style="border-top:none; margin-top:0;"><span>Refunded to Wallet</span><span style="color:#dc2626;">−RM ' + Number(b.refund_amount).toFixed(2) + '</span></div>';
         }
 
         document.getElementById('bd-body').innerHTML = html;

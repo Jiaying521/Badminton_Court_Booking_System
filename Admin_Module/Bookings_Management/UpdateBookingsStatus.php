@@ -231,12 +231,6 @@
             exit();
         }
 
-        // Reject negative manual price BEFORE doing anything else — must not be silently ignored
-        if (isset($_POST['total_price']) && $_POST['total_price'] !== '' && (float)$_POST['total_price'] < 0) {
-            header("Location: ManageBookings.php?invalid_price=1");
-            exit();
-        }
-
         // Prevent editing a booking to a date/time that has already passed
         $booking_datetime = strtotime($booking_date . ' ' . $start_time);
         if ($booking_datetime < time()) {
@@ -267,7 +261,7 @@
             exit();
         }
 
-        // --- Recalculate price based on the NEW time/court/coach ---
+        // --- Recalculate AUTO price FIRST, before validating the manual price against it ---
         $start_ts    = strtotime($start_time);
         $end_ts      = strtotime($end_time);
         $total_hours = max(1, round(($end_ts - $start_ts) / 3600));
@@ -292,9 +286,20 @@
         $auto_price = $court_price + $coach_price_total + $addon_sum;
 
         // Manual override (Admin/Superadmin only, since Coach is already blocked above)
-        // Negative values already rejected above, so this is guaranteed >= 0 or null here
         $manual_price = (isset($_POST['total_price']) && $_POST['total_price'] !== '')
                         ? (float)$_POST['total_price'] : null;
+
+        // Reject negative manual price
+        if ($manual_price !== null && $manual_price < 0) {
+            header("Location: ManageBookings.php?invalid_price=1");
+            exit();
+        }
+
+        // Reject manual price lower than the auto-calculated price
+        if ($manual_price !== null && $manual_price < $auto_price) {
+            header("Location: ManageBookings.php?invalid_price=low&min=" . urlencode(number_format($auto_price, 2)));
+            exit();
+        }
 
         $final_price  = ($manual_price !== null) ? $manual_price : $auto_price;
 
@@ -316,7 +321,9 @@
         ");
 
         logActivity($conn, 'Update', 'Booking Management',
-            "Edited booking #$booking_id. Price " . ($manual_price !== null ? "manually set to" : "auto-recalculated to") . " RM " . number_format($final_price, 2));
+            "Booking #$booking_id price " . ($manual_price !== null ? "manually overridden" : "auto-recalculated") .
+            " to RM " . number_format($final_price, 2) .
+            " (auto price was RM " . number_format($auto_price, 2) . ") by {$_SESSION['username']}");
 
         header("Location: ManageBookings.php?edited=1");
         exit();

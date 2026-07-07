@@ -79,6 +79,12 @@
         $total_price      += $coach_price_total;
     }
 
+    // Defensive check — total_price should never be negative
+    if ($total_price < 0) {
+        header("Location: ManageBookings.php?invalid_price=1");
+        exit();
+    }
+
     // Insert booking
     mysqli_query($conn, "
         INSERT INTO bookings (

@@ -1026,3 +1026,11 @@
     padding: 8px 4px;
     font-weight: 600;
 }
+
+.bd-total {
+    border-top: none;
+}
+
+.bd-row:has(+ .bd-total) {
+    border-bottom: none;
+}
