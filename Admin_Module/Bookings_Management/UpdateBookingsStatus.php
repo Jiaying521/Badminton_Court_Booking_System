@@ -205,64 +205,120 @@
     // Handle booking edit form
     if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['booking_id'])){
 
-    // Get POST data
-    $booking_id   = (int)$_POST['booking_id'];
-    $booking_date = mysqli_real_escape_string($conn, $_POST['booking_date']);
-    $start_time   = mysqli_real_escape_string($conn, $_POST['start_time']);
-    $end_time     = mysqli_real_escape_string($conn, $_POST['end_time']);
-    $court_id     = (int)$_POST['court_id'];
-    $coach_id     = (int)$_POST['coach_id'];
-    $session_type = mysqli_real_escape_string($conn, $_POST['session_type']);
-    $notes        = mysqli_real_escape_string($conn, $_POST['notes']);
+        // Coach must never reach this branch (price edit is Admin/Superadmin only)
+        if ($_SESSION['role'] === 'Coach') {
+            header("Location: ManageBookings.php");
+            exit();
+        }
 
-    // Set coach_id to NULL if no coach selected
-    $coach_value = ($coach_id === 0) ? "NULL" : $coach_id;
+        // Get POST data
+        $booking_id   = (int)$_POST['booking_id'];
+        $booking_date = mysqli_real_escape_string($conn, $_POST['booking_date']);
+        $start_time   = mysqli_real_escape_string($conn, $_POST['start_time']);
+        $end_time     = mysqli_real_escape_string($conn, $_POST['end_time']);
+        $court_id     = (int)$_POST['court_id'];
+        $coach_id     = (int)$_POST['coach_id'];
+        $session_type = mysqli_real_escape_string($conn, $_POST['session_type']);
+        $notes        = mysqli_real_escape_string($conn, $_POST['notes']);
 
-    // Prevent editing a booking to a date/time that has already passed
-    $booking_datetime = strtotime($booking_date . ' ' . $start_time);
-    if ($booking_datetime < time()) {
-        header("Location: ManageBookings.php?invalid_date=past");
+        // Set coach_id to NULL if no coach selected
+        $coach_value = ($coach_id === 0) ? "NULL" : $coach_id;
+
+        // Block editing Cancelled or Completed bookings entirely
+        $orig = mysqli_fetch_assoc(mysqli_query($conn, "SELECT status FROM bookings WHERE id = $booking_id"));
+        if (!$orig || in_array($orig['status'], ['Cancelled', 'Completed'])) {
+            header("Location: ManageBookings.php?locked=1");
+            exit();
+        }
+
+        // Reject negative manual price BEFORE doing anything else — must not be silently ignored
+        if (isset($_POST['total_price']) && $_POST['total_price'] !== '' && (float)$_POST['total_price'] < 0) {
+            header("Location: ManageBookings.php?invalid_price=1");
+            exit();
+        }
+
+        // Prevent editing a booking to a date/time that has already passed
+        $booking_datetime = strtotime($booking_date . ' ' . $start_time);
+        if ($booking_datetime < time()) {
+            header("Location: ManageBookings.php?invalid_date=past");
+            exit();
+        }
+
+        // End time must be after start time
+        if ($end_time <= $start_time) {
+            header("Location: ManageBookings.php?invalid_date=range");
+            exit();
+        }
+
+        // Conflict detection — check if court is already booked at that time by ANOTHER booking
+        $conflict = mysqli_query($conn, "
+            SELECT id FROM bookings
+            WHERE court_id = $court_id
+            AND booking_date = '$booking_date'
+            AND status NOT IN ('Cancelled')
+            AND id != $booking_id
+            AND (
+                (start_time < '$end_time' AND end_time > '$start_time')
+            )
+        ");
+
+        if (mysqli_num_rows($conflict) > 0) {
+            header("Location: ManageBookings.php?conflict=1");
+            exit();
+        }
+
+        // --- Recalculate price based on the NEW time/court/coach ---
+        $start_ts    = strtotime($start_time);
+        $end_ts      = strtotime($end_time);
+        $total_hours = max(1, round(($end_ts - $start_ts) / 3600));
+
+        $court_row    = mysqli_fetch_assoc(mysqli_query($conn, "SELECT price_off_peak, price_peak FROM courts WHERE id = $court_id"));
+        $hour         = (int)date('G', $start_ts);
+        $price_per_hr = ($hour >= 15) ? $court_row['price_peak'] : $court_row['price_off_peak'];
+        $court_price  = $price_per_hr * $total_hours;
+
+        $coach_price_total = 0;
+        if ($coach_id > 0) {
+            $coach_row         = mysqli_fetch_assoc(mysqli_query($conn, "SELECT price_per_hour FROM coaches WHERE id = $coach_id"));
+            $coach_price_total = $coach_row['price_per_hour'] * $total_hours;
+        }
+
+        // Keep existing add-ons untouched, just fold their total back in
+        $addon_sum_row = mysqli_fetch_assoc(mysqli_query($conn, "
+            SELECT COALESCE(SUM(quantity * price), 0) AS addon_sum
+            FROM booking_addons WHERE booking_id = $booking_id
+        "));
+        $addon_sum  = (float)$addon_sum_row['addon_sum'];
+        $auto_price = $court_price + $coach_price_total + $addon_sum;
+
+        // Manual override (Admin/Superadmin only, since Coach is already blocked above)
+        // Negative values already rejected above, so this is guaranteed >= 0 or null here
+        $manual_price = (isset($_POST['total_price']) && $_POST['total_price'] !== '')
+                        ? (float)$_POST['total_price'] : null;
+
+        $final_price  = ($manual_price !== null) ? $manual_price : $auto_price;
+
+        // Update booking in database — now includes recalculated price fields
+        mysqli_query($conn, "
+            UPDATE bookings SET
+                booking_date      = '$booking_date',
+                start_time        = '$start_time',
+                end_time          = '$end_time',
+                court_id          = $court_id,
+                coach_id          = $coach_value,
+                session_type      = '$session_type',
+                notes             = '$notes',
+                total_hours       = $total_hours,
+                coach_hours       = $total_hours,
+                coach_price_total = $coach_price_total,
+                total_price       = $final_price
+            WHERE id = $booking_id
+        ");
+
+        logActivity($conn, 'Update', 'Booking Management',
+            "Edited booking #$booking_id. Price " . ($manual_price !== null ? "manually set to" : "auto-recalculated to") . " RM " . number_format($final_price, 2));
+
+        header("Location: ManageBookings.php?edited=1");
         exit();
-    }
-
-    // End time must be after start time
-    if ($end_time <= $start_time) {
-        header("Location: ManageBookings.php?invalid_date=range");
-        exit();
-    }
-
-    // Conflict detection — check if court is already booked at that time by ANOTHER booking
-    $conflict = mysqli_query($conn, "
-        SELECT id FROM bookings
-        WHERE court_id = $court_id
-        AND booking_date = '$booking_date'
-        AND status NOT IN ('Cancelled')
-        AND id != $booking_id
-        AND (
-            (start_time < '$end_time' AND end_time > '$start_time')
-        )
-    ");
-
-    if (mysqli_num_rows($conflict) > 0) {
-        header("Location: ManageBookings.php?conflict=1");
-        exit();
-    }
-
-    // Update booking in database
-    mysqli_query($conn, "
-        UPDATE bookings SET
-            booking_date = '$booking_date',
-            start_time   = '$start_time',
-            end_time     = '$end_time',
-            court_id     = $court_id,
-            coach_id     = $coach_value,
-            session_type = '$session_type',
-            notes        = '$notes'
-        WHERE id = $booking_id
-    ");
-
-    logActivity($conn, 'Update', 'Booking Management', "Edited booking #$booking_id details.");
-    header("Location: ManageBookings.php?edited=1");
-    exit();
     }
 ?>

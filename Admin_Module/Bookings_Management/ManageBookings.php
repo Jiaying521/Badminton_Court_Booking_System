@@ -33,6 +33,8 @@
     if (isset($_GET['edited']))      { $toasts[] = ['text' => 'Booking updated successfully!',        'type' => 'success']; }
     if (isset($_GET['added']))       { $toasts[] = ['text' => 'Booking added successfully!',          'type' => 'success']; }
     if (isset($_GET['conflict']))    { $toasts[] = ['text' => 'This time slot is already booked. Please choose another time.', 'type' => 'pending']; }
+    if (isset($_GET['locked']))      { $toasts[] = ['text' => 'This booking is already cancelled or completed and can no longer be edited.', 'type' => 'error']; }
+    if (isset($_GET['invalid_price'])){ $toasts[] = ['text' => 'Price cannot be negative. Please enter a valid amount or leave it blank to auto-calculate.', 'type' => 'error']; }    
     if (isset($_GET['proof_error'])) { $toasts[] = ['text' => 'Photo upload failed. Please use JPG/PNG under 5MB.', 'type' => 'error']; }
     if (isset($_GET['invalid_date'])) {
         if ($_GET['invalid_date'] === 'past') {
@@ -818,6 +820,11 @@
                             <option value="Casual">Casual</option>
                             <option value="Tournament">Tournament</option>
                         </select>
+                    </div>
+
+                    <div class="modal-field full-width">
+                        <label>Total Price (RM) <span style="font-weight:400; color:#94a3b8;">— leave blank to auto-calculate</span></label>
+                        <input type="number" step="0.01" min="0" name="total_price" id="modal-total-price" placeholder="Auto-calculated">
                     </div>
 
                     <div class="modal-field full-width">
