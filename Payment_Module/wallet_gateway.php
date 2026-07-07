@@ -193,6 +193,7 @@ body {
             <input type="hidden" name="return_to" value="<?php echo htmlspecialchars($return_to); ?>">
             <input type="hidden" name="booking_id" value="<?php echo htmlspecialchars($b_id); ?>">
             <input type="hidden" name="amount" value="<?php echo htmlspecialchars($b_amt); ?>">
+            <input type="hidden" name="pay_method" value="<?php echo htmlspecialchars($pay_method); ?>">
 
             <?php if ($pay_method == 'Bank'): ?>
                 <div class="bank-badge-header">
