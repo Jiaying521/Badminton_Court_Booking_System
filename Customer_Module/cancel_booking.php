@@ -15,6 +15,7 @@ if(!isLoggedIn()) {
 $data = json_decode(file_get_contents('php://input'), true);
 $booking_id = $data['booking_id'] ?? 0;
 $cancel_type = $data['cancel_type'] ?? 'all';
+$force_no_refund = $data['force_no_refund'] ?? false;
 
 if(!$booking_id) {
     echo json_encode(['success' => false, 'message' => 'Missing booking ID']);
@@ -139,15 +140,94 @@ try {
 
     // ========== 完整取消（已支付） ==========
     $has_coach = ($booking['coach_id'] && $booking['coach_id'] > 0 && $booking['coach_hours'] > 0);
-    $booking_datetime = $booking['booking_date'] . ' ' . $booking['start_time'];
-    $booking_timestamp = strtotime($booking_datetime);
-    $current_timestamp = time();
-    $hours_until_booking = ($booking_timestamp - $current_timestamp) / 3600;
+    
+    // 计算时间差
+    $booking_start_time = strtotime($booking['booking_date'] . ' ' . $booking['start_time']);
+    $current_time = time();
+    $time_diff_seconds = $booking_start_time - $current_time;
+    $hours_until_booking = $time_diff_seconds / 3600;
 
     $cancellation_fee = 0;
     $refund_amount = 0;
     $message = '';
 
+    // ============================================================
+    // ★★★ 强制检查1：如果 force_no_refund = true，完全不退款 ★★★
+    // ============================================================
+    if ($force_no_refund) {
+        $refund_amount = 0;
+        $cancellation_fee = $booking['total_price'];
+        $message = "No refund will be issued.\nCancellation less than 1 hour before start time.";
+        
+        $pdo->beginTransaction();
+        
+        $update = $pdo->prepare("UPDATE bookings SET status = 'Cancelled', cancellation_fee = ? WHERE id = ?");
+        $update->execute([$cancellation_fee, $booking_id]);
+        
+        try {
+            $checkCol = $pdo->query("SHOW COLUMNS FROM users LIKE 'cancellation_count'");
+            if($checkCol && $checkCol->rowCount() > 0) {
+                $update_cancel_count = $pdo->prepare("UPDATE users SET cancellation_count = COALESCE(cancellation_count, 0) + 1 WHERE id = ?");
+                $update_cancel_count->execute([$_SESSION['user_id']]);
+            }
+        } catch(PDOException $e) {
+            // 忽略
+        }
+        
+        // 删除 add-ons（不退款）
+        $delete_addons = $pdo->prepare("DELETE FROM booking_addons WHERE booking_id = ?");
+        $delete_addons->execute([$booking_id]);
+        
+        $pdo->commit();
+        
+        // 发送通知
+        $notificationMessage = "Booking #{$booking_id} at {$booking['court_name']} has been cancelled. No refund (force_no_refund).";
+        createNotification('Admin', NULL, 'cancelled', 'Booking Cancelled', $notificationMessage, $booking_id, 'booking');
+        
+        echo json_encode(['success' => true, 'message' => "Booking cancelled successfully.\n\n" . $message, 'refund_amount' => 0]);
+        exit;
+    }
+
+    // ============================================================
+    // ★★★ 强制检查2：如果小于1小时，完全不退款 ★★★
+    // ============================================================
+    if ($time_diff_seconds < 3600) {
+        $refund_amount = 0;
+        $cancellation_fee = $booking['total_price'];
+        $message = "No refund will be issued.\nCancellation less than 1 hour before start time.";
+        
+        $pdo->beginTransaction();
+        
+        $update = $pdo->prepare("UPDATE bookings SET status = 'Cancelled', cancellation_fee = ? WHERE id = ?");
+        $update->execute([$cancellation_fee, $booking_id]);
+        
+        try {
+            $checkCol = $pdo->query("SHOW COLUMNS FROM users LIKE 'cancellation_count'");
+            if($checkCol && $checkCol->rowCount() > 0) {
+                $update_cancel_count = $pdo->prepare("UPDATE users SET cancellation_count = COALESCE(cancellation_count, 0) + 1 WHERE id = ?");
+                $update_cancel_count->execute([$_SESSION['user_id']]);
+            }
+        } catch(PDOException $e) {
+            // 忽略
+        }
+        
+        // 删除 add-ons（不退款）
+        $delete_addons = $pdo->prepare("DELETE FROM booking_addons WHERE booking_id = ?");
+        $delete_addons->execute([$booking_id]);
+        
+        $pdo->commit();
+        
+        // 发送通知
+        $notificationMessage = "Booking #{$booking_id} at {$booking['court_name']} has been cancelled. No refund (less than 1 hour notice).";
+        createNotification('Admin', NULL, 'cancelled', 'Booking Cancelled', $notificationMessage, $booking_id, 'booking');
+        
+        echo json_encode(['success' => true, 'message' => "Booking cancelled successfully.\n\n" . $message, 'refund_amount' => 0]);
+        exit;
+    }
+
+    // ============================================================
+    // ★★★ 退款政策逻辑（正常流程） ★★★
+    // ============================================================
     if ($hours_until_booking >= 48) {
         $refund_amount = $booking['total_price'];
         $cancellation_fee = 0;
@@ -185,13 +265,13 @@ try {
         } else {
             $refund_amount = 0;
             $cancellation_fee = $booking['total_price'];
-            $message = "No refund will be issued.";
+            $message = "No refund will be issued.\nCancellation less than 2 hours before start time.";
         }
         
     } else {
         $refund_amount = 0;
         $cancellation_fee = $booking['total_price'];
-        $message = "No refund will be issued.";
+        $message = "No refund will be issued.\nCancellation less than 1 hour before start time.";
     }
 
     // 应用第2次取消罚款
@@ -243,7 +323,7 @@ try {
     $date_formatted = date('M j, Y', strtotime($booking['booking_date']));
     $time_formatted = date('h:i A', strtotime($booking['start_time'])) . ' - ' . date('h:i A', strtotime($booking['end_time']));
     
-    // ========== 发送邮件给用户（HTML格式，Outlook兼容） ==========
+    // ========== 发送邮件给用户 ==========
     $userSubject = "Booking Cancelled - #" . $booking_id;
     
     $refund_html = '';
@@ -339,7 +419,7 @@ try {
     
     queueEmail($booking['user_email'], $userSubject, $userBody, true);
     
-    // ========== 发送邮件给 Admin（HTML格式） ==========
+    // ========== 发送邮件给 Admin ==========
     $stmt_admins = $pdo->prepare("SELECT email FROM admins WHERE role IN ('Superadmin', 'Admin') AND status = 'Active'");
     $stmt_admins->execute();
     $admins = $stmt_admins->fetchAll();
@@ -455,7 +535,7 @@ try {
         }
     }
     
-    // ========== 获取教练邮箱并发送邮件（HTML格式） ==========
+    // ========== 获取教练邮箱并发送邮件 ==========
     if ($has_coach && $booking['coach_id'] > 0) {
         $stmt_coach = $pdo->prepare("
             SELECT a.email, a.username as coach_name
@@ -549,8 +629,6 @@ try {
 </html>";
             
             queueEmail($coach['email'], $coachSubject, $coachBody, true);
-        } else {
-            error_log("Coach email not found for coach_id: " . $booking['coach_id']);
         }
     }
     
@@ -573,7 +651,7 @@ try {
 }
 
 // ============================================================
-// EMAIL QUEUE FUNCTION - Store emails for background sending
+// EMAIL QUEUE FUNCTION
 // ============================================================
 function queueEmail($to, $subject, $body, $isHTML = false) {
     global $pdo;

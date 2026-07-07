@@ -1431,7 +1431,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
     }
     
     // ============================================================
-    // CANCELLATION FUNCTIONALITY
+    // ★★★ CANCELLATION FUNCTIONALITY (COMPLETE FIXED VERSION) ★★★
     // ============================================================
     let globalCancelBookingId = null;
     let globalCancelPolicyMessage = '';
@@ -1449,6 +1449,31 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
         }
     }
 
+    // ★★★ 强制不退款取消（用于小于1小时） ★★★
+    async function proceedCancelNoRefund(bookingId) {
+        try {
+            const response = await fetch(`cancel_booking.php`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    booking_id: bookingId,
+                    cancel_type: 'all',
+                    force_no_refund: true
+                })
+            });
+            const data = await response.json();
+            if(data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert(data.message || 'Failed to complete transaction processing');
+            }
+        } catch(e) {
+            console.error(e);
+            alert('Error processing the cancellation request');
+        }
+    }
+
     async function cancelBooking(bookingId, currentCancellationCount) {
         try {
             const response = await fetch(`get_booking_details.php?id=${bookingId}`);
@@ -1462,7 +1487,17 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
                 const addonsTotal = parseFloat(booking.addons_total || 0);
                 
                 // ============================================================
-                // SPECIAL HANDLING: PENDING STATUS (UNPAID) - Cancel without refund
+                // ★★★ 强制检查1：如果小于1小时，直接取消不退款 ★★★
+                // ============================================================
+                if (hoursDiff < 1) {
+                    if(confirm('⚠️ Cancel this booking?\n\nThis booking is less than 1 hour away.\n\n❌ NO REFUND will be issued.\n\nDo you want to proceed?')) {
+                        await proceedCancelNoRefund(bookingId);
+                    }
+                    return;
+                }
+                
+                // ============================================================
+                // ★★★ 强制检查2：PENDING STATUS (UNPAID) ★★★
                 // ============================================================
                 if (booking.status === 'Pending') {
                     if(confirm('⚠️ Cancel this booking?\n\nThis booking has NOT been paid yet.\n\n• The booking will be cancelled immediately\n• No refund needed (you haven\'t paid)\n• The court time will be released\n\nDo you want to proceed?')) {
@@ -1540,17 +1575,10 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
                             `❌ NO REFUND will be issued\n\n` +
                             `💰 No refund will be issued.`;
                     }
-                } else {
-                    confirmMessage = `🏸 CANCELLATION POLICY (<1 hour notice)\n\n` +
-                        `Booking: ${booking.court_name}\n` +
-                        `Date: ${booking.booking_date}\n` +
-                        `Time: ${booking.start_time} - ${booking.end_time}\n\n` +
-                        `❌ NO REFUND will be issued\n\n` +
-                        `💰 No refund will be issued.`;
                 }
                 
                 // If booking has add-ons, show choice modal
-                if (addonsTotal > 0) {
+                if (addonsTotal > 0 && hoursDiff >= 1) {
                     globalCancelBookingId = bookingId;
                     document.getElementById('cancelChoiceText').innerText = `We found active equipment or snack add-ons (Value: RM ${addonsTotal.toFixed(2)}) linked to this court booking.\n\nWould you like to cancel your entire session, or just drop the extra items while keeping your court confirmed?`;
                     document.getElementById('cancelChoiceModal').style.display = 'block';
@@ -1582,7 +1610,7 @@ $peak_start_display = date('h:i A', strtotime($peak_start));
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     booking_id: bookingId,
-                    cancel_type: cancelType 
+                    cancel_type: cancelType
                 })
             });
             const data = await response.json();
