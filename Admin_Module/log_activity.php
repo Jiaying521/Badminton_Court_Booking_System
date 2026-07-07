@@ -1,4 +1,5 @@
 <?php
+// 核心写入log的地方，Logs文件夹里面的是负责显示log而已
 function logActivity($conn, $action, $module, $description,
                      $user_id = null, $username = null, $role = null) {
     if (!$conn) return;
