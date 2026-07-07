@@ -185,20 +185,6 @@
     background: #fffbf0; 
 }
 
-.status-select {
-    padding: 5px 12px;
-    border-radius: 50px;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    border: none;
-    outline: none;
-    text-align: center;
-    width: 120px;
-    appearance: none;
-    font-family: 'Outfit', sans-serif;
-}
-
 .status-active    { 
     background: #f0fdf4; 
     color: #16a34a; 
@@ -551,4 +537,20 @@
     color: var(--text-muted);
     font-family: 'Outfit', sans-serif;
     white-space: nowrap;
+}
+
+.data-table select.status-select {
+    width: 120px;
+    text-align: center;
+    text-align-last: center;
+    -moz-text-align-last: center;
+    padding: 5px 12px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    appearance: none;
+    font-family: 'Outfit', sans-serif;
 }

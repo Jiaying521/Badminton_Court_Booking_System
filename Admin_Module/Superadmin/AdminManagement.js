@@ -18,21 +18,6 @@ function openAdminEditModal(id, username, email, role, status) {
     document.getElementById('admin-modal-id').value       = id;
     document.getElementById('admin-modal-username').value  = username;
     document.getElementById('admin-modal-email').value     = email;
-
-    const roleWrap   = document.getElementById('admin-modal-role-wrap');
-    const statusWrap = document.getElementById('admin-modal-status-wrap');
-
-    if (role === 'Superadmin') {
-        // A Superadmin can only change his own username + email — hide role/status.
-        roleWrap.style.display   = 'none';
-        statusWrap.style.display = 'none';
-    } else {
-        roleWrap.style.display   = '';
-        statusWrap.style.display = '';
-        document.getElementById('admin-modal-role').value   = role;
-        document.getElementById('admin-modal-status').value = status;
-    }
-
     document.getElementById('adminEditModal').classList.add('active');
 }
 

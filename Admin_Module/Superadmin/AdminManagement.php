@@ -147,15 +147,7 @@ if (isset($_POST['update_admin'])) {
                 $toasts[] = ['text' => 'Email address already exists!', 'type' => 'error'];
             }
         } else {
-            if ($target['role'] === 'Superadmin') {
-                // A Superadmin can only update his own username + email (role/status stay fixed).
-                mysqli_query($conn, "UPDATE admins SET username = '$new_user', email = '$new_email' WHERE id = $aid");
-            } else {
-                // Admin accounts: role and status are editable too.
-                $new_role   = in_array($_POST['role'],   ['Admin', 'Superadmin'])           ? $_POST['role']   : 'Admin';
-                $new_status = in_array($_POST['status'], ['Active', 'Inactive', 'Suspended']) ? $_POST['status'] : 'Inactive';
-                mysqli_query($conn, "UPDATE admins SET username = '$new_user', email = '$new_email', role = '$new_role', status = '$new_status' WHERE id = $aid");
-            }
+            mysqli_query($conn, "UPDATE admins SET username = '$new_user', email = '$new_email' WHERE id = $aid");
 
             // If a coach account shares this admin, keep its display name in sync.
             mysqli_query($conn, "UPDATE coaches SET name = '$new_user' WHERE admin_id = $aid");
@@ -372,13 +364,17 @@ function adminPageQS($p, $sort, $dir, $filter_role, $filter_status, $filter_sear
                             <?php echo date('d M Y', strtotime($row['created_at'])); ?>
                         </td>
 
-                        <td style="text-align:center;">
+                        <td style="text-align:center;" onclick="event.stopPropagation()">
                             <?php if ($row['role'] !== 'Superadmin'): ?>
-                            <span class="status-pill <?php
+                            <select class="status-select <?php
                                 if($row['status'] == 'Active')       echo 'status-active';
                                 elseif($row['status'] == 'Inactive') echo 'status-inactive';
                                 else                                  echo 'status-suspended';
-                            ?>"><?php echo $row['status']; ?></span>
+                            ?>" onchange="location.href='?update_id=<?php echo $row['id']; ?>&new_status='+this.value">
+                                <option value="Active"    <?php echo $row['status']=='Active'    ? 'selected':''; ?>>Active</option>
+                                <option value="Inactive"  <?php echo $row['status']=='Inactive'  ? 'selected':''; ?>>Inactive</option>
+                                <option value="Suspended" <?php echo $row['status']=='Suspended' ? 'selected':''; ?>>Suspended</option>
+                            </select>
                             <?php else: ?>
                                 <span class="status-master">MASTER</span>
                             <?php endif; ?>
@@ -455,23 +451,6 @@ function adminPageQS($p, $sort, $dir, $filter_role, $filter_status, $filter_sear
                         <input type="email" name="email" id="admin-modal-email" required>
                     </div>
 
-                    <!-- Role + Status only apply to Admin accounts; hidden for a Superadmin's own row -->
-                    <div class="modal-field" id="admin-modal-role-wrap">
-                        <label>Role</label>
-                        <select name="role" id="admin-modal-role">
-                            <option value="Admin">Admin</option>
-                            <option value="Superadmin">Superadmin</option>
-                        </select>
-                    </div>
-
-                    <div class="modal-field" id="admin-modal-status-wrap">
-                        <label>Status</label>
-                        <select name="status" id="admin-modal-status">
-                            <option value="Active">Active</option>
-                            <option value="Inactive">Inactive</option>
-                            <option value="Suspended">Suspended</option>
-                        </select>
-                    </div>
                 </div>
 
                 <div class="modal-actions">
