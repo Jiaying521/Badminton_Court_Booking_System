@@ -614,7 +614,7 @@
                         </div>
 
                                 <!-- Edit button — stopPropagation so clicking it doesn't collapse the row -->
-                                <?php if($role !== 'Coach'): ?>
+                                <?php if($role !== 'Coach' && !in_array($row['status'], ['Cancelled', 'Completed'])): ?>
                                 <button class="btn-edit-booking" onclick="event.stopPropagation(); openEditModal(
                                     <?php echo $row['id']; ?>,
                                     '<?php echo $row['booking_date']; ?>',

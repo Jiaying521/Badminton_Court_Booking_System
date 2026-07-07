@@ -1,4 +1,5 @@
 <?php
+// Logs文件夹里面的是负责显示log而已,核心写入log的地方在log_activity.php
 session_start();
 
 if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'Superadmin') {
