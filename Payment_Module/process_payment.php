@@ -285,9 +285,7 @@ if ($status === "Success") {
                 }
             }
             
-            // ============================================================
-            // 8e. Send email to coach if assigned
-            // ============================================================
+
             // 8e. Send email to coach if assigned
             if ($coach_email) {
                 $coachSubject = "Session Confirmed - #{$booking_id}";
@@ -307,9 +305,9 @@ if ($status === "Success") {
                 queueEmail($coach_email, $coachSubject, $coachBody, true);  // true = HTML格式
             }
             
-            // ============================================================
+           
             // 8f. Create database notifications
-            // ============================================================
+           
             createNotification('Admin', NULL, 'confirmed', 'Booking Paid & Confirmed', 
                 "Booking #{$booking_id} from {$booking['user_name']} has been paid and confirmed." . ($addons_total > 0 ? " Add-ons: RM " . number_format($addons_total, 2) : ""), 
                 $booking_id, 'booking');
